@@ -64,10 +64,10 @@ jobs:
     name: Validate submitted files
     needs: [get-submitted-files, check-missing-files]
     outputs:
-      build: ${{ steps.schedule-builds.outputs.image-name }}
+      build-image: ${{ steps.schedule-builds.outputs.image-name }}
     strategy:
       fail-fast: true
-      matrix: ${{ fromJSON(needs.get-submitted-files.outputs.changed-files) }}
+      matrix: ${{ fromJSON(needs.get-submitted-files.outputs.changed-files-matrix) }}
     steps:
       - uses: actions/checkout@v3
 
@@ -82,3 +82,11 @@ jobs:
         id: schedule-builds
         run: echo "image-name=${{ needs.get-submitted-files.outputs.image-name }}" >> $GITHUB_STATE
 
+  build:
+    needs: [validate-submitted-files]
+    if: needs.validate-submitted-files.outputs.build-image
+    uses: ./.github/workflows/builds.yaml
+    with:
+      image: ${{ needs.validate-submitted-files.outputs.build-image }}
+      upload: ${{ github.ref_name == 'main' && true || false }}
+    secrets: inherit
