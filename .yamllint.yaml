@@ -1,0 +1,14 @@
+ignore: |
+  .github/*
+
+extends: default
+
+yaml-files:
+  - '*.yaml'
+  - '*.yml'
+
+rules:
+  truthy: disable
+  line-length: disable
+  document-start: disable
+  new-line-at-end-of-file: disable

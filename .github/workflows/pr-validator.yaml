@@ -1,0 +1,67 @@
+name: pr-validator
+on:
+  pull_request:
+    paths:
+      - 'oci/*/*.yaml'
+
+jobs:
+  get-submitted-files:
+    runs-on: ubuntu-22.04
+    name: Get submitted files
+    outputs:
+      changed-files: ${{ steps.prep.outputs.changed-files }}
+      image-name: ${{ steps.prep.outputs.changed-files-dir-names }}
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v35
+
+      - name: Get image name
+        id: changed-files-dir-names
+        uses: tj-actions/changed-files@v35
+        with:
+          dir_names: "true"
+
+      - name: Only one image is being changed
+        run: |
+          set -eux
+          dir_names="${{ steps.changed-files-dir-names.outputs.changed-files }}"
+          (( $(echo "${dir_names}" | wc -w) == 1 ))
+
+  check-missing-files:
+    runs-on: ubuntu-22.04
+    name: Check for missing files
+    needs: [get-submitted-files]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check if documentation exists
+        uses: andstor/file-existence-action@v2
+        with:
+          files: "${{ needs.get-submitted-files.outputs.image-name }}/documentation.yaml"
+          fail: true
+
+      - name: Check if contacts exist
+        uses: andstor/file-existence-action@v2
+        with:
+          files: "${{ needs.get-submitted-files.outputs.image-name }}/contacts.yaml"
+          fail: true
+
+  validate-submitted-files:
+    runs-on: ubuntu-22.04
+    name: Validate submitted files
+    needs: [get-submitted-files]
+    strategy:
+      fail-fast: true
+      matrix:
+        filename: ${{ fromJSON(needs.get-submitted-files.outputs.changed-files) }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Validate YAML format
+        run: |
+          set -eux
+          pip install yamllint
+          yamllint -c .yamllint.yaml ${{ matrix.filename }}
