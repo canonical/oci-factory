@@ -48,9 +48,9 @@ jobs:
           changed_files="${{ steps.changed-files.outputs.all_changed_files }}"
           if [[ "${changed_files}" == *"builds.yaml"* ]]
           then
-            echo "trigger-builds='true'" >> $GITHUB_OUTPUT
+            echo "trigger-builds=1" >> $GITHUB_OUTPUT
           else
-            echo "trigger-builds='false'" >> $GITHUB_OUTPUT
+            echo "trigger-builds=2" >> $GITHUB_OUTPUT
           fi
 
   check-missing-files:
@@ -90,7 +90,7 @@ jobs:
 
   build:
     needs: [validate-submitted-files, get-submitted-files, check-missing-files]
-    if: needs.get-submitted-files.outputs.trigger-builds == 'true'
+    if: needs.get-submitted-files.outputs.trigger-builds == 1
     uses: ./.github/workflows/builds.yaml
     with:
       image: ${{ needs.get-submitted-files.outputs.image-name }}
