@@ -1,0 +1,267 @@
+name: Tests
+on:
+  workflow_dispatch:
+    inputs:
+      oci-image-name:
+        description: 'Name of the image to be fetched and tested'
+        required: true
+      test-from:
+        description: 'From where to fetch the OCI image to be tested'
+        required: true
+        default: 'cache'
+        type: choice
+        options:
+        - cache
+        - registry
+      cache-key:
+        description: 'Cache key (when fetching from cache)'
+        required: false
+        type: string
+      is-a-rock:
+        description: 'Run additional ROCK-specific tests'
+        required: true
+        type: boolean
+        default: false
+      vulnerability-report-suffix:
+        description: 'Suffix for the vulnerability report artefact'
+        required: true
+        type: string
+        default: '.vulnerability-report.json'
+      external_ref_id: #(1)
+        description: 'Optional ID for unique run detection'
+        required: false
+        type: string
+        default: "default-id"
+
+env:
+  TEST_IMAGE_NAME: 'test-img'
+  TEST_IMAGE_TAG: 'test'
+  SKOPEO_IMAGE: 'quay.io/skopeo/stable:v1.9'
+  UMOCI_VERSION: 'v0.4.7'
+  UMOCI_BINARY: 'umoci.amd64'
+  DIVE_IMAGE: 'wagoodman/dive:v0.10'
+
+jobs:
+  fetch-oci-image:
+    runs-on: ubuntu-22.04
+    name: Fetch OCI image for testing
+    steps:
+      - name: ${{ github.event.inputs.external_ref_id }} #(2)
+        run: echo
+        
+      - uses: actions/cache/restore@v3
+        if: ${{ inputs.test-from == 'cache' }}
+        with:
+          path: ${{ inputs.oci-image-name }}
+          key: ${{ inputs.cache-key }}
+          fail-on-cache-miss: true
+
+      - if: ${{ inputs.test-from == 'cache' }}
+        run: |
+          # from OCI ARCHIVE to OCI
+          docker run --rm -v $PWD:/workdir \
+            -w /workdir \
+            ${{ env.SKOPEO_IMAGE }} \
+            copy oci-archive:${{ inputs.oci-image-name }} \
+            oci:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
+      
+      - if: ${{ inputs.test-from == 'registry' }}
+        run: |
+          # from REGISTRY to OCI
+          docker run --rm -v $PWD:/workdir \
+            -w /workdir \
+            ${{ env.SKOPEO_IMAGE }} \
+            copy docker://${{ inputs.oci-image-name }} \
+            oci:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
+
+      - uses: actions/cache/save@v3
+        with:
+          path: ${{ env.TEST_IMAGE_NAME}}
+          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
+
+
+  test-oci-compliance:
+    runs-on: ubuntu-22.04
+    name: Test OCI compliance
+    needs: [fetch-oci-image]
+    steps:
+      - uses: actions/cache/restore@v3
+        with:
+          path: ${{ env.TEST_IMAGE_NAME}}
+          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
+
+      - name: Install Umoci
+        run: |
+          wget https://github.com/opencontainers/umoci/releases/download/${UMOCI_VERSION}/${UMOCI_BINARY}
+          sudo mv ${UMOCI_BINARY} /usr/bin/umoci
+          sudo chmod +x /usr/bin/umoci
+
+      - name: Run Umoci tests
+        run: |
+          sudo umoci unpack --keep-dirlinks \
+            --image ${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
+            bundle
+
+          umoci list --layout ${{ env.TEST_IMAGE_NAME}} | grep -w -c ${{ env.TEST_IMAGE_TAG }}
+
+
+  test-black-box:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
+    name: Black-box and portability tests
+    needs: [fetch-oci-image]
+    steps:
+      - uses: actions/cache/restore@v3
+        with:
+          path: ${{ env.TEST_IMAGE_NAME}}
+          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
+
+      - name: Copy image to Docker daemon
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $PWD:/workdir -w /workdir \
+            ${{ env.SKOPEO_IMAGE }} \
+            copy oci:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
+            docker-daemon:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
+      
+      - name: Test ROCK
+        if: ${{ inputs.is-a-rock }}
+        run: |
+          set -ex
+          docker run --rm ${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
+            help | grep Pebble
+
+      - name: Create container
+        run: |
+          docker create ${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
+
+
+  test-efficiency:
+    runs-on: ubuntu-22.04
+    name: Efficiency test
+    needs: [fetch-oci-image]
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache/restore@v3
+        with:
+          path: ${{ env.TEST_IMAGE_NAME}}
+          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
+
+      - name: Copy image to Docker daemon
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $PWD:/workdir -w /workdir \
+            ${{ env.SKOPEO_IMAGE }} \
+            copy oci:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
+            docker-daemon:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
+
+      # The existing Dive GH actions are outdated:
+      # https://github.com/MartinHeinz/dive-action/issues/1
+      # https://github.com/yuichielectric/dive-action/issues/581
+      - name: Dive efficiency test
+        run: |
+          docker run -e CI=true --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $PWD/src/tests/.dive-ci.yaml:/.dive-ci.yaml \
+            ${{ env.DIVE_IMAGE }} \
+            ${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} --ci-config /.dive-ci.yaml
+
+
+  test-vulnerabilities:
+    runs-on: ubuntu-22.04
+    name: Vulnerability scan
+    needs: [fetch-oci-image]
+    outputs:
+      vulnerability-report: ${{ steps.vulnerability-scan.outputs.report }}
+    steps:
+      - uses: actions/cache/restore@v3
+        with:
+          path: ${{ env.TEST_IMAGE_NAME}}
+          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
+      
+      - name: Copy image to Docker daemon
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $PWD:/workdir -w /workdir \
+            ${{ env.SKOPEO_IMAGE }} \
+            copy oci:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
+            docker-daemon:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
+
+      - name: Scan for vulnerabilities
+        uses: aquasecurity/trivy-action@0.9.2
+        with:
+          format: 'cosign-vuln'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+          # missing ${{ runner.arch }}
+          output: '${{ inputs.oci-image-name }}${{ inputs.vulnerability-report-suffix }}'
+          image-ref: '${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}'
+
+      - id: vulnerability-scan
+        run: echo "report=${{ inputs.oci-image-name }}${{ inputs.vulnerability-report-suffix }}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache/save@v3
+        with:
+          path: ${{ steps.vulnerability-scan.outputs.report }}
+          key: ${{ github.run_id }}-${{ steps.vulnerability-scan.outputs.report }}
+
+      
+  test-malware:
+    runs-on: ubuntu-22.04
+    name: Malware scan
+    needs: [fetch-oci-image]
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache/restore@v3
+        with:
+          path: ${{ env.TEST_IMAGE_NAME}}
+          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
+      
+      - name: Install Umoci
+        run: |
+          wget https://github.com/opencontainers/umoci/releases/download/${UMOCI_VERSION}/${UMOCI_BINARY}
+          sudo mv ${UMOCI_BINARY} /usr/bin/umoci
+          sudo chmod +x /usr/bin/umoci
+
+      - name: Unpack image
+        run: |
+          set -ex
+          umoci unpack \
+            --image ${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
+            --rootless raw
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - run: pip install -r src/tests/requirements.txt
+
+      - name: Scan for malware
+        run: |
+          ./src/tests/malware_scan.py --filesystem ./raw/rootfs
+
+
+  upload-test-artefacts:
+    name: Upload test artefacts
+    runs-on: ubuntu-22.04
+    needs:
+      - test-vulnerabilities
+      - test-black-box
+      - test-oci-compliance
+      - test-malware
+      - test-efficiency
+    steps:
+      - name: Restore vulnerability report for upload
+        uses: actions/cache/restore@v3
+        with:
+          path: ${{ needs.test-vulnerabilities.outputs.vulnerability-report }}
+          key: ${{ github.run_id }}-${{ needs.test-vulnerabilities.outputs.vulnerability-report }}
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ needs.test-vulnerabilities.outputs.vulnerability-report }}.zip
+          path: ${{ needs.test-vulnerabilities.outputs.vulnerability-report }}

@@ -1,0 +1,81 @@
+name: PR Validator
+on:
+  pull_request:
+    paths:
+      - "oci/*/*.y*ml"
+
+jobs:
+  get-submitted-files:
+    runs-on: ubuntu-22.04
+    name: Get submitted files
+    outputs:
+      changed-files-matrix: ${{ steps.changed-files-matrix.outputs.matrix }}
+      image-name: ${{ steps.changed-files-dir-names.outputs.all_changed_files }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v35
+        with:
+          json: true
+          files: |
+            oci/*/*.y*ml
+
+      - name: Get image name
+        id: changed-files-dir-names
+        uses: tj-actions/changed-files@v35
+        with:
+          dir_names: "true"
+          files: |
+            oci/*/*.y*ml
+
+      - name: Only 1 image can be changed per PR
+        run: |
+          set -eux
+          dir_names="${{ steps.changed-files-dir-names.outputs.all_changed_files }}"
+          echo "Can only modify 1 image per PR"
+          (( $(echo "${dir_names}" | wc -w) == 1 ))
+
+      - name: Save matrix layout for file validation
+        id: changed-files-matrix
+        run: |
+          echo 'Changed files are: ${{ steps.changed-files.outputs.all_changed_files }}'
+          echo "matrix={\"filename\":${{ steps.changed-files.outputs.all_changed_files }}}" >> "$GITHUB_OUTPUT"
+
+  check-missing-files:
+    runs-on: ubuntu-22.04
+    name: Check for missing files
+    needs: [get-submitted-files]
+    # temporarily continue on error, until the Notification and Doc update jobs are set
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check if documentation.yaml exists
+        uses: andstor/file-existence-action@v2
+        with:
+          files: "${{ needs.get-submitted-files.outputs.image-name }}/documentation.yaml"
+          fail: true
+
+      - name: Check if contacts.yaml exists
+        uses: andstor/file-existence-action@v2
+        with:
+          files: "${{ needs.get-submitted-files.outputs.image-name }}/contacts.yaml"
+          fail: true
+
+  validate-submitted-files:
+    runs-on: ubuntu-22.04
+    name: Validate files
+    needs: [get-submitted-files]
+    strategy:
+      fail-fast: true
+      matrix: ${{ fromJSON(needs.get-submitted-files.outputs.changed-files-matrix) }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Validate YAML format
+        run: |
+          set -eux
+          pip install yamllint
+          yamllint -c .yamllint.yaml ${{ matrix.filename }}

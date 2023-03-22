@@ -1,0 +1,13 @@
+rules:
+  # If the efficiency is measured below X%, mark as failed.
+  # Expressed as a ratio between 0-1.
+  lowestEfficiency: 0.85
+
+  # If the amount of wasted space makes up for X% or more of the image, mark as failed.
+  # Note: the base image layer is NOT included in the total image size.
+  # Expressed as a ratio between 0-1; fails if the threshold is met or crossed.
+  # NOTE: this rule can be quite aggressive when the new bytes added
+  # are very small (example: the hello package is small but it will
+  # incur in wasteful changes in the /var/cache and /var/log, thus
+  # triggering an error in Dive)
+  highestUserWastedPercent: 0.30
