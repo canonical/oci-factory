@@ -59,7 +59,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        filename: ${{ needs.get-submitted-files.outputs.changed-files }}
+        filename: ${{ fromJSON(needs.get-submitted-files.outputs.changed-files) }}
     steps:
       - uses: actions/checkout@v3
 
@@ -68,3 +68,7 @@ jobs:
           set -eux
           pip install yamllint
           yamllint -c .yamllint.yaml ${{ matrix.filename }}
+
+  # test-builds:
+  #   runs-on: ubuntu-22.04
+    
