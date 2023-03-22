@@ -26,7 +26,7 @@ jobs:
         id: prepare-builds
         run: | 
           pip install yq
-          echo "build-matrix={\"build\":\"$(cat builds.yaml | yq -c .images)\"}" >> "$GITHUB_OUTPUT"
+          echo "build-matrix={\"build\":$(cat builds.yaml | yq -c .images)}" >> "$GITHUB_OUTPUT"
 
   run-builds:
     runs-on: ubuntu-22.04
@@ -40,7 +40,14 @@ jobs:
         with:
           repository: matrix.build.source
           ref: matrix.build.commit
+          path: 'source-repo'
 
+      - name: Build ROCK
+        if: matrix.build.source-type == 'rockcraft'
+        uses: canonical/craft-actions/rockcraft-pack@main
+        with:
+          path: 'source-repo/${{ matrix.build.directory }}'
+          verbosity: debug
 
 
 
