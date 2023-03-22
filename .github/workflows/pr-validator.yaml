@@ -2,7 +2,7 @@ name: pr-validator
 on:
   pull_request:
     paths:
-      - 'oci/*/*.yaml'
+      - 'oci/**.yaml'
 
 jobs:
   get-submitted-files:
