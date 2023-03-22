@@ -9,8 +9,8 @@ jobs:
     runs-on: ubuntu-22.04
     name: Get submitted files
     outputs:
-      changed-files: ${{ steps.prep.outputs.changed-files }}
-      image-name: ${{ steps.prep.outputs.changed-files-dir-names }}
+      changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
+      image-name: ${{ steps.changed-files-dir-names.outputs.all_changed_files }}
     steps:
       - uses: actions/checkout@v3
       
