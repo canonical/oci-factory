@@ -17,6 +17,8 @@ jobs:
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v35
+        with:
+          json: true
 
       - name: Get image name
         id: changed-files-dir-names
@@ -38,13 +40,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Check if documentation exists
+      - name: Check if documentation.yaml exists
         uses: andstor/file-existence-action@v2
         with:
           files: "${{ needs.get-submitted-files.outputs.image-name }}/documentation.yaml"
           fail: true
 
-      - name: Check if contacts exist
+      - name: Check if contacts.yaml exists
         uses: andstor/file-existence-action@v2
         with:
           files: "${{ needs.get-submitted-files.outputs.image-name }}/contacts.yaml"
@@ -57,7 +59,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        filename: ${{ fromJSON(needs.get-submitted-files.outputs.changed-files) }}
+        filename: ${{ needs.get-submitted-files.outputs.changed-files }}
     steps:
       - uses: actions/checkout@v3
 
