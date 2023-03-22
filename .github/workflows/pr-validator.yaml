@@ -26,14 +26,8 @@ jobs:
 
       - name: Only one image is being changed
         run: |
-          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            echo "$file was changed"
-          done
-          for file in ${{ steps.changed-files-dir-names.outputs.all_changed_files }}; do
-            echo "$file was changed"
-          done
           set -eux
-          dir_names="${{ steps.changed-files-dir-names.outputs.changed-files }}"
+          dir_names="${{ steps.changed-files-dir-names.outputs.all_changed_files }}"
           (( $(echo "${dir_names}" | wc -w) == 1 ))
 
   check-missing-files:
