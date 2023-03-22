@@ -75,7 +75,7 @@ jobs:
   validate-submitted-files:
     runs-on: ubuntu-22.04
     name: Validate files
-    needs: [check-missing-files]
+    needs: [get-submitted-files]
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.get-submitted-files.outputs.changed-files-matrix) }}
