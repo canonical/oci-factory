@@ -72,7 +72,7 @@ jobs:
           yamllint -c .yamllint.yaml ${{ matrix.filename }}
 
       - name: Schedule test builds
-        if: contains(matrix.filename, "builds.yaml")
+        if: contains(matrix.filename, 'builds.yaml')
         id: schedule-builds
         run: echo "image-name=${{ needs.get-submitted-files.outputs.image-name }}" >> $GITHUB_STATE
 
