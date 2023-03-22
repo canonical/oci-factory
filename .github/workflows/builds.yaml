@@ -13,10 +13,31 @@ on:
         default: false
 
 jobs:
-  run-builds:
+  prepare-builds:
     runs-on: ubuntu-22.04
-    name: Run builds for an image
+    name: Prepare builds
+    outputs:
+      build-matrix: ${{ steps.prepare-builds.outputs.build-matrix }}
     steps:
       - uses: actions/checkout@v3
+
+      - name: Prepare build matrix
+        working-directory: ${{ inputs.image }}
+        id: prepare-builds
+        run: | 
+          pip install yq
+          echo "matrix={\"build\":\"$(cat builds.yaml | yq .images)\"}" >> "$GITHUB_OUTPUT"
+
+  run-builds:
+    runs-on: ubuntu-22.04
+    needs: [prepare-builds]
+    name: Build
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare-builds.outputs.build-matrix) }}
+    steps:
+      - uses: actions/checkout@v3
+
+
 
 

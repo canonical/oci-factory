@@ -1,6 +1,5 @@
 name: pr-validator
 on:
-  workflow_dispatch:
   pull_request:
     paths:
       - 'oci/*/*.y*ml'
@@ -63,7 +62,7 @@ jobs:
 
   validate-submitted-files:
     runs-on: ubuntu-22.04
-    name: Validate submitted files
+    name: Validate files
     needs: [get-submitted-files, check-missing-files]
     outputs:
       build-image: ${{ steps.schedule-builds.outputs.image-name }}
