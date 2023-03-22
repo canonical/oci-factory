@@ -5,7 +5,7 @@ images:
     source: "https://github.com/canonical/foo"
 
     commit: f9891666cf6072e3e7b9b53980fc577b5633b406
-    directory: my-oci-image-v1/
+    directory: my-oci-imag12e-v1/
     
     version: "1.2"
     platforms:
