@@ -71,4 +71,7 @@ jobs:
 
   test-builds:
     runs-on: ubuntu-22.04
-    
+    name: Test builds if needed
+    needs: [validate-submitted-files, check-missing-files]
+    steps:
+      - uses: actions/checkout@v3
