@@ -28,6 +28,7 @@ jobs:
         run: |
           set -eux
           dir_names="${{ steps.changed-files-dir-names.outputs.all_changed_files }}"
+          echo "Can only modify 1 image per PR"
           (( $(echo "${dir_names}" | wc -w) == 1 ))
 
   check-missing-files:
