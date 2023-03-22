@@ -1,5 +1,6 @@
 name: pr-validator
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - 'oci/*/*.y*ml'
@@ -35,6 +36,7 @@ jobs:
           (( $(echo "${dir_names}" | wc -w) == 1 ))
 
       - name: Save matrix layout for next job
+        id: changed-files-matrix
         run: |
           echo 'Changed files are: ${{ steps.changed-files.outputs.all_changed_files }}'
           echo "matrix={\"filename\":${{ steps.changed-files.outputs.all_changed_files }}}" >> "$GITHUB_OUTPUT"
