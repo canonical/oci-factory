@@ -18,7 +18,7 @@ jobs:
         id: changed-files
         uses: tj-actions/changed-files@v35
         with:
-          json_raw_format: true
+          json: true
 
       - name: Get image name
         id: changed-files-dir-names
@@ -26,7 +26,7 @@ jobs:
         with:
           dir_names: "true"
 
-      - name: Only one image is being changed
+      - name: Only 1 image can be changed per PR
         run: |
           set -eux
           dir_names="${{ steps.changed-files-dir-names.outputs.all_changed_files }}"
@@ -55,11 +55,13 @@ jobs:
   validate-submitted-files:
     runs-on: ubuntu-22.04
     name: Validate submitted files
-    needs: [get-submitted-files]
+    needs: [get-submitted-files, check-missing-files]
+    outputs:
+      build: ${{ steps.schedule-builds.outputs.image-name }}
     strategy:
       fail-fast: true
       matrix:
-        filename: ${{ fromJSON(needs.get-submitted-files.outputs.changed-files) }}
+        filename: ${{ needs.get-submitted-files.outputs.changed-files }}
     steps:
       - uses: actions/checkout@v3
 
@@ -69,9 +71,8 @@ jobs:
           pip install yamllint
           yamllint -c .yamllint.yaml ${{ matrix.filename }}
 
-  test-builds:
-    runs-on: ubuntu-22.04
-    name: Test builds if needed
-    needs: [validate-submitted-files, check-missing-files]
-    steps:
-      - uses: actions/checkout@v3
+      - name: Schedule test builds
+        if: contains(matrix.filename, "builds.yaml")
+        id: schedule-builds
+        run: echo "image-name=${{ needs.get-submitted-files.outputs.image-name }}" >> $GITHUB_STATE
+
