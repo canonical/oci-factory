@@ -12,6 +12,7 @@ jobs:
       changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
       changed-files-matrix: ${{ steps.changed-files-matrix.outputs.matrix }}
       image-name: ${{ steps.changed-files-dir-names.outputs.all_changed_files }}
+      trigger-builds: ${{ steps.needs-builds.outputs.trigger-builds }}
     steps:
       - uses: actions/checkout@v3
       
@@ -40,6 +41,17 @@ jobs:
           echo 'Changed files are: ${{ steps.changed-files.outputs.all_changed_files }}'
           echo "matrix={\"filename\":${{ steps.changed-files.outputs.all_changed_files }}}" >> "$GITHUB_OUTPUT"
 
+      - name: Check if builds are needed
+        id: needs-builds
+        run: |
+          set -eux
+          changed_files="${{ steps.changed-files.outputs.all_changed_files }}"
+          if [[ "${changed_files}" == *"builds.yaml"* ]]
+          then
+            echo "trigger-builds=true" >> $GITHUB_STATE
+          else
+            echo "trigger-builds=false" >> $GITHUB_STATE
+          fi
 
   check-missing-files:
     runs-on: ubuntu-22.04
@@ -63,9 +75,7 @@ jobs:
   validate-submitted-files:
     runs-on: ubuntu-22.04
     name: Validate files
-    needs: [get-submitted-files, check-missing-files]
-    outputs:
-      build-image: ${{ steps.schedule-builds.outputs.image-name }}
+    needs: [check-missing-files]
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.get-submitted-files.outputs.changed-files-matrix) }}
@@ -78,15 +88,10 @@ jobs:
           pip install yamllint
           yamllint -c .yamllint.yaml ${{ matrix.filename }}
 
-      - name: Schedule test builds
-        if: contains(matrix.filename, 'builds.yaml')
-        id: schedule-builds
-        run: echo "image-name=${{ needs.get-submitted-files.outputs.image-name }}" >> $GITHUB_STATE
-
   build:
-    needs: [validate-submitted-files]
-    if: needs.validate-submitted-files.outputs.build-image
+    needs: [validate-submitted-files, get-submitted-files, check-missing-files]
+    if: needs.get-submitted-files.outputs.trigger-builds == 'true'
     uses: ./.github/workflows/builds.yaml
     with:
-      image: ${{ needs.validate-submitted-files.outputs.build-image }}
+      image: ${{ needs.get-submitted-files.outputs.image-name }}
       upload: ${{ github.ref_name == 'main' && true || false }}
