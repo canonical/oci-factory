@@ -48,9 +48,9 @@ jobs:
           changed_files="${{ steps.changed-files.outputs.all_changed_files }}"
           if [[ "${changed_files}" == *"builds.yaml"* ]]
           then
-            echo "trigger-builds=true" >> $GITHUB_STATE
+            echo "trigger-builds='true'" >> $GITHUB_OUTPUT
           else
-            echo "trigger-builds=false" >> $GITHUB_STATE
+            echo "trigger-builds='false'" >> $GITHUB_OUTPUT
           fi
 
   check-missing-files:
