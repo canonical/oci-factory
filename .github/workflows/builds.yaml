@@ -26,7 +26,7 @@ jobs:
         id: prepare-builds
         run: | 
           pip install yq
-          echo "matrix={\"build\":\"$(cat builds.yaml | yq .images)\"}" >> "$GITHUB_OUTPUT"
+          echo "build-matrix={\"build\":\"$(cat builds.yaml | yq -c .images)\"}" >> "$GITHUB_OUTPUT"
 
   run-builds:
     runs-on: ubuntu-22.04
@@ -39,6 +39,8 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: matrix.build.source
+          ref: matrix.build.commit
+
 
 
 
