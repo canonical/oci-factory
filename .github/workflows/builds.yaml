@@ -5,6 +5,7 @@ on:
       image:
         description: 'Path to the OCI image folder the builds.yaml file is'
         required: true
+        type: string
       upload:
         description: 'If true, will upload/release the image to the registries'
         required: true
