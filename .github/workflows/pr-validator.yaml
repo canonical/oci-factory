@@ -10,6 +10,7 @@ jobs:
     name: Get submitted files
     outputs:
       changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
+      changed-files-matrix: ${{ steps.changed-files-matrix.outputs.matrix }}
       image-name: ${{ steps.changed-files-dir-names.outputs.all_changed_files }}
     steps:
       - uses: actions/checkout@v3
@@ -32,6 +33,12 @@ jobs:
           dir_names="${{ steps.changed-files-dir-names.outputs.all_changed_files }}"
           echo "Can only modify 1 image per PR"
           (( $(echo "${dir_names}" | wc -w) == 1 ))
+
+      - name: Save matrix layout for next job
+        run: |
+          echo 'Changed files are: ${{ steps.changed-files.outputs.all_changed_files }}'
+          echo "matrix={\"filename\":${{ steps.changed-files.outputs.all_changed_files }}}" >> "$GITHUB_OUTPUT"
+
 
   check-missing-files:
     runs-on: ubuntu-22.04
@@ -60,8 +67,7 @@ jobs:
       build: ${{ steps.schedule-builds.outputs.image-name }}
     strategy:
       fail-fast: true
-      matrix:
-        filename: ${{ fromJSON(needs.get-submitted-files.outputs.changed-files) }}
+      matrix: ${{ fromJSON(needs.get-submitted-files.outputs.changed-files) }}
     steps:
       - uses: actions/checkout@v3
 
