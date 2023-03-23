@@ -1,0 +1,53 @@
+name: Tests
+description: 'Runs a series of tests and scans for a given OCI archive'
+
+inputs:
+  artifact-name:
+    description: 'Name of the pipeline image artifact to download and test'
+    required: true
+  test-image-name:
+    description: 'How to rename the OCI archive for testing'
+    required: true
+    default: 'test-img'
+  test-image-tag:
+    description: 'Test tag to be given to the test image'
+    required: true
+    default: 'test'
+  umoci-version: 
+    description: 'Umoci version to be used for the tests'
+    required: true
+    default: 'v0.4.7'
+  umoci-binary: 
+    description: 'Umoci binary name to download for the tests'
+    required: true
+    default: 'umoci.amd64'
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: ${{ inputs.artifact-name }}
+
+    - name: Extract and tag image for testing
+      shell: bash
+      run: |
+        sudo apt install -y skopeo
+        skopeo copy oci-archive:${{ inputs.artifact-name }} \
+          oci:${{ inputs.test-image-name}}:${{ inputs.test-image-tag }}
+
+    - shell: bash
+      run: |
+        wget https://github.com/opencontainers/umoci/releases/download/${{ inputs.umoci-version }}/${{ inputs.umoci-binary }}
+        sudo mv ${{ inputs.umoci-binary }} /usr/bin/umoci
+        sudo chmod +x /usr/bin/umoci
+
+    - shell: bash
+      run: |
+        sudo umoci unpack --keep-dirlinks \
+          --image ${{ inputs.test-image-name}}:${{ inputs.test-image-tag }} \
+          bundle
+
+        umoci list --layout ${{ inputs.test-image-name}} | grep -w -c ${{ inputs.test-image-tag }}
+
+      
