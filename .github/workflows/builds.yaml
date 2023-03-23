@@ -17,12 +17,12 @@ jobs:
     runs-on: ubuntu-22.04
     name: Prepare new builds
     outputs:
-      images: ${{ steps.changed-oci-dirs.outputs.all_changed_files }}
+      build-matrix: ${{ steps.prepare-builds.outputs.build-matrix }}
     steps:
       - uses: actions/checkout@v3
 
-      - name: Get changed files
-        id: changed-oci-dirs
+      - name: Infer images to build
+        if: github.event_name != 'workflow_dispatch'
         uses: tj-actions/changed-files@v35
         with:
           json: true
@@ -30,6 +30,11 @@ jobs:
           write_output_files: true
           files: |
             oci/*/builds.y*ml
+
+      - name: Accept images from dispatch
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo '["${{ inputs.oci-image-name }}"]' > .github/outputs/all_changed_files.json
 
       - uses: actions/setup-python@v4
         with:

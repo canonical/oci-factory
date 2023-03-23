@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
         print(f"Generating build matrix for {builds_file}")
         with open(builds_file) as bf:
-            builds = yaml.safe_load(bf)
+            builds = yaml.safe_load(bf).get("images", [])
 
         all_builds += builds
 
