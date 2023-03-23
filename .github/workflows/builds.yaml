@@ -41,7 +41,7 @@ jobs:
         id: prepare-builds
         run: |
           ./src/builds/prepare-multi-image-build-matrix.py \
-            --oci-dirs-file ".github/all_changed_files.json"
+            --oci-dirs-file ".github/outputs/all_changed_files.json"
 
   run-builds:
     runs-on: ubuntu-22.04
