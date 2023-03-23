@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    print(f"Loading target OCI directories from {args.oci_dirs}")
+    print(f"Loading target OCI directories from {args.oci_dirs_file}")
     with open(args.oci_dirs_file) as odf:
         oci_dirs = json.load(odf)
 
