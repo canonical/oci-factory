@@ -2,8 +2,8 @@ name: Builds
 on:
   workflow_dispatch:
     inputs:
-      oci-image-name:
-        description: 'Name of the OCI image to to run the builds for'
+      oci-image-names:
+        description: 'Comma-separated names of the OCI images to to run the builds for'
         required: true
   push:
     paths:
