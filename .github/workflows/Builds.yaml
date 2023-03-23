@@ -83,7 +83,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: matrix.dockerfile-build == ''
         with:
-          name: ${{ steps.rockcraft.outputs.rock }}
+          name: ${{ matrix.name }}_${{ matrix.commit }}.tar
           path: ${{ steps.rockcraft.outputs.rock }}
 
       - name: Set up QEMU
@@ -100,7 +100,7 @@ jobs:
         id: buildx-platforms
         run: |
           sudo apt install -y jq
-          platforms=$(echo linux/$(echo ${{ toJSON(matrix.dockerfile-build.platforms) }} | jq -r 'join(",linux/")'))
+          platforms=$(echo linux/$(echo '${{ toJSON(matrix.dockerfile-build.platforms) }}' | jq -r 'join(",linux/")'))
           echo "platforms=${platforms}" >> "$GITHUB_OUTPUT"
         
       - name: Build OCI image ${{ matrix.name }}
