@@ -61,13 +61,19 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: ${{ matrix.source }}
-          ref: ${{ matrix.commit }}
-          path: "source-repo"
           fetch-depth: 0
+      
+      - run: git checkout ${{ matrix.commit }}
 
       - name: Build ROCK
         if: matrix.dockerfile-build == ''
+        id: rockcraft
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
-          path: "source-repo/${{ matrix.directory }}"
+          path: "${{ matrix.directory }}"
           verbosity: debug
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: rock
+          path: ${{ steps.rockcraft.outputs.rock }}
