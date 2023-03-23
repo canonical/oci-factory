@@ -98,7 +98,7 @@ jobs:
         if: matrix.dockerfile-build != ''
         id: buildx-platforms
         run: |
-          apt install -y jq
+          sudo apt install -y jq
           platforms=$(echo linux/$(echo ${{ matrix.dockerfile-build.platforms }} | jq -r 'join(",linux/")'))
           echo "platforms=${platforms}" >> "$GITHUB_OUTPUT"
         
