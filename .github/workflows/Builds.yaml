@@ -83,6 +83,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: matrix.dockerfile-build == ''
         with:
+          name: ${{ steps.rockcraft.outputs.rock }}
           path: ${{ steps.rockcraft.outputs.rock }}
 
       - name: Set up QEMU
@@ -114,4 +115,5 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: matrix.dockerfile-build != ''
         with:
+          name: ${{ matrix.name }}_${{ matrix.commit }}.tar
           path: ${{ matrix.name }}_${{ matrix.commit }}.tar

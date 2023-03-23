@@ -1,4 +1,4 @@
-FROM public.ecr.aws/ubuntu:jammy
+FROM public.ecr.aws/ubuntu/ubuntu:jammy
 
 RUN apt update && \
     apt install -y hello && \
