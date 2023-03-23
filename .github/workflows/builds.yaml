@@ -1,6 +1,10 @@
 name: builds
 on:
   workflow_dispatch:
+    inputs:
+      oci-image-name:
+        description: 'Name of the OCI image to to run the builds for'
+        required: true
   push:
     paths:
       - "oci/*/builds.y*ml"
