@@ -100,7 +100,7 @@ jobs:
         id: buildx-platforms
         run: |
           sudo apt install -y jq
-          platforms=$(echo linux/$(echo ${{ matrix.dockerfile-build.platforms }} | jq -r 'join(",linux/")'))
+          platforms=$(echo linux/$(echo ${{ fromJSON(matrix.dockerfile-build.platforms) }} | jq -r 'join(",linux/")'))
           echo "platforms=${platforms}" >> "$GITHUB_OUTPUT"
         
       - name: Build OCI image ${{ matrix.name }}
