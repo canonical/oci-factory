@@ -31,11 +31,12 @@ jobs:
           files: |
             oci/*/builds.y*ml
 
-      - name: Accept images from dispatch
+      - name: Validate images from dispatch
         if: github.event_name == 'workflow_dispatch'
         run: |
+          test -d "oci/${{ inputs.oci-image-name }}"
           mkdir -p .github/outputs
-          echo '["${{ inputs.oci-image-name }}"]' > .github/outputs/all_changed_files.json
+          echo '["oci/${{ inputs.oci-image-name }}"]' > .github/outputs/all_changed_files.json
 
       - uses: actions/setup-python@v4
         with:
@@ -59,12 +60,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: matrix.build.source
-          ref: matrix.build.commit
+          repository: matrix.source
+          ref: matrix.commit
           path: "source-repo"
 
       - name: Build ROCK
-        if: matrix.build.source-type == 'rockcraft'
+        if: not matrix.dockerfile-build
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
           path: "source-repo/${{ matrix.build.directory }}"
