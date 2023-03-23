@@ -33,5 +33,6 @@ if __name__ == "__main__":
         all_builds += builds
 
     build_matrix = {"include": all_builds}
+    print(f"Setting the following build matrix: \n{json.dumps(build_matrix, indent=4)}")
     with open(os.environ["GITHUB_OUTPUT"], "a") as gh_out:
         print(f"build-matrix={build_matrix}", file=gh_out)
