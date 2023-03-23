@@ -44,10 +44,10 @@ jobs:
 
       - run: pip install -r src/builds/requirements.txt
 
-      - name: Prepare builds matrix
+      - name: Validate and prepare builds matrix
         id: prepare-builds
         run: |
-          ./src/builds/prepare-multi-image-build-matrix.py \
+          ./src/builds/prepare_multi_image_build_matrix.py \
             --oci-dirs-file ".github/outputs/all_changed_files.json"
 
   run-builds:
