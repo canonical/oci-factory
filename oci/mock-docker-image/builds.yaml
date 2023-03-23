@@ -1,0 +1,10 @@
+version: 1
+
+images:  
+  - source: "cjdcordeiro/oci-factory"
+    commit: ca423fd
+    directory: examples/mock-docker-image
+    dockerfile-build:
+      version: "1.2"
+      platforms:
+        - amd64

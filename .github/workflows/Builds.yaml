@@ -63,6 +63,7 @@ jobs:
           repository: ${{ matrix.source }}
           ref: ${{ matrix.commit }}
           path: "source-repo"
+          fetch-depth: 0
 
       - name: Build ROCK
         if: matrix.dockerfile-build == ''
