@@ -1,9 +1,9 @@
 version: 1
 
 images:  
-  - source: "https://github.com/canonical/foo"
-    commit: f9891666cf6072e3e7b9b53980fc577b5633b406
-    directory: my-oci-imag12e-v1/
+  - source: "cjdcordeiro/oci-factory"
+    commit: 92365d8
+    directory: examples/mock-rock
     dockerfile-build:
       version: "1.2"
       platforms:
@@ -12,10 +12,10 @@ images:
       risks: 
         - beta
 
-  - source: "https://github.com/canonical/foo"
+  - source: "cjdcordeiro/oci-factory"
 
-    commit: f9891666cf6072e3e7b9b53980fc577b5633b406
-    directory: my-oci-imag12e-v1/
+    commit: ca423fd
+    directory: examples/mock-docker-image
     
     dockerfile-build:
       version: "1.2"

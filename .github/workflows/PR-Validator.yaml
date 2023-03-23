@@ -1,4 +1,4 @@
-name: pr-validator
+name: PR Validator
 on:
   pull_request:
     paths:

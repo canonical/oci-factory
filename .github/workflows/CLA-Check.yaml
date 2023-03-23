@@ -1,4 +1,4 @@
-name: cla-check
+name: CLA Check
 on: [pull_request]
 
 jobs:
