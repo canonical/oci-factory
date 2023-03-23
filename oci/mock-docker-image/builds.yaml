@@ -2,7 +2,7 @@ version: 1
 
 images:  
   - source: "cjdcordeiro/oci-factory"
-    commit: ca423fd
+    commit: cd364ab7ac81857430113681acf21f40e38a9a34
     directory: examples/mock-docker-image
     dockerfile-build:
       version: "1.2"
