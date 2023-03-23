@@ -1,54 +1,62 @@
 name: builds
 on:
-  workflow_call:
-    inputs:
-      image:
-        description: 'Path to the OCI image folder the builds.yaml file is'
-        required: true
-        type: string
-      upload:
-        description: 'If true, will upload/release the image to the registries'
-        required: true
-        type: boolean
-        default: false
+  workflow_dispatch:
+  push:
+    paths:
+      - "oci/*/builds.y*ml"
+  pull_request:
+    paths:
+      - "oci/*/builds.y*ml"
 
 jobs:
-  prepare-builds:
+  prepare-build-matrix:
     runs-on: ubuntu-22.04
-    name: Prepare builds
+    name: Prepare new builds
     outputs:
-      build-matrix: ${{ steps.prepare-builds.outputs.build-matrix }}
+      images: ${{ steps.changed-oci-dirs.outputs.all_changed_files }}
     steps:
       - uses: actions/checkout@v3
 
-      - name: Prepare build matrix
-        working-directory: ${{ inputs.image }}
+      - name: Get changed files
+        id: changed-oci-dirs
+        uses: tj-actions/changed-files@v35
+        with:
+          json: true
+          dir_names: "true"
+          write_output_files: true
+          files: |
+            oci/*/builds.y*ml
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+          cache: "pip"
+
+      - run: pip install -r src/builds/requirements.txt
+
+      - name: Prepare builds matrix
         id: prepare-builds
-        run: | 
-          pip install yq
-          echo "build-matrix={\"build\":$(cat builds.yaml | yq -c .images)}" >> "$GITHUB_OUTPUT"
+        run: |
+          ./src/builds/prepare-multi-image-build-matrix.py \
+            --oci-dirs-file ".github/all_changed_files.json"
 
   run-builds:
     runs-on: ubuntu-22.04
-    needs: [prepare-builds]
+    needs: [prepare-build-matrix]
     name: Build
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.prepare-builds.outputs.build-matrix) }}
+      matrix: ${{ fromJSON(needs.prepare-build-matrix.outputs.build-matrix) }}
     steps:
       - uses: actions/checkout@v3
         with:
           repository: matrix.build.source
           ref: matrix.build.commit
-          path: 'source-repo'
+          path: "source-repo"
 
       - name: Build ROCK
         if: matrix.build.source-type == 'rockcraft'
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
-          path: 'source-repo/${{ matrix.build.directory }}'
+          path: "source-repo/${{ matrix.build.directory }}"
           verbosity: debug
-
-
-
-

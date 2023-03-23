@@ -2,31 +2,33 @@ name: pr-validator
 on:
   pull_request:
     paths:
-      - 'oci/*/*.y*ml'
+      - "oci/*/*.y*ml"
 
 jobs:
   get-submitted-files:
     runs-on: ubuntu-22.04
     name: Get submitted files
     outputs:
-      changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
       changed-files-matrix: ${{ steps.changed-files-matrix.outputs.matrix }}
       image-name: ${{ steps.changed-files-dir-names.outputs.all_changed_files }}
-      trigger-builds: ${{ steps.needs-builds.outputs.trigger-builds }}
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v35
         with:
           json: true
+          files: |
+            oci/*/*.y*ml
 
       - name: Get image name
         id: changed-files-dir-names
         uses: tj-actions/changed-files@v35
         with:
           dir_names: "true"
+          files: |
+            oci/*/*.y*ml
 
       - name: Only 1 image can be changed per PR
         run: |
@@ -35,23 +37,11 @@ jobs:
           echo "Can only modify 1 image per PR"
           (( $(echo "${dir_names}" | wc -w) == 1 ))
 
-      - name: Save matrix layout for next job
+      - name: Save matrix layout for file validation
         id: changed-files-matrix
         run: |
           echo 'Changed files are: ${{ steps.changed-files.outputs.all_changed_files }}'
           echo "matrix={\"filename\":${{ steps.changed-files.outputs.all_changed_files }}}" >> "$GITHUB_OUTPUT"
-
-      - name: Check if builds are needed
-        id: needs-builds
-        run: |
-          set -eux
-          changed_files="${{ steps.changed-files.outputs.all_changed_files }}"
-          if [[ "${changed_files}" == *"builds.yaml"* ]]
-          then
-            echo "trigger-builds=1" >> $GITHUB_OUTPUT
-          else
-            echo "trigger-builds=2" >> $GITHUB_OUTPUT
-          fi
 
   check-missing-files:
     runs-on: ubuntu-22.04
@@ -87,11 +77,3 @@ jobs:
           set -eux
           pip install yamllint
           yamllint -c .yamllint.yaml ${{ matrix.filename }}
-
-  build:
-    needs: [validate-submitted-files, get-submitted-files, check-missing-files]
-    if: needs.get-submitted-files.outputs.trigger-builds == 1
-    uses: ./.github/workflows/builds.yaml
-    with:
-      image: ${{ needs.get-submitted-files.outputs.image-name }}
-      upload: ${{ github.ref_name == 'main' && true || false }}
