@@ -80,7 +80,11 @@ if __name__ == "__main__":
         print(f"Generating build matrix for {builds_file}")
         with open(builds_file) as bf:
             builds_data = yaml.safe_load(bf)
-            validate_buids_trigger(builds_data)
+            try:
+                validate_buids_trigger(builds_data)
+            except pydantic.error_wrappers.ValidationError:
+                print(f"Bad schema for {builds_file}")
+                raise
 
             builds = builds_data.get("images", [])
 
