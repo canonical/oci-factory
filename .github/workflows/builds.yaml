@@ -34,6 +34,7 @@ jobs:
       - name: Accept images from dispatch
         if: github.event_name == 'workflow_dispatch'
         run: |
+          mkdir -p .github/outputs
           echo '["${{ inputs.oci-image-name }}"]' > .github/outputs/all_changed_files.json
 
       - uses: actions/setup-python@v4
