@@ -65,7 +65,7 @@ jobs:
       
       - run: git checkout ${{ matrix.commit }}
 
-      - name: Build ROCK
+      - name: Build ROCK ${{ matrix.name }}
         if: matrix.dockerfile-build == ''
         id: rockcraft
         uses: canonical/craft-actions/rockcraft-pack@main
@@ -74,6 +74,37 @@ jobs:
           verbosity: debug
 
       - uses: actions/upload-artifact@v3
+        if: matrix.dockerfile-build == ''
         with:
-          name: rock
           path: ${{ steps.rockcraft.outputs.rock }}
+
+      - name: Set up QEMU
+        if: matrix.dockerfile-build != ''
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        if: matrix.dockerfile-build != ''
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Form the platforms string
+        if: matrix.dockerfile-build != ''
+        id: buildx-platforms
+        run: |
+          apt install -y jq
+          platforms=$(echo linux/$(echo ${{ matrix.dockerfile-build.platforms }} | jq -r 'join(",linux/")'))
+          echo "platforms=${platforms}" >> "$GITHUB_OUTPUT"
+        
+      - name: Build OCI image ${{ matrix.name }}
+        if: matrix.dockerfile-build != ''
+        uses: docker/build-push-action@v4
+        with:
+          context: '${{ matrix.directory }}'
+          outputs: 'type=oci,dest=${{ matrix.name }}_${{ matrix.commit }}.tar'
+          platforms: ${{ steps.buildx-platforms.outputs.platforms }}
+          push: false
+
+      - uses: actions/upload-artifact@v3
+        if: matrix.dockerfile-build != ''
+        with:
+          path: ${{ matrix.name }}_${{ matrix.commit }}.tar
