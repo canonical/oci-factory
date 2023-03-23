@@ -11,7 +11,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--oci-dirs-file",
-        description="Path to JSON file where OCI dirs are listed",
+        help="Path to JSON file where OCI dirs are listed",
         required=True,
     )
 
