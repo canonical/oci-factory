@@ -60,13 +60,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: matrix.source
-          ref: matrix.commit
+          repository: ${{ matrix.source }}
+          ref: ${{ matrix.commit }}
           path: "source-repo"
 
       - name: Build ROCK
         if: matrix.dockerfile-build == ''
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
-          path: "source-repo/${{ matrix.build.directory }}"
+          path: "source-repo/${{ matrix.directory }}"
           verbosity: debug

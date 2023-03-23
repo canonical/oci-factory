@@ -88,6 +88,11 @@ if __name__ == "__main__":
 
             builds = builds_data.get("images", [])
 
+        # inject some extra metadata into the matrix data
+        for img_number, _ in enumerate(builds):
+            builds[img_number]["name"] = oci_image.rstrip("/").split('/')[-1]
+            builds[img_number]["path"] = oci_image
+        
         all_builds += builds
 
     build_matrix = {"include": all_builds}
