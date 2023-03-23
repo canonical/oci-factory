@@ -34,9 +34,16 @@ jobs:
       - name: Validate images from dispatch
         if: github.event_name == 'workflow_dispatch'
         run: |
-          test -d "oci/${{ inputs.oci-image-name }}"
+          for img in $(echo ${{ inputs.oci-image-names }} | tr ',' ' ')
+          do
+            test -d "oci/${img}"
+          done
+
+          changed_files="$(echo '["'${{ inputs.oci-image-names }}'"]' \
+              | jq -c '.[0] | split(",") | map("oci/" + .)')"
+          
           mkdir -p .github/outputs
-          echo '["oci/${{ inputs.oci-image-name }}"]' > .github/outputs/all_changed_files.json
+          echo "${changed_files}" > .github/outputs/all_changed_files.json
 
       - uses: actions/setup-python@v4
         with:
