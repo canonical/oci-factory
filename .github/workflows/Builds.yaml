@@ -190,7 +190,7 @@ jobs:
           OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
           OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
           IMAGE_NAME: ${{ matrix.name }}
-          SWIFT_CONTAINER_NAME: ${{ env.SWIFT_CONTAINER_NAME }}
+          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: ./src/uploads/define_image_revision.sh
       
       - name: Login to GHCR
