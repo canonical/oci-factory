@@ -15,7 +15,7 @@ chmod 600 $HOME/.ssh/id_rsa
 ## for later tagging and publishing ROCKs
 git init /tmp/cpc-build-tools
 pushd /tmp/cpc-build-tools
-git remote add cpc-build-tools git+ssh://${ROCKS_DEV_LP_USERNAME}@${CPC_BUILD_TOOLS_REPO}
+git remote add origin git+ssh://${ROCKS_DEV_LP_USERNAME}@${CPC_BUILD_TOOLS_REPO}
 git fetch --depth 1 origin ${CPC_BUILD_TOOLS_REPO_REF}
 git checkout FETCH_HEAD
 
