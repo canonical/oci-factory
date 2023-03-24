@@ -94,6 +94,9 @@ if __name__ == "__main__":
                 "name": oci_image.rstrip("/").split("/")[-1],
                 "path": oci_image,
             }
+            update_with[
+                "oci-archive-name"
+            ] = f"{update_with['name']}_{builds[img_number]['commit']}.tar"
             # Guarantee the new keys are added to the beginning of the dict
             builds[img_number] = {**update_with, **builds[img_number]}
 

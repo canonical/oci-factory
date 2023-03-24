@@ -1,0 +1,45 @@
+name: Tests
+on:
+  workflow_dispatch:
+    inputs:
+      artifact-name:
+        description: 'Name of the pipeline image artifact to download and test.'
+        required: true
+
+env:
+  TEST_IMAGE_NAME: 'test-img'
+  TEST_IMAGE_TAG: 'test'
+
+jobs:
+  test-oci-compliance:
+    runs-on: ubuntu-22.04
+    name: Test OCI compliance
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.artifact-name }}
+
+      - name: Extract and tag image for testing
+        run: |
+          sudo apt install -y skopeo
+          skopeo copy oci-archive:${{ inputs.artifact-name }} \
+            oci:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
+
+      - name: Install Umoci
+        env:
+          UMOCI_VERSION: 'v0.4.7'
+          UMOCI_BINARY: 'umoci.amd64'
+        run: |
+          wget https://github.com/opencontainers/umoci/releases/download/${UMOCI_VERSION}/${UMOCI_BINARY}
+          sudo mv ${UMOCI_BINARY} /usr/bin/umoci
+          sudo chmod +x /usr/bin/umoci
+
+      - name: Run Umoci tests
+        run: |
+          sudo umoci unpack --keep-dirlinks \
+            --image ${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
+            bundle
+
+          umoci list --layout ${{ env.TEST_IMAGE_NAME}} | grep -w -c ${{ env.TEST_IMAGE_TAG }}
+
+      

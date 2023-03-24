@@ -1,4 +1,4 @@
-name: Build and Test
+name: Build
 on:
   workflow_dispatch:
     inputs:
@@ -101,7 +101,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: matrix.dockerfile-build == ''
         with:
-          name: ${{ matrix.name }}_${{ matrix.commit }}.tar
+          name: ${{ matrix.oci-archive-name }}
           path: ${{ steps.rockcraft.outputs.rock }}
 
       - name: Set up QEMU
@@ -126,19 +126,54 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: '${{ matrix.directory }}'
-          outputs: 'type=oci,dest=${{ matrix.name }}_${{ matrix.commit }}.tar'
+          outputs: 'type=oci,dest=${{ matrix.oci-archive-name }}'
           platforms: ${{ steps.buildx-platforms.outputs.platforms }}
           push: false
 
       - uses: actions/upload-artifact@v3
         if: matrix.dockerfile-build != ''
         with:
-          name: ${{ matrix.name }}_${{ matrix.commit }}.tar
-          path: ${{ matrix.name }}_${{ matrix.commit }}.tar
+          name: ${{ matrix.oci-archive-name }}
+          path: ${{ matrix.oci-archive-name }}
 
+  uploads:
+    runs-on: ubuntu-22.04
+    needs: [prepare-build-matrix, run-builds]
+    name: Upload
+    if: github.ref_name == 'main'
+    environment:
+      name: swift-environment
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare-build-matrix.outputs.build-matrix) }}
+    steps:
       - uses: actions/checkout@v3
 
-      - name: Run tests for ${{ matrix.name }} on ${{ matrix.commit }}
-        uses: ./.github/workflows/tests
+      - uses: actions/download-artifact@v3
         with:
-          artifact-name: ${{ matrix.name }}_${{ matrix.commit }}.tar
+          name: ${{ matrix.oci-archive-name }}
+          path: ${{ matrix.oci-archive-name }}
+      
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Setup swift
+        run: |
+          export OS_USERNAME=${{ env.SWIFT_OS_USERNAME }}
+          export OS_TENANT_NAME=${{ env.SWIFT_OS_TENANT_NAME }}
+          export OS_PASSWORD=${{ env.SWIFT_OS_PASSWORD }}
+          export OS_REGION_NAME=${{ env.SWIFT_OS_REGION_NAME }}
+          export OS_STORAGE_URL=${{ env.SWIFT_OS_STORAGE_URL }}
+
+          apt-get -y install python3-swiftclient
+          source src/configs/swift.public.novarc
+
+          swift list 
+
+  # run-tests:
+  #   needs: [run-builds]
+  #   if: success()
+  #   uses: ./.github/workflows/Test.yaml
+  #   with:
+  #     artifact-name: ${{ matrix.oci-archive-name }}
