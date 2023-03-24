@@ -72,22 +72,28 @@ jobs:
       
       - run: git checkout ${{ matrix.commit }}
 
-      - name: Validate proper image naming
-        if: matrix.dockerfile-build == ''
+      - name: Validate image naming and base
         working-directory: ${{ matrix.directory }}
         env:
           YQ_VERSION: 'v4.32.2'
           YQ_BINARY: yq_linux_amd64
         run: |
-          wget https://github.com/mikefarah/yq/releases/download/${{ env.YQ_VERSION }}/${{ env.YQ_BINARY }}
-          sudo mv ${{ env.YQ_BINARY }} /usr/bin/yq
-          sudo chmod +x /usr/bin/yq
-          
-          rock_name=`cat rockcraft.y*ml | yq -r .name`
-          if [[ "${{ matrix.path }}" != *"${rock_name}"* ]]
+          if [[ -z ${{ matrix.dockerfile-build }} ]]
           then
-            echo "ERROR: the ROCK's name '${rock_name}' must match the OCI folder name!"
-            exit 1
+            wget https://github.com/mikefarah/yq/releases/download/${{ env.YQ_VERSION }}/${{ env.YQ_BINARY }}
+            sudo mv ${{ env.YQ_BINARY }} /usr/bin/yq
+            sudo chmod +x /usr/bin/yq
+            
+            rock_name=`cat rockcraft.y*ml | yq -r .name`
+            if [[ "${{ matrix.path }}" != *"${rock_name}"* ]]
+            then
+              echo "ERROR: the ROCK's name '${rock_name}' must match the OCI folder name!"
+              exit 1
+            fi
+          else
+            grep 'FROM' Dockerfile | trail 1 | grep ubuntu || \
+              (echo "ERROR: the image '${rock_name}' must be based on Ubuntu!" \
+                && exit 1)
           fi
 
       - name: Build ROCK ${{ matrix.name }}
@@ -98,11 +104,10 @@ jobs:
           path: "${{ matrix.directory }}"
           verbosity: debug
 
-      - uses: actions/upload-artifact@v3
+      - name: Rename ROCK OCI archive
         if: matrix.dockerfile-build == ''
-        with:
-          name: ${{ matrix.oci-archive-name }}
-          path: ${{ steps.rockcraft.outputs.rock }}
+        run: |
+          mv ${{ steps.rockcraft.outputs.rock }} ${{ matrix.oci-archive-name }}
 
       - name: Set up QEMU
         if: matrix.dockerfile-build != ''
@@ -130,11 +135,16 @@ jobs:
           platforms: ${{ steps.buildx-platforms.outputs.platforms }}
           push: false
 
-      - uses: actions/upload-artifact@v3
-        if: matrix.dockerfile-build != ''
+      - uses: actions/cache/save@v3
         with:
-          name: ${{ matrix.oci-archive-name }}
           path: ${{ matrix.oci-archive-name }}
+          key: ${{ github.run_id }}-${{ matrix.oci-archive-name }}
+
+      # - uses: actions/upload-artifact@v3
+      #   if: matrix.dockerfile-build != ''
+      #   with:
+      #     name: ${{ matrix.oci-archive-name }}
+      #     path: ${{ matrix.oci-archive-name }}
 
   uploads:
     runs-on: ubuntu-22.04
@@ -149,28 +159,74 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/cache/save@v3
         with:
-          name: ${{ matrix.oci-archive-name }}
           path: ${{ matrix.oci-archive-name }}
+          key: ${{ github.run_id }}-${{ matrix.oci-archive-name }}
+      # - uses: actions/download-artifact@v3
+      #   with:
+      #     name: ${{ matrix.oci-archive-name }}
+      #     path: ${{ matrix.oci-archive-name }}
       
       - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
 
-      - name: Setup swift
+      - run: |
+          pip install -r src/uploads/requirements.txt
+          ./src/uploads/requirements.sh
+
+      - name: Infer track name
+        id: infer-track
+        working-directory: ${{ matrix.directory }}
+        env:
+          DOCKERFILE_IMAGE_VERSION: ${{ matrix.dockerfile-build.version }}
         run: |
-          export OS_USERNAME=${{ env.SWIFT_OS_USERNAME }}
-          export OS_TENANT_NAME=${{ env.SWIFT_OS_TENANT_NAME }}
-          export OS_PASSWORD=${{ env.SWIFT_OS_PASSWORD }}
-          export OS_REGION_NAME=${{ env.SWIFT_OS_REGION_NAME }}
-          export OS_STORAGE_URL=${{ env.SWIFT_OS_STORAGE_URL }}
+          ./src/uploads/infer_image_track.py
 
-          apt-get -y install python3-swiftclient
-          source src/configs/swift.public.novarc
+      - name: Define image revision number
+        id: define-revision
+        env:
+          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
+          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
+          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+          IMAGE_NAME: ${{ matrix.name }}
+        run: ./src/uploads/define_image_revision.sh
+      
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-          swift list 
+      - name: Install skopeo
+        env:
+          SKOPEO_BRANCH: 'v1.9.1'
+          SKOPEO_URL: 'https://github.com/containers/skopeo'
+        run: |
+          git clone -b ${{ env.SKOPEO_BRANCH }} --depth 1 ${{ env.SKOPEO_URL }} skopeo
+          pushd skopeo
 
+          docker run -v $PWD:/src -w /src -e DISABLE_DOCS=1 \
+              golang:1.18 sh -c 'apt update; apt install -y libgpgme-dev libassuan-dev libbtrfs-dev libdevmapper-dev pkg-config; make'
+
+          sudo mv bin/skopeo /usr/local/bin/
+          sudo chmod +x /usr/local/bin/skopeo
+      
+      - name: Upload to GHCR
+        run: |
+          skopeo copy --multi-arch all \
+            oci-archive:${{ matrix.oci-archive-name }} \
+            docker://ghcr.io/${{ github.repository_owner }}/oci-factory/${{ matrix.name }}:${{ steps.infer-track.outputs.track }}_${{ steps.define-revision.outputs.revision }}
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.name }}_${{ steps.infer-track.outputs.track }}_${{ steps.define-revision.outputs.revision }}
+          path: ${{ matrix.oci-archive-name }}
+          
   # run-tests:
   #   needs: [run-builds]
   #   if: success()
