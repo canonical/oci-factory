@@ -78,7 +78,7 @@ jobs:
           YQ_VERSION: 'v4.32.2'
           YQ_BINARY: yq_linux_amd64
         run: |
-          if [[ -z ${{ matrix.dockerfile-build }} ]]
+          if [ -z ${{ matrix.dockerfile-build }} ]
           then
             wget https://github.com/mikefarah/yq/releases/download/${{ env.YQ_VERSION }}/${{ env.YQ_BINARY }}
             sudo mv ${{ env.YQ_BINARY }} /usr/bin/yq
@@ -140,12 +140,6 @@ jobs:
           path: ${{ matrix.oci-archive-name }}
           key: ${{ github.run_id }}-${{ matrix.oci-archive-name }}
 
-      # - uses: actions/upload-artifact@v3
-      #   if: matrix.dockerfile-build != ''
-      #   with:
-      #     name: ${{ matrix.oci-archive-name }}
-      #     path: ${{ matrix.oci-archive-name }}
-
   uploads:
     runs-on: ubuntu-22.04
     needs: [prepare-build-matrix, run-builds]
@@ -176,13 +170,20 @@ jobs:
           pip install -r src/uploads/requirements.txt
           ./src/uploads/requirements.sh
 
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ matrix.source }}
+          fetch-depth: 0
+          path: source
+      
+      - run: cd source && git checkout ${{ matrix.commit }}
+
       - name: Infer track name
         id: infer-track
-        working-directory: ${{ matrix.directory }}
         env:
           DOCKERFILE_IMAGE_VERSION: ${{ matrix.dockerfile-build.version }}
         run: |
-          ./src/uploads/infer_image_track.py
+          ./src/uploads/infer_image_track.py --recipe-dirname source/${{ matrix.directory }}
 
       - name: Define image revision number
         id: define-revision

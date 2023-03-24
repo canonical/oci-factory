@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import os
 import logging
 import subprocess
@@ -19,8 +20,16 @@ def get_release_from_codename(codename: str) -> str:
     ].split()[1]
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--recipe-dirname",
+    help="Path to the directory where rockcraft.yaml/Dockerfile is",
+    required=True,
+)
+args = parser.parse_args()
+
 if DOCKERFILE_IMAGE_VERSION:
-    with open("Dockerfile") as dockerfile:
+    with open(f"{args.recipe_dirname.rstrip('/')}/Dockerfile") as dockerfile:
         dockerfile_content = dockerfile.read().splitlines()
 
     base = list(filter(lambda x: "FROM" in x, dockerfile_content))[-1]
@@ -35,7 +44,7 @@ if DOCKERFILE_IMAGE_VERSION:
 
     version = DOCKERFILE_IMAGE_VERSION
 else:
-    with open("rockcraft.yaml") as rockcraft_file:
+    with open(f"{args.recipe_dirname.rstrip('/')}/rockcraft.yaml") as rockcraft_file:
         rockcraft_yaml = yaml.safe_load(rockcraft_file)
 
     rock_base = (
