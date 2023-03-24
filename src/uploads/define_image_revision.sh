@@ -1,7 +1,9 @@
 #!/bin/bash -e
 
 # Source Swift config
-. $(dirname $0)/../configs/swift.public.novarc
+source $(dirname $0)/../configs/swift.public.novarc
+
+set -x
 
 # Does image already exist in Swift?
 # If not, then this is immediately revision number 1
