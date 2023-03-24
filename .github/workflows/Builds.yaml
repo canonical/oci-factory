@@ -208,15 +208,15 @@ jobs:
           SKOPEO_URL: 'https://github.com/containers/skopeo'
         run: ./src/releases/requirements.sh
           
-      
-      # - name: Upload to GHCR
-      #   env:
-
-        # run: |
-          
-        #   skopeo copy --multi-arch all \
-        #     oci-archive:${{ matrix.oci-archive-name }} \
-        #     docker://ghcr.io/${{ github.repository_owner }}/oci-factory/${{ matrix.name }}:${{ steps.infer-track.outputs.track }}_${{ steps.define-revision.outputs.revision }}
+      - name: Upload to GHCR
+        env:
+          GHCR_REPO: ${{ github.repository_owner }}/oci-factory
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./src/releases/tag_and_publish.sh ${{ matrix.oci-archive-name }} \
+            ${{ matrix.name }} \
+            ${{ steps.infer-track.outputs.track }}_${{ steps.define-revision.outputs.revision }}
 
       - uses: actions/upload-artifact@v3
         with:
