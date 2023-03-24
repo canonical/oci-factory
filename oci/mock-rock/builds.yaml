@@ -2,7 +2,7 @@ version: 1
 
 images:  
   - source: "cjdcordeiro/oci-factory"
-    commit: 92365d8
+    commit: 5f93bcfc0289f9091eb526c29edda2c3219adcf4
     directory: examples/mock-rock
     release-to:
       risks: 

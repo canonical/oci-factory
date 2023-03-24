@@ -140,7 +140,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [prepare-build-matrix, run-builds]
     name: Upload
-    if: github.ref_name == 'main'
+    if: ${{ always() && github.ref_name == 'main' }}
     environment:
       name: swift-environment
     strategy:
