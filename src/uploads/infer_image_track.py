@@ -6,6 +6,8 @@ import logging
 import subprocess
 import yaml
 
+logging.basicConfig()
+
 DOCKERFILE_IMAGE_VERSION = os.getenv("DOCKERFILE_IMAGE_VERSION", None)
 
 
@@ -48,9 +50,9 @@ else:
         rockcraft_yaml = yaml.safe_load(rockcraft_file)
 
     rock_base = (
-        float(rockcraft_yaml["base"])
+        rockcraft_yaml["base"]
         if rockcraft_yaml["base"] != "bare"
-        else float(rockcraft_yaml["build-base"])
+        else rockcraft_yaml["build-base"]
     )
 
     try:

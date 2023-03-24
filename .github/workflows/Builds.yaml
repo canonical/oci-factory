@@ -91,7 +91,7 @@ jobs:
               exit 1
             fi
           else
-            grep 'FROM' Dockerfile | trail 1 | grep ubuntu || \
+            grep 'FROM' Dockerfile | tail -1 | grep ubuntu || \
               (echo "ERROR: the image '${rock_name}' must be based on Ubuntu!" \
                 && exit 1)
           fi
