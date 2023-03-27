@@ -127,7 +127,7 @@ jobs:
           path: ${{ env.OCI_ARCHIVE_NAME }}
           key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}
 
-          
+
   upload:
     runs-on: ubuntu-22.04
     needs: [prepare-build, run-build]
@@ -181,9 +181,11 @@ jobs:
         
       - name: Run tests
         uses: benc-uk/workflow-dispatch@v1
+        env:
+          IS_A_ROCK: ${{ matrix.dockerfile-build == '' && true || false }}
         with:
           workflow: Test
-          inputs: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ matrix.dockerfile-build == '' && true || false }} }' 
+          inputs: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }} }' 
 
       # - uses: actions/cache/restore@v3
       #   with:
