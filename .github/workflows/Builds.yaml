@@ -144,7 +144,7 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Test
-          inputs: '{ "oci-image-name": "${{ env.OCI_ARCHIVE_NAME }}" }' 
+          inputs: '{ "oci-image-name": "${{ env.OCI_ARCHIVE_NAME }}", "is-a-rock": ${{ matrix.dockerfile-build == '' && true || false }} }' 
 
       # - uses: actions/cache/restore@v3
       #   with:
