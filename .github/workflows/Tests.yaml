@@ -35,7 +35,7 @@ jobs:
         if: ${{ inputs.test-from == 'cache' }}
         with:
           path: ${{ inputs.oci-image-name }}
-          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}
+          key: ${{ inputs.oci-image-name }}
 
       - if: ${{ inputs.test-from == 'cache' }}
         run: |
@@ -57,7 +57,7 @@ jobs:
       - uses: actions/cache/save@v3
         with:
           path: ${{ env.TEST_IMAGE_NAME}}
-          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
+          key: ${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
 
 
   test-oci-compliance:
@@ -68,7 +68,7 @@ jobs:
       - uses: actions/cache/restore@v3
         with:
           path: ${{ env.TEST_IMAGE_NAME}}
-          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
+          key: ${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
 
       - name: Install Umoci
         run: |
@@ -93,7 +93,7 @@ jobs:
       - uses: actions/cache/restore@v3
         with:
           path: ${{ env.TEST_IMAGE_NAME}}
-          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
+          key: ${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
       
       - uses: actions/setup-python@v4
         with:
@@ -136,7 +136,7 @@ jobs:
       - uses: actions/cache/restore@v3
         with:
           path: ${{ env.TEST_IMAGE_NAME}}
-          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
+          key: ${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
       
       - name: Install Trivy
         run: |
@@ -180,7 +180,7 @@ jobs:
       - uses: actions/cache/restore@v3
         with:
           path: ${{ env.TEST_IMAGE_NAME}}
-          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
+          key: ${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
       
       - uses: actions/setup-python@v4
         with:

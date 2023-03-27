@@ -153,6 +153,7 @@ jobs:
         with:
           path: ${{ env.OCI_ARCHIVE_NAME }}
           key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}
+          fail-on-cache-miss: true
 
       - name: Define image revision number
         id: get-revision
@@ -185,14 +186,15 @@ jobs:
       - uses: actions/cache/save@v3
         with:
           path: ${{ steps.rename-oci-archive.outputs.name }}
-          key: ${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}
+          key: ${{ steps.rename-oci-archive.outputs.name }}
         
       - name: Run tests
-        uses: benc-uk/workflow-dispatch@v1
+        uses: aurelien-baudet/workflow-dispatch@v2
         env:
           IS_A_ROCK: ${{ matrix.dockerfile-build == '' && true || false }}
         with:
           workflow: Tests
+          token: ${{ secrets.GITHUB_TOKEN }}
           inputs: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }} }' 
 
       # - uses: actions/cache/restore@v3
