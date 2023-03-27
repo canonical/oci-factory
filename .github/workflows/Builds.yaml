@@ -2,48 +2,31 @@ name: Build
 on:
   workflow_dispatch:
     inputs:
-      oci-image-names:
-        description: 'Comma-separated names of the OCI images to build and test'
+      oci-image-name:
+        description: 'OCI image to build and test'
         required: true
-  push:
-    paths:
-      - "oci/*/builds.y*ml"
-  pull_request:
-    paths:
-      - "oci/*/builds.y*ml"
+      upload:
+        description: 'Upload image to GHCR'
+        required: true
+        type: bolean
+        default: false
 
 jobs:
-  prepare-build-matrix:
+  prepare-build:
     runs-on: ubuntu-22.04
-    name: Prepare new builds
+    name: Prepare build
     outputs:
-      build-matrix: ${{ steps.prepare-builds.outputs.build-matrix }}
+      build-matrix: ${{ steps.prepare-matrix.outputs.build-matrix }}
     steps:
       - uses: actions/checkout@v3
 
-      - name: Infer images to build
-        if: github.event_name != 'workflow_dispatch'
-        uses: tj-actions/changed-files@v35
-        with:
-          json: true
-          dir_names: "true"
-          write_output_files: true
-          files: |
-            oci/*/builds.y*ml
-
-      - name: Validate images from dispatch
-        if: github.event_name == 'workflow_dispatch'
+      - name: Validate image from dispatch
+        id: validate-image
         run: |
-          for img in $(echo ${{ inputs.oci-image-names }} | tr ',' ' ')
-          do
-            test -d "oci/${img}"
-          done
+          img_path="oci/${{ inputs.oci-image-name }}"
+          test -d "${img_path}"
 
-          changed_files="$(echo '["'${{ inputs.oci-image-names }}'"]' \
-              | jq -c '.[0] | split(",") | map("oci/" + .)')"
-          
-          mkdir -p .github/outputs
-          echo "${changed_files}" > .github/outputs/all_changed_files.json
+          echo "img-path=${img_path}" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-python@v4
         with:
@@ -52,18 +35,20 @@ jobs:
       - run: pip install -r src/builds/requirements.txt
 
       - name: Validate and prepare builds matrix
-        id: prepare-builds
+        id: prepare-matrix
         run: |
-          ./src/builds/prepare_multi_image_build_matrix.py \
-            --oci-dirs-file ".github/outputs/all_changed_files.json"
+          ./src/builds/prepare_single_image_build_matrix.py \
+            --oci-path ${{ steps.validate-image.outputs.img-path }}
 
-  run-builds:
+  run-build:
     runs-on: ubuntu-22.04
-    needs: [prepare-build-matrix]
+    needs: [prepare-build]
     name: Build
     strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.prepare-build-matrix.outputs.build-matrix) }}
+      fail-fast: true
+      matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
+    env:
+      OCI_ARCHIVE_NAME: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.id }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -96,6 +81,7 @@ jobs:
                 && exit 1)
           fi
 
+      # If this is a ROCK...
       - name: Build ROCK ${{ matrix.name }}
         if: matrix.dockerfile-build == ''
         id: rockcraft
@@ -107,8 +93,9 @@ jobs:
       - name: Rename ROCK OCI archive
         if: matrix.dockerfile-build == ''
         run: |
-          mv ${{ steps.rockcraft.outputs.rock }} ${{ matrix.oci-archive-name }}
-
+          mv ${{ steps.rockcraft.outputs.rock }} ${{ env.OCI_ARCHIVE_NAME }}   
+          
+      # If this is a Dockerfile-based image...
       - name: Set up QEMU
         if: matrix.dockerfile-build != ''
         uses: docker/setup-qemu-action@v2
@@ -131,97 +118,109 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: '${{ matrix.directory }}'
-          outputs: 'type=oci,dest=${{ matrix.oci-archive-name }}'
+          outputs: 'type=oci,dest=${{ env.OCI_ARCHIVE_NAME }}'
           platforms: ${{ steps.buildx-platforms.outputs.platforms }}
           push: false
 
       - uses: actions/cache/save@v3
         with:
-          path: ${{ matrix.oci-archive-name }}
-          key: ${{ github.run_id }}-${{ matrix.oci-archive-name }}
+          path: ${{ env.OCI_ARCHIVE_NAME }}
+          key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}
 
-  uploads:
+  upload:
     runs-on: ubuntu-22.04
-    needs: [prepare-build-matrix, run-builds]
+    needs: [prepare-build, run-build]
     name: Upload
-    if: ${{ always() && github.ref_name == 'main' }}
+    if: ${{ inputs.upload }}
     strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.prepare-build-matrix.outputs.build-matrix) }}
+      fail-fast: true
+      matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
+    env:
+      OCI_ARCHIVE_NAME: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.id }}
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/cache/restore@v3
+      - name: Run tests
+        uses: benc-uk/workflow-dispatch@v1
         with:
-          path: ${{ matrix.oci-archive-name }}
-          key: ${{ github.run_id }}-${{ matrix.oci-archive-name }}
+          workflow: Test
+          inputs: '{ "oci-image-name": "${{ env.OCI_ARCHIVE_NAME }}" }' 
+
+      # - uses: actions/cache/restore@v3
+      #   with:
+      #     path: ${{ env.OCI_ARCHIVE_NAME }}
+      #     key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}
       
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
+      # - uses: actions/setup-python@v4
+      #   with:
+      #     python-version: "3.10"
 
-      - run: |
-          pip install -r src/uploads/requirements.txt
-          ./src/uploads/requirements.sh
+      # - run: |
+      #     pip install -r src/uploads/requirements.txt
+      #     ./src/uploads/requirements.sh
 
-      - uses: actions/checkout@v3
-        with:
-          repository: ${{ matrix.source }}
-          fetch-depth: 0
-          path: source
+      # - uses: actions/checkout@v3
+      #   with:
+      #     repository: ${{ matrix.source }}
+      #     fetch-depth: 0
+      #     path: source
       
-      - run: cd source && git checkout ${{ matrix.commit }}
+      # - run: cd source && git checkout ${{ matrix.commit }}
 
-      - name: Infer track name
-        id: infer-track
-        env:
-          DOCKERFILE_IMAGE_VERSION: ${{ matrix.dockerfile-build.version }}
-        run: |
-          ./src/uploads/infer_image_track.py --recipe-dirname source/${{ matrix.directory }}
+      # - name: Infer track name
+      #   id: infer-track
+      #   env:
+      #     DOCKERFILE_IMAGE_VERSION: ${{ matrix.dockerfile-build.version }}
+      #   run: |
+      #     ./src/uploads/infer_image_track.py --recipe-dirname source/${{ matrix.directory }}
 
-      - name: Define image revision number
-        id: define-revision
-        env:
-          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
-          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
-          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
-          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
-          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
-          IMAGE_NAME: ${{ matrix.name }}
-          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
-        run: ./src/uploads/define_image_revision.sh
+      # - name: Define image revision number
+      #   id: define-revision
+      #   env:
+      #     OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+      #     OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
+      #     OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+      #     OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
+      #     OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+      #     IMAGE_NAME: ${{ matrix.name }}
+      #     SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
+      #   run: ./src/uploads/define_image_revision.sh
       
-      - name: Login to GHCR
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Login to GHCR
+      #   uses: docker/login-action@v2
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup publishing environment
-        env:
-          ROCKS_DEV_LP_SSH_PRIVATE: ${{ secrets.ROCKS_DEV_LP_SSH_PRIVATE }}
-          ROCKS_DEV_LP_USERNAME: ${{ secrets.ROCKS_DEV_LP_USERNAME }}
-          CPC_BUILD_TOOLS_REPO: git.launchpad.net/~cloudware/cloudware/+git/cpc_build_tools
-          CPC_BUILD_TOOLS_REPO_REF: 9b716ed8a8ba728d036b54b1bb17a8f49dbda434
-          SKOPEO_BRANCH: 'v1.9.1'
-          SKOPEO_URL: 'https://github.com/containers/skopeo'
-        run: ./src/releases/requirements.sh
+      # - name: Setup publishing environment
+      #   env:
+      #     ROCKS_DEV_LP_SSH_PRIVATE: ${{ secrets.ROCKS_DEV_LP_SSH_PRIVATE }}
+      #     ROCKS_DEV_LP_USERNAME: ${{ secrets.ROCKS_DEV_LP_USERNAME }}
+      #     CPC_BUILD_TOOLS_REPO: git.launchpad.net/~cloudware/cloudware/+git/cpc_build_tools
+      #     CPC_BUILD_TOOLS_REPO_REF: 9b716ed8a8ba728d036b54b1bb17a8f49dbda434
+      #     SKOPEO_BRANCH: 'v1.9.1'
+      #     SKOPEO_URL: 'https://github.com/containers/skopeo'
+      #   run: ./src/releases/requirements.sh
           
-      - name: Upload to GHCR
-        env:
-          GHCR_REPO: ${{ github.repository_owner }}/oci-factory
-          GHCR_USERNAME: ${{ github.actor }}
-          GHCR_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          ./src/releases/tag_and_publish.sh ${{ matrix.oci-archive-name }} \
-            ${{ matrix.name }} \
-            ${{ steps.infer-track.outputs.track }}_${{ steps.define-revision.outputs.revision }}
+      # - name: Upload to GHCR
+      #   env:
+      #     GHCR_REPO: ${{ github.repository_owner }}/oci-factory
+      #     GHCR_USERNAME: ${{ github.actor }}
+      #     GHCR_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     ./src/releases/tag_and_publish.sh ${{ matrix.oci-archive-name }} \
+      #       ${{ matrix.name }} \
+      #       ${{ steps.infer-track.outputs.track }}_${{ steps.define-revision.outputs.revision }}
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: ${{ matrix.name }}_${{ steps.infer-track.outputs.track }}_${{ steps.define-revision.outputs.revision }}
-          path: ${{ matrix.oci-archive-name }}
+      # #######
+      # only upload the revision number to Swift here, not before
+      # #######
+
+      # - uses: actions/upload-artifact@v3
+      #   with:
+      #     name: ${{ matrix.name }}_${{ steps.infer-track.outputs.track }}_${{ steps.define-revision.outputs.revision }}
+      #     path: ${{ matrix.oci-archive-name }}
           
   # run-tests:
   #   needs: [run-builds]
