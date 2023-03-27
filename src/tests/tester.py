@@ -6,8 +6,7 @@ import os
 import subprocess
 from typing import Literal
 
-from pathlib import Path
-from pydantic import BaseModel, Field, PrivateAttr, root_validator
+from pydantic import BaseModel, PrivateAttr
 
 
 class TestingError(Exception):

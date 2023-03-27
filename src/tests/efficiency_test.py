@@ -5,7 +5,7 @@ import logging
 import sys
 import utils.helpers as helper_functions
 
-from tests.tester import Test, TestingError
+from tester import Test, TestingError
 
 
 class BlackBoxTest(Test):
