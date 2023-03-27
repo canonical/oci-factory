@@ -141,6 +141,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - run: |
+          pip install -r src/uploads/requirements.txt
+          ./src/uploads/requirements.sh
+
       - uses: actions/checkout@v3
         with:
           repository: ${{ matrix.source }}
@@ -199,25 +207,26 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow_file_name: Tests.yaml
           ref: ${{ github.ref }}
-          # comment_downstream_url: ${{ github.event.pull_request.comments_url }}
           client_payload: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }} }' 
-
-      # - uses: actions/cache/restore@v3
-      #   with:
-      #     path: ${{ env.OCI_ARCHIVE_NAME }}
-      #     key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}
       
-      # - uses: actions/setup-python@v4
-      #   with:
-      #     python-version: "3.10"
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@v0
+        with:
+          syft-version: 'v0.75.0'
+    
+      - name: Generate SBOM
+        id: generate-sbom
+        run: |
+          syft oci-archive:${{ steps.rename-oci-archive.outputs.name }} \
+            -o spdx-json \
+            --file ${{ steps.rename-oci-archive.outputs.name }}.sbom.spdx.json
 
-      # - run: |
-      #     pip install -r src/uploads/requirements.txt
-      #     ./src/uploads/requirements.sh
-
-
+          echo "sbom=${{ steps.rename-oci-archive.outputs.name }}.sbom.spdx.json" >> "$GITHUB_OUTPUT"
       
-
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.generate-sbom.outputs.sbom }}
+          path: ${{ steps.generate-sbom.outputs.sbom }}
 
 
       # - name: Define image revision number
