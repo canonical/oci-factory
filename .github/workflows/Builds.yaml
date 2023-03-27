@@ -189,13 +189,17 @@ jobs:
           key: ${{ steps.rename-oci-archive.outputs.name }}
         
       - name: Run tests
-        uses: aurelien-baudet/workflow-dispatch@v2
+        uses: convictional/trigger-workflow-and-wait@v1.6.1
         env:
           IS_A_ROCK: ${{ matrix.dockerfile-build == '' && true || false }}
         with:
-          workflow: Tests
-          token: ${{ secrets.GITHUB_TOKEN }}
-          inputs: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }} }' 
+          owner: ${{ github.repository_owner }}
+          repo: oci-factory
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow_file_name: Tests.yaml
+          ref: ${{ github.ref }}
+          # comment_downstream_url: ${{ github.event.pull_request.comments_url }}
+          client_payload: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }} }' 
 
       # - uses: actions/cache/restore@v3
       #   with:
