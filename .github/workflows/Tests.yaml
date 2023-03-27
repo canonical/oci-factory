@@ -36,6 +36,7 @@ jobs:
         with:
           path: ${{ inputs.oci-image-name }}
           key: ${{ inputs.oci-image-name }}
+          fail-on-cache-miss: true
 
       - if: ${{ inputs.test-from == 'cache' }}
         run: |
@@ -43,16 +44,17 @@ jobs:
           docker run --rm -v $PWD:/workdir \
             -w /workdir \
             ${{ env.SKOPEO_IMAGE }} \
-            copy oci-archive://${{ inputs.oci-image-name }} \
+            copy oci-archive:${{ inputs.oci-image-name }} \
             oci:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
       
       - if: ${{ inputs.test-from == 'registry' }}
         run: |
           # from REGISTRY to OCI
-          docker run --rm -v $PWD:/out \
+          docker run --rm -v $PWD:/workdir \
+            -w /workdir \
             ${{ env.SKOPEO_IMAGE }} \
             copy docker://${{ inputs.oci-image-name }} \
-            oci:/out/${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
+            oci:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
 
       - uses: actions/cache/save@v3
         with:
