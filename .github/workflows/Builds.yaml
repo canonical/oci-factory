@@ -189,7 +189,8 @@ jobs:
           key: ${{ steps.rename-oci-archive.outputs.name }}
         
       - name: Run tests
-        uses: convictional/trigger-workflow-and-wait@v1.6.1
+        # actions outputs are: workflow_id, workflow_url and conclusion
+        uses: convictional/trigger-workflow-and-wait@v1.6.5
         env:
           IS_A_ROCK: ${{ matrix.dockerfile-build == '' && true || false }}
         with:
