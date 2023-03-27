@@ -192,7 +192,7 @@ jobs:
         env:
           IS_A_ROCK: ${{ matrix.dockerfile-build == '' && true || false }}
         with:
-          workflow: Test
+          workflow: Tests
           inputs: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }} }' 
 
       # - uses: actions/cache/restore@v3

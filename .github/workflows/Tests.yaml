@@ -23,6 +23,8 @@ env:
   TEST_IMAGE_NAME: 'test-img'
   TEST_IMAGE_TAG: 'test'
   SKOPEO_IMAGE: 'quay.io/skopeo/stable:v1.9'
+  UMOCI_VERSION: 'v0.4.7'
+  UMOCI_BINARY: 'umoci.amd64'
 
 jobs:
   fetch-oci-image:
@@ -69,9 +71,6 @@ jobs:
           key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
 
       - name: Install Umoci
-        env:
-          UMOCI_VERSION: 'v0.4.7'
-          UMOCI_BINARY: 'umoci.amd64'
         run: |
           wget https://github.com/opencontainers/umoci/releases/download/${UMOCI_VERSION}/${UMOCI_BINARY}
           sudo mv ${UMOCI_BINARY} /usr/bin/umoci
@@ -173,48 +172,49 @@ jobs:
           key: ${{ github.run_id }}-${{ steps.vulnerability-scan.outputs.report }}
 
       
-  # test-malware:
-  #   runs-on: ubuntu-22.04
-  #   name: Malware scan
-  #   needs: [fetch-oci-image]
-  #   steps:
-  #     - uses: actions/cache/restore@v3
-  #       with:
-  #         path: ${{ env.TEST_IMAGE_NAME}}
-  #         key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
+  test-malware:
+    runs-on: ubuntu-22.04
+    name: Malware scan
+    needs: [fetch-oci-image]
+    steps:
+      - uses: actions/cache/restore@v3
+        with:
+          path: ${{ env.TEST_IMAGE_NAME}}
+          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
       
-  #     - name: Install Trivy
-  #       run: |
-  #         wget -O trivy.deb \
-  #           'https://github.com/aquasecurity/trivy/releases/download/v${{ env.TRIVY_VERSION }}/trivy_${{ env.TRIVY_VERSION }}_Linux-64bit.deb'
-          
-  #         sudo dpkg -i trivy.deb
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
 
-  #     - name: Copy image to Docker daemon
-  #       run: |
-  #         docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-  #           -v $PWD:/workdir -w /workdir \
-  #           -e IMG=${{ env.TEST_IMAGE_NAME}} -e TAG=${{ env.TEST_IMAGE_TAG }} \
-  #           ${{ env.SKOPEO_IMAGE }} \
-  #           copy oci://${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
-  #           docker-daemon:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
+      - run: pip install -r src/uploads/requirements.txt
 
-  #     - name: Scan for vulnerabilities
-  #       id: vulnerability-scan
-  #       run: |
-  #         set -ex
-  #         vuln_report="${{ inputs.oci-image-name }}.vulnerability-report.json"
-  #         trivy image --severity HIGH,CRITICAL --exit-code 1 \
-  #           --format cosign-vuln \
-  #           --output $vuln_report \
-  #           ${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
+      - name: Copy image to Docker daemon
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $PWD:/workdir -w /workdir \
+            -e IMG=${{ env.TEST_IMAGE_NAME}} -e TAG=${{ env.TEST_IMAGE_TAG }} \
+            ${{ env.SKOPEO_IMAGE }} \
+            copy oci://${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
+            docker-daemon:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
+      
+      - name: Install Umoci
+        run: |
+          wget https://github.com/opencontainers/umoci/releases/download/${UMOCI_VERSION}/${UMOCI_BINARY}
+          sudo mv ${UMOCI_BINARY} /usr/bin/umoci
+          sudo chmod +x /usr/bin/umoci
 
-  #         echo "report=${vuln_report}" >> "$GITHUB_OUTPUT"
+      - name: Test ROCK
+        if: ${{ inputs.is-a-rock }}
+        run: |
+          set -ex
+          docker run --rm ${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
+            help | grep Pebble
 
-  #     - uses: actions/cache/save@v3
-  #       with:
-  #         path: ${{ steps.vulnerability-scan.outputs.report }}
-  #         key: ${{ github.run_id }}-${{ steps.vulnerability-scan.outputs.report }}
+      - uses: actions/checkout@v3
+
+      - name: Dive efficiency test
+        run: |
+          ./src/tests/black_box_test.py --docker-image ${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
 
 
   upload-test-artefacts:
