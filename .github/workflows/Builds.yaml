@@ -1,4 +1,4 @@
-name: Build
+name: Builds
 on:
   workflow_dispatch:
     inputs:
@@ -8,7 +8,7 @@ on:
       upload:
         description: 'Upload image to GHCR'
         required: true
-        type: bolean
+        type: boolean
         default: false
 
 jobs:
