@@ -141,6 +141,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ matrix.source }}
+          fetch-depth: 0
+          path: source
+
+      - run: cd source && git checkout ${{ matrix.commit }}
+
       - uses: actions/cache/restore@v3
         with:
           path: ${{ env.OCI_ARCHIVE_NAME }}
@@ -200,13 +208,8 @@ jobs:
       #     pip install -r src/uploads/requirements.txt
       #     ./src/uploads/requirements.sh
 
-      # - uses: actions/checkout@v3
-      #   with:
-      #     repository: ${{ matrix.source }}
-      #     fetch-depth: 0
-      #     path: source
+
       
-      # - run: cd source && git checkout ${{ matrix.commit }}
 
 
 
