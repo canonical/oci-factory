@@ -127,6 +127,7 @@ jobs:
           path: ${{ env.OCI_ARCHIVE_NAME }}
           key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}
 
+          
   upload:
     runs-on: ubuntu-22.04
     needs: [prepare-build, run-build]
@@ -140,11 +141,49 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: actions/cache/restore@v3
+        with:
+          path: ${{ env.OCI_ARCHIVE_NAME }}
+          key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}
+
+      - name: Define image revision number
+        id: get-revision
+        env:
+          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
+          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
+          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+          IMAGE_NAME: ${{ matrix.name }}
+          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
+        run: ./src/uploads/define_image_revision.sh
+
+      - name: Infer track name
+        id: get-track
+        env:
+          DOCKERFILE_IMAGE_VERSION: ${{ matrix.dockerfile-build.version }}
+        run: |
+          ./src/uploads/infer_image_track.py --recipe-dirname source/${{ matrix.directory }}
+
+      - name: Name output artefact
+        id: rename-oci-archive
+        run: |
+          # Rename the OCI archive tarball
+          name="${{ matrix.name }}_${{ steps.get-track.outputs.track }}_${{ steps.get-revision.outputs.revision }}"
+          mv ${{ env.OCI_ARCHIVE_NAME }} $name
+
+          echo "name=${name}" >> "$GITHUB_OUTPUT"
+      
+      - uses: actions/cache/save@v3
+        with:
+          path: ${{ steps.rename-oci-archive.outputs.name }}
+          key: ${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}
+        
       - name: Run tests
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Test
-          inputs: '{ "oci-image-name": "${{ env.OCI_ARCHIVE_NAME }}", "is-a-rock": ${{ matrix.dockerfile-build == '' && true || false }} }' 
+          inputs: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ matrix.dockerfile-build == '' && true || false }} }' 
 
       # - uses: actions/cache/restore@v3
       #   with:
@@ -167,12 +206,7 @@ jobs:
       
       # - run: cd source && git checkout ${{ matrix.commit }}
 
-      # - name: Infer track name
-      #   id: infer-track
-      #   env:
-      #     DOCKERFILE_IMAGE_VERSION: ${{ matrix.dockerfile-build.version }}
-      #   run: |
-      #     ./src/uploads/infer_image_track.py --recipe-dirname source/${{ matrix.directory }}
+
 
       # - name: Define image revision number
       #   id: define-revision

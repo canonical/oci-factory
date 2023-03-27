@@ -32,25 +32,6 @@ def run_docker_container(
     return result
 
 
-def run_trivy_scan(
-    image_name: str,
-    image_or_fs: str,
-    trivy_image: str,
-    additional_args: str = "",
-    docker_client: docker.client.DockerClient = None,
-) -> str:
-    cmd = f"trivy {image_or_fs} --severity HIGH,CRITICAL --exit-code 2 {additional_args} {image_name}"
-    volumes = {
-        "/var/run/docker.sock": {"bind": "/var/run/docker.sock"},
-        "trivy_db": {"bind": "/root/.cache/trivy/db"},
-    }
-
-    if image_or_fs == "filesystem":
-        volumes[image_name] = {"bind": image_name}
-
-    return run_docker_container(trivy_image, volumes, cmd, docker_client, entrypoint="")
-
-
 def run_malware_scan(
     image_fs_path: str,
     additional_args: str = "",
