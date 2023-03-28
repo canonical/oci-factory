@@ -249,7 +249,10 @@ jobs:
       - name: Generate SBOMs
         id: generate-sboms
         run: |
+          set -ex
           for arch in ${{ steps.get-arches.outputs.arches }}; do
+            echo "Generate SBOM for ${arch}"
+
             skopeo --override-arch $arch copy \
               oci-archive:${{ steps.rename-oci-archive.outputs.name }} \
               oci-archive:${{ steps.rename-oci-archive.outputs.name }}.${arch}
@@ -335,6 +338,7 @@ jobs:
           create_annotated_tag: true
           custom_release_rules: 'upload(${{ matrix.name }}): Build and upload new image revision ${{ steps.get-revision.outputs.revision }}'
 
+
   generate-provenance:
     name: Generate SLSA provenance
     needs: [upload]
@@ -346,9 +350,24 @@ jobs:
     with:
       base64-subjects: "${{ needs.upload.outputs.artefacts-hashes }}"
 
-  # run-tests:
-  #   needs: [run-builds]
-  #   if: success()
-  #   uses: ./.github/workflows/Test.yaml
-  #   with:
-  #     artifact-name: ${{ matrix.oci-archive-name }}
+  
+  notifications:
+    name: Notify
+    needs: [upload]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get Maintainer contacts
+        id: contacts-file
+        run: |
+          contacts_path="oci/${{ inputs.oci-image-name }}/contacts.yaml"
+          test -f "${contacts_path}"
+
+          echo "path=${contacts_path}" >> "$GITHUB_OUTPUT"
+
+  
+  
+  
+  
+  
