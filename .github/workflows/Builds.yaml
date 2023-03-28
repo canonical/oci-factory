@@ -152,6 +152,16 @@ jobs:
           pip install -r src/uploads/requirements.txt
           ./src/uploads/requirements.sh
 
+      - name: Setup publishing environment
+        env:
+          ROCKS_DEV_LP_SSH_PRIVATE: ${{ secrets.ROCKS_DEV_LP_SSH_PRIVATE }}
+          ROCKS_DEV_LP_USERNAME: ${{ secrets.ROCKS_DEV_LP_USERNAME }}
+          CPC_BUILD_TOOLS_REPO: git.launchpad.net/~cloudware/cloudware/+git/cpc_build_tools
+          CPC_BUILD_TOOLS_REPO_REF: 9b716ed8a8ba728d036b54b1bb17a8f49dbda434
+          SKOPEO_BRANCH: 'v1.9.1'
+          SKOPEO_URL: 'https://github.com/containers/skopeo'
+        run: ./src/releases/requirements.sh
+
       - uses: actions/checkout@v3
         with:
           repository: ${{ matrix.source }}
@@ -213,7 +223,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow_file_name: Tests.yaml
           ref: ${{ github.ref }}
-          client_payload: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }}, "cache-key": "${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}", "vulnerability-report-suffix": "${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}" }' 
+          client_payload: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }}, "cache-key": "${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}", "vulnerability-report-suffix": "${{ env.VULNERABILITY_REPORT_SUFFIX }}" }' 
       
       - name: Download test artifacts
         id: download-test-artifacts
@@ -227,24 +237,42 @@ jobs:
         with:
           syft-version: 'v0.75.0'
     
-      - name: Generate SBOM
-        id: generate-sbom
+      - name: Infer architectures
+        id: get-arches
         run: |
-          syft oci-archive:${{ steps.rename-oci-archive.outputs.name }} \
-            -o spdx-json \
-            --file ${{ steps.rename-oci-archive.outputs.name }}.sbom.spdx.json
+          arches=$(skopeo inspect --raw \
+            oci-archive:${{ steps.rename-oci-archive.outputs.name }} \
+            | jq -r 'if has ("manifests") then .manifests[].platform.architecture else "${{ runner.arch }}" end')
 
-          echo "sbom=${{ steps.rename-oci-archive.outputs.name }}.sbom.spdx.json" >> "$GITHUB_OUTPUT"
+          echo 'arches="${arches}"' >> "$GITHUB_OUTPUT"
+            
+      - name: Generate SBOMs
+        id: generate-sboms
+        run: |
+          for arch in ${{ steps.get-arches.outputs.arches }}; do
+            skopeo --override-arch $arch copy \
+              oci-archive:${{ steps.rename-oci-archive.outputs.name }} \
+              oci-archive:${{ steps.rename-oci-archive.outputs.name }}.${arch}
+
+            syft oci-archive:${{ steps.rename-oci-archive.outputs.name }}.${arch} \
+              -o spdx-json \
+              --file ${{ steps.rename-oci-archive.outputs.name }}.${arch}.sbom.spdx.json
+          done
+
+          all_sboms_zip="${{ steps.rename-oci-archive.outputs.name }}.sbom.spdx.zip"
+          zip "${all_sboms_zip}" ${{ steps.rename-oci-archive.outputs.name }}.*.sbom.spdx.json
+
+          echo "sboms=${all_sboms_zip}" >> "$GITHUB_OUTPUT"
 
       # https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/generic/README.md
       - name: Calculate artefacts hashes
         id: artefacts-hashes
         env:
           VULN_REPORT: ${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
-          SBOM: ${{ steps.generate-sbom.outputs.sbom }}
+          SBOMS: ${{ steps.generate-sboms.outputs.sboms }}
           OCI_IMAGE_ARCHIVE: ${{ steps.rename-oci-archive.outputs.name }}
         run: |
-          echo "hashes=$(sha256sum ${{ env.VULN_REPORT }} ${{ env.OCI_IMAGE_ARCHIVE }} ${{ env.SBOM }} | base64 -w0)"
+          echo "hashes=$(sha256sum ${{ env.VULN_REPORT }} ${{ env.OCI_IMAGE_ARCHIVE }} ${{ env.SBOMS }} | base64 -w0)"
       
       - name: Login to GHCR
         uses: docker/login-action@v2
@@ -252,22 +280,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup publishing environment
-        env:
-          ROCKS_DEV_LP_SSH_PRIVATE: ${{ secrets.ROCKS_DEV_LP_SSH_PRIVATE }}
-          ROCKS_DEV_LP_USERNAME: ${{ secrets.ROCKS_DEV_LP_USERNAME }}
-          CPC_BUILD_TOOLS_REPO: git.launchpad.net/~cloudware/cloudware/+git/cpc_build_tools
-          CPC_BUILD_TOOLS_REPO_REF: 9b716ed8a8ba728d036b54b1bb17a8f49dbda434
-          SKOPEO_BRANCH: 'v1.9.1'
-          SKOPEO_URL: 'https://github.com/containers/skopeo'
-        run: ./src/releases/requirements.sh
           
       - name: Upload SBOM
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ steps.generate-sbom.outputs.sbom }}
-          path: ${{ steps.generate-sbom.outputs.sbom }}
+          name: ${{ steps.generate-sboms.outputs.sboms }}
+          path: ${{ steps.generate-sboms.outputs.sboms }}
       
       - name: Upload vulnerability report
         uses: actions/upload-artifact@v3
@@ -306,7 +324,7 @@ jobs:
             ${{ matrix.name }} \
             ${{ steps.get-revision.outputs.revision }} \
             build_metadata.json \
-            ${{ steps.generate-sbom.outputs.sbom }} \
+            ${{ steps.generate-sboms.outputs.sboms }} \
             ${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
 
       - name: Create Git tag  

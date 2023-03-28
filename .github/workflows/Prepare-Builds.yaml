@@ -22,14 +22,13 @@ jobs:
         with:
           json: true
           dir_names: "true"
-          write_output_files: true
           files: |
             oci/*/builds.y*ml
 
       - name: Prepare builds matrix
         id: prepare-builds
         run: |
-          echo "multi-image-build-matrix={\"image-name\":${{ steps.changed-files.outputs.all_changed_files }}" >> "$GITHUB_OUTPUT"
+          echo "multi-image-build-matrix={\"image-name\":${{ steps.changed-files.outputs.all_changed_files }}}" >> "$GITHUB_OUTPUT"
 
 
   trigger-build-pipelines:

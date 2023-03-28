@@ -54,7 +54,7 @@ jobs:
           docker run --rm -v $PWD:/workdir \
             -w /workdir \
             ${{ env.SKOPEO_IMAGE }} \
-            copy oci-archive:${{ inputs.oci-image-name }} \
+            copy --multi-arch all oci-archive:${{ inputs.oci-image-name }} \
             oci:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
       
       - if: ${{ inputs.test-from == 'registry' }}
@@ -63,7 +63,7 @@ jobs:
           docker run --rm -v $PWD:/workdir \
             -w /workdir \
             ${{ env.SKOPEO_IMAGE }} \
-            copy docker://${{ inputs.oci-image-name }} \
+            copy --multi-arch all docker://${{ inputs.oci-image-name }} \
             oci:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
 
       - uses: actions/cache/save@v3
@@ -114,7 +114,6 @@ jobs:
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
             -v $PWD:/workdir -w /workdir \
-            -e IMG=${{ env.TEST_IMAGE_NAME}} -e TAG=${{ env.TEST_IMAGE_TAG }} \
             ${{ env.SKOPEO_IMAGE }} \
             copy oci:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
             docker-daemon:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
@@ -147,7 +146,6 @@ jobs:
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
             -v $PWD:/workdir -w /workdir \
-            -e IMG=${{ env.TEST_IMAGE_NAME}} -e TAG=${{ env.TEST_IMAGE_TAG }} \
             ${{ env.SKOPEO_IMAGE }} \
             copy oci:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
             docker-daemon:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
@@ -180,7 +178,6 @@ jobs:
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
             -v $PWD:/workdir -w /workdir \
-            -e IMG=${{ env.TEST_IMAGE_NAME}} -e TAG=${{ env.TEST_IMAGE_TAG }} \
             ${{ env.SKOPEO_IMAGE }} \
             copy oci:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
             docker-daemon:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
@@ -191,11 +188,11 @@ jobs:
           format: 'cosign-vuln'
           severity: 'HIGH,CRITICAL'
           exit-code: '1'
-          output: '${{ inputs.oci-image-name }}${{ inputs.vulnerability-report-suffix }}'
+          output: '${{ inputs.oci-image-name }}.${{ runner.arch }}.${{ inputs.vulnerability-report-suffix }}'
           image-ref: '${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}'
 
       - id: vulnerability-scan
-        run: echo "report=${{ inputs.oci-image-name }}${{ inputs.vulnerability-report-suffix }}" >> "$GITHUB_OUTPUT"
+        run: echo "report=${{ inputs.oci-image-name }}.${{ runner.arch }}.${{ inputs.vulnerability-report-suffix }}" >> "$GITHUB_OUTPUT"
 
       - uses: actions/cache/save@v3
         with:
@@ -240,6 +237,7 @@ jobs:
 
 
   upload-test-artefacts:
+    name: Upload test artefacts
     runs-on: ubuntu-22.04
     needs:
       - test-vulnerabilities
@@ -256,5 +254,5 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: ${{ needs.test-vulnerabilities.outputs.vulnerability-report }}
+          name: ${{ needs.test-vulnerabilities.outputs.vulnerability-report }}.zip
           path: ${{ needs.test-vulnerabilities.outputs.vulnerability-report }}
