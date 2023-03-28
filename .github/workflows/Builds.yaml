@@ -247,8 +247,13 @@ jobs:
             | tr '\n' ' ')
 
           echo "Detected architectures: ${arches}"
-          echo 'arches="${arches}"' >> "$GITHUB_OUTPUT"
-            
+          echo "arches='${arches}'" >> "$GITHUB_OUTPUT"
+      - name: Upload image
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.rename-oci-archive.outputs.name }}
+          path: ${{ steps.rename-oci-archive.outputs.name }}
+          
       - name: Generate SBOMs
         id: generate-sboms
         run: |
@@ -359,6 +364,7 @@ jobs:
   notifications:
     name: Notify
     needs: [upload]
+    if: always()
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
