@@ -1,5 +1,4 @@
 import docker
-import logging
 import os
 
 
@@ -19,7 +18,7 @@ def run_docker_container(
         volumes=volumes,
         oom_kill_disable=True,
         command=command,
-        **kwargs
+        **kwargs,
     )
 
     output.wait()
@@ -43,21 +42,3 @@ def run_malware_scan(
     }
 
     return run_docker_container("clamav/clamav:1.0", volumes, cmd, docker_client)
-
-
-def dive_efficiency_test(
-    image_name: str,
-    highestUserWastedPercent: float = 0.2,
-    lowestEfficiency: float = 0.85,
-    additional_args: str = "",
-    docker_client: docker.client.DockerClient = None,
-):
-    # Runs a Dive inspection, failing if the image is not efficient
-    logging.info(f"Allowed % of bytes wasted: up to {highestUserWastedPercent}")
-    logging.info(f"Lowest % of image efficiency allowed: {lowestEfficiency}")
-
-    cmd = f"--ci --highestUserWastedPercent {highestUserWastedPercent} --lowestEfficiency {lowestEfficiency} {additional_args} {image_name}"
-    volumes = {
-        "/var/run/docker.sock": {"bind": "/var/run/docker.sock"},
-    }
-    return run_docker_container("wagoodman/dive:latest", volumes, cmd, docker_client)

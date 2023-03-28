@@ -13,11 +13,20 @@ on:
         options:
         - cache
         - registry
+      cache-key:
+        description: 'Cache key (when fetching from cache)'
+        required: false
+        type: string
       is-a-rock:
         description: 'Run additional ROCK-specific tests'
         required: true
         type: boolean
         default: false
+      vulnerability-report-suffix:
+        description: 'Suffix for the vulnerability report artefact'
+        required: true
+        type: string
+        default: '.vulnerability-report.json'
 
 env:
   TEST_IMAGE_NAME: 'test-img'
@@ -25,6 +34,7 @@ env:
   SKOPEO_IMAGE: 'quay.io/skopeo/stable:v1.9'
   UMOCI_VERSION: 'v0.4.7'
   UMOCI_BINARY: 'umoci.amd64'
+  DIVE_IMAGE: 'wagoodman/dive:v0.9'
 
 jobs:
   fetch-oci-image:
@@ -35,7 +45,7 @@ jobs:
         if: ${{ inputs.test-from == 'cache' }}
         with:
           path: ${{ inputs.oci-image-name }}
-          key: ${{ inputs.oci-image-name }}
+          key: ${{ inputs.cache-key }}
           fail-on-cache-miss: true
 
       - if: ${{ inputs.test-from == 'cache' }}
@@ -59,7 +69,7 @@ jobs:
       - uses: actions/cache/save@v3
         with:
           path: ${{ env.TEST_IMAGE_NAME}}
-          key: ${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
+          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
 
 
   test-oci-compliance:
@@ -70,7 +80,7 @@ jobs:
       - uses: actions/cache/restore@v3
         with:
           path: ${{ env.TEST_IMAGE_NAME}}
-          key: ${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
+          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
 
       - name: Install Umoci
         run: |
@@ -98,7 +108,7 @@ jobs:
       - uses: actions/cache/restore@v3
         with:
           path: ${{ env.TEST_IMAGE_NAME}}
-          key: ${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
+          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
 
       - name: Copy image to Docker daemon
         run: |
@@ -131,13 +141,7 @@ jobs:
       - uses: actions/cache/restore@v3
         with:
           path: ${{ env.TEST_IMAGE_NAME}}
-          key: ${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
-      
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-
-      - run: pip install -r src/tests/requirements.txt
+          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
 
       - name: Copy image to Docker daemon
         run: |
@@ -153,7 +157,11 @@ jobs:
       # https://github.com/yuichielectric/dive-action/issues/581
       - name: Dive efficiency test
         run: |
-          ./src/tests/efficiency_test.py --docker-image ${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
+          docker run -e CI=true --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $PWD/src/tests/.dive-ci.yaml:/.dive-ci.yaml \
+            ${{ env.DIVE_IMAGE }} \
+            ${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} --ci-config /.dive-ci.yaml
 
 
   test-vulnerabilities:
@@ -166,7 +174,7 @@ jobs:
       - uses: actions/cache/restore@v3
         with:
           path: ${{ env.TEST_IMAGE_NAME}}
-          key: ${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
+          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
       
       - name: Copy image to Docker daemon
         run: |
@@ -183,11 +191,11 @@ jobs:
           format: 'cosign-vuln'
           severity: 'HIGH,CRITICAL'
           exit-code: '1'
-          output: '${{ inputs.oci-image-name }}.vulnerability-report.json'
+          output: '${{ inputs.oci-image-name }}${{ inputs.vulnerability-report-suffix }}'
           image-ref: '${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}'
 
       - id: vulnerability-scan
-        run: echo "report=${{ inputs.oci-image-name }}.vulnerability-report.json" >> "$GITHUB_OUTPUT"
+        run: echo "report=${{ inputs.oci-image-name }}${{ inputs.vulnerability-report-suffix }}" >> "$GITHUB_OUTPUT"
 
       - uses: actions/cache/save@v3
         with:
@@ -205,7 +213,7 @@ jobs:
       - uses: actions/cache/restore@v3
         with:
           path: ${{ env.TEST_IMAGE_NAME}}
-          key: ${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
+          key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
       
       - name: Install Umoci
         run: |

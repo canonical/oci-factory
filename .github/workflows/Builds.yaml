@@ -138,6 +138,9 @@ jobs:
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     env:
       OCI_ARCHIVE_NAME: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.id }}
+      VULNERABILITY_REPORT_SUFFIX: '.vulnerability-report.json'
+    outputs:
+      artefacts-hashes: ${{ steps.artefacts-hashes.outputs.hashes }}
     steps:
       - uses: actions/checkout@v3
 
@@ -186,19 +189,22 @@ jobs:
         id: rename-oci-archive
         run: |
           # Rename the OCI archive tarball
-          name="${{ matrix.name }}_${{ steps.get-track.outputs.track }}_${{ steps.get-revision.outputs.revision }}"
+          canonical_tag="${{ steps.get-track.outputs.track }}_${{ steps.get-revision.outputs.revision }}"
+          name="${{ matrix.name }}_${canonical_tag}"
           mv ${{ env.OCI_ARCHIVE_NAME }} $name
 
           echo "name=${name}" >> "$GITHUB_OUTPUT"
+          echo "canonical-tag=${canonical_tag}" >> "$GITHUB_OUTPUT"
       
       - uses: actions/cache/save@v3
         with:
           path: ${{ steps.rename-oci-archive.outputs.name }}
-          key: ${{ steps.rename-oci-archive.outputs.name }}
+          key: ${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}
         
       - name: Run tests
         # actions outputs are: workflow_id, workflow_url and conclusion
         uses: convictional/trigger-workflow-and-wait@v1.6.5
+        id: run-tests
         env:
           IS_A_ROCK: ${{ matrix.dockerfile-build == '' && true || false }}
         with:
@@ -207,7 +213,14 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow_file_name: Tests.yaml
           ref: ${{ github.ref }}
-          client_payload: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }} }' 
+          client_payload: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }}, "cache-key": "${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}", "vulnerability-report-suffix": "${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}" }' 
+      
+      - name: Download test artifacts
+        id: download-test-artifacts
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: Tests.yaml
+          run_id: ${{ steps.run-tests.outputs.workflow_id }}
       
       - name: Install Syft
         uses: anchore/sbom-action/download-syft@v0
@@ -222,62 +235,87 @@ jobs:
             --file ${{ steps.rename-oci-archive.outputs.name }}.sbom.spdx.json
 
           echo "sbom=${{ steps.rename-oci-archive.outputs.name }}.sbom.spdx.json" >> "$GITHUB_OUTPUT"
+
+      # https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/generic/README.md
+      - name: Calculate artefacts hashes
+        id: artefacts-hashes
+        env:
+          VULN_REPORT: ${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
+          SBOM: ${{ steps.generate-sbom.outputs.sbom }}
+          OCI_IMAGE_ARCHIVE: ${{ steps.rename-oci-archive.outputs.name }}
+        run: |
+          echo "hashes=$(sha256sum ${{ env.VULN_REPORT }} ${{ env.OCI_IMAGE_ARCHIVE }} ${{ env.SBOM }} | base64 -w0)"
       
-      - uses: actions/upload-artifact@v3
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup publishing environment
+        env:
+          ROCKS_DEV_LP_SSH_PRIVATE: ${{ secrets.ROCKS_DEV_LP_SSH_PRIVATE }}
+          ROCKS_DEV_LP_USERNAME: ${{ secrets.ROCKS_DEV_LP_USERNAME }}
+          CPC_BUILD_TOOLS_REPO: git.launchpad.net/~cloudware/cloudware/+git/cpc_build_tools
+          CPC_BUILD_TOOLS_REPO_REF: 9b716ed8a8ba728d036b54b1bb17a8f49dbda434
+          SKOPEO_BRANCH: 'v1.9.1'
+          SKOPEO_URL: 'https://github.com/containers/skopeo'
+        run: ./src/releases/requirements.sh
+          
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.generate-sbom.outputs.sbom }}
           path: ${{ steps.generate-sbom.outputs.sbom }}
-
-      # https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/generic/README.md
       
+      - name: Upload vulnerability report
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
+          path: ${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
 
-      # - name: Define image revision number
-      #   id: define-revision
-      #   env:
-      #     OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
-      #     OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
-      #     OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
-      #     OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
-      #     OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
-      #     IMAGE_NAME: ${{ matrix.name }}
-      #     SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
-      #   run: ./src/uploads/define_image_revision.sh
-      
-      # - name: Login to GHCR
-      #   uses: docker/login-action@v2
-      #   with:
-      #     registry: ghcr.io
-      #     username: ${{ github.actor }}
-      #     password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload image
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.rename-oci-archive.outputs.name }}
+          path: ${{ steps.rename-oci-archive.outputs.name }}
 
-      # - name: Setup publishing environment
-      #   env:
-      #     ROCKS_DEV_LP_SSH_PRIVATE: ${{ secrets.ROCKS_DEV_LP_SSH_PRIVATE }}
-      #     ROCKS_DEV_LP_USERNAME: ${{ secrets.ROCKS_DEV_LP_USERNAME }}
-      #     CPC_BUILD_TOOLS_REPO: git.launchpad.net/~cloudware/cloudware/+git/cpc_build_tools
-      #     CPC_BUILD_TOOLS_REPO_REF: 9b716ed8a8ba728d036b54b1bb17a8f49dbda434
-      #     SKOPEO_BRANCH: 'v1.9.1'
-      #     SKOPEO_URL: 'https://github.com/containers/skopeo'
-      #   run: ./src/releases/requirements.sh
-          
-      # - name: Upload to GHCR
-      #   env:
-      #     GHCR_REPO: ${{ github.repository_owner }}/oci-factory
-      #     GHCR_USERNAME: ${{ github.actor }}
-      #     GHCR_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-      #   run: |
-      #     ./src/releases/tag_and_publish.sh ${{ matrix.oci-archive-name }} \
-      #       ${{ matrix.name }} \
-      #       ${{ steps.infer-track.outputs.track }}_${{ steps.define-revision.outputs.revision }}
+      - name: Upload to GHCR
+        env:
+          GHCR_REPO: ${{ github.repository_owner }}/oci-factory
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./src/releases/tag_and_publish.sh ${{ steps.rename-oci-archive.outputs.name }} \
+            ${{ matrix.name }} \
+            ${{ steps.rename-oci-archive.outputs.canonical-tag }}
 
-      # #######
-      # only upload the revision number to Swift here, not before
-      # #######
+      - name: Upload build metadata to Swift
+        env:
+          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
+          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
+          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+          IMAGE_NAME: ${{ matrix.name }}
+          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
+        run: |
+          jq <<< '${{ toJSON(matrix) }}' > build_metadata.json
+          ./src/uploads/upload_to_swift.sh \
+            ${{ matrix.name }} \
+            ${{ steps.get-revision.outputs.revision }} \
+            build_metadata.json \
+            ${{ steps.generate-sbom.outputs.sbom }} \
+            ${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
 
-      # - uses: actions/upload-artifact@v3
-      #   with:
-      #     name: ${{ matrix.name }}_${{ steps.infer-track.outputs.track }}_${{ steps.define-revision.outputs.revision }}
-      #     path: ${{ matrix.oci-archive-name }}
+      - name: Create Git tag  
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{ steps.rename-oci-archive.outputs.name }}
+          create_annotated_tag: true
+          custom_release_rules: 'upload(${{ matrix.name }}): Build and upload new image revision ${{ steps.get-revision.outputs.revision }}'
           
   # run-tests:
   #   needs: [run-builds]
