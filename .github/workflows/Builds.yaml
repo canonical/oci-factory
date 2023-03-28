@@ -243,7 +243,8 @@ jobs:
           set -ex
           arches=$(skopeo inspect --raw \
             oci-archive:${{ steps.rename-oci-archive.outputs.name }} \
-            | jq -r 'if has("manifests") then .manifests[].platform.architecture else "${{ runner.arch }}" end')
+            | jq -r 'if has("manifests") then .manifests[].platform.architecture else "${{ runner.arch }}" end' \
+            | tr '\n' ' ')
 
           echo "Detected architectures: ${arches}"
           echo 'arches="${arches}"' >> "$GITHUB_OUTPUT"
@@ -252,6 +253,8 @@ jobs:
         id: generate-sboms
         run: |
           set -ex
+          echo "Generating SBOMs for ${{ steps.get-arches.outputs.arches }}"
+
           for arch in ${{ steps.get-arches.outputs.arches }}; do
             echo "Generate SBOM for ${arch}"
 
