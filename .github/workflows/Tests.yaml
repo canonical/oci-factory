@@ -34,7 +34,7 @@ env:
   SKOPEO_IMAGE: 'quay.io/skopeo/stable:v1.9'
   UMOCI_VERSION: 'v0.4.7'
   UMOCI_BINARY: 'umoci.amd64'
-  DIVE_IMAGE: 'wagoodman/dive:v0.9'
+  DIVE_IMAGE: 'wagoodman/dive:v0.10'
 
 jobs:
   fetch-oci-image:

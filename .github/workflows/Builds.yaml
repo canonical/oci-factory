@@ -316,7 +316,18 @@ jobs:
           custom_tag: ${{ steps.rename-oci-archive.outputs.name }}
           create_annotated_tag: true
           custom_release_rules: 'upload(${{ matrix.name }}): Build and upload new image revision ${{ steps.get-revision.outputs.revision }}'
-          
+
+  generate-provenance:
+    name: Generate SLSA provenance
+    needs: [upload]
+    permissions:
+      actions: read # Needed for detection of GitHub Actions environment.
+      id-token: write # Needed for provenance signing and ID
+      contents: write # Needed for release uploads
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.5.0
+    with:
+      base64-subjects: "${{ needs.upload.outputs.artefacts-hashes }}"
+
   # run-tests:
   #   needs: [run-builds]
   #   if: success()
