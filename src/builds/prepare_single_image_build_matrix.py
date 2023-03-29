@@ -49,7 +49,7 @@ if __name__ == "__main__":
         builds[img_number]["path"] = args.oci_path
         # make sure every build of this image has a unique identifier
         # within the execution of the workflow
-        builds[img_number]["id"] = img_number
+        builds[img_number]["build_number"] = img_number
 
     matrix = {"include": builds}
     print(f"{args.oci_path} - build matrix:\n{json.dumps(matrix, indent=4)}")

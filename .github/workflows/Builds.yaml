@@ -48,7 +48,7 @@ jobs:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     env:
-      OCI_ARCHIVE_NAME: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.id }}
+      OCI_ARCHIVE_NAME: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.build-number }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -141,7 +141,7 @@ jobs:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     env:
-      OCI_ARCHIVE_NAME: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.id }}
+      OCI_ARCHIVE_NAME: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.build_number }}
       VULNERABILITY_REPORT_SUFFIX: '.vulnerability-report.json'
     outputs:
       artefacts-hashes: ${{ steps.artefacts-hashes.outputs.hashes }}
@@ -195,7 +195,7 @@ jobs:
         id: get-revision
         run: |
           set -ex
-          this_image_revision=$(( ${{ steps.get-build-revision.outputs.revision }} + ${{ matrix.id }} ))
+          this_image_revision=$(( ${{ steps.get-build-revision.outputs.revision }} + ${{ matrix.build_number }} ))
 
           echo "revision=${this_image_revision}" >> "$GITHUB_OUTPUT"
 
@@ -359,29 +359,49 @@ jobs:
             ${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
 
       - name: Create Git tag  
-        uses: mathieudutour/github-tag-action@v6.1
+        uses: rickstaa/action-create-tag@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          custom_tag: ${{ steps.rename-oci-archive.outputs.name }}
-          create_annotated_tag: true
-          custom_release_rules: 'upload(${{ matrix.name }}): Build and upload new image revision ${{ steps.get-revision.outputs.revision }}'
+          tag: "${{ steps.rename-oci-archive.outputs.name }}"
+          message: 'upload(${{ matrix.name }}): Build and upload new image revision ${{ steps.get-revision.outputs.revision }}'
+          force_push_tag: true
 
       # - name: Mark for release
       #   if: matrix.release-to != ''
       #   run: ./src/releases/update_releases_file.py
 
-
-
   generate-provenance:
     name: Generate SLSA provenance
     needs: [upload]
-    permissions:
-      actions: read # Needed for detection of GitHub Actions environment.
-      id-token: write # Needed for provenance signing and ID
-      contents: write # Needed for release uploads
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.5.0
-    with:
-      base64-subjects: "${{ needs.upload.outputs.artefacts-hashes }}"
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v3
+        id: download
+        with:
+          path: artifacts
+    
+      - name: Generate provenance
+        uses: philips-labs/slsa-provenance-action@v0.8.0
+        with:
+          command: generate
+          subcommand: files
+          arguments: --artifact-path ${{ steps.download.outputs.download-path }} --output-path provenance.json
+          
+      - name: Upload image
+        uses: actions/upload-artifact@v3
+        with:
+          path: provenance.json
+          if-no-files-found: error
+
+  # generate-provenance:
+  #   name: Generate SLSA provenance
+  #   needs: [upload]
+  #   permissions:
+  #     actions: read # Needed for detection of GitHub Actions environment.
+  #     id-token: write # Needed for provenance signing and ID
+  #     contents: write # Needed for release uploads
+  #   uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.5.0
+  #   with:
+  #     base64-subjects: "${{ needs.upload.outputs.artefacts-hashes }}"
 
 
   notifications:
