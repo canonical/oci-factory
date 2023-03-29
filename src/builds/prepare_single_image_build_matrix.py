@@ -43,6 +43,7 @@ if __name__ == "__main__":
 
     builds = builds_data.get("images", [])
 
+    release_to = ""
     # inject some extra metadata into the matrix data
     for img_number, _ in enumerate(builds):
         builds[img_number]["name"] = args.oci_path.rstrip("/").split("/")[-1]
@@ -51,7 +52,14 @@ if __name__ == "__main__":
         # within the execution of the workflow
         builds[img_number]["build_number"] = img_number
 
+        # set an output as a marker for later knowing if we need to release
+        if "release-to" in builds[img_number]:
+            release_to = "true"
+            
+
     matrix = {"include": builds}
     print(f"{args.oci_path} - build matrix:\n{json.dumps(matrix, indent=4)}")
     with open(os.environ["GITHUB_OUTPUT"], "a") as gh_out:
         print(f"build-matrix={matrix}", file=gh_out)
+
+    print(f"release-to={release_to}", file=gh_out)

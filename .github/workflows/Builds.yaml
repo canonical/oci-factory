@@ -17,6 +17,8 @@ jobs:
     name: Prepare build
     outputs:
       build-matrix: ${{ steps.prepare-matrix.outputs.build-matrix }}
+      release-to: ${{ steps.prepare-matrix.outputs.release-to }}
+      oci-img-path: ${{ steps.validate-image.outputs.img-path }}
     steps:
       - uses: actions/checkout@v3
 
@@ -365,9 +367,90 @@ jobs:
           message: 'upload(${{ matrix.name }}): Build and upload new image revision ${{ steps.get-revision.outputs.revision }}'
           force_push_tag: true
 
-      # - name: Mark for release
-      #   if: matrix.release-to != ''
-      #   run: ./src/releases/update_releases_file.py
+      # We need this job because the releases.yaml should be updated with a
+      # single commit. If we update it within a matrix, we risk having conflicts
+      - name: create-json
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "new-json-file.json"
+          json: '{"name":"jsdaniell", "password":"mypass"}'
+
+      - name: Prepare releases
+        id: prepare-releases
+        run: |
+          file="${{ steps.rename-oci-archive.outputs.name }}.pre-release.json"
+
+          if [ -z ${{ matrix.release-to }} ]
+          then
+            risks=$(echo '${{ toJSON(matrix.release-to.risks) }}' | jq -r 'join(",")'))
+            
+            jq -n --arg track ${{ steps.get-track.outputs.track }} '{"track": $track}' \
+              | jq --arg revision ${{ steps.get-revision.outputs.revision }} ' . + {"revision": $revision}' \
+              | jq --arg risks $risks '. + {"risks": $risks}' > $file
+          else
+            echo '{}' > $file
+          fi
+
+          echo "pre-release-file=$file" >> "$GITHUB_OUTPUT"
+
+      - name: Upload pre-release artefacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.prepare-releases.outputs.pre-release-file }}
+          path: ${{ steps.prepare-releases.outputs.pre-release-file }}
+          if-no-files-found: error
+
+
+  prepare-releases:
+    name: Prepare releases
+    needs: [prepare-build, upload]
+    runs-on: ubuntu-22.04
+    if: ${{ needs.prepare-build.outputs.release-to != '' }}
+    concurrency:
+      group: ${{ needs.prepare-build.outputs.oci-img-path }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      
+      - uses: actions/download-artifact@v3
+        id: download
+        with:
+          path: artifacts
+
+      - uses: actions/checkout@v3
+
+      - name: Update releases trigger
+        working-directory: ${{ steps.download.outputs.download-path }}
+        id: update-releases-trigger
+        run: |
+          set -ex
+          for pre_release_file in `ls *.pre-release.json`
+          do
+            track=$(jq -er .track < $pre_release_file) || \
+              (echo "Nothing marked for release in $pre_release_file" && continue)
+
+            revision=$(jq -er .revision < $pre_release_file)
+            risks=$(jq -er .risks < $pre_release_file)
+            ./src/releases/update_releases_file.py \
+              --releases-trigger "${{ needs.prepare-build.outputs.oci-img-path }}/releases.yaml" \
+              --release-to-risks "${risks}" \
+              --release-to-track "${track}" \
+              --revision "${revision}"
+          done
+          
+          echo "releases-trigger=${{ needs.prepare-build.outputs.oci-img-path }}/releases.yaml" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger releases via commit
+        uses: actions-x/commit@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: 'main'
+          message: 'ci: automatic trigger of releases for ${{ needs.prepare-build.outputs.oci-img-path }}, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          files: ${{ steps.update-releases-trigger.outputs.releases-trigger }}
+          email: rocks-dev@lists.canonical.com
 
   generate-provenance:
     name: Generate SLSA provenance
@@ -389,6 +472,7 @@ jobs:
       - name: Upload image
         uses: actions/upload-artifact@v3
         with:
+          name: provenance
           path: provenance.json
           if-no-files-found: error
 

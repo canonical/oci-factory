@@ -16,3 +16,6 @@ images:
       version: "1.3"
       platforms:
         - amd64
+    release-to:
+      risks:
+        - beta

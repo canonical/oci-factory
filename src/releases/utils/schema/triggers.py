@@ -25,12 +25,13 @@ class ChannelsSchema(pydantic.BaseModel):
         extra = pydantic.Extra.forbid
 
     @pydantic.validator("stable", "candidate", "beta", "edge", pre=True)
-    @classmethod
     def _check_risks(cls, values: List) -> str:
         """There must be at least one risk specified."""
         error = "At least one risk must be specified per track."
         if not any(values):
             raise ReleaseTriggerValidationError(error)
+
+        return values
 
 
 class ReleasesSchema(pydantic.BaseModel):

@@ -63,6 +63,10 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+
+    assert args.releases_trigger.endswith(
+        "releases.yaml"
+    ), "The releases trigger file must be named releases.yaml"
     release_to_risks = args.release_to_risks.split(",")
 
     if not utils.file_exists(args.releases_trigger):
@@ -84,7 +88,9 @@ if __name__ == "__main__":
             print(
                 f"Updating track {args.release_to_track} with revision {args.revision}"
             )
-            existing_track = curr_releases.channels[args.release_to_track].__dict__
+            existing_track = curr_releases.channels[args.release_to_track].dict(
+                exclude_none=True
+            )
 
             for risk in release_to_risks:
                 existing_track[risk] = args.revision

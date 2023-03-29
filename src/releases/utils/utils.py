@@ -2,7 +2,7 @@ import json
 import os
 import yaml
 
-from schema.triggers import ReleasesSchema, KNOWN_RISKS_ORDERED
+from utils.schema.triggers import ReleasesSchema, KNOWN_RISKS_ORDERED
 
 
 def file_exists(path: str) -> bool:
@@ -41,8 +41,14 @@ def backfill_higher_risks(track_name: str, track: dict) -> dict:
 def overwrite_releases_trigger_file(path: str, content: ReleasesSchema) -> None:
     """Creates (or overwrites if it already exists) the releases trigger file."""
 
-    content_dict = content.__dict__
+    content_dict = content.dict(exclude_none=True)
 
     print(f"Overwriting {path} with:\n{json.dumps(content_dict, indent=4)}")
     with open(path, "w") as tf:
-        tf.write(json.dumps(content_dict))
+        yaml.dump(
+            content_dict,
+            tf,
+            default_flow_style=False,
+            sort_keys=False,
+            allow_unicode=True,
+        )
