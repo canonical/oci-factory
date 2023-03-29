@@ -311,18 +311,21 @@ jobs:
         with:
           name: ${{ steps.generate-sboms.outputs.sboms }}
           path: ${{ steps.generate-sboms.outputs.sboms }}
+          if-no-files-found: error
       
       - name: Upload vulnerability report
         uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
           path: ${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
+          if-no-files-found: error
 
       - name: Upload image
         uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.rename-oci-archive.outputs.name }}
           path: ${{ steps.rename-oci-archive.outputs.name }}
+          if-no-files-found: error
 
       - name: Upload to GHCR
         env:
