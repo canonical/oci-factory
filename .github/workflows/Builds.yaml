@@ -241,6 +241,7 @@ jobs:
         with:
           workflow: Tests.yaml
           run_id: ${{ steps.run-tests.outputs.workflow_id }}
+          path: '.'
 
       - run: ls *
       
