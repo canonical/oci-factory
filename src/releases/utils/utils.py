@@ -41,5 +41,8 @@ def backfill_higher_risks(track_name: str, track: dict) -> dict:
 def overwrite_releases_trigger_file(path: str, content: ReleasesSchema) -> None:
     """Creates (or overwrites if it already exists) the releases trigger file."""
 
+    content_dict = content.__dict__
+
+    print(f"Overwriting {path} with:\n{json.dumps(content_dict, indent=4)}")
     with open(path, "w") as tf:
-        tf.write(json.dumps(content.__dict__))
+        tf.write(json.dumps(content_dict))
