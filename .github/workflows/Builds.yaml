@@ -197,7 +197,7 @@ jobs:
           set -ex
           this_image_revision=$(( ${{ steps.get-build-revision.outputs.revision }} + ${{ matrix.id }} ))
 
-          echo "revision=$this_image_revision" >> "GITHUB_OUTPUT"
+          echo "revision=${this_image_revision}" >> "$GITHUB_OUTPUT"
 
       - name: Infer track name
         id: get-track
@@ -237,11 +237,12 @@ jobs:
           client_payload: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }}, "cache-key": "${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}", "vulnerability-report-suffix": "${{ env.VULNERABILITY_REPORT_SUFFIX }}" }' 
       
       - name: Download test artifacts
-        id: download-test-artifacts
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: Tests.yaml
           run_id: ${{ steps.run-tests.outputs.workflow_id }}
+
+      - run: ls *
       
       - name: Install Syft
         uses: anchore/sbom-action/download-syft@v0
