@@ -121,6 +121,10 @@ jobs:
           outputs: 'type=oci,dest=${{ env.OCI_ARCHIVE_NAME }}'
           platforms: ${{ steps.buildx-platforms.outputs.platforms }}
           push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+          sbom: false
 
       - uses: actions/cache/save@v3
         with:
@@ -244,16 +248,11 @@ jobs:
           arches=$(skopeo inspect --raw \
             oci-archive:${{ steps.rename-oci-archive.outputs.name }} \
             | jq -r 'if has("manifests") then .manifests[].platform.architecture else "${{ runner.arch }}" end' \
-            | tr '\n' ' ')
+            | jq -nRcr '[inputs] | join(" ")')
 
           echo "Detected architectures: ${arches}"
           echo "arches='${arches}'" >> "$GITHUB_OUTPUT"
-      - name: Upload image
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ steps.rename-oci-archive.outputs.name }}
-          path: ${{ steps.rename-oci-archive.outputs.name }}
-          
+
       - name: Generate SBOMs
         id: generate-sboms
         run: |
@@ -261,6 +260,10 @@ jobs:
           echo "Generating SBOMs for ${{ steps.get-arches.outputs.arches }}"
 
           for arch in ${{ steps.get-arches.outputs.arches }}; do
+            if [[ "${arch}" == "unknown" ]]; then
+              continue
+            fi
+
             echo "Generate SBOM for ${arch}"
 
             skopeo --override-arch $arch copy \
@@ -364,7 +367,7 @@ jobs:
   notifications:
     name: Notify
     needs: [upload]
-    if: always()
+    if: failure()
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
@@ -372,6 +375,7 @@ jobs:
       - name: Get Maintainer contacts
         id: contacts-file
         run: |
+          set -x
           contacts_path="oci/${{ inputs.oci-image-name }}/contacts.yaml"
           test -f "${contacts_path}"
 
