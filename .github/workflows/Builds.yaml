@@ -179,8 +179,8 @@ jobs:
           key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}
           fail-on-cache-miss: true
 
-      - name: Define image revision number
-        id: get-revision
+      - name: Define build revision number
+        id: get-build-revision
         env:
           OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
           OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
@@ -190,6 +190,14 @@ jobs:
           IMAGE_NAME: ${{ matrix.name }}
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: ./src/uploads/define_image_revision.sh
+
+      - name: Define image revision number
+        id: get-revision
+        run: |
+          set -ex
+          this_image_revision=$(( ${{ steps.get-build-revision.outputs.revision }} + ${{ matrix.id }} ))
+
+          echo "revision=$this_image_revision" >> "GITHUB_OUTPUT"
 
       - name: Infer track name
         id: get-track
