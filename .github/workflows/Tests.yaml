@@ -188,7 +188,8 @@ jobs:
           format: 'cosign-vuln'
           severity: 'HIGH,CRITICAL'
           exit-code: '1'
-          output: '${{ inputs.oci-image-name }}.${{ runner.arch }}.${{ inputs.vulnerability-report-suffix }}'
+          # missing ${{ runner.arch }}
+          output: '${{ inputs.oci-image-name }}${{ inputs.vulnerability-report-suffix }}'
           image-ref: '${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}'
 
       - id: vulnerability-scan

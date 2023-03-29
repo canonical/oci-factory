@@ -20,22 +20,22 @@ def parse_releases_trigger(path: str) -> dict:
     return ReleasesSchema(**content)
 
 
-def backfill_higher_risks(track: str, channel_risks: dict) -> dict:
+def backfill_higher_risks(track_name: str, track: dict) -> dict:
     """Parses a releases Channel and adds the missing higher risks."""
 
     # from the most to the least stable
     for i, risk in enumerate(KNOWN_RISKS_ORDERED):
-        if risk not in channel_risks:
+        if risk not in track:
             if risk == "stable":  # same as i == 0
                 # stable never follows other risks, as it is already
                 # the lowest one
                 continue
 
             # if there a lower risk to follow?
-            if KNOWN_RISKS_ORDERED[i - 1] in channel_risks:
-                channel_risks[risk] = f"{track}_{KNOWN_RISKS_ORDERED[i-1]}"
+            if KNOWN_RISKS_ORDERED[i - 1] in track:
+                track[risk] = f"{track_name}_{KNOWN_RISKS_ORDERED[i-1]}"
 
-    return channel_risks
+    return track
 
 
 def overwrite_releases_trigger_file(path: str, content: ReleasesSchema) -> None:

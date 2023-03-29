@@ -1,32 +1,44 @@
 #!/usr/bin/env python3
 
 import argparse
-import os
-import logging
-import subprocess
-import yaml
 
 from typing import List
 from utils import utils, schema
 
 
+def form_new_track(track_name: str, risks: List, revision: str) -> dict:
+    """Forms a new track from scratch."""
+    
+    track = {}
+    for risk in risks:
+        track[risk] = revision
+
+    track = utils.backfill_higher_risks(track_name, track)
+
+    return track
+
+
 def form_new_releases_trigger(
-    track: str, risks: List, revision: str
+    track_name: str, risks: List, revision: str
 ) -> schema.triggers.ReleasesSchema:
     """Create a new releases.yaml content from scratch."""
+    
     new_trigger = {
         "version": schema.triggers.LATEST_SCHEMA_VERSION,
-        "channels": {track: {}},
+        "channels": {track_name: {}},
     }
 
-    for risk in risks:
-        new_trigger["channels"][track][risk] = revision
-
-    new_trigger = utils.backfill_higher_risks(track, new_trigger["channels"][track])
+    new_trigger["channels"][track_name].update(
+        form_new_track(track_name, risks, revision)
+    )
 
     return schema.triggers.ReleasesSchema(**new_trigger)
 
 
+def update_track_risks(track: dict, risks: List) -> dict:
+    """Takes an existing track and updates its risks."""
+    
+    
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -54,16 +66,31 @@ if __name__ == "__main__":
 
     if not utils.file_exists(args.releases_trigger):
         # If file doesn't exist then we create one
+        print(f"Creating new releases.yaml file at {args.releases_trigger} with:")
+        print(f" - track: {args.release_to_track}")
+        print(f" - risks: {args.release_to_risks}")
+        print(f" - revision: {args.revision}")
         curr_releases = form_new_releases_trigger(
             args.release_to_track, args.release_to_risks.split(","), args.revision
         )
 
-        utils.overwrite_releases_trigger_file(
-            args.releases_trigger,
-            curr_releases
-        )
+        utils.overwrite_releases_trigger_file(args.releases_trigger, curr_releases)
     else:
         # Read and validate releases file
-        curr_releases = utils.parse_releases_trigger(
-            args.releases_trigger
-        )
+        print(f"Getting existing releases trigger from {args.releases_trigger}")
+        curr_releases = utils.parse_releases_trigger(args.releases_trigger)
+
+        # does this track already exist?
+        if args.release_to_track not in curr_releases.channels:
+            print(f"Forming new channel track {args.release_to_track}")
+            track = form_new_track(
+                args.release_to_track, args.release_to_risks.split(","), args.revision
+            )
+
+            curr_releases.channels[
+                args.release_to_track
+            ] = schema.triggers.ChannelsSchema(**track)
+        else:
+            print(f"")
+            existing_track = curr_releases.channels[args.release_to_track].__dict__
+        # for track in curr_releases.channels:
