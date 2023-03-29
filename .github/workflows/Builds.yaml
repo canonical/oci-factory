@@ -152,11 +152,7 @@ jobs:
         with:
           python-version: "3.10"
 
-      - run: |
-          pip install -r src/uploads/requirements.txt
-          ./src/uploads/requirements.sh
-
-      - name: Setup publishing environment
+      - name: Setup environment
         env:
           ROCKS_DEV_LP_SSH_PRIVATE: ${{ secrets.ROCKS_DEV_LP_SSH_PRIVATE }}
           ROCKS_DEV_LP_USERNAME: ${{ secrets.ROCKS_DEV_LP_USERNAME }}
@@ -164,7 +160,10 @@ jobs:
           CPC_BUILD_TOOLS_REPO_REF: 9b716ed8a8ba728d036b54b1bb17a8f49dbda434
           SKOPEO_BRANCH: 'v1.9.1'
           SKOPEO_URL: 'https://github.com/containers/skopeo'
-        run: ./src/releases/requirements.sh
+        run: |
+          ./src/releases/requirements.sh
+          ./src/uploads/requirements.sh
+          pip install -r src/uploads/requirements.txt -r src/releases/requirements.txt
 
       - uses: actions/checkout@v3
         with:
@@ -352,6 +351,11 @@ jobs:
           create_annotated_tag: true
           custom_release_rules: 'upload(${{ matrix.name }}): Build and upload new image revision ${{ steps.get-revision.outputs.revision }}'
 
+      # - name: Mark for release
+      #   if: matrix.release-to != ''
+      #   run: ./src/releases/update_releases_file.py
+
+
 
   generate-provenance:
     name: Generate SLSA provenance
@@ -364,10 +368,6 @@ jobs:
     with:
       base64-subjects: "${{ needs.upload.outputs.artefacts-hashes }}"
 
-  
-  release-to:
-    runs-on: ubuntu-22.04
-    needs: [prepare-build, upload]
 
   notifications:
     name: Notify
