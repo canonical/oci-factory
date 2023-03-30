@@ -55,11 +55,9 @@ if __name__ == "__main__":
         # set an output as a marker for later knowing if we need to release
         if "release-to" in builds[img_number]:
             release_to = "true"
-            
 
     matrix = {"include": builds}
     print(f"{args.oci_path} - build matrix:\n{json.dumps(matrix, indent=4)}")
     with open(os.environ["GITHUB_OUTPUT"], "a") as gh_out:
         print(f"build-matrix={matrix}", file=gh_out)
-
-    print(f"release-to={release_to}", file=gh_out)
+        print(f"release-to={release_to}", file=gh_out)

@@ -452,6 +452,7 @@ jobs:
           files: ${{ steps.update-releases-trigger.outputs.releases-trigger }}
           email: rocks-dev@lists.canonical.com
 
+          
   generate-provenance:
     name: Generate SLSA provenance
     needs: [upload]
@@ -469,7 +470,41 @@ jobs:
           subcommand: files
           arguments: --artifact-path ${{ steps.download.outputs.download-path }} --output-path provenance.json
           
-      - name: Upload image
+      # - uses: sigstore/cosign-installer@v3.0.1
+      #   with:
+      #     cosign-release: 'v2.0.0' 
+
+      # - name: Sign provenance file
+      #   env:
+      #     PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+      #     COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+      #     PUBLIC_KEY: ${{ secrets.COSIGN_PUBLIC_KEY }}
+      #   run: |
+      #     echo "${PRIVATE_KEY}" > cosign.key
+      #     echo "${PUBLIC_KEY}" > cosign.pub
+      #     cosign sign-blob --key cosign.key --output-signature provenance.json.sig provenance.json
+
+      # - name: Upload verification keys
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: verify
+      #     path: |
+      #       cosign.pub
+      #       provenance.json.sig
+      #     if-no-files-found: error
+
+      - name: Generate checksums
+        working-directory: ${{ steps.download.outputs.download-path }}
+        run: sha256sum * > SHA256SUMS || true
+      
+      - name: Upload SHA256SUMS file
+        uses: actions/upload-artifact@v3
+        with:
+          name: SHA256SUMS
+          path: SHA256SUMS
+          if-no-files-found: error
+
+      - name: Upload provenance file
         uses: actions/upload-artifact@v3
         with:
           name: provenance
