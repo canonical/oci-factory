@@ -421,7 +421,11 @@ jobs:
         with:
           path: artifacts
 
+      - run: ls *
+
       - uses: actions/checkout@v3
+
+      - run: ls *
 
       - name: Update releases trigger
         working-directory: ${{ steps.download.outputs.download-path }}
