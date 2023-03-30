@@ -379,9 +379,10 @@ jobs:
       - name: Prepare releases
         id: prepare-releases
         run: |
+          set -x
           file="${{ steps.rename-oci-archive.outputs.name }}.pre-release.json"
 
-          if [ -z ${{ matrix.release-to }} ]
+          if [ ! -z ${{ matrix.release-to }} ]
           then
             risks=$(echo '${{ toJSON(matrix.release-to.risks) }}' | jq -r 'join(",")')
             
