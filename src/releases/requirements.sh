@@ -16,7 +16,10 @@ chmod 600 $HOME/.ssh/id_rsa
 git init /tmp/cpc-build-tools
 pushd /tmp/cpc-build-tools
 git remote add origin git+ssh://${ROCKS_DEV_LP_USERNAME}@${CPC_BUILD_TOOLS_REPO}
-git fetch --depth 1 origin ${CPC_BUILD_TOOLS_REPO_REF}
+# using main instead of ${CPC_BUILD_TOOLS_REPO_REF} because of an unexpected
+# new issue with Launchpad: 
+# error: Server does not allow request for unadvertised object 9b716ed8a8ba728d036b54b1bb17a8f49dbda434
+git fetch --depth 1 origin main # ${CPC_BUILD_TOOLS_REPO_REF}
 git checkout FETCH_HEAD
 
 sudo mv oci_registry_upload.py /usr/local/bin/cpc-build-tools.oci-registry-upload
