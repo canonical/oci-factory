@@ -237,6 +237,17 @@ jobs:
           workflow_file_name: Tests.yaml
           ref: ${{ github.ref }}
           client_payload: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }}, "cache-key": "${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}", "vulnerability-report-suffix": "${{ env.VULNERABILITY_REPORT_SUFFIX }}" }' 
+          # we can't wait here otherwise the other matrix job instance might overwrite this step's output
+          wait_workflow: false
+
+      - name: Await Tests with ID ${{ steps.run-tests.outputs.workflow_id }}
+        uses: Codex-/await-remote-run@v1.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repo: oci-factory
+          owner: ${{ github.repository_owner }}
+          run_id: ${{ steps.run-tests.outputs.workflow_id }}
+          run_timeout_seconds: 360
       
       - name: Download vulnerability artifacts
         uses: dawidd6/action-download-artifact@v2
