@@ -11,6 +11,14 @@ def file_exists(path: str) -> bool:
     return os.path.exists(path)
 
 
+def assert_releases_trigger_file(path: str) -> None:
+    """Check if the provided trigger file is properly named."""
+
+    assert path.endswith(
+        ("releases.yaml", "releases.yml")
+    ), "The releases trigger file must be named releases.yaml"
+
+
 def parse_releases_trigger(path: str) -> dict:
     """Read and validate the releases trigger, returning its content as JSON."""
 

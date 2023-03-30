@@ -427,10 +427,10 @@ jobs:
         id: update-releases-trigger
         run: |
           set -ex
-          for pre_release_file in `ls ${{ steps.download.outputs.download-path }}/*.pre-release.json`
+          for pre_release_file in `ls ${{ steps.download.outputs.download-path }}/*/*.pre-release.json`
           do
             track=$(jq -er .track < $pre_release_file) || \
-              (echo "Nothing marked for release in $pre_release_file" && continue)
+              echo "Nothing marked for release in $pre_release_file" && continue
 
             revision=$(jq -er .revision < $pre_release_file)
             risks=$(jq -er .risks < $pre_release_file)
