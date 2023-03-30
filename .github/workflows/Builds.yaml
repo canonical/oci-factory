@@ -383,7 +383,7 @@ jobs:
 
           if [ -z ${{ matrix.release-to }} ]
           then
-            risks=$(echo '${{ toJSON(matrix.release-to.risks) }}' | jq -r 'join(",")'))
+            risks=$(echo '${{ toJSON(matrix.release-to.risks) }}' | jq -r 'join(",")')
             
             jq -n --arg track ${{ steps.get-track.outputs.track }} '{"track": $track}' \
               | jq --arg revision ${{ steps.get-revision.outputs.revision }} ' . + {"revision": $revision}' \
