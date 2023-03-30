@@ -415,17 +415,13 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.x"
-      
+
+      - uses: actions/checkout@v3
+
       - uses: actions/download-artifact@v3
         id: download
         with:
           path: artifacts
-
-      - run: ls *
-
-      - uses: actions/checkout@v3
-
-      - run: ls *
 
       - name: Update releases trigger
         working-directory: ${{ steps.download.outputs.download-path }}

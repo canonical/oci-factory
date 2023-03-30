@@ -14,8 +14,6 @@ jobs:
     outputs:
       multi-image-build-matrix: ${{ steps.prepare-builds.outputs.multi-image-build-matrix }}
     steps:
-      - uses: actions/checkout@v3
-
       - name: Infer images to build
         uses: tj-actions/changed-files@v35
         id: changed-files
