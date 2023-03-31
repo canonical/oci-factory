@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash -ex
 
 # SUITE="{{ suite }}"
 # RELEASE="{{ release }}"
