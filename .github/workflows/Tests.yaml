@@ -27,6 +27,11 @@ on:
         required: true
         type: string
         default: '.vulnerability-report.json'
+      external_ref_id: #(1)
+        description: 'Optional ID for unique run detection'
+        required: false
+        type: string
+        default: "default-id"
 
 env:
   TEST_IMAGE_NAME: 'test-img'
@@ -41,6 +46,9 @@ jobs:
     runs-on: ubuntu-22.04
     name: Fetch OCI image for testing
     steps:
+      - name: ${{ github.event.inputs.external_ref_id }} #(2)
+        run: echo
+        
       - uses: actions/cache/restore@v3
         if: ${{ inputs.test-from == 'cache' }}
         with:
