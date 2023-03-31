@@ -227,21 +227,20 @@ jobs:
       - name: Run tests
         # Using this actions cause others can have this problem:
         # https://github.com/convictional/trigger-workflow-and-wait/issues/61
-        uses: mathze/workflow-dispatch-action@v1.1.0
+        uses: pauldraper/workflow-dispatch@v1.5
         id: run-tests
         env:
           IS_A_ROCK: ${{ matrix.dockerfile-build == '' && true || false }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fail-on-error: true
-          workflow-name: Tests
-          payload: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }}, "cache-key": "${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}", "vulnerability-report-suffix": "${{ env.VULNERABILITY_REPORT_SUFFIX }}" }' 
+          wait: true
+          workflow: Tests.yaml
+          inputs: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }}, "cache-key": "${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}", "vulnerability-report-suffix": "${{ env.VULNERABILITY_REPORT_SUFFIX }}" }' 
 
-      - name: Wait for tests
-        uses: mathze/workflow-dispatch-action@v1.1.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ steps.run-tests.outputs.run-id }}
+      # - name: Wait for tests
+      #   uses: mathze/workflow-dispatch-action@v1.1.0
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     run-id: ${{ steps.run-tests.outputs.run-id }}
       
       - name: Download vulnerability artifacts
         uses: dawidd6/action-download-artifact@v2
