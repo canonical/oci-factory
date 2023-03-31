@@ -11,7 +11,7 @@ def file_exists(path: str) -> bool:
     return os.path.exists(path)
 
 
-def assert_releases_trigger_file(path: str) -> None:
+def assert_releases_trigger_filename(path: str) -> None:
     """Check if the provided trigger file is properly named."""
 
     assert path.endswith(

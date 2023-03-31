@@ -64,9 +64,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    assert args.releases_trigger.endswith(
-        "releases.yaml"
-    ), "The releases trigger file must be named releases.yaml"
+    utils.assert_releases_trigger_filename(args.releases_trigger)
     release_to_risks = args.release_to_risks.split(",")
 
     if not utils.file_exists(args.releases_trigger):

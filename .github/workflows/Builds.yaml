@@ -499,16 +499,16 @@ jobs:
       #       provenance.json.sig
       #     if-no-files-found: error
 
-      - name: Generate checksums
-        working-directory: ${{ steps.download.outputs.download-path }}
-        run: sha256sum * > SHA256SUMS || true
+      # - name: Generate checksums
+      #   working-directory: ${{ steps.download.outputs.download-path }}
+      #   run: sha256sum * > SHA256SUMS || true
       
-      - name: Upload SHA256SUMS file
-        uses: actions/upload-artifact@v3
-        with:
-          name: SHA256SUMS
-          path: SHA256SUMS
-          if-no-files-found: error
+      # - name: Upload SHA256SUMS file
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: SHA256SUMS
+      #     path: SHA256SUMS
+      #     if-no-files-found: error
 
       - name: Upload provenance file
         uses: actions/upload-artifact@v3
