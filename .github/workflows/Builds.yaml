@@ -225,35 +225,29 @@ jobs:
           key: ${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}
         
       - name: Run tests
-        # actions outputs are: workflow_id, workflow_url and conclusion
-        uses: convictional/trigger-workflow-and-wait@v1.6.5
+        # Using this actions cause others can have this problem:
+        # https://github.com/convictional/trigger-workflow-and-wait/issues/61
+        uses: mathze/workflow-dispatch-action@v1.1.0
         id: run-tests
         env:
           IS_A_ROCK: ${{ matrix.dockerfile-build == '' && true || false }}
         with:
-          owner: ${{ github.repository_owner }}
-          repo: oci-factory
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow_file_name: Tests.yaml
-          ref: ${{ github.ref }}
-          client_payload: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }}, "cache-key": "${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}", "vulnerability-report-suffix": "${{ env.VULNERABILITY_REPORT_SUFFIX }}" }' 
-          # we can't wait here otherwise the other matrix job instance might overwrite this step's output
-          wait_workflow: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fail-on-error: true
+          workflow-name: Tests
+          payload: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }}, "cache-key": "${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}", "vulnerability-report-suffix": "${{ env.VULNERABILITY_REPORT_SUFFIX }}" }' 
 
-      - name: Await Tests with ID ${{ steps.run-tests.outputs.workflow_id }}
-        uses: Codex-/await-remote-run@v1.0.0
+      - name: Wait for tests
+        uses: mathze/workflow-dispatch-action@v1.1.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          repo: oci-factory
-          owner: ${{ github.repository_owner }}
-          run_id: ${{ steps.run-tests.outputs.workflow_id }}
-          run_timeout_seconds: 360
+          run-id: ${{ steps.run-tests.outputs.run-id }}
       
       - name: Download vulnerability artifacts
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: Tests.yaml
-          run_id: ${{ steps.run-tests.outputs.workflow_id }}
+          run_id: ${{ steps.run-tests.outputs.run-id }}
           path: '.'
           name: ${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}.zip
 
