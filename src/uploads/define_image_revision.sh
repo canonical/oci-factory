@@ -12,9 +12,9 @@ swift list $SWIFT_CONTAINER_NAME -p $IMAGE_NAME | grep $IMAGE_NAME || \
 
 # If the script gets here, then it means this image already has revisions
 highest_revision=$(swift list $SWIFT_CONTAINER_NAME -p $IMAGE_NAME \
-                    | sort -t / -k 2 -V \
+                    | sort -t / -k 3 -V \
                     | tail -1 \
-                    | awk -F'/' '{print $2}')
+                    | awk -F'/' '{print $3}')
 
 REVISION=$(( $highest_revision + 1 ))
 echo "revision=${REVISION}" >> "$GITHUB_OUTPUT"

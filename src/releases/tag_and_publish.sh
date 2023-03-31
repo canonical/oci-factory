@@ -15,13 +15,19 @@ trace_suspend() {
     esac 2>/dev/null
 }
 
+source_img="${1}"
+image_name="${2}"
+shift 2
+# The tag names are handled by the CI
+tag_names=($@)
+
 publish_with_auth_token()
 {
     local token=$1 name=$2
     shift 2
     echo "Publishing to Docker registry repository $name ..."
     REGISTRY_AUTH=$token cpc-build-tools.oci-registry-upload \
-        oci:images-oci "$name" "$@"
+        "${source_img}" "$name" "$@"
     echo "Publishing to Docker registry repository $name finished"
 }
 
@@ -52,33 +58,6 @@ publish_to_aws_ecr_public()
     publish_with_auth_token "$token" "$name" "$@"
 }
 
-publish_to_azure_acr()
-{
-    local tenant_id=$1 client_id=$2 client_secret=$3 namespace=$4
-    local name="$namespace.azurecr.io/$5"
-    shift 5
-
-    echo "Logging in to Azure"
-    az login -o none \
-        --service-principal \
-        --tenant "$tenant_id" \
-        -u "$client_id" \
-        -p "$client_secret"
-
-    echo "Getting credentials for Azure ACR repository $name"
-    local password
-    password=$(
-        az acr login --only-show-errors </dev/null \
-            -n "$namespace" \
-            --expose-token \
-            -o tsv --query accessToken
-    )
-
-    publish_with_username_password \
-        '00000000-0000-0000-0000-000000000000' \
-        "$password" "$name" "$@"
-}
-
 
 # # get the documentation templates
 # docs_dir_git=templates
@@ -98,19 +77,6 @@ publish_to_azure_acr()
 # download_from_swift $SUITE $SERIAL oci image/oci/$oci_archive_name $oci_archive_name
 # mkdir -p ubuntu-base
 
-# let's move the OCI image to the current WORKSPACE
-oci_images=images-oci
-rm -fr $oci_images
-mkdir -p $oci_images
-
-oci_archive_name="${1}"
-image_name="${2}"
-shift 2
-# The tag names are handled by the CI
-tag_names=($@)
-
-tar -xf $oci_archive_name -C $oci_images
-
 # mv ubuntu-base/oci/* ${oci_images}/
 
 # infer the available architectures
@@ -119,29 +85,35 @@ tar -xf $oci_archive_name -C $oci_images
 # init_vars
 
 # We pass lots of credentials around and some of them can't be redacted by
-# Jenkins (those sourced from secret file) so let's disable trace.
-trace_suspend
+
+# From env
+ghcr_repo_name="${GHCR_REPO}/${image_name}"
+docker_hub_repo_name="${DOCKER_HUB_NAMESPACE}/${image_name}"
+acr_repo_name="${ACR_NAMESPACE}/${image_name}"
+ecr_repo_name="${ECR_NAMESPACE}/${image_name}"
+# ecr_lts_repo_name="${ECR_LTS_NAMESPACE}/${image_name}"
 
 echo "Publishing ${image_name} to registries with tags: ${tag_names[@]}"
 
+trace_suspend
 if [ ! -z $GHCR_REPO ]; then
     # When this env variable is set we only upload to GHCR and stop
     ## DOCKER HUB
     publish_with_username_password \
         "$GHCR_USERNAME" \
         "$GHCR_PASSWORD" \
-        ghcr.io/${GHCR_REPO}/${image_name} \
+        ${ghcr_repo_name} \
         "${tag_names[@]}"
     
     exit 0
 fi
 
-# ## DOCKER HUB
-# publish_with_username_password \
-#     "$DOCKER_USERNAME" \
-#     "$DOCKER_PASSWORD" \
-#     docker.io/ubuntu/ubuntu \
-#     "${UBUNTU_TAGS[@]}"
+## DOCKER HUB
+publish_with_username_password \
+    "$DOCKER_HUB_CREDS_USR" \
+    "$DOCKER_HUB_CREDS_PSW" \
+    ${docker_hub_repo_name} \
+    "${tag_names[@]}"
 
 # # publish the docs for Docker Hub
 # # 1) generate the ubuntu.yaml data file
@@ -173,12 +145,12 @@ fi
 #     -H "Content-Type: application/json" \
 #     -d @dockerhub-docs.json
 
-# ### ECR
-# publish_to_aws_ecr_public \
-#     "$AWS_UBUNTU_KEY_ID" \
-#     "$AWS_UBUNTU_SECRET" \
-#     ubuntu/ubuntu \
-#     "${UBUNTU_TAGS[@]}"
+### ECR
+publish_to_aws_ecr_public \
+    "$ECR_CREDS_USR" \
+    "$ECR_CREDS_PSW" \
+    ${ecr_repo_name} \
+    "${tag_names[@]}"
 
 # # publish the docs for ECR
 # # 1) generate the ubuntu.yaml data file
@@ -214,15 +186,12 @@ fi
 #     aws --region us-east-1 ecr-public put-repository-catalog-data \
 #         --registry-id="099720109477" --repository-name ubuntu --catalog-data "$(cat ecr-docs.json)"
 
-# ### ACR
-# source "$AZURE_CREDS_FILE"
-# publish_to_azure_acr \
-#     "$AZURE_TENANT_ID" \
-#     "$AZURE_CLIENT_ID" \
-#     "$AZURE_CLIENT_SECRET" \
-#     ubuntu \
-#     ubuntu \
-#     "${UBUNTU_TAGS[@]}"
+### ACR
+publish_with_username_password \
+    "$ACR_CREDS_USR" \
+    "$ACR_CREDS_PSW" \
+    ${acr_repo_name} \
+    "${tag_names[@]}"
 
 # ### OCIR
 # publish_with_username_password \

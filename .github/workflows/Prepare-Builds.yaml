@@ -2,10 +2,10 @@ name: Prepare Builds
 on:
   push:
     paths:
-      - "oci/*/builds.y*ml"
+      - 'oci/*/builds.y*ml'
   pull_request:
     paths:
-      - "oci/*/builds.y*ml"
+      - 'oci/*/builds.y*ml'
 
 jobs:
   prepare-build-matrix:

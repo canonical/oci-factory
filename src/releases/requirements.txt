@@ -1,2 +1,4 @@
 PyYAML
 pydantic
+python-swiftclient
+python-keystoneclient

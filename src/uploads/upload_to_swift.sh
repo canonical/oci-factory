@@ -6,17 +6,18 @@ source $(dirname $0)/../configs/swift.public.novarc
 set -x
 
 IMAGE_NAME=$1
-REVISION=$2
-BUILD_METADATA_FILE=$3
-SBOM_FILE=$4
-VULN_REPORT_FILE=$5
+TRACK=$2
+REVISION=$3
+BUILD_METADATA_FILE=$4
+SBOM_FILE=$5
+VULN_REPORT_FILE=$6
 
 staging_area=$(mktemp -d)
 
-mkdir -p "${staging_area}/${IMAGE_NAME}/${REVISION}"
+mkdir -p "${staging_area}/${IMAGE_NAME}/${TRACK}/${REVISION}"
 
 cp "$BUILD_METADATA_FILE" "$SBOM_FILE" "$VULN_REPORT_FILE" \
-    "${staging_area}/${IMAGE_NAME}/${REVISION}"
+    "${staging_area}/${IMAGE_NAME}/${TRACK}/${REVISION}"
 
 pushd "${staging_area}"
 

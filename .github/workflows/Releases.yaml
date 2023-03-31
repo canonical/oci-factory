@@ -1,0 +1,134 @@
+name: Releases
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "oci/*/releases.y*ml"
+  
+  # workflow_dispatch:
+  #   inputs:
+  #     oci-image-name:
+  #       description: 'Name of the image to be fetched and tested'
+  #       required: true
+  #     test-from:
+  #       description: 'From where to fetch the OCI image to be tested'
+  #       required: true
+  #       default: 'cache'
+  #       type: choice
+  #       options:
+  #       - cache
+  #       - registry
+  #     cache-key:
+  #       description: 'Cache key (when fetching from cache)'
+  #       required: false
+  #       type: string
+  #     is-a-rock:
+  #       description: 'Run additional ROCK-specific tests'
+  #       required: true
+  #       type: boolean
+  #       default: false
+  #     vulnerability-report-suffix:
+  #       description: 'Suffix for the vulnerability report artefact'
+  #       required: true
+  #       type: string
+  #       default: '.vulnerability-report.json'
+
+# env:
+#   TEST_IMAGE_NAME: 'test-img'
+#   TEST_IMAGE_TAG: 'test'
+#   SKOPEO_IMAGE: 'quay.io/skopeo/stable:v1.9'
+#   UMOCI_VERSION: 'v0.4.7'
+#   UMOCI_BINARY: 'umoci.amd64'
+#   DIVE_IMAGE: 'wagoodman/dive:v0.10'
+
+jobs:
+  prepare-releases-matrix:
+    runs-on: ubuntu-22.04
+    name: Prepare new releases
+    outputs:
+      multi-image-release-matrix: ${{ steps.prepare-releases.outputs.multi-image-release-matrix }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Infer images to releaase
+        uses: tj-actions/changed-files@v35
+        id: changed-files
+        with:
+          dir_names: "true"
+          separator: ","
+          files: |
+            oci/*/releases.y*ml
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Prepare releases matrix
+        id: prepare-releases
+        run: |
+          ./src/releases/prepare_single_image_build_matrix.py \
+            --oci-paths ${{ steps.changed-files.outputs.all_changed_files }}
+
+
+  do-releases:
+    runs-on: ubuntu-22.04
+    name: Release
+    needs: [prepare-releases-matrix]
+    strategy:
+      fail-fast: true
+      matrix: ${{ fromJSON(needs.prepare-releases-matrix.outputs.multi-image-release-matrix) }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - run: | 
+          ./src/releases/requirements.sh
+          pip install -r src/releases/requirements.txt
+
+      - name: Get all revisions per track
+        id: get-all-canonical-tags
+        env:
+          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
+          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
+          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+          TRIGGER_PATH: ${{ matrix.trigger-name }}
+          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
+        run: ./src/releases/get_all_canonical_tags.sh
+
+      - name: Do releases from ${{ matrix.trigger-name }}
+        env:
+          DOCKER_HUB_CREDS_PSW: ${{ matrix.is_production && secrets.DOCKER_HUB_CREDS_PSW || secrets.DOCKER_HUB_CREDS_PSW_DEV }}
+          DOCKER_HUB_CREDS_USR: ${{ matrix.is_production && secrets.DOCKER_HUB_CREDS_USR || secrets.DOCKER_HUB_CREDS_USR_DEV }}
+          ACR_CREDS_USR: ${{ matrix.is_production && secrets.ACR_CREDS_USR || secrets.ACR_CREDS_USR_DEV }}
+          ACR_CREDS_PSW: ${{ matrix.is_production && secrets.ACR_CREDS_PSW || secrets.ACR_CREDS_PSW_DEV }}
+          ECR_CREDS_USR: ${{ matrix.is_production && secrets.ECR_CREDS_USR || secrets.ECR_CREDS_USR_DEV }}
+          ECR_CREDS_PSW: ${{ matrix.is_production && secrets.ECR_CREDS_PSW || secrets.ECR_CREDS_PSW_DEV }}
+          # ECR_LTS_CREDS_USR: ${{ matrix.is_production && secrets.ECR_LTS_CREDS_USR || secrets.ECR_LTS_CREDS_USR_DEV }}
+          # ECR_LTS_CREDS_PSW: ${{ matrix.is_production && secrets.ECR_LTS_CREDS_PSW || secrets.ECR_LTS_CREDS_PSW_DEV }}
+          
+          ACR_NAMESPACE: ${{ matrix.is_production && 'ubuntu.azurecr.io' || secrets.ACR_NAMESPACE_DEV }}
+          DOCKER_HUB_NAMESPACE: ${{ matrix.is_production && 'docker.io/ubuntu' || secrets.DOCKER_HUB_NAMESPACE }}
+          ECR_NAMESPACE: ${{ matrix.is_production && 'ubuntu' || secrets.ECR_NAMESPACE_DEV }}
+          # ECR_LTS_NAMESPACE: ${{ matrix.is_production && 'lts' || secrets.ECR_LTS_NAMESPACE_DEV }}
+        run: |
+          ./src/releases/release.py \
+            --releases-trigger ${{ matrix.trigger-name }} \
+            --image-name ${{ matrix.name }}
+            --all-existing-tags ${{ matrix.all-tags-file }} \
+            --all-canonical-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags }}" \
+            --ghcr-repo "${{ github.repository_owner }}/oci-factory"
+
+      - name: Commit ${{ matrix.all-tags-file }} file
+        uses: actions-x/commit@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: 'main'
+          message: 'ci: automatically update ${{ matrix.all-tags-file }}, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          files: ${{ matrix.all-tags-file }}
+          email: rocks-dev@lists.canonical.com

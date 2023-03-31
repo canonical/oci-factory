@@ -5,6 +5,10 @@ import yaml
 from utils.schema.triggers import ReleasesSchema, KNOWN_RISKS_ORDERED
 
 
+class BadChannel(Exception):
+    """Error validating release channel."""
+    
+    
 def file_exists(path: str) -> bool:
     """Check is a file exists."""
 

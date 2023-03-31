@@ -340,11 +340,19 @@ jobs:
 
       - name: Upload to GHCR
         env:
-          GHCR_REPO: ${{ github.repository_owner }}/oci-factory
+          GHCR_REPO: ghcr.io/${{ github.repository_owner }}/oci-factory
           GHCR_USERNAME: ${{ github.actor }}
           GHCR_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ./src/releases/tag_and_publish.sh ${{ steps.rename-oci-archive.outputs.name }} \
+          oci_images="${PWD}/images-oci"
+          rm -fr $oci_images
+          mkdir -p $oci_images  
+
+          tar -xf ${{ steps.rename-oci-archive.outputs.name }} -C $oci_images
+
+          source="oci:${oci_images}"
+
+          ./src/releases/tag_and_publish.sh "${source}" \
             ${{ matrix.name }} \
             ${{ steps.rename-oci-archive.outputs.canonical-tag }}
 
@@ -361,6 +369,7 @@ jobs:
           jq <<< '${{ toJSON(matrix) }}' > build_metadata.json
           ./src/uploads/upload_to_swift.sh \
             ${{ matrix.name }} \
+            ${{ steps.get-track.outputs.track }} \
             ${{ steps.get-revision.outputs.revision }} \
             build_metadata.json \
             ${{ steps.generate-sboms.outputs.sboms }} \
@@ -435,8 +444,14 @@ jobs:
           set -ex
           for pre_release_file in `ls ${{ steps.download.outputs.download-path }}/*/*.pre-release.json`
           do
+            ret=0
             track=$(jq -er .track < $pre_release_file) || \
-              echo "Nothing marked for release in $pre_release_file" && continue
+              (echo "Nothing marked for release in $pre_release_file" && ret=1)
+            
+            if [ $ret -eq 1 ]
+            then
+              continue
+            fi
 
             revision=$(jq -er .revision < $pre_release_file)
             risks=$(jq -er .risks < $pre_release_file)
