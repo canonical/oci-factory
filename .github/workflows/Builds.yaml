@@ -244,6 +244,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ steps.run-tests.outputs.run-id }}
+          wait-interval: 10s
       
       - name: Download vulnerability artifacts
         uses: dawidd6/action-download-artifact@v2
