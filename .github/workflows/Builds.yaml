@@ -384,15 +384,6 @@ jobs:
           message: 'upload(${{ matrix.name }}): Build and upload new image revision ${{ steps.get-revision.outputs.revision }}'
           force_push_tag: true
 
-      # We need this job because the releases.yaml should be updated with a
-      # single commit. If we update it within a matrix, we risk having conflicts
-      - name: create-json
-        id: create-json
-        uses: jsdaniell/create-json@v1.2.2
-        with:
-          name: "new-json-file.json"
-          json: '{"name":"jsdaniell", "password":"mypass"}'
-
       - name: Prepare releases
         id: prepare-releases
         run: |
@@ -420,6 +411,8 @@ jobs:
           if-no-files-found: error
 
 
+  # We need this job because the releases.yaml should be updated with a
+  # single commit. If we update it within a matrix, we risk having conflicts
   prepare-releases:
     name: Prepare releases
     needs: [prepare-build, upload]
@@ -447,11 +440,11 @@ jobs:
           for pre_release_file in `ls ${{ steps.download.outputs.download-path }}/*/*.pre-release.json`
           do
             ret=0
-            track=$(jq -er .track < $pre_release_file) || \
-              (echo "Nothing marked for release in $pre_release_file" && ret=1)
+            track=$(jq -er .track < $pre_release_file) || ret=1
             
             if [ $ret -eq 1 ]
             then
+              echo "Nothing marked for release in $pre_release_file"
               continue
             fi
 
