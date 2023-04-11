@@ -428,6 +428,8 @@ jobs:
 
       - uses: actions/checkout@v3
 
+      - run: pip install -r src/releases/requirements.txt
+
       - uses: actions/download-artifact@v3
         id: download
         with:
