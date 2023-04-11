@@ -383,6 +383,7 @@ jobs:
           tag: "${{ steps.rename-oci-archive.outputs.name }}"
           message: 'upload(${{ matrix.name }}): Build and upload new image revision ${{ steps.get-revision.outputs.revision }}'
           force_push_tag: true
+          github_token: ${{ secrets.ROCKSBOT_TOKEN }}
 
       - name: Prepare releases
         id: prepare-releases
