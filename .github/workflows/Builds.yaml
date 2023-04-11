@@ -428,6 +428,8 @@ jobs:
           python-version: "3.x"
 
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
 
       - run: pip install -r src/releases/requirements.txt
 
