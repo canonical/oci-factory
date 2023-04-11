@@ -67,7 +67,7 @@ jobs:
       - name: Prepare releases matrix
         id: prepare-releases
         run: |
-          ./src/releases/prepare_single_image_build_matrix.py \
+          ./src/releases/prepare_multi_image_release_matrix.py \
             --oci-paths ${{ steps.changed-files.outputs.all_changed_files }}
 
 

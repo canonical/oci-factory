@@ -464,7 +464,7 @@ jobs:
       - name: Trigger releases via commit
         uses: actions-x/commit@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.ROCKSBOT_TOKEN }}
           branch: 'main'
           message: 'ci: automatic trigger of releases for ${{ needs.prepare-build.outputs.oci-img-path }}, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: ${{ steps.update-releases-trigger.outputs.releases-trigger }}
