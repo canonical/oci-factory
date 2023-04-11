@@ -541,22 +541,22 @@ jobs:
   #     base64-subjects: "${{ needs.upload.outputs.artefacts-hashes }}"
 
 
-  notifications:
-    name: Notify
-    needs: [upload]
-    if: failure()
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v3
+  # notifications:
+  #   name: Notify
+  #   needs: [upload]
+  #   if: failure()
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - name: Get Maintainer contacts
-        id: contacts-file
-        run: |
-          set -x
-          contacts_path="oci/${{ inputs.oci-image-name }}/contacts.yaml"
-          test -f "${contacts_path}"
+  #     - name: Get Maintainer contacts
+  #       id: contacts-file
+  #       run: |
+  #         set -x
+  #         contacts_path="oci/${{ inputs.oci-image-name }}/contacts.yaml"
+  #         test -f "${contacts_path}"
 
-          echo "path=${contacts_path}" >> "$GITHUB_OUTPUT"
+  #         echo "path=${contacts_path}" >> "$GITHUB_OUTPUT"
 
   
   
