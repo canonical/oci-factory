@@ -76,6 +76,7 @@ jobs:
     runs-on: ubuntu-22.04
     name: Release
     needs: [prepare-releases-matrix]
+    if: ${{ needs.prepare-releases-matrix.outputs.multi-image-release-matrix }}
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-releases-matrix.outputs.multi-image-release-matrix) }}

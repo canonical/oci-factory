@@ -18,7 +18,7 @@ if __name__ == "__main__":
     for index, oci_path in enumerate(args.oci_paths.split(",")):
         this_release = {}
 
-        img_name = os.path.abspath(args.releases_trigger).rstrip("/").split("/")[-1]
+        img_name = os.path.abspath(oci_path).rstrip("/").split("/")[-1]
         this_release["name"] = img_name
         this_release["all-tags-file"] = f"{oci_path}/_tags.json"
         this_release["release-number"] = index
