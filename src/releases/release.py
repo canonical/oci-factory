@@ -29,13 +29,13 @@ if __name__ == "__main__":
         default=None,
     )
     parser.add_argument(
-        "--all-existing-tags",
+        "--all-released-tags",
         help="Path to the _tags.json file.",
         required=True,
     )
     parser.add_argument(
-        "--canonical-tags",
-        help="Comma-separated list of <track>:<revision> for this image.",
+        "--all-revision-tags",
+        help="Comma-separated list of all revision (<track>_<revision>) tags for this image.",
         required=True,
     )
     parser.add_argument(
@@ -45,9 +45,18 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    canonical_tags = args.canonical_tags.rstrip(",").lstrip(",").split(",")
+    img_name = (
+        args.image_name
+        if args.image_name
+        else os.path.abspath(args.releases_trigger).split("/")[-2]
+    )
+
+    print(
+        f"Preparing to release revision tags for {img_name}:\n{args.all_revision_tags}"
+    )
+    all_revision_tags = args.all_revision_tags.rstrip(",").lstrip(",").split(",")
     revision_to_track = {}
-    for track_revision in canonical_tags:
+    for track_revision in all_revision_tags:
         track, revision = track_revision.split("_")
         if revision in revision_to_track:
             msg = (
@@ -57,14 +66,12 @@ if __name__ == "__main__":
             )
             raise utils.BadChannel(msg)
 
-        revision_to_track[revision] = track
+        revision_to_track[int(revision)] = track
 
-    utils.assert_releases_trigger_filename(args.releases_trigger)
-    img_name = (
-        args.image_name
-        if args.image_name
-        else os.path.abspath(args.releases_trigger).split("/")[-2]
+    print(
+        f"Revision tags grouped by revision:\n{json.dumps(revision_to_track, indent=2)}"
     )
+    utils.assert_releases_trigger_filename(args.releases_trigger)
 
     print(f"Parsing releases trigger {args.releases_trigger}")
     curr_releases = utils.parse_releases_trigger(args.releases_trigger)
@@ -77,24 +84,25 @@ if __name__ == "__main__":
                 continue
 
             tag = f"{track}_{risk}"
+            print(f"Channel {tag} points to {value}")
             tag_mapping_from_trigger[tag] = value
 
-    print(f"Reading all existing tag mappings from {args.all_existing_tags}...")
+    print(f"Reading all existing tag mappings from {args.all_released_tags}...")
     try:
-        with open(args.all_existing_tags) as all_existing_tags_fd:
-            all_existing_tags = json.load(all_existing_tags_fd)
+        with open(args.all_released_tags) as all_released_tags_fd:
+            all_released_tags = json.load(all_released_tags_fd)
 
         # map the existing tags into a structure similar to tag_mapping_from_trigger
-        tag_mapping_from_all_existing_tags = {
-            t: all_existing_tags[t]["revision"] for t in all_existing_tags
+        tag_mapping_from_all_released_tags = {
+            t: all_released_tags[t]["revision"] for t in all_released_tags
         }
     except FileNotFoundError:
-        all_existing_tags = {}
-        tag_mapping_from_all_existing_tags = {}
+        all_released_tags = {}
+        tag_mapping_from_all_released_tags = {}
 
     # combine all tags
     all_tags_mapping = {
-        **tag_mapping_from_all_existing_tags,
+        **tag_mapping_from_all_released_tags,
         **tag_mapping_from_trigger,
     }
 
@@ -102,7 +110,7 @@ if __name__ == "__main__":
     for tag, value in tag_mapping_from_trigger.items():
         # assert for channels that are following other channels that don't exist
         if value == tag:
-            msg = f"A tag canno follow itsefl ({value})"
+            msg = f"A tag cannot follow itself ({value})"
             raise utils.BadChannel(msg)
 
         # we need to map tags to a revision number,
@@ -126,17 +134,21 @@ if __name__ == "__main__":
                     " following tags that follow themselves. Cannot pin a revision."
                 )
                 raise utils.BadChannel(msg)
+            followed_tags.append(follow_tag)
 
             # follow the parent tag until it is a digit (ie. revision number)
             try:
-                follow_tag = all_tags_mapping[follow_tag]
+                parent_tag = all_tags_mapping[follow_tag]
             except KeyError as err:
                 msg = (
                     f"Tag {tag} wants to follow tag {follow_tag}, but it doesn't exist."
                 )
                 raise utils.BadChannel(msg) from err
 
-        if follow_tag not in revision_to_track:
+            print(f"Tag {follow_tag} is following tag {parent_tag}.")
+            follow_tag = parent_tag
+
+        if int(follow_tag) not in revision_to_track:
             msg = f"The tag {tag} points to revision {follow_tag}, which doesn't exist!"
             raise utils.BadChannel(msg)
 
@@ -151,12 +163,16 @@ if __name__ == "__main__":
         if re.match(
             rf"latest_({'|'.join(schema.triggers.KNOWN_RISKS_ORDERED)})$", base_tag
         ):
+            latest_alias = base_tag.split("_")[0]
+            print(f"Exceptionally converting tag {base_tag} to {latest_alias}.")
             release_tags.pop(base_tag)
-            release_tags[base_tag.split("_")[0]] = revision
+            release_tags[latest_alias] = revision
 
         # stable risks have an alias with any risk string
         if base_tag.endswith("_stable"):
-            release_tags["_".join(base_tag.split("_")[:-1])] = revision
+            alias = "_".join(base_tag.split("_")[:-1])
+            print(f"Adding stable tag alias {alias} for {base_tag}")
+            release_tags[alias] = revision
 
     # we finally have all the OCI tags to be released,
     # and which revisions to release for each tag. Let's release!
@@ -168,11 +184,13 @@ if __name__ == "__main__":
         track_of_revision = revision_to_track[revision]
         source_img = f"docker://ghcr.io/{args.ghcr_repo}/{img_name}:{track}_{revision}"
         this_dir = os.path.dirname(__file__)
+        print(f"Releasing {source_img} with tags:\n{tags}")
         subprocess.call(
             [f"{this_dir}/tag_and_publish.sh", source_img, img_name, ",".join(tags)]
         )
         for t in tags:
-            tag_mapping_from_all_existing_tags[t] = {"revision": revision}
+            tag_mapping_from_all_released_tags[t] = {"revision": revision}
 
-    with open(args.all_existing_tags, "w") as fd:
-        json.dump(tag_mapping_from_all_existing_tags, fd, indent=4)
+    print(f"Updating {args.all_released_tags} file")
+    with open(args.all_released_tags, "w") as fd:
+        json.dump(tag_mapping_from_all_released_tags, fd, indent=4)

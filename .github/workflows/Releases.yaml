@@ -129,8 +129,8 @@ jobs:
           ./src/releases/release.py \
             --releases-trigger ${{ matrix.trigger-name }} \
             --image-name ${{ matrix.name }} \
-            --all-existing-tags ${{ matrix.all-tags-file }} \
-            --canonical-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags }}" \
+            --all-released-tags ${{ matrix.all-tags-file }} \
+            --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags }}" \
             --ghcr-repo "${{ github.repository_owner }}/oci-factory"
 
       - name: Commit ${{ matrix.all-tags-file }} file
