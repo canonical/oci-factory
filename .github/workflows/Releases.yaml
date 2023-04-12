@@ -87,7 +87,7 @@ jobs:
           # ECR_LTS_CREDS_PSW: ${{ matrix.is-production && secrets.ECR_LTS_CREDS_PSW || secrets.ECR_LTS_CREDS_PSW_DEV }}
           
           ACR_NAMESPACE: ${{ matrix.is-production && 'ubuntu.azurecr.io' || secrets.ACR_NAMESPACE_DEV }}
-          DOCKER_HUB_NAMESPACE: ${{ matrix.is-production && 'docker.io/ubuntu' || secrets.DOCKER_HUB_NAMESPACE }}
+          DOCKER_HUB_NAMESPACE: ${{ matrix.is-production && 'docker.io/ubuntu' || secrets.DOCKER_HUB_NAMESPACE_DEV }}
           ECR_NAMESPACE: ${{ matrix.is-production && 'ubuntu' || secrets.ECR_NAMESPACE_DEV }}
           # ECR_LTS_NAMESPACE: ${{ matrix.is-production && 'lts' || secrets.ECR_LTS_NAMESPACE_DEV }}
         run: |
