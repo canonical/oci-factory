@@ -7,3 +7,4 @@ images:
     release-to:
       risks: 
         - stable
+        - edge
