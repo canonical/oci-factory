@@ -24,7 +24,7 @@ if __name__ == "__main__":
         this_release["release-number"] = index
         this_release["oci-path"] = oci_path
         this_release["trigger-name"] = f"{oci_path}/releases.yaml"
-        this_release["is_production"] = True if "mock-" in oci_path else False
+        this_release["is-production"] = "true" if "mock-" in oci_path else "false"
 
         releases.append(this_release)
 
