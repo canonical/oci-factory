@@ -34,7 +34,7 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument(
-        "--all-canonical-tags",
+        "--canonical-tags",
         help="Comma-separated list of <track>:<revision> for this image.",
         required=True,
     )
@@ -45,9 +45,9 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    all_canonical_tags = args.all_canonical_tags.rstrip(",").lstrip(",").split(",")
+    canonical_tags = args.canonical_tags.rstrip(",").lstrip(",").split(",")
     revision_to_track = {}
-    for track_revision in all_canonical_tags:
+    for track_revision in canonical_tags:
         track, revision = track_revision.split("_")
         if revision in revision_to_track:
             msg = (
