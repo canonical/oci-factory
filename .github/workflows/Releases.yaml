@@ -126,6 +126,8 @@ jobs:
           ECR_NAMESPACE: ${{ matrix.is-production && 'ubuntu' || secrets.ECR_NAMESPACE_DEV }}
           # ECR_LTS_NAMESPACE: ${{ matrix.is-production && 'lts' || secrets.ECR_LTS_NAMESPACE_DEV }}
         run: |
+          set -ex
+          
           ./src/releases/release.py \
             --releases-trigger ${{ matrix.trigger-name }} \
             --image-name ${{ matrix.name }} \

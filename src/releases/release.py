@@ -40,7 +40,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--ghcr-repo",
-        help="GHCR repo where the image was uploaded.",
+        help="GHCR repo where the image was originally uploaded.",
         required=True,
     )
 
@@ -185,8 +185,8 @@ if __name__ == "__main__":
         source_img = f"docker://ghcr.io/{args.ghcr_repo}/{img_name}:{track}_{revision}"
         this_dir = os.path.dirname(__file__)
         print(f"Releasing {source_img} with tags:\n{tags}")
-        subprocess.call(
-            [f"{this_dir}/tag_and_publish.sh", source_img, img_name, ",".join(tags)]
+        subprocess.check_call(
+            [f"{this_dir}/tag_and_publish.sh", source_img, img_name] + tags
         )
         for t in tags:
             tag_mapping_from_all_released_tags[t] = {"revision": revision}
