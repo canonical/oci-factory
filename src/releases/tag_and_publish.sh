@@ -108,6 +108,7 @@ if [ ! -z $GHCR_REPO ]; then
     exit 0
 fi
 
+docker login -u $DOCKER_HUB_CREDS_USR -p $DOCKER_HUB_CREDS_PSW
 ## DOCKER HUB
 publish_with_username_password \
     "$DOCKER_HUB_CREDS_USR" \

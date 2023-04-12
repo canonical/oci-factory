@@ -92,7 +92,7 @@ jobs:
           # ECR_LTS_NAMESPACE: ${{ matrix.is-production && 'lts' || secrets.ECR_LTS_NAMESPACE_DEV }}
         run: |
           set -ex
-
+          echo ${{ matrix.is-production }}
           ./src/releases/release.py \
             --releases-trigger ${{ matrix.trigger-name }} \
             --image-name ${{ matrix.name }} \
