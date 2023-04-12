@@ -1,5 +1,8 @@
 name: Prepare Builds
 on:
+  push:
+    paths:
+      - 'oci/*/builds.y*ml'
   pull_request:
     paths:
       - 'oci/*/builds.y*ml'
@@ -38,6 +41,12 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.prepare-build-matrix.outputs.multi-image-build-matrix) }}
     steps:
+      - id: clean-image-image
+        run: |
+          set -ex
+          name=$(echo "${{ matrix.image-name }}" | awk -F'/' '{print $NF}')
+          
+          echo "image-name=${name}" >> "$GITHUB_OUTPUT"
       - name: Invoke PR builds
         if: github.event_name == 'pull_request'
         uses: convictional/trigger-workflow-and-wait@v1.6.5
@@ -48,7 +57,7 @@ jobs:
           workflow_file_name: Builds.yaml
           ref: ${{ github.event.pull_request.head.ref }}
           comment_downstream_url: ${{ github.event.pull_request.comments_url }}
-          client_payload: '{ "oci-image-name": "${{ matrix.image-name }}", "upload": false }' 
+          client_payload: '{ "oci-image-name": "${{ steps.clean-image-image.outputs.image-name }}", "upload": false }' 
       - name: Invoke branch builds
         if: github.event_name != 'pull_request'
         uses: convictional/trigger-workflow-and-wait@v1.6.5
@@ -59,4 +68,4 @@ jobs:
           workflow_file_name: Builds.yaml
           ref: ${{ github.ref }}
           comment_downstream_url: ${{ github.event.pull_request.comments_url }}
-          client_payload: '{ "oci-image-name": "${{ matrix.image-name }}", "upload": ${{ env.IS_MAIN }} }'     
+          client_payload: '{ "oci-image-name": "${{ steps.clean-image-image.outputs.image-name }}", "upload": ${{ env.IS_MAIN }} }'     
