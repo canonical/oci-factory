@@ -5,42 +5,7 @@ on:
       - main
     paths:
       - "oci/*/releases.y*ml"
-  
-  # workflow_dispatch:
-  #   inputs:
-  #     oci-image-name:
-  #       description: 'Name of the image to be fetched and tested'
-  #       required: true
-  #     test-from:
-  #       description: 'From where to fetch the OCI image to be tested'
-  #       required: true
-  #       default: 'cache'
-  #       type: choice
-  #       options:
-  #       - cache
-  #       - registry
-  #     cache-key:
-  #       description: 'Cache key (when fetching from cache)'
-  #       required: false
-  #       type: string
-  #     is-a-rock:
-  #       description: 'Run additional ROCK-specific tests'
-  #       required: true
-  #       type: boolean
-  #       default: false
-  #     vulnerability-report-suffix:
-  #       description: 'Suffix for the vulnerability report artefact'
-  #       required: true
-  #       type: string
-  #       default: '.vulnerability-report.json'
 
-# env:
-#   TEST_IMAGE_NAME: 'test-img'
-#   TEST_IMAGE_TAG: 'test'
-#   SKOPEO_IMAGE: 'quay.io/skopeo/stable:v1.9'
-#   UMOCI_VERSION: 'v0.4.7'
-#   UMOCI_BINARY: 'umoci.amd64'
-#   DIVE_IMAGE: 'wagoodman/dive:v0.10'
 
 jobs:
   prepare-releases-matrix:
@@ -127,7 +92,7 @@ jobs:
           # ECR_LTS_NAMESPACE: ${{ matrix.is-production && 'lts' || secrets.ECR_LTS_NAMESPACE_DEV }}
         run: |
           set -ex
-          
+
           ./src/releases/release.py \
             --releases-trigger ${{ matrix.trigger-name }} \
             --image-name ${{ matrix.name }} \
