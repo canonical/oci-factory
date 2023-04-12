@@ -1,8 +1,5 @@
 name: Prepare Builds
 on:
-  push:
-    paths:
-      - 'oci/*/builds.y*ml'
   pull_request:
     paths:
       - 'oci/*/builds.y*ml'
@@ -14,6 +11,8 @@ jobs:
     outputs:
       multi-image-build-matrix: ${{ steps.prepare-builds.outputs.multi-image-build-matrix }}
     steps:
+      - uses: actions/checkout@v3
+
       - name: Infer images to build
         uses: tj-actions/changed-files@v35
         id: changed-files

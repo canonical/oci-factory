@@ -47,6 +47,8 @@ jobs:
     runs-on: ubuntu-22.04
     name: Check for missing files
     needs: [get-submitted-files]
+    # temporarily continue on error, until the Notification and Doc update jobs are set
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v3
 
