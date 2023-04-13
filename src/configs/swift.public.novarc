@@ -1,0 +1,19 @@
+# The remaining missing values come from the CI/CD secrets
+NOVARC_CONFIG_VERSION=1
+NOVARC=$(readlink -f "${BASH_SOURCE:-${0}}" 2>/dev/null) ||
+    NOVARC=$(python -c 'import os,sys; print os.path.abspath(os.path.realpath(sys.argv[1]))' "${BASH_SOURCE:-${0}}")
+NOVA_KEY_DIR=${NOVARC%/*}
+export OS_AUTH_URL="https://auth.prodstack5.canonical.com/v3"
+export NOVA_USERNAME="${OS_USERNAME}"
+export NOVA_PASSWORD="${OS_PASSWORD}"
+export NOVA_PROJECT_ID="${OS_TENANT_NAME}"
+export NOVA_VERSION="1.1"
+export NOVA_REGION="${OS_REGION_NAME}"
+
+# for keystone v3
+export OS_PROJECT_NAME=${OS_TENANT_NAME}
+export OS_PROJECT_DOMAIN_NAME=Default
+export OS_USER_DOMAIN_NAME=Default
+export OS_IDENTITY_API_VERSION=3
+
+export OS_INTERFACE=public
