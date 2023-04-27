@@ -6,6 +6,9 @@ on:
   pull_request:
     paths:
       - 'oci/*/builds.y*ml'
+  pull_request_target:
+    paths:
+      - 'oci/*/builds.y*ml'
 
 jobs:
   prepare-build-matrix:
