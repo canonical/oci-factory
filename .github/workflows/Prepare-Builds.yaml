@@ -1,74 +1,74 @@
-name: Prepare Builds
-on:
-  push:
-    paths:
-      - 'oci/*/builds.y*ml'
-  pull_request:
-    paths:
-      - 'oci/*/builds.y*ml'
-  pull_request_target:
-    paths:
-      - 'oci/*/builds.y*ml'
+# name: Prepare Builds
+# on:
+#   push:
+#     paths:
+#       - 'oci/*/builds.y*ml'
+#   pull_request:
+#     paths:
+#       - 'oci/*/builds.y*ml'
+#   pull_request_target:
+#     paths:
+#       - 'oci/*/builds.y*ml'
 
-jobs:
-  prepare-build-matrix:
-    runs-on: ubuntu-22.04
-    name: Prepare new builds
-    outputs:
-      multi-image-build-matrix: ${{ steps.prepare-builds.outputs.multi-image-build-matrix }}
-    steps:
-      - uses: actions/checkout@v3
+# jobs:
+#   prepare-build-matrix:
+#     runs-on: ubuntu-22.04
+#     name: Prepare new builds
+#     outputs:
+#       multi-image-build-matrix: ${{ steps.prepare-builds.outputs.multi-image-build-matrix }}
+#     steps:
+#       - uses: actions/checkout@v3
 
-      - name: Infer images to build
-        uses: tj-actions/changed-files@v35
-        id: changed-files
-        with:
-          json: true
-          dir_names: "true"
-          files: |
-            oci/*/builds.y*ml
+#       - name: Infer images to build
+#         uses: tj-actions/changed-files@v35
+#         id: changed-files
+#         with:
+#           json: true
+#           dir_names: "true"
+#           files: |
+#             oci/*/builds.y*ml
 
-      - name: Prepare builds matrix
-        id: prepare-builds
-        run: |
-          echo "multi-image-build-matrix={\"image-name\":${{ steps.changed-files.outputs.all_changed_files }}}" >> "$GITHUB_OUTPUT"
+#       - name: Prepare builds matrix
+#         id: prepare-builds
+#         run: |
+#           echo "multi-image-build-matrix={\"image-name\":${{ steps.changed-files.outputs.all_changed_files }}}" >> "$GITHUB_OUTPUT"
 
 
-  trigger-build-pipelines:
-    runs-on: ubuntu-22.04
-    needs: [prepare-build-matrix]
-    name: Trigger build pipelines
-    env:
-      IS_MAIN: ${{ github.ref_name == 'main' && true || false }}
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.prepare-build-matrix.outputs.multi-image-build-matrix) }}
-    steps:
-      - id: clean-image-image
-        run: |
-          set -ex
-          name=$(echo "${{ matrix.image-name }}" | awk -F'/' '{print $NF}')
+#   trigger-build-pipelines:
+#     runs-on: ubuntu-22.04
+#     needs: [prepare-build-matrix]
+#     name: Trigger build pipelines
+#     env:
+#       IS_MAIN: ${{ github.ref_name == 'main' && true || false }}
+#     strategy:
+#       fail-fast: false
+#       matrix: ${{ fromJSON(needs.prepare-build-matrix.outputs.multi-image-build-matrix) }}
+#     steps:
+#       - id: clean-image-image
+#         run: |
+#           set -ex
+#           name=$(echo "${{ matrix.image-name }}" | awk -F'/' '{print $NF}')
           
-          echo "image-name=${name}" >> "$GITHUB_OUTPUT"
-      - name: Invoke PR builds
-        if: github.event_name == 'pull_request'
-        uses: convictional/trigger-workflow-and-wait@v1.6.5
-        with:
-          owner: ${{ github.repository_owner }}
-          repo: oci-factory
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow_file_name: Builds.yaml
-          ref: ${{ github.event.pull_request.head.ref }}
-          comment_downstream_url: ${{ github.event.pull_request.comments_url }}
-          client_payload: '{ "oci-image-name": "${{ steps.clean-image-image.outputs.image-name }}", "upload": false }' 
-      - name: Invoke branch builds
-        if: github.event_name != 'pull_request'
-        uses: convictional/trigger-workflow-and-wait@v1.6.5
-        with:
-          owner: ${{ github.repository_owner }}
-          repo: oci-factory
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow_file_name: Builds.yaml
-          ref: ${{ github.ref }}
-          comment_downstream_url: ${{ github.event.pull_request.comments_url }}
-          client_payload: '{ "oci-image-name": "${{ steps.clean-image-image.outputs.image-name }}", "upload": ${{ env.IS_MAIN }} }'     
+#           echo "image-name=${name}" >> "$GITHUB_OUTPUT"
+#       - name: Invoke PR builds
+#         if: github.event_name == 'pull_request'
+#         uses: convictional/trigger-workflow-and-wait@v1.6.5
+#         with:
+#           owner: ${{ github.repository_owner }}
+#           repo: oci-factory
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+#           workflow_file_name: Builds.yaml
+#           ref: ${{ github.event.pull_request.head.ref }}
+#           comment_downstream_url: ${{ github.event.pull_request.comments_url }}
+#           client_payload: '{ "oci-image-name": "${{ steps.clean-image-image.outputs.image-name }}", "upload": false }' 
+#       - name: Invoke branch builds
+#         if: github.event_name != 'pull_request'
+#         uses: convictional/trigger-workflow-and-wait@v1.6.5
+#         with:
+#           owner: ${{ github.repository_owner }}
+#           repo: oci-factory
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+#           workflow_file_name: Builds.yaml
+#           ref: ${{ github.ref }}
+#           comment_downstream_url: ${{ github.event.pull_request.comments_url }}
+#           client_payload: '{ "oci-image-name": "${{ steps.clean-image-image.outputs.image-name }}", "upload": ${{ env.IS_MAIN }} }'     

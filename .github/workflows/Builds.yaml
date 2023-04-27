@@ -1,5 +1,11 @@
 name: Builds
 on:
+  push:
+    paths:
+      - 'oci/*/builds.y*ml'
+  pull_request:
+    paths:
+      - 'oci/*/builds.y*ml'
   workflow_dispatch:
     inputs:
       oci-image-name:
@@ -22,10 +28,33 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Infer images to build if needed
+        uses: tj-actions/changed-files@v35
+        id: changed-files
+        if: github.event_name != 'workflow_dispatch'
+        with:
+          separator: ","
+          dir_names: "true"
+          files: |
+            oci/*/builds.y*ml
+
       - name: Validate image from dispatch
         id: validate-image
         run: |
-          img_path="oci/${{ inputs.oci-image-name }}"
+          set -ex
+
+          if [[ "${{ github.event_name }}" != "workflow_dispatch" ]]
+          then
+            img_path="${{ steps.changed-files.outputs.all_changed_files }}"
+            occurrences="${img_path//[^,]}"
+            if [ ${#occurrences} -ne 0 ]
+            then
+              echo "ERR: can only build 1 image at a time, but trying to trigger ${img_path}"
+              exit 1
+            fi
+          else
+            img_path="oci/${{ inputs.oci-image-name }}"
+          fi
           test -d "${img_path}"
 
           echo "img-path=${img_path}" >> "$GITHUB_OUTPUT"
@@ -138,7 +167,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [prepare-build, run-build]
     name: Upload
-    if: ${{ inputs.upload }}
+    if: ${{ inputs.upload || (github.ref_name == 'main' && github.event_name == 'push') }}
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
@@ -543,23 +572,6 @@ jobs:
   #   with:
   #     base64-subjects: "${{ needs.upload.outputs.artefacts-hashes }}"
 
-
-  # notifications:
-  #   name: Notify
-  #   needs: [upload]
-  #   if: failure()
-  #   runs-on: ubuntu-22.04
-  #   steps:
-  #     - uses: actions/checkout@v3
-
-  #     - name: Get Maintainer contacts
-  #       id: contacts-file
-  #       run: |
-  #         set -x
-  #         contacts_path="oci/${{ inputs.oci-image-name }}/contacts.yaml"
-  #         test -f "${contacts_path}"
-
-  #         echo "path=${contacts_path}" >> "$GITHUB_OUTPUT"
 
   
   
