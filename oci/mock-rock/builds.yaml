@@ -6,5 +6,4 @@ images:
     directory: examples/mock-rock
     release-to:
       risks: 
-        - stable
         - edge
