@@ -1,6 +1,6 @@
 name: mock-rock
 summary: Hello World
-description: The mos t basic example of a ROCK.
+description: The most basic example of a ROCK.
 version: "1.0"
 base: ubuntu:20.04
 license: Apache-2.0
