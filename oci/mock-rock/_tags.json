@@ -1,5 +1,11 @@
 {
     "1.0-20.04_edge": {
         "revision": 1
+    },
+    "1.0-20.04_beta": {
+        "revision": 3
+    },
+    "1.0-20.04_candidate": {
+        "revision": 3
     }
 }
