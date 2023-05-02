@@ -6,4 +6,4 @@ images:
     directory: examples/mock-rock
     release-to:
       risks: 
-        - beta
+        - candidate
