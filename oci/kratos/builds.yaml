@@ -1,0 +1,9 @@
+version: 1
+
+images:
+  - source: "canonical/kratos-rock"
+    commit: 07ba17388852851a2b731d9b01f55f95271572d6
+    directory: .
+    release-to:
+      risks:
+        - edge
