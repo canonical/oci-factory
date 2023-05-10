@@ -1,0 +1,9 @@
+version: 1
+
+images:  
+  - source: "SamirPS/oci-factory"
+    commit: 094ce2bea646ea32fd42d8f10ca9c9624816671d
+    directory: examples/samir
+    release-to:
+      risks: 
+        - edge
