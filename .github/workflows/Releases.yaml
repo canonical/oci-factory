@@ -109,3 +109,16 @@ jobs:
           message: 'ci: automatically update ${{ matrix.all-tags-file }}, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: ${{ matrix.all-tags-file }}
           email: rocks-dev@lists.canonical.com
+      
+      - name: Run documentation
+        # Using this actions cause others can have this problem:
+        # https://github.com/convictional/trigger-workflow-and-wait/issues/61
+        uses: mathze/workflow-dispatch-action@v1.2.0
+        id: run-documentation
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fail-on-error: true
+          workflow-name: Docs.yaml
+          payload: '{ "oci-image-name": "${{ matrix.name }}"}'
+          use-marker-step: true
+          trigger-timeout: '3m'
