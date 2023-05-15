@@ -265,7 +265,7 @@ class GenerateOciYaml:
         logging.info("Opening the template file %s", template_file)
         with open(template_file, "r", encoding="UTF-8") as file:
             try:
-                template_data = DocSchema(**yaml.safe_load(file)).dict(
+                template_data = DocSchema(**yaml.safe_load(file) or {}).dict(
                     exclude_none=True
                 )
             except (yaml.YAMLError, pydantic.ValidationError) as exc:
