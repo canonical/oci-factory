@@ -37,9 +37,8 @@ if __name__ == "__main__":
         image_trigger = yaml.safe_load(bf)
         try:
             validate_image_trigger(image_trigger)
-        except pydantic.error_wrappers.ValidationError:
-            print(f"Bad schema for {image_trigger_file}")
-            raise
+        except pydantic.error_wrappers.ValidationError as err:
+            raise Exception(f"Bad schema for {image_trigger_file}") from err
 
     builds = image_trigger.get("upload", [])
 
@@ -55,6 +54,9 @@ if __name__ == "__main__":
         # set an output as a marker for later knowing if we need to release
         if "release" in builds[img_number]:
             release_to = "true"
+            # the workflow GH matrix has a problem parsing nested JSON dicts
+            # so let's remove this field since we don't need it for the builds
+            builds[img_number].pop("release")
 
     matrix = {"include": builds}
     print(f"{args.oci_path} - build matrix:\n{json.dumps(matrix, indent=4)}")
