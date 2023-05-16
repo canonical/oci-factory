@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     builds = image_trigger.get("upload", [])
 
-    release_to = ""
+    release_to = "true" if "release" in image_trigger else ""
     # inject some extra metadata into the matrix data
     for img_number, _ in enumerate(builds):
         builds[img_number]["name"] = args.oci_path.rstrip("/").split("/")[-1]

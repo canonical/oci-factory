@@ -1,10 +1,5 @@
 name: Releases
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "oci/*/image.y*ml"
   workflow_dispatch:
     inputs:
       oci-image-name:
@@ -19,7 +14,6 @@ jobs:
   validate-push-release-request:
     runs-on: ubuntu-22.04
     name: Validate push release request
-    if: github.event_name != 'workflow_dispatch'
     outputs:
       oci-image-name: ${{ steps.get-image-name.outputs.img-name }}
     steps:
@@ -64,20 +58,9 @@ jobs:
           key: ${{ inputs.image-trigger-cache-key }}
           fail-on-cache-miss: true
 
-      - id: infer-oci-image-name
-        run: |
-          set -ex
-
-          if [[ "${{ github.event_name }}" != "workflow_dispatch" ]]
-          then
-            echo "oci-image-name=${{ needs.validate-push-release-request.outputs.oci-image-name }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "oci-image-name=${{ inputs.oci-image-name }}" >> "$GITHUB_OUTPUT"
-          fi
-
       - id: infer-is-prod
         run: |
-          if [[ "${{ steps.infer-oci-image-name.outputs.oci-image-name }}" == "mock-"* ]]
+          if [[ "${{ inputs.oci-image-name }}" == "mock-"* ]]
           then
             echo "is-production=0" >> "$GITHUB_OUTPUT"
           else
@@ -107,11 +90,11 @@ jobs:
           OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
           OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
           OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
-          IMAGE_NAME: ${{ steps.infer-oci-image-name.outputs.oci-image-name }}
+          IMAGE_NAME: ${{ inputs.oci-image-name }}
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: ./src/image/get_canonical_tags_from_swift.sh
 
-      - name: Do releases from ${{ steps.infer-oci-image-name.outputs.oci-image-name }}
+      - name: Do releases from ${{ inputs.oci-image-name }}
         env:
           DOCKER_HUB_CREDS_PSW: ${{ steps.infer-is-prod.outputs.is-production && secrets.DOCKER_HUB_CREDS_PSW || secrets.DOCKER_HUB_CREDS_PSW_DEV }}
           DOCKER_HUB_CREDS_USR: ${{ steps.infer-is-prod.outputs.is-production && secrets.DOCKER_HUB_CREDS_USR || secrets.DOCKER_HUB_CREDS_USR_DEV }}
@@ -133,17 +116,17 @@ jobs:
           echo "Running in production?  ${{ steps.infer-is-prod.outputs.is-production && 'YES' || 'NO' }}"
           
           ./src/image/release.py \
-            --image-trigger oci/${{ steps.infer-oci-image-name.outputs.oci-image-name }}/image.yaml \
-            --image-name ${{ steps.infer-oci-image-name.outputs.oci-image-name }} \
-            --all-releases oci/${{ steps.infer-oci-image-name.outputs.oci-image-name }}/_releases.yaml \
+            --image-trigger oci/${{ inputs.oci-image-name }}/image.yaml \
+            --image-name ${{ inputs.oci-image-name }} \
+            --all-releases oci/${{ inputs.oci-image-name }}/_releases.yaml \
             --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags }}" \
             --ghcr-repo "${{ github.repository_owner }}/oci-factory"
 
-      - name: Commit oci/${{ steps.infer-oci-image-name.outputs.oci-image-name }}/_releases.yaml
+      - name: Commit oci/${{ inputs.oci-image-name }}/_releases.yaml
         uses: actions-x/commit@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: 'main'
-          message: 'ci: automatically update oci/${{ steps.infer-oci-image-name.outputs.oci-image-name }}/_releases.yaml, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-          files: oci/${{ steps.infer-oci-image-name.outputs.oci-image-name }}/_releases.yaml
+          message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.yaml, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          files: oci/${{ inputs.oci-image-name }}/_releases.yaml
           email: rocks-dev@lists.canonical.com

@@ -1,4 +1,4 @@
-name: Builds
+name: Image
 on:
   push:
     paths:
