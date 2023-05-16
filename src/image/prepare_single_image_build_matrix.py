@@ -7,15 +7,15 @@ import os
 import pydantic
 import yaml
 
-from schema.triggers import BuildsSchema
+from utils.schema.triggers import ImageSchema
 
 
-def validate_buids_trigger(data: dict) -> None:
-    """Loads the builds.yaml into the schema validation model."""
+def validate_image_trigger(data: dict) -> None:
+    """Loads the image.yaml into the schema validation model."""
     if not isinstance(data, dict):
-        raise TypeError("builds.yaml data cannot be loaded into a dictionary")
+        raise TypeError("image.yaml data cannot be loaded into a dictionary")
 
-    _ = BuildsSchema(**data)
+    _ = ImageSchema(**data)
 
     return None
 
@@ -24,24 +24,23 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--oci-path",
-        help="Local path to the image's folder hosting the builds.yaml file",
+        help="Local path to the image's folder hosting the image.yaml file",
         required=True,
     )
 
     args = parser.parse_args()
 
-    builds_file = glob.glob(f"{args.oci_path}/builds.y*ml")[0]
+    image_trigger_file = glob.glob(f"{args.oci_path}/image.y*ml")[0]
 
-    print(f"Generating build matrix for {builds_file}")
-    with open(builds_file) as bf:
-        builds_data = yaml.safe_load(bf)
+    print(f"Generating build matrix for {image_trigger_file}")
+    with open(image_trigger_file) as bf:
+        image_trigger = yaml.safe_load(bf)
         try:
-            validate_buids_trigger(builds_data)
-        except pydantic.error_wrappers.ValidationError:
-            print(f"Bad schema for {builds_file}")
-            raise
+            validate_image_trigger(image_trigger)
+        except pydantic.error_wrappers.ValidationError as err:
+            raise Exception(f"Bad schema for {image_trigger_file}") from err
 
-    builds = builds_data.get("images", [])
+    builds = image_trigger.get("upload", [])
 
     release_to = ""
     # inject some extra metadata into the matrix data
@@ -53,8 +52,11 @@ if __name__ == "__main__":
         builds[img_number]["build_number"] = img_number
 
         # set an output as a marker for later knowing if we need to release
-        if "release-to" in builds[img_number]:
+        if "release" in builds[img_number]:
             release_to = "true"
+            # the workflow GH matrix has a problem parsing nested JSON dicts
+            # so let's remove this field since we don't need it for the builds
+            builds[img_number].pop("release")
 
     matrix = {"include": builds}
     print(f"{args.oci_path} - build matrix:\n{json.dumps(matrix, indent=4)}")
