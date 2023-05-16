@@ -4,10 +4,12 @@ First and foremost, thank you for considering contributing to this project!
 
 ## Table of Contents
 
-- [Getting Started](#getting-started)
-- [Code of Conduct](#code-of-conduct)
-- [Canonical Contributor Agreement](#canonical-contributor-agreement)
-- [How to Contribute](#how-to-contribute)
+- [Contributing](#contributing)
+  - [Table of Contents](#table-of-contents)
+  - [Getting Started](#getting-started)
+  - [Code of Conduct](#code-of-conduct)
+  - [Canonical Contributor Agreement](#canonical-contributor-agreement)
+  - [How to Contribute](#how-to-contribute)
 
 ## Getting Started
 

@@ -2,10 +2,10 @@ name: Builds
 on:
   push:
     paths:
-      - 'oci/*/builds.y*ml'
+      - 'oci/*/image.y*ml'
   pull_request:
     paths:
-      - 'oci/*/builds.y*ml'
+      - 'oci/*/image.y*ml'
   workflow_dispatch:
     inputs:
       oci-image-name:
@@ -25,10 +25,11 @@ jobs:
       build-matrix: ${{ steps.prepare-matrix.outputs.build-matrix }}
       release-to: ${{ steps.prepare-matrix.outputs.release-to }}
       oci-img-path: ${{ steps.validate-image.outputs.img-path }}
+      oci-img-name: ${{ steps.validate-image.outputs.img-name }}
     steps:
       - uses: actions/checkout@v3
 
-      - name: Infer images to build if needed
+      - name: Infer number of image triggers
         uses: tj-actions/changed-files@v35
         id: changed-files
         if: github.event_name != 'workflow_dispatch'
@@ -36,7 +37,7 @@ jobs:
           separator: ","
           dir_names: "true"
           files: |
-            oci/*/builds.y*ml
+            oci/*/image.y*ml
 
       - name: Validate image from dispatch
         id: validate-image
@@ -57,18 +58,19 @@ jobs:
           fi
           test -d "${img_path}"
 
+          echo "img-name=$(basename ${img_path})" >> "$GITHUB_OUTPUT"
           echo "img-path=${img_path}" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-python@v4
         with:
           python-version: "3.x"
 
-      - run: pip install -r src/builds/requirements.txt
+      - run: pip install -r src/image/requirements.txt
 
       - name: Validate and prepare builds matrix
         id: prepare-matrix
         run: |
-          ./src/builds/prepare_single_image_build_matrix.py \
+          ./src/image/prepare_single_image_build_matrix.py \
             --oci-path ${{ steps.validate-image.outputs.img-path }}
 
   run-build:
@@ -192,9 +194,9 @@ jobs:
           SKOPEO_BRANCH: 'v1.9.1'
           SKOPEO_URL: 'https://github.com/containers/skopeo'
         run: |
-          ./src/releases/requirements.sh
+          ./src/image/requirements.sh
           ./src/uploads/requirements.sh
-          pip install -r src/uploads/requirements.txt -r src/releases/requirements.txt
+          pip install -r src/uploads/requirements.txt -r src/image/requirements.txt
 
       - uses: actions/checkout@v3
         with:
@@ -275,6 +277,8 @@ jobs:
           run-id: ${{ steps.run-tests.outputs.run-id }}
           wait-interval: 10s
       
+      - run: sleep 5
+
       - name: Download vulnerability artifacts
         uses: dawidd6/action-download-artifact@v2
         with:
@@ -282,8 +286,6 @@ jobs:
           run_id: ${{ steps.run-tests.outputs.run-id }}
           path: '.'
           name: ${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}.zip
-
-      - run: ls *
       
       - name: Install Syft
         uses: anchore/sbom-action/download-syft@v0
@@ -383,7 +385,7 @@ jobs:
 
           source="oci:${oci_images}"
 
-          ./src/releases/tag_and_publish.sh "${source}" \
+          ./src/image/tag_and_publish.sh "${source}" \
             ${{ matrix.name }} \
             ${{ steps.rename-oci-archive.outputs.canonical-tag }}
 
@@ -422,11 +424,9 @@ jobs:
 
           if [ ! -z ${{ matrix.release-to }} ]
           then
-            risks=$(echo '${{ toJSON(matrix.release-to.risks) }}' | jq -r 'join(",")')
-            
-            jq -n --arg track ${{ steps.get-track.outputs.track }} '{"track": $track}' \
-              | jq --arg revision ${{ steps.get-revision.outputs.revision }} ' . + {"revision": $revision}' \
-              | jq --arg risks $risks '. + {"risks": $risks}' > $file
+            echo '${{ toJSON(matrix.release-to) }}' | \
+              jq -n --arg revision ${{ steps.get-revision.outputs.revision }} \
+                '{"release": ., "revision": $revision}' > $file
           else
             echo '{}' > $file
           fi
@@ -441,8 +441,9 @@ jobs:
           if-no-files-found: error
 
 
-  # We need this job because the releases.yaml should be updated with a
-  # single commit. If we update it within a matrix, we risk having conflicts
+  # We need this job because we want to make the releases all in one go,
+  # so that we know which revisions to release, and so that we can update
+  # and commit the _release.yaml file in a single commit, outside a matrix job
   prepare-releases:
     name: Prepare releases
     needs: [prepare-build, upload]
@@ -460,21 +461,21 @@ jobs:
         with:
           persist-credentials: false
 
-      - run: pip install -r src/releases/requirements.txt
+      - run: pip install -r src/image/requirements.txt
 
       - uses: actions/download-artifact@v3
         id: download
         with:
           path: artifacts
 
-      - name: Update releases trigger
-        id: update-releases-trigger
+      - name: Merge release requests
+        id: merge-release-requests
         run: |
           set -ex
           for pre_release_file in `ls ${{ steps.download.outputs.download-path }}/*/*.pre-release.json`
           do
             ret=0
-            track=$(jq -er .track < $pre_release_file) || ret=1
+            track=$(jq -er .revision < $pre_release_file) || ret=1
             
             if [ $ret -eq 1 ]
             then
@@ -482,25 +483,29 @@ jobs:
               continue
             fi
 
-            revision=$(jq -er .revision < $pre_release_file)
-            risks=$(jq -er .risks < $pre_release_file)
-            ./src/releases/update_releases_file.py \
-              --releases-trigger "${{ needs.prepare-build.outputs.oci-img-path }}/releases.yaml" \
-              --release-to-risks "${risks}" \
-              --release-to-track "${track}" \
-              --revision "${revision}"
-          done
-          
-          echo "releases-trigger=${{ needs.prepare-build.outputs.oci-img-path }}/releases.yaml" >> "$GITHUB_OUTPUT"
+            echo "Merge pre-release ${pre_release_file} with requested releases"
 
-      - name: Trigger releases via commit
-        uses: actions-x/commit@v6
+            ./src/image/merge_pre_release.py \
+              --image-trigger "${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml" \
+              --pre-release-file "${pre_release_file}"
+          done
+
+      - uses: actions/cache/save@v3
         with:
-          token: ${{ secrets.ROCKSBOT_TOKEN }}
-          branch: 'main'
-          message: 'ci: automatic trigger of releases for ${{ needs.prepare-build.outputs.oci-img-path }}, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-          files: ${{ steps.update-releases-trigger.outputs.releases-trigger }}
-          email: rocks-dev@lists.canonical.com
+          path: ${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml
+          key: ${{ github.run_id }}-image-trigger
+
+      - name: Dispatch Releases workflow
+        # Using this actions cause others can have this problem:
+        # https://github.com/convictional/trigger-workflow-and-wait/issues/61
+        uses: mathze/workflow-dispatch-action@v1.2.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fail-on-error: true
+          workflow-name: Releases.yaml
+          payload: '{ "oci-image-name": "${{ needs.prepare-build.outputs.oci-img-name }}", "image-trigger-cache-key": "${{ github.run_id }}-image-trigger"}'
+          use-marker-step: true
+          trigger-timeout: '3m'
 
           
   generate-provenance:

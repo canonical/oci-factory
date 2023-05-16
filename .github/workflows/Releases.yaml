@@ -4,49 +4,85 @@ on:
     branches:
       - main
     paths:
-      - "oci/*/releases.y*ml"
-
+      - "oci/*/image.y*ml"
+  workflow_dispatch:
+    inputs:
+      oci-image-name:
+        description: 'OCI image to build and test'
+        required: true
+      image-trigger-cache-key:
+        description: 'Cache key (to fetch image trigger from cache)'
+        required: false
+        type: string
 
 jobs:
-  prepare-releases-matrix:
+  validate-push-release-request:
     runs-on: ubuntu-22.04
-    name: Prepare new releases
+    name: Validate push release request
+    if: github.event_name != 'workflow_dispatch'
     outputs:
-      multi-image-release-matrix: ${{ steps.prepare-releases.outputs.multi-image-release-matrix }}
+      oci-image-name: ${{ steps.get-image-name.outputs.img-name }}
     steps:
       - uses: actions/checkout@v3
 
-      - name: Infer images to releaase
+      - name: Infer number of image triggers
         uses: tj-actions/changed-files@v35
         id: changed-files
         with:
           dir_names: "true"
           separator: ","
           files: |
-            oci/*/releases.y*ml
+            oci/*/image.y*ml
 
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
-
-      - name: Prepare releases matrix
-        id: prepare-releases
-        if: ${{ steps.changed-files.outputs.all_changed_files }}
+      - name: Fail if more than one image
+        id: get-image-name
         run: |
-          ./src/releases/prepare_multi_image_release_matrix.py \
-            --oci-paths ${{ steps.changed-files.outputs.all_changed_files }}
+          set -ex
+
+          img_dir="${{ steps.changed-files.outputs.all_changed_files }}"
+          occurrences="${img_dir//[^,]}"
+          if [ ${#occurrences} -ne 0 ]
+          then
+            echo "ERR: can only release 1 image at a time, but trying to release ${img_dir}"
+            exit 1
+          fi
+
+          echo "img-name=$(basename ${img_dir})" >> "$GITHUB_OUTPUT"
 
 
   do-releases:
     runs-on: ubuntu-22.04
     name: Release
-    needs: [prepare-releases-matrix]
-    if: ${{ needs.prepare-releases-matrix.outputs.multi-image-release-matrix }}
-    strategy:
-      fail-fast: true
-      matrix: ${{ fromJSON(needs.prepare-releases-matrix.outputs.multi-image-release-matrix) }}
+    needs: [validate-push-release-request]
     steps:
       - uses: actions/checkout@v3
+
+      - uses: actions/cache/restore@v3
+        if: ${{ inputs.image-trigger-cache-key != '' }}
+        with:
+          path: oci/${{ inputs.oci-image-name }}
+          key: ${{ inputs.image-trigger-cache-key }}
+          fail-on-cache-miss: true
+
+      - id: infer-oci-image-name
+        run: |
+          set -ex
+
+          if [[ "${{ github.event_name }}" != "workflow_dispatch" ]]
+          then
+            echo "oci-image-name=${{ needs.validate-push-release-request.outputs.oci-image-name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "oci-image-name=${{ inputs.oci-image-name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - id: infer-is-prod
+        run: |
+          if [[ "${{ steps.infer-oci-image-name.outputs.oci-image-name }}" == "mock-"* ]]
+          then
+            echo "is-production=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "is-production=1" >> "$GITHUB_OUTPUT"
+          fi
 
       - uses: actions/setup-python@v4
         with:
@@ -60,8 +96,8 @@ jobs:
           SKOPEO_BRANCH: 'v1.9.1'
           SKOPEO_URL: 'https://github.com/containers/skopeo'
         run: | 
-          ./src/releases/requirements.sh
-          pip install -r src/releases/requirements.txt
+          ./src/image/requirements.sh
+          pip install -r src/image/requirements.txt
 
       - name: Get all revisions per track
         id: get-all-canonical-tags
@@ -71,41 +107,43 @@ jobs:
           OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
           OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
           OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
-          TRIGGER_PATH: ${{ matrix.trigger-name }}
+          IMAGE_NAME: ${{ steps.infer-oci-image-name.outputs.oci-image-name }}
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
-        run: ./src/releases/get_all_canonical_tags.sh
+        run: ./src/image/get_canonical_tags_from_swift.sh
 
-      - name: Do releases from ${{ matrix.trigger-name }}
+      - name: Do releases from ${{ steps.infer-oci-image-name.outputs.oci-image-name }}
         env:
-          DOCKER_HUB_CREDS_PSW: ${{ matrix.is-production && secrets.DOCKER_HUB_CREDS_PSW || secrets.DOCKER_HUB_CREDS_PSW_DEV }}
-          DOCKER_HUB_CREDS_USR: ${{ matrix.is-production && secrets.DOCKER_HUB_CREDS_USR || secrets.DOCKER_HUB_CREDS_USR_DEV }}
-          ACR_CREDS_USR: ${{ matrix.is-production && secrets.ACR_CREDS_USR || secrets.ACR_CREDS_USR_DEV }}
-          ACR_CREDS_PSW: ${{ matrix.is-production && secrets.ACR_CREDS_PSW || secrets.ACR_CREDS_PSW_DEV }}
-          ECR_CREDS_USR: ${{ matrix.is-production && secrets.ECR_CREDS_USR || secrets.ECR_CREDS_USR_DEV }}
-          ECR_CREDS_PSW: ${{ matrix.is-production && secrets.ECR_CREDS_PSW || secrets.ECR_CREDS_PSW_DEV }}
-          # ECR_LTS_CREDS_USR: ${{ matrix.is-production && secrets.ECR_LTS_CREDS_USR || secrets.ECR_LTS_CREDS_USR_DEV }}
-          # ECR_LTS_CREDS_PSW: ${{ matrix.is-production && secrets.ECR_LTS_CREDS_PSW || secrets.ECR_LTS_CREDS_PSW_DEV }}
+          DOCKER_HUB_CREDS_PSW: ${{ steps.infer-is-prod.outputs.is-production && secrets.DOCKER_HUB_CREDS_PSW || secrets.DOCKER_HUB_CREDS_PSW_DEV }}
+          DOCKER_HUB_CREDS_USR: ${{ steps.infer-is-prod.outputs.is-production && secrets.DOCKER_HUB_CREDS_USR || secrets.DOCKER_HUB_CREDS_USR_DEV }}
+          ACR_CREDS_USR: ${{ steps.infer-is-prod.outputs.is-production && secrets.ACR_CREDS_USR || secrets.ACR_CREDS_USR_DEV }}
+          ACR_CREDS_PSW: ${{ steps.infer-is-prod.outputs.is-production && secrets.ACR_CREDS_PSW || secrets.ACR_CREDS_PSW_DEV }}
+          ECR_CREDS_USR: ${{ steps.infer-is-prod.outputs.is-production && secrets.ECR_CREDS_USR || secrets.ECR_CREDS_USR_DEV }}
+          ECR_CREDS_PSW: ${{ steps.infer-is-prod.outputs.is-production && secrets.ECR_CREDS_PSW || secrets.ECR_CREDS_PSW_DEV }}
+          # ECR_LTS_CREDS_USR: ${{ steps.infer-is-prod.outputs.is-production && secrets.ECR_LTS_CREDS_USR || secrets.ECR_LTS_CREDS_USR_DEV }}
+          # ECR_LTS_CREDS_PSW: ${{ steps.infer-is-prod.outputs.is-production && secrets.ECR_LTS_CREDS_PSW || secrets.ECR_LTS_CREDS_PSW_DEV }}
           
-          ACR_NAMESPACE: ${{ matrix.is-production && 'ubuntu.azurecr.io' || secrets.ACR_NAMESPACE_DEV }}
-          DOCKER_HUB_NAMESPACE: ${{ matrix.is-production && 'docker.io/ubuntu' || secrets.DOCKER_HUB_NAMESPACE_DEV }}
-          ECR_NAMESPACE: ${{ matrix.is-production && 'ubuntu' || secrets.ECR_NAMESPACE_DEV }}
-          # ECR_LTS_NAMESPACE: ${{ matrix.is-production && 'lts' || secrets.ECR_LTS_NAMESPACE_DEV }}
+          ACR_NAMESPACE: ${{ steps.infer-is-prod.outputs.is-production && 'ubuntu.azurecr.io' || secrets.ACR_NAMESPACE_DEV }}
+          DOCKER_HUB_NAMESPACE: ${{ steps.infer-is-prod.outputs.is-production && 'docker.io/ubuntu' || secrets.DOCKER_HUB_NAMESPACE_DEV }}
+          ECR_NAMESPACE: ${{ steps.infer-is-prod.outputs.is-production && 'ubuntu' || secrets.ECR_NAMESPACE_DEV }}
+          # ECR_LTS_NAMESPACE: ${{ steps.infer-is-prod.outputs.is-production && 'lts' || secrets.ECR_LTS_NAMESPACE_DEV }}
+
+          PYTHONUNBUFFERED: 1
         run: |
           set -ex
-          echo "Running in production?  ${{ matrix.is-production && 'YES' || 'NO' }}"
+          echo "Running in production?  ${{ steps.infer-is-prod.outputs.is-production && 'YES' || 'NO' }}"
           
-          ./src/releases/release.py \
-            --releases-trigger ${{ matrix.trigger-name }} \
-            --image-name ${{ matrix.name }} \
-            --all-released-tags ${{ matrix.all-tags-file }} \
+          ./src/image/release.py \
+            --image-trigger oci/${{ steps.infer-oci-image-name.outputs.oci-image-name }}/image.yaml \
+            --image-name ${{ steps.infer-oci-image-name.outputs.oci-image-name }} \
+            --all-releases oci/${{ steps.infer-oci-image-name.outputs.oci-image-name }}/_releases.yaml \
             --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags }}" \
             --ghcr-repo "${{ github.repository_owner }}/oci-factory"
 
-      - name: Commit ${{ matrix.all-tags-file }} file
+      - name: Commit oci/${{ steps.infer-oci-image-name.outputs.oci-image-name }}/_releases.yaml
         uses: actions-x/commit@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: 'main'
-          message: 'ci: automatically update ${{ matrix.all-tags-file }}, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-          files: ${{ matrix.all-tags-file }}
+          message: 'ci: automatically update oci/${{ steps.infer-oci-image-name.outputs.oci-image-name }}/_releases.yaml, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          files: oci/${{ steps.infer-oci-image-name.outputs.oci-image-name }}/_releases.yaml
           email: rocks-dev@lists.canonical.com

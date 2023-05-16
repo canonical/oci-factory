@@ -7,29 +7,12 @@ from utils.schema.triggers import ReleasesSchema, KNOWN_RISKS_ORDERED
 
 class BadChannel(Exception):
     """Error validating release channel."""
-    
-    
+
+
 def file_exists(path: str) -> bool:
     """Check is a file exists."""
 
     return os.path.exists(path)
-
-
-def assert_releases_trigger_filename(path: str) -> None:
-    """Check if the provided trigger file is properly named."""
-
-    assert path.endswith(
-        ("releases.yaml", "releases.yml")
-    ), "The releases trigger file must be named releases.yaml"
-
-
-def parse_releases_trigger(path: str) -> dict:
-    """Read and validate the releases trigger, returning its content as JSON."""
-
-    with open(path) as trigger:
-        content = yaml.safe_load(trigger)
-
-    return ReleasesSchema(**content)
 
 
 def backfill_higher_risks(track_name: str, track: dict) -> dict:
