@@ -1,9 +1,11 @@
 version: 1
 
-images:  
+upload:  
   - source: "cjdcordeiro/oci-factory"
-    commit: 07180297014b94121fcd0ed0fe2a4ae053627da2
+    commit: fd2ca266c089d57d85c33d3d9b8eb0efbdf0d0d9
     directory: examples/mock-rock
-    release-to:
-      risks: 
-        - candidate
+    release:
+      1.0-22.04:
+        end-of-life: "2024-05-01T00:00:00Z"
+        risks: 
+          - candidate
