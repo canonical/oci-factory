@@ -198,7 +198,7 @@ jobs:
           exit-code: '1'
           # NOTE: pebble is flagged with a HIGH vuln because of golang.org/x/crypto
           # CVE-2021-43565, CVE-2022-27191
-          skip-files: /usr/bin/pebble
+          skip-files: /bin/pebble
           # missing ${{ runner.arch }}
           output: '${{ inputs.oci-image-name }}${{ inputs.vulnerability-report-suffix }}'
           image-ref: '${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}'
