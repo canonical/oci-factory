@@ -211,7 +211,7 @@ jobs:
           echo "report=$report" >> "$GITHUB_OUTPUT"
 
       - uses: actions/cache/save@v3
-        if: steps.vulnerability-scan.conclusion == 'success'
+        if: ${{ always() }}
         with:
           path: ${{ steps.vulnerability-scan.outputs.report }}
           key: ${{ github.run_id }}-${{ steps.vulnerability-scan.outputs.report }}
@@ -256,6 +256,7 @@ jobs:
   upload-test-artefacts:
     name: Upload test artefacts
     runs-on: ubuntu-22.04
+    if: ${{ always() }}
     needs:
       - test-vulnerabilities
       - test-black-box
