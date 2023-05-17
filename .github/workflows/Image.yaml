@@ -504,7 +504,6 @@ jobs:
           fail-on-error: true
           workflow-name: Releases.yaml
           payload: '{ "oci-image-name": "${{ needs.prepare-build.outputs.oci-img-name }}", "image-trigger-cache-key": "${{ github.run_id }}-image-trigger"}'
-          use-marker-step: true
           trigger-timeout: '3m'
 
           
