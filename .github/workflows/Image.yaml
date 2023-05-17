@@ -73,6 +73,8 @@ jobs:
           ./src/image/prepare_single_image_build_matrix.py \
             --oci-path ${{ steps.validate-image.outputs.img-path }}
 
+      - run: echo ${{ steps.prepare-matrix.outputs.build-matrix }}
+
   run-build:
     runs-on: ubuntu-22.04
     needs: [prepare-build]
