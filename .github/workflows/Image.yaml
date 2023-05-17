@@ -299,7 +299,7 @@ jobs:
           arches=$(skopeo inspect --raw \
             oci-archive:${{ steps.rename-oci-archive.outputs.name }} \
             | jq -r 'if has("manifests") then .manifests[].platform.architecture else "${{ runner.arch }}" end' \
-            | jq -nRcr '[inputs] | join(" ")')
+            | jq -nRcr '[inputs] | join(",")')
 
           echo "Detected architectures: ${arches}"
           echo "arches='${arches}'" >> "$GITHUB_OUTPUT"
@@ -310,7 +310,7 @@ jobs:
           set -ex
           echo "Generating SBOMs for ${{ steps.get-arches.outputs.arches }}"
 
-          IFS=' ' read -ra arch_list <<< ${{ steps.get-arches.outputs.arches }}
+          IFS=',' read -ra arch_list <<< ${{ steps.get-arches.outputs.arches }}
           for arch in "${arch_list[@]}"; do
             if [[ "${arch}" == "unknown" ]]; then
               continue
@@ -416,17 +416,18 @@ jobs:
           force_push_tag: true
           github_token: ${{ secrets.ROCKSBOT_TOKEN }}
 
-      - name: Prepare releases
-        id: prepare-releases
+      - name: Prepare pre release file
+        id: prepare-pre-releases
         run: |
           set -x
           file="${{ steps.rename-oci-archive.outputs.name }}.pre-release.json"
 
-          if [ ! -z ${{ matrix.release-to }} ]
+          if [ ! -z ${{ needs.prepare-build.outputs.release-to }} ]
           then
-            echo '${{ toJSON(matrix.release-to) }}' | \
+            echo '${{ toJSON(matrix.release) }}' | \
               jq -n --arg revision ${{ steps.get-revision.outputs.revision }} \
-                '{"release": ., "revision": $revision}' > $file
+                --arg arches ${{ steps.get-arches.outputs.arches }} \
+                '{"release": ., "platforms": "arches", "revision": $revision}' > $file
           else
             echo '{}' > $file
           fi
@@ -436,8 +437,8 @@ jobs:
       - name: Upload pre-release artefacts
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ steps.prepare-releases.outputs.pre-release-file }}
-          path: ${{ steps.prepare-releases.outputs.pre-release-file }}
+          name: ${{ steps.prepare-pre-releases.outputs.pre-release-file }}
+          path: ${{ steps.prepare-pre-releases.outputs.pre-release-file }}
           if-no-files-found: error
 
 
@@ -502,7 +503,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fail-on-error: true
-          workflow-name: Releases.yaml
+          workflow-name: Release.yaml
           payload: '{ "oci-image-name": "${{ needs.prepare-build.outputs.oci-img-name }}", "image-trigger-cache-key": "${{ github.run_id }}-image-trigger"}'
           trigger-timeout: '3m'
 

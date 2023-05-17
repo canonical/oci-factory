@@ -54,9 +54,9 @@ if __name__ == "__main__":
         # set an output as a marker for later knowing if we need to release
         if "release" in builds[img_number]:
             release_to = "true"
-            # the workflow GH matrix has a problem parsing nested JSON dicts
-            # so let's remove this field since we don't need it for the builds
-            builds[img_number].pop("release")
+            # # the workflow GH matrix has a problem parsing nested JSON dicts
+            # # so let's remove this field since we don't need it for the builds
+            # builds[img_number].pop("release")
 
     matrix = {"include": builds}
     print(f"{args.oci_path} - build matrix:\n{json.dumps(matrix, indent=4)}")
