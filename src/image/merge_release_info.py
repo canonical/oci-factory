@@ -30,8 +30,8 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument(
-        "--pre-release-file",
-        help="Path to pre-release file. .",
+        "--revision-data-file",
+        help="Path to the revision data file.",
         required=True,
     )
 
@@ -45,14 +45,14 @@ if __name__ == "__main__":
 
     user_releases = image_trigger.get("release", {})
 
-    print(f"Getting pre-release from {args.pre_release_file}")
-    with open(args.pre_release_file) as pre_release_f:
-        pre_release = yaml.safe_load(pre_release_f)
+    print(f"Getting pre-release from {args.revision_data_file}")
+    with open(args.revision_data_file) as revision_data_f:
+        revision_data = json.load(revision_data_f)
 
-    _ = schema.pre_release.PreReleaseSchema(**pre_release)
+    _ = schema.revision_data.RevisionDataSchema(**revision_data)
 
-    new_revision_releases = pre_release["release"]
-    new_revision = pre_release["revision"]
+    new_revision_releases = revision_data["release"]
+    new_revision = revision_data["revision"]
 
     # Update "release" from image trigger with pre-releases
     for track, val in new_revision_releases.items():
