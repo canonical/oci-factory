@@ -81,7 +81,7 @@ if __name__ == "__main__":
             user_releases[track]["end-of-life"] = val["end-of-life"]
 
         for risk in val["risks"]:
-            user_releases[track][risk] = new_revision
+            user_releases[track][risk] = str(new_revision)
 
     # For every track, we need to backfill the risks
     backfill_higher_risks(user_releases)

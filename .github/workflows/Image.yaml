@@ -485,22 +485,13 @@ jobs:
         # Using this action because others can have this problem:
         # https://github.com/convictional/trigger-workflow-and-wait/issues/61
         uses: mathze/workflow-dispatch-action@v1.2.0
-        id: run-releases
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fail-on-error: true
           workflow-name: Release.yaml
           payload: '{ "oci-image-name": "${{ needs.prepare-build.outputs.oci-img-name }}", "image-trigger-cache-key": "${{ github.run_id }}-image-trigger"}'
-          use-marker-step: true
+          run-id: dummy
           trigger-timeout: "3m"
-          
-      - name: Wait for Releases
-        uses: mathze/workflow-dispatch-action@v1.2.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ steps.run-releases.outputs.run-id }}
-          wait-interval: 10s
-          fail-on-error: true
 
 
   generate-provenance:
