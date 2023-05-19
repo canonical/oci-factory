@@ -506,6 +506,8 @@ jobs:
 
       - name: Merge release requests
         id: merge-release-requests
+        env:
+          PYTHONUNBUFFERED: 1
         run: |
           set -ex
           for revision_file in `ls ${{ env.REVISION_DATA_DIR }}`

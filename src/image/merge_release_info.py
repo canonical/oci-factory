@@ -19,7 +19,8 @@ import argparse
 import json
 import yaml
 
-from utils import schema
+from utils.schema.triggers import ImageSchema
+from utils.schema.revision_data import RevisionDataSchema
 
 
 if __name__ == "__main__":
@@ -41,7 +42,7 @@ if __name__ == "__main__":
     with open(args.image_trigger) as trigger:
         image_trigger = yaml.safe_load(trigger)
 
-    _ = schema.triggers.ImageSchema(**image_trigger)
+    _ = ImageSchema(**image_trigger)
 
     user_releases = image_trigger.get("release", {})
 
@@ -49,7 +50,7 @@ if __name__ == "__main__":
     with open(args.revision_data_file) as revision_data_f:
         revision_data = json.load(revision_data_f)
 
-    _ = schema.revision_data.RevisionDataSchema(**revision_data)
+    _ = RevisionDataSchema(**revision_data)
 
     new_revision_releases = revision_data["release"]
     new_revision = revision_data["revision"]

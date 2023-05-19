@@ -1,4 +1,4 @@
-from triggers import ImageUploadSchema
+from utils.schema.triggers import ImageUploadSchema
 
 
 class RevisionDataSchema(ImageUploadSchema):
