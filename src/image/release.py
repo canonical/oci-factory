@@ -74,7 +74,7 @@ for track_revision in all_revision_tags:
     revision_to_track[int(revision)] = track
 
 print(
-    "Revision tags grouped by revision:\n"
+    "Revision (aka 'canonical') tags grouped by revision:\n"
     f"{json.dumps(revision_to_track, indent=2)}"
 )
 
@@ -212,9 +212,10 @@ print(
     f"{json.dumps(group_by_revision, indent=2)}"
 )
 for revision, tags in group_by_revision.items():
-    track_of_revision = revision_to_track[revision]
+    revision_track = revision_to_track[revision]
     source_img = (
-        f"docker://ghcr.io/{args.ghcr_repo}/{img_name}:{track}_{revision}"
+        "docker://ghcr.io/"
+        f"{args.ghcr_repo}/{img_name}:{revision_track}_{revision}"
     )
     this_dir = os.path.dirname(__file__)
     print(f"Releasing {source_img} with tags:\n{tags}")
