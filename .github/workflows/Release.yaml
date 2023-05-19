@@ -54,7 +54,7 @@ jobs:
       - uses: actions/cache/restore@v3
         if: ${{ inputs.image-trigger-cache-key != '' }}
         with:
-          path: oci/${{ inputs.oci-image-name }}
+          path: oci/${{ inputs.oci-image-name }}/image.yaml
           key: ${{ inputs.image-trigger-cache-key }}
           fail-on-cache-miss: true
 

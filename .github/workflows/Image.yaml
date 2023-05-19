@@ -511,7 +511,7 @@ jobs:
           for revision_file in `ls ${{ env.REVISION_DATA_DIR }}`
           do
             ret=0
-            release=$(jq -er .release < $revision_file) || ret=1
+            release=$(jq -er .release < ${{ env.REVISION_DATA_DIR }}/$revision_file) || ret=1
             
             if [ $ret -eq 1 ]
             then
@@ -523,7 +523,7 @@ jobs:
 
             ./src/image/merge_release_info.py \
               --image-trigger "${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml" \
-              --revision-data-file "${revision_file}"
+              --revision-data-file "${{ env.REVISION_DATA_DIR }}/${revision_file}"
           done
 
       - uses: actions/cache/save@v3
