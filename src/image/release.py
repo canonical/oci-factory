@@ -13,7 +13,11 @@ import subprocess
 import yaml
 
 from collections import defaultdict
-from utils import utils, schema
+from utils import schema
+
+
+class BadChannel(Exception):
+    """Error validating release channel."""
 
 
 parser = argparse.ArgumentParser()
@@ -35,7 +39,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--all-revision-tags",
-    help="Comma-separated list of all revision (<track>_<rev>) tags.",
+    help="File w/ comma-separated list of all revision (<track>_<rev>) tags.",
     required=True,
 )
 parser.add_argument(
@@ -52,7 +56,10 @@ img_name = (
 )
 
 print(f"Preparing to release revision tags for {img_name}")
-all_revision_tags = args.all_revision_tags.rstrip(",").lstrip(",").split(",")
+with open(args.all_revision_tags) as rev_tags_f:
+    all_revision_tags = (
+        rev_tags_f.read().strip().rstrip(",").lstrip(",").split(",")
+    )
 revision_to_track = {}
 for track_revision in all_revision_tags:
     track, revision = track_revision.split("_")
@@ -62,7 +69,7 @@ for track_revision in all_revision_tags:
             f"but revision {revision} is associated with tracks "
             f"{track} and {revision_to_track['revision']}!"
         )
-        raise utils.BadChannel(msg)
+        raise BadChannel(msg)
 
     revision_to_track[int(revision)] = track
 
@@ -133,7 +140,7 @@ for channel_tag, target in tag_mapping_from_trigger.items():
     # a target cannot follow its own tag
     if target == channel_tag:
         msg = f"A tag cannot follow itself ({target})"
-        raise utils.BadChannel(msg)
+        raise BadChannel(msg)
 
     # we need to map tags to a revision number,
     # even those that point to other tags
@@ -146,7 +153,7 @@ for channel_tag, target in tag_mapping_from_trigger.items():
                 f"The tag {channel_tag} wants to follow channel {follow_tag},"
                 " which is undefined and doesn't point to a revision"
             )
-            raise utils.BadChannel(msg)
+            raise BadChannel(msg)
 
         if follow_tag in followed_tags:
             # then we have a circular dependency, tags are following each
@@ -155,7 +162,7 @@ for channel_tag, target in tag_mapping_from_trigger.items():
                 f"The tag {channel_tag} was caught is a circular dependency, "
                 "following tags that follow themselves. Cannot pin a revision."
             )
-            raise utils.BadChannel(msg)
+            raise BadChannel(msg)
         followed_tags.append(follow_tag)
 
         # follow the parent tag until it is a digit (ie. revision number)
@@ -169,7 +176,7 @@ for channel_tag, target in tag_mapping_from_trigger.items():
             f"The tag {channel_tag} points to revision {follow_tag}, "
             "which doesn't exist!"
         )
-        raise utils.BadChannel(msg)
+        raise BadChannel(msg)
 
     tag_to_revision[channel_tag] = int(follow_tag)
 

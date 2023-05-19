@@ -9,6 +9,11 @@ on:
         description: 'Cache key (to fetch image trigger from cache)'
         required: false
         type: string
+      external_ref_id: #(1)
+        description: 'Optional ID for unique run detection'
+        required: false
+        type: string
+        default: "default-id"
 
 jobs:
   validate-push-release-request:
@@ -17,6 +22,9 @@ jobs:
     outputs:
       oci-image-name: ${{ steps.get-image-name.outputs.img-name }}
     steps:
+      - name: ${{ github.event.inputs.external_ref_id }} #(2)
+        run: echo
+
       - uses: actions/checkout@v3
 
       - name: Infer number of image triggers
@@ -48,6 +56,8 @@ jobs:
     runs-on: ubuntu-22.04
     name: Release
     needs: [validate-push-release-request]
+    env:
+      IS_PROD: ${{ startsWith(inputs.oci-image-name, 'mock-') }}
     steps:
       - uses: actions/checkout@v3
 
@@ -57,15 +67,6 @@ jobs:
           path: oci/${{ inputs.oci-image-name }}/image.yaml
           key: ${{ inputs.image-trigger-cache-key }}
           fail-on-cache-miss: true
-
-      - id: infer-is-prod
-        run: |
-          if [[ "${{ inputs.oci-image-name }}" == "mock-"* ]]
-          then
-            echo "is-production=0" >> "$GITHUB_OUTPUT"
-          else
-            echo "is-production=1" >> "$GITHUB_OUTPUT"
-          fi
 
       - uses: actions/setup-python@v4
         with:
@@ -96,30 +97,30 @@ jobs:
 
       - name: Do releases from ${{ inputs.oci-image-name }}
         env:
-          DOCKER_HUB_CREDS_PSW: ${{ steps.infer-is-prod.outputs.is-production && secrets.DOCKER_HUB_CREDS_PSW || secrets.DOCKER_HUB_CREDS_PSW_DEV }}
-          DOCKER_HUB_CREDS_USR: ${{ steps.infer-is-prod.outputs.is-production && secrets.DOCKER_HUB_CREDS_USR || secrets.DOCKER_HUB_CREDS_USR_DEV }}
-          ACR_CREDS_USR: ${{ steps.infer-is-prod.outputs.is-production && secrets.ACR_CREDS_USR || secrets.ACR_CREDS_USR_DEV }}
-          ACR_CREDS_PSW: ${{ steps.infer-is-prod.outputs.is-production && secrets.ACR_CREDS_PSW || secrets.ACR_CREDS_PSW_DEV }}
-          ECR_CREDS_USR: ${{ steps.infer-is-prod.outputs.is-production && secrets.ECR_CREDS_USR || secrets.ECR_CREDS_USR_DEV }}
-          ECR_CREDS_PSW: ${{ steps.infer-is-prod.outputs.is-production && secrets.ECR_CREDS_PSW || secrets.ECR_CREDS_PSW_DEV }}
-          # ECR_LTS_CREDS_USR: ${{ steps.infer-is-prod.outputs.is-production && secrets.ECR_LTS_CREDS_USR || secrets.ECR_LTS_CREDS_USR_DEV }}
-          # ECR_LTS_CREDS_PSW: ${{ steps.infer-is-prod.outputs.is-production && secrets.ECR_LTS_CREDS_PSW || secrets.ECR_LTS_CREDS_PSW_DEV }}
+          DOCKER_HUB_CREDS_PSW: ${{ env.IS_PROD && secrets.DOCKER_HUB_CREDS_PSW || secrets.DOCKER_HUB_CREDS_PSW_DEV }}
+          DOCKER_HUB_CREDS_USR: ${{ env.IS_PROD && secrets.DOCKER_HUB_CREDS_USR || secrets.DOCKER_HUB_CREDS_USR_DEV }}
+          ACR_CREDS_USR: ${{ env.IS_PROD && secrets.ACR_CREDS_USR || secrets.ACR_CREDS_USR_DEV }}
+          ACR_CREDS_PSW: ${{ env.IS_PROD && secrets.ACR_CREDS_PSW || secrets.ACR_CREDS_PSW_DEV }}
+          ECR_CREDS_USR: ${{ env.IS_PROD && secrets.ECR_CREDS_USR || secrets.ECR_CREDS_USR_DEV }}
+          ECR_CREDS_PSW: ${{ env.IS_PROD && secrets.ECR_CREDS_PSW || secrets.ECR_CREDS_PSW_DEV }}
+          # ECR_LTS_CREDS_USR: ${{ env.IS_PROD && secrets.ECR_LTS_CREDS_USR || secrets.ECR_LTS_CREDS_USR_DEV }}
+          # ECR_LTS_CREDS_PSW: ${{ env.IS_PROD && secrets.ECR_LTS_CREDS_PSW || secrets.ECR_LTS_CREDS_PSW_DEV }}
           
-          ACR_NAMESPACE: ${{ steps.infer-is-prod.outputs.is-production && 'ubuntu.azurecr.io' || secrets.ACR_NAMESPACE_DEV }}
-          DOCKER_HUB_NAMESPACE: ${{ steps.infer-is-prod.outputs.is-production && 'docker.io/ubuntu' || secrets.DOCKER_HUB_NAMESPACE_DEV }}
-          ECR_NAMESPACE: ${{ steps.infer-is-prod.outputs.is-production && 'ubuntu' || secrets.ECR_NAMESPACE_DEV }}
-          # ECR_LTS_NAMESPACE: ${{ steps.infer-is-prod.outputs.is-production && 'lts' || secrets.ECR_LTS_NAMESPACE_DEV }}
+          ACR_NAMESPACE: ${{ env.IS_PROD && 'ubuntu.azurecr.io' || secrets.ACR_NAMESPACE_DEV }}
+          DOCKER_HUB_NAMESPACE: ${{ env.IS_PROD && 'docker.io/ubuntu' || secrets.DOCKER_HUB_NAMESPACE_DEV }}
+          ECR_NAMESPACE: ${{ env.IS_PROD && 'ubuntu' || secrets.ECR_NAMESPACE_DEV }}
+          # ECR_LTS_NAMESPACE: ${{ env.IS_PROD && 'lts' || secrets.ECR_LTS_NAMESPACE_DEV }}
 
           PYTHONUNBUFFERED: 1
         run: |
           set -ex
-          echo "Running in production?  ${{ steps.infer-is-prod.outputs.is-production && 'YES' || 'NO' }}"
+          echo "Running in production?  ${{ env.IS_PROD && 'YES' || 'NO' }}"
           
           ./src/image/release.py \
             --image-trigger oci/${{ inputs.oci-image-name }}/image.yaml \
             --image-name ${{ inputs.oci-image-name }} \
             --all-releases oci/${{ inputs.oci-image-name }}/_releases.yaml \
-            --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags }}" \
+            --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
             --ghcr-repo "${{ github.repository_owner }}/oci-factory"
 
       - name: Commit oci/${{ inputs.oci-image-name }}/_releases.yaml

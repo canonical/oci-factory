@@ -19,8 +19,25 @@ import argparse
 import json
 import yaml
 
-from utils.schema.triggers import ImageSchema
+from utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
 from utils.schema.revision_data import RevisionDataSchema
+
+
+def backfill_higher_risks(channels: dict) -> None:
+    """Parses all the risks in all tracks, adding the missing higher risks."""
+
+    for track, val in channels.items():
+        # from the most to the least stable
+        for i, risk in enumerate(KNOWN_RISKS_ORDERED):
+            if risk not in val:
+                if risk == "stable":  # same as i == 0
+                    # stable never follows other risks, as it is already
+                    # the lowest one
+                    continue
+
+                # if there a lower risk to follow?
+                if KNOWN_RISKS_ORDERED[i - 1] in val:
+                    val[risk] = f"{track}_{KNOWN_RISKS_ORDERED[i-1]}"
 
 
 if __name__ == "__main__":
@@ -55,7 +72,7 @@ if __name__ == "__main__":
     new_revision_releases = revision_data["release"]
     new_revision = revision_data["revision"]
 
-    # Update "release" from image trigger with pre-releases
+    # Update "release" from image trigger with new revision releases
     for track, val in new_revision_releases.items():
         if track not in user_releases:
             user_releases[track] = {}
@@ -65,6 +82,9 @@ if __name__ == "__main__":
 
         for risk in val["risks"]:
             user_releases[track][risk] = new_revision
+
+    # For every track, we need to backfill the risks
+    backfill_higher_risks(user_releases)
 
     # Overwrite the image trigger with the new release value
     image_trigger["release"] = user_releases
