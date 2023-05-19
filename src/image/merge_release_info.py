@@ -57,6 +57,9 @@ if __name__ == "__main__":
 
     # Update "release" from image trigger with pre-releases
     for track, val in new_revision_releases.items():
+        if track not in user_releases:
+            user_releases[track] = {}
+
         if "end-of-life" in val:
             user_releases[track]["end-of-life"] = val["end-of-life"]
 

@@ -237,26 +237,6 @@ jobs:
           key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}
           fail-on-cache-miss: true
 
-      # - name: Define build revision number
-      #   id: get-build-revision
-      #   env:
-      #     OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
-      #     OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
-      #     OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
-      #     OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
-      #     OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
-      #     IMAGE_NAME: ${{ matrix.name }}
-      #     SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
-      #   run: ./src/uploads/define_image_revision.sh
-
-      # - name: Define image revision number
-      #   id: get-revision
-      #   run: |
-      #     set -ex
-      #     this_image_revision=$(( ${{ steps.get-build-revision.outputs.revision }} + ${{ matrix.build_number }} ))
-
-      #     echo "revision=${this_image_revision}" >> "$GITHUB_OUTPUT"
-
       - name: Infer track name
         id: get-track
         env:
@@ -440,39 +420,6 @@ jobs:
           message: "upload(${{ matrix.name }}): Build and upload new image revision ${{ matrix.revision }}"
           force_push_tag: true
           github_token: ${{ secrets.ROCKSBOT_TOKEN }}
-
-      # Get build data files from the 1st job
-      # They have the JSON fields from the matrix, plus the --release field, if any
-      - uses: actions/cache/restore@v3
-        with:
-          path: ${{ env.OCI_ARCHIVE_NAME }}
-          key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}
-          fail-on-cache-miss: true
-
-      # - name: Prepare pre release file
-      #   id: prepare-pre-releases
-      #   run: |
-      #     set -x
-      #     file="${{ steps.rename-oci-archive.outputs.name }}.pre-release.json"
-
-      #     if [ ! -z ${{ needs.prepare-build.outputs.release-to }} ]
-      #     then
-      #       echo '${{ toJSON(matrix.release) }}' | \
-      #         jq -n --arg revision ${{ steps.get-revision.outputs.revision }} \
-      #           --arg arches ${{ steps.get-arches.outputs.arches }} \
-      #           '{"release": ., "platforms": "arches", "revision": $revision}' > $file
-      #     else
-      #       echo '{}' > $file
-      #     fi
-
-      #     echo "pre-release-file=$file" >> "$GITHUB_OUTPUT"
-
-      # - name: Upload pre-release artefacts
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: ${{ steps.prepare-pre-releases.outputs.pre-release-file }}
-      #     path: ${{ steps.prepare-pre-releases.outputs.pre-release-file }}
-      #     if-no-files-found: error
 
   # We need this job because we want to make the releases all in one go,
   # so that we know which revisions to release, and so that we can update
