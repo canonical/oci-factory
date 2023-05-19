@@ -13,7 +13,7 @@ import subprocess
 import yaml
 
 from collections import defaultdict
-from utils import schema
+from utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
 
 
 class BadChannel(Exception):
@@ -87,7 +87,7 @@ try:
     # map the existing tags into a struct similar to tag_mapping_from_trigger
     for track, risks in all_releases.items():
         for risk, values in risks.items():
-            if risk not in schema.triggers.KNOWN_RISKS_ORDERED:
+            if risk not in KNOWN_RISKS_ORDERED:
                 continue
 
             tag = f"{track}_{risk}"
@@ -98,7 +98,7 @@ except FileNotFoundError:
 
 print(f"Parsing image trigger {args.image_trigger}")
 with open(args.image_trigger) as trigger:
-    image_trigger = schema.triggers.ImageSchema(**yaml.safe_load(trigger))
+    image_trigger = ImageSchema(**yaml.safe_load(trigger))
 
 tag_mapping_from_trigger = {}
 for track, risks in image_trigger.release.items():
@@ -111,7 +111,7 @@ for track, risks in image_trigger.release.items():
             all_releases[track]["end-of-life"] = value
             continue
 
-        if risk not in schema.triggers.KNOWN_RISKS_ORDERED:
+        if risk not in KNOWN_RISKS_ORDERED:
             print(f"Skipping unkown risk {risk} in track {track}")
             continue
 
@@ -187,7 +187,7 @@ release_tags = tag_to_revision.copy()
 for base_tag, revision in tag_to_revision.items():
     # "latest" is a special tag for OCI
     if re.match(
-        rf"latest_({'|'.join(schema.triggers.KNOWN_RISKS_ORDERED)})$",
+        rf"latest_({'|'.join(KNOWN_RISKS_ORDERED)})$",
         base_tag,
     ):
         latest_alias = base_tag.split("_")[-1]

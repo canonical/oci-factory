@@ -57,7 +57,7 @@ jobs:
     name: Release
     needs: [validate-push-release-request]
     env:
-      IS_PROD: ${{ startsWith(inputs.oci-image-name, 'mock-') }}
+      IS_PROD: ${{ ! startsWith(inputs.oci-image-name, 'mock-') }}
     steps:
       - uses: actions/checkout@v3
 
