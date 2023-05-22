@@ -87,12 +87,10 @@ try:
     # map the existing tags into a struct similar to tag_mapping_from_trigger
     for track, risks in all_releases.items():
         for risk, values in risks.items():
-            if risk not in KNOWN_RISKS_ORDERED:
-                continue
+            if risk in KNOWN_RISKS_ORDERED:
+                tag = f"{track}_{risk}"
 
-            tag = f"{track}_{risk}"
-
-            tag_mapping_from_all_releases[tag] = values["target"]
+                tag_mapping_from_all_releases[tag] = values["target"]
 except FileNotFoundError:
     all_releases = {}
 
