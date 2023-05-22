@@ -32,7 +32,7 @@ args = parser.parse_args()
 
 if DOCKERFILE_IMAGE_VERSION:
     with open(
-        f"{args.recipe_dirname.rstrip('/')}/Dockerfile", enconding="UTF-8"
+        f"{args.recipe_dirname.rstrip('/')}/Dockerfile", encoding="UTF-8"
     ) as dockerfile:
         dockerfile_content = dockerfile.read().splitlines()
 
@@ -49,7 +49,7 @@ if DOCKERFILE_IMAGE_VERSION:
     version = DOCKERFILE_IMAGE_VERSION
 else:
     with open(
-        f"{args.recipe_dirname.rstrip('/')}/rockcraft.yaml", enconding="UTF-8"
+        f"{args.recipe_dirname.rstrip('/')}/rockcraft.yaml", encoding="UTF-8"
     ) as rockcraft_file:
         rockcraft_yaml = yaml.safe_load(rockcraft_file)
 

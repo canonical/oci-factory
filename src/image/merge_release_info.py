@@ -56,7 +56,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print(f"Getting existing image trigger from {args.image_trigger}")
-    with open(args.image_trigger, enconding="UTF-8") as trigger:
+    with open(args.image_trigger, encoding="UTF-8") as trigger:
         image_trigger = yaml.safe_load(trigger)
 
     _ = ImageSchema(**image_trigger)
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     user_releases = image_trigger.get("release", {})
 
     print(f"Getting pre-release from {args.revision_data_file}")
-    with open(args.revision_data_file, , enconding="UTF-8") as revision_data_f:
+    with open(args.revision_data_file, encoding="UTF-8") as revision_data_f:
         revision_data = json.load(revision_data_f)
 
     _ = RevisionDataSchema(**revision_data)
