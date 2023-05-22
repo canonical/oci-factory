@@ -25,8 +25,13 @@ class ImageUploadDockerfileSchema(pydantic.BaseModel):
 class ImageUploadReleaseSchema(pydantic.BaseModel):
     """Schema of the release option for uploads in the image.yaml trigger"""
 
-    end_of_life: Optional[datetime] = pydantic.Field(alias="end-of-life", default=None)
+    end_of_life: Optional[datetime] = pydantic.Field(
+        alias="end-of-life", default=None
+    )
     risks: List[Literal["edge", "beta", "candidate", "stable"]]
+
+    class Config:
+        extra = pydantic.Extra.forbid
 
 
 class ImageUploadSchema(pydantic.BaseModel):
@@ -47,7 +52,9 @@ class ImageUploadSchema(pydantic.BaseModel):
 class ChannelsSchema(pydantic.BaseModel):
     """Schema of the Channels within the releases.yaml file."""
 
-    end_of_life: Optional[datetime] = pydantic.Field(alias="end-of-life", default=None)
+    end_of_life: Optional[datetime] = pydantic.Field(
+        alias="end-of-life", default=None
+    )
     stable: Optional[str]
     candidate: Optional[str]
     beta: Optional[str]
