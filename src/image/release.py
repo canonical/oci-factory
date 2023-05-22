@@ -56,7 +56,7 @@ img_name = (
 )
 
 print(f"Preparing to release revision tags for {img_name}")
-with open(args.all_revision_tags) as rev_tags_f:
+with open(args.all_revision_tags, enconding="UTF-8") as rev_tags_f:
     all_revision_tags = (
         rev_tags_f.read().strip().rstrip(",").lstrip(",").split(",")
     )
@@ -81,7 +81,7 @@ print(
 print(f"Reading all previous releases from {args.all_releases}...")
 tag_mapping_from_all_releases = {}
 try:
-    with open(args.all_releases) as all_releases_fd:
+    with open(args.all_releases, enconding="UTF-8") as all_releases_fd:
         all_releases = yaml.safe_load(all_releases_fd).get("channels", {})
 
     # map the existing tags into a struct similar to tag_mapping_from_trigger
@@ -97,7 +97,7 @@ except FileNotFoundError:
     all_releases = {}
 
 print(f"Parsing image trigger {args.image_trigger}")
-with open(args.image_trigger) as trigger:
+with open(args.image_trigger, enconding="UTF-8") as trigger:
     image_trigger = ImageSchema(**yaml.safe_load(trigger))
 
 tag_mapping_from_trigger = {}

@@ -43,7 +43,7 @@ if __name__ == "__main__":
     image_trigger_file = glob.glob(f"{args.oci_path}/image.y*ml")[0]
 
     print(f"Generating build matrix for {image_trigger_file}")
-    with open(image_trigger_file) as bf:
+    with open(image_trigger_file, enconding="UTF-8") as bf:
         image_trigger = yaml.safe_load(bf)
         try:
             validate_image_trigger(image_trigger)
