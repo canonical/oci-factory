@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       oci-image-name:
-        description: 'OCI image to build and test'
+        description: 'OCI image to run releases for'
         required: true
       image-trigger-cache-key:
         description: 'Cache key (to fetch image trigger from cache)'
