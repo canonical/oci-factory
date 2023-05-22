@@ -4,8 +4,8 @@ on:
     paths:
       - ".github/workflows/*"
       - "oci/mock-*"
-      - "examples/*"
-      - "src/*"
+      - "examples/**"
+      - "src/**"
 
 jobs:
   test-workflows:
