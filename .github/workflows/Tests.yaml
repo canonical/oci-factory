@@ -46,8 +46,8 @@ jobs:
     runs-on: ubuntu-22.04
     name: Fetch OCI image for testing
     steps:
-      - name: ${{ github.event.inputs.external_ref_id }} #(2)
-        run: echo
+      - name: ${{ inputs.external_ref_id }} #(2)
+        run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
         
       - uses: actions/cache/restore@v3
         if: ${{ inputs.test-from == 'cache' }}

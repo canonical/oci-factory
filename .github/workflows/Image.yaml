@@ -16,7 +16,11 @@ on:
         required: true
         type: boolean
         default: false
-
+      external_ref_id: #(1)
+        description: 'Optional ID for unique run detection'
+        required: false
+        type: string
+        default: "default-id"
 
 jobs:
   prepare-build:
@@ -29,6 +33,10 @@ jobs:
       oci-img-name: ${{ steps.validate-image.outputs.img-name }}
       revision-data-cache-key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
     steps:
+      - name: ${{ inputs.external_ref_id }} #(2)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
+
       - uses: actions/checkout@v3
 
       - name: Infer number of image triggers
@@ -270,19 +278,19 @@ jobs:
           IS_A_ROCK: ${{ matrix.dockerfile-build == '' && true || false }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref_name }}
           fail-on-error: true
           workflow-name: Tests.yaml
           payload: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }}, "cache-key": "${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}", "vulnerability-report-suffix": "${{ env.VULNERABILITY_REPORT_SUFFIX }}" }'
-          use-marker-step: true
           trigger-timeout: "3m"
+          run-id: dummy
+      
+      - name: Write step summary
+        run: |
+          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-tests.outputs.run-id }}'
+          echo " - Triggered tests for '${{ matrix.name }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Wait for tests
-        uses: mathze/workflow-dispatch-action@v1.2.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ steps.run-tests.outputs.run-id }}
-          wait-interval: 10s
-
+      # Wait to make sure the test artifacts are uploaded
       - run: sleep 5
 
       - name: Download vulnerability artifacts
@@ -485,13 +493,21 @@ jobs:
         # Using this action because others can have this problem:
         # https://github.com/convictional/trigger-workflow-and-wait/issues/61
         uses: mathze/workflow-dispatch-action@v1.2.0
+        id: run-releases
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref_name }}
           fail-on-error: true
           workflow-name: Release.yaml
           payload: '{ "oci-image-name": "${{ needs.prepare-build.outputs.oci-img-name }}", "image-trigger-cache-key": "${{ github.run_id }}-image-trigger"}'
           run-id: dummy
           trigger-timeout: "3m"
+          use-marker-step: true
+
+      - name: Write step summary
+        run: |
+          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-releases.outputs.run-id }}'
+          echo " - Triggered releases for '${{ needs.prepare-build.outputs.oci-img-name }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
 
 
   generate-provenance:
