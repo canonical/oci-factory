@@ -46,8 +46,8 @@ jobs:
     runs-on: ubuntu-22.04
     name: Fetch OCI image for testing
     steps:
-      - name: ${{ github.event.inputs.external_ref_id }} #(2)
-        run: echo
+      - name: ${{ inputs.external_ref_id }} #(2)
+        run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
         
       - uses: actions/cache/restore@v3
         if: ${{ inputs.test-from == 'cache' }}
@@ -192,27 +192,26 @@ jobs:
 
       - name: Scan for vulnerabilities
         uses: aquasecurity/trivy-action@0.9.2
-        id: trivy
         with:
           format: 'cosign-vuln'
           severity: 'HIGH,CRITICAL'
           exit-code: '1'
           # NOTE: pebble is flagged with a HIGH vuln because of golang.org/x/crypto
           # CVE-2021-43565, CVE-2022-27191
-          skip-files: /usr/bin/pebble
+          skip-files: /bin/pebble
           # missing ${{ runner.arch }}
           output: '${{ inputs.oci-image-name }}${{ inputs.vulnerability-report-suffix }}'
           image-ref: '${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}'
 
       - id: vulnerability-scan
-        if: contains('success failure', steps.trivy.conclusion)
+        if: ${{ always() }}
         run: |
           report="${{ inputs.oci-image-name }}${{ inputs.vulnerability-report-suffix }}"
           cat $report
           echo "report=$report" >> "$GITHUB_OUTPUT"
 
       - uses: actions/cache/save@v3
-        if: steps.vulnerability-scan.conclusion == 'success'
+        if: ${{ always() }}
         with:
           path: ${{ steps.vulnerability-scan.outputs.report }}
           key: ${{ github.run_id }}-${{ steps.vulnerability-scan.outputs.report }}
@@ -257,6 +256,7 @@ jobs:
   upload-test-artefacts:
     name: Upload test artefacts
     runs-on: ubuntu-22.04
+    if: ${{ always() }}
     needs:
       - test-vulnerabilities
       - test-black-box

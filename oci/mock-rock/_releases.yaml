@@ -1,0 +1,24 @@
+{
+    "latest": {
+        "candidate": {
+            "target": "1.0-22.04_candidate"
+        },
+        "beta": {
+            "target": "latest_candidate"
+        },
+        "edge": {
+            "target": "latest_beta"
+        }
+    },
+    "1.0-22.04": {
+        "candidate": {
+            "target": "18"
+        },
+        "beta": {
+            "target": "1.0-22.04_candidate"
+        },
+        "edge": {
+            "target": "18"
+        }
+    }
+}
