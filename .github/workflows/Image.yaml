@@ -1,21 +1,26 @@
-name: Builds
+name: Image
 on:
   push:
     paths:
-      - 'oci/*/builds.y*ml'
+      - "oci/*/image.y*ml"
   pull_request:
     paths:
-      - 'oci/*/builds.y*ml'
+      - "oci/*/image.y*ml"
   workflow_dispatch:
     inputs:
       oci-image-name:
-        description: 'OCI image to build and test'
+        description: "OCI image to build and test"
         required: true
       upload:
-        description: 'Upload image to GHCR'
+        description: "Upload image to GHCR"
         required: true
         type: boolean
         default: false
+      external_ref_id: #(1)
+        description: 'Optional ID for unique run detection'
+        required: false
+        type: string
+        default: "default-id"
 
 jobs:
   prepare-build:
@@ -25,10 +30,16 @@ jobs:
       build-matrix: ${{ steps.prepare-matrix.outputs.build-matrix }}
       release-to: ${{ steps.prepare-matrix.outputs.release-to }}
       oci-img-path: ${{ steps.validate-image.outputs.img-path }}
+      oci-img-name: ${{ steps.validate-image.outputs.img-name }}
+      revision-data-cache-key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
     steps:
+      - name: ${{ inputs.external_ref_id }} #(2)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
+
       - uses: actions/checkout@v3
 
-      - name: Infer images to build if needed
+      - name: Infer number of image triggers
         uses: tj-actions/changed-files@v35
         id: changed-files
         if: github.event_name != 'workflow_dispatch'
@@ -36,7 +47,7 @@ jobs:
           separator: ","
           dir_names: "true"
           files: |
-            oci/*/builds.y*ml
+            oci/*/image.y*ml
 
       - name: Validate image from dispatch
         id: validate-image
@@ -57,19 +68,45 @@ jobs:
           fi
           test -d "${img_path}"
 
+          echo "img-name=$(basename ${img_path})" >> "$GITHUB_OUTPUT"
           echo "img-path=${img_path}" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-python@v4
         with:
           python-version: "3.x"
 
-      - run: pip install -r src/builds/requirements.txt
+      - run: pip install -r src/image/requirements.txt
+
+      - name: Get next revision number
+        id: get-next-revision
+        env:
+          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
+          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
+          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+          IMAGE_NAME: ${{ steps.validate-image.outputs.img-name }}
+          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
+        run: ./src/image/define_image_revision.sh
 
       - name: Validate and prepare builds matrix
         id: prepare-matrix
+        env:
+          DATA_DIR: "revision-data"
         run: |
-          ./src/builds/prepare_single_image_build_matrix.py \
-            --oci-path ${{ steps.validate-image.outputs.img-path }}
+          mkdir ${{ env.DATA_DIR }}
+
+          ./src/image/prepare_single_image_build_matrix.py \
+            --oci-path ${{ steps.validate-image.outputs.img-path }} \
+            --revision-data-dir ${{ env.DATA_DIR }} \
+            --next-revision ${{ steps.get-next-revision.outputs.revision }}
+
+          echo "revision-data-cache-key=${{ github.run_id }}-${{ env.DATA_DIR }}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache/save@v3
+        with:
+          path: ${{ steps.prepare-matrix.outputs.revision-data-dir }}
+          key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
 
   run-build:
     runs-on: ubuntu-22.04
@@ -79,19 +116,19 @@ jobs:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     env:
-      OCI_ARCHIVE_NAME: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.build_number }}
+      OCI_ARCHIVE_NAME: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}
     steps:
       - uses: actions/checkout@v3
         with:
           repository: ${{ matrix.source }}
           fetch-depth: 0
-      
+
       - run: git checkout ${{ matrix.commit }}
 
       - name: Validate image naming and base
         working-directory: ${{ matrix.directory }}
         env:
-          YQ_VERSION: 'v4.32.2'
+          YQ_VERSION: "v4.32.2"
           YQ_BINARY: yq_linux_amd64
         run: |
           if [ -z ${{ matrix.dockerfile-build }} ]
@@ -124,8 +161,8 @@ jobs:
       - name: Rename ROCK OCI archive
         if: matrix.dockerfile-build == ''
         run: |
-          mv ${{ steps.rockcraft.outputs.rock }} ${{ env.OCI_ARCHIVE_NAME }}   
-          
+          mv ${{ steps.rockcraft.outputs.rock }} ${{ env.OCI_ARCHIVE_NAME }}
+
       # If this is a Dockerfile-based image...
       - name: Set up QEMU
         if: matrix.dockerfile-build != ''
@@ -143,13 +180,13 @@ jobs:
           sudo apt install -y jq
           platforms=$(echo linux/$(echo '${{ toJSON(matrix.dockerfile-build.platforms) }}' | jq -r 'join(",linux/")'))
           echo "platforms=${platforms}" >> "$GITHUB_OUTPUT"
-        
+
       - name: Build OCI image ${{ matrix.name }}
         if: matrix.dockerfile-build != ''
         uses: docker/build-push-action@v4
         with:
-          context: '${{ matrix.directory }}'
-          outputs: 'type=oci,dest=${{ env.OCI_ARCHIVE_NAME }}'
+          context: "${{ matrix.directory }}"
+          outputs: "type=oci,dest=${{ env.OCI_ARCHIVE_NAME }}"
           platforms: ${{ steps.buildx-platforms.outputs.platforms }}
           push: false
           cache-from: type=gha
@@ -162,7 +199,6 @@ jobs:
           path: ${{ env.OCI_ARCHIVE_NAME }}
           key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}
 
-
   upload:
     runs-on: ubuntu-22.04
     needs: [prepare-build, run-build]
@@ -172,8 +208,8 @@ jobs:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     env:
-      OCI_ARCHIVE_NAME: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.build_number }}
-      VULNERABILITY_REPORT_SUFFIX: '.vulnerability-report.json'
+      OCI_ARCHIVE_NAME: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}
+      VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"
     outputs:
       artefacts-hashes: ${{ steps.artefacts-hashes.outputs.hashes }}
     steps:
@@ -189,12 +225,12 @@ jobs:
           ROCKS_DEV_LP_USERNAME: ${{ secrets.ROCKS_DEV_LP_USERNAME }}
           CPC_BUILD_TOOLS_REPO: git.launchpad.net/~cloudware/cloudware/+git/cpc_build_tools
           # CPC_BUILD_TOOLS_REPO_REF: 9b716ed8a8ba728d036b54b1bb17a8f49dbda434
-          SKOPEO_BRANCH: 'v1.9.1'
-          SKOPEO_URL: 'https://github.com/containers/skopeo'
+          SKOPEO_BRANCH: "v1.9.1"
+          SKOPEO_URL: "https://github.com/containers/skopeo"
         run: |
-          ./src/releases/requirements.sh
+          ./src/image/requirements.sh
           ./src/uploads/requirements.sh
-          pip install -r src/uploads/requirements.txt -r src/releases/requirements.txt
+          pip install -r src/uploads/requirements.txt -r src/image/requirements.txt
 
       - uses: actions/checkout@v3
         with:
@@ -210,26 +246,6 @@ jobs:
           key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}
           fail-on-cache-miss: true
 
-      - name: Define build revision number
-        id: get-build-revision
-        env:
-          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
-          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
-          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
-          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
-          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
-          IMAGE_NAME: ${{ matrix.name }}
-          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
-        run: ./src/uploads/define_image_revision.sh
-
-      - name: Define image revision number
-        id: get-revision
-        run: |
-          set -ex
-          this_image_revision=$(( ${{ steps.get-build-revision.outputs.revision }} + ${{ matrix.build_number }} ))
-
-          echo "revision=${this_image_revision}" >> "$GITHUB_OUTPUT"
-
       - name: Infer track name
         id: get-track
         env:
@@ -241,18 +257,18 @@ jobs:
         id: rename-oci-archive
         run: |
           # Rename the OCI archive tarball
-          canonical_tag="${{ steps.get-track.outputs.track }}_${{ steps.get-revision.outputs.revision }}"
+          canonical_tag="${{ steps.get-track.outputs.track }}_${{ matrix.revision }}"
           name="${{ matrix.name }}_${canonical_tag}"
           mv ${{ env.OCI_ARCHIVE_NAME }} $name
 
           echo "name=${name}" >> "$GITHUB_OUTPUT"
           echo "canonical-tag=${canonical_tag}" >> "$GITHUB_OUTPUT"
-      
+
       - uses: actions/cache/save@v3
         with:
           path: ${{ steps.rename-oci-archive.outputs.name }}
           key: ${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}
-        
+
       - name: Run tests
         # Using this actions cause others can have this problem:
         # https://github.com/convictional/trigger-workflow-and-wait/issues/61
@@ -262,34 +278,35 @@ jobs:
           IS_A_ROCK: ${{ matrix.dockerfile-build == '' && true || false }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref_name }}
           fail-on-error: true
           workflow-name: Tests.yaml
           payload: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }}, "cache-key": "${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}", "vulnerability-report-suffix": "${{ env.VULNERABILITY_REPORT_SUFFIX }}" }'
+          trigger-timeout: "3m"
+          run-id: dummy
           use-marker-step: true
-          trigger-timeout: '3m'
-
-      - name: Wait for tests
-        uses: mathze/workflow-dispatch-action@v1.2.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ steps.run-tests.outputs.run-id }}
-          wait-interval: 10s
       
+      - name: Write step summary
+        run: |
+          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-tests.outputs.run-id }}'
+          echo " - Triggered tests for '${{ matrix.name }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
+
+      # Wait to make sure the test artifacts are uploaded
+      - run: sleep 5
+
       - name: Download vulnerability artifacts
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: Tests.yaml
           run_id: ${{ steps.run-tests.outputs.run-id }}
-          path: '.'
+          path: "."
           name: ${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}.zip
 
-      - run: ls *
-      
       - name: Install Syft
         uses: anchore/sbom-action/download-syft@v0
         with:
-          syft-version: 'v0.75.0'
-    
+          syft-version: "v0.75.0"
+
       - name: Infer architectures
         id: get-arches
         run: |
@@ -297,7 +314,7 @@ jobs:
           arches=$(skopeo inspect --raw \
             oci-archive:${{ steps.rename-oci-archive.outputs.name }} \
             | jq -r 'if has("manifests") then .manifests[].platform.architecture else "${{ runner.arch }}" end' \
-            | jq -nRcr '[inputs] | join(" ")')
+            | jq -nRcr '[inputs] | join(",")')
 
           echo "Detected architectures: ${arches}"
           echo "arches='${arches}'" >> "$GITHUB_OUTPUT"
@@ -308,7 +325,7 @@ jobs:
           set -ex
           echo "Generating SBOMs for ${{ steps.get-arches.outputs.arches }}"
 
-          IFS=' ' read -ra arch_list <<< ${{ steps.get-arches.outputs.arches }}
+          IFS=',' read -ra arch_list <<< ${{ steps.get-arches.outputs.arches }}
           for arch in "${arch_list[@]}"; do
             if [[ "${arch}" == "unknown" ]]; then
               continue
@@ -340,21 +357,21 @@ jobs:
         run: |
           set -ex
           echo "hashes=$(sha256sum ${{ env.VULN_REPORT }} ${{ env.OCI_IMAGE_ARCHIVE }} ${{ env.SBOMS }} | base64 -w0)"
-      
+
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Upload SBOM
         uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.generate-sboms.outputs.sboms }}
           path: ${{ steps.generate-sboms.outputs.sboms }}
           if-no-files-found: error
-      
+
       - name: Upload vulnerability report
         uses: actions/upload-artifact@v3
         with:
@@ -383,7 +400,7 @@ jobs:
 
           source="oci:${oci_images}"
 
-          ./src/releases/tag_and_publish.sh "${source}" \
+          ./src/image/tag_and_publish.sh "${source}" \
             ${{ matrix.name }} \
             ${{ steps.rename-oci-archive.outputs.canonical-tag }}
 
@@ -401,56 +418,32 @@ jobs:
           ./src/uploads/upload_to_swift.sh \
             ${{ matrix.name }} \
             ${{ steps.get-track.outputs.track }} \
-            ${{ steps.get-revision.outputs.revision }} \
+            ${{ matrix.revision }} \
             build_metadata.json \
             ${{ steps.generate-sboms.outputs.sboms }} \
             ${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
 
-      - name: Create Git tag  
+      - name: Create Git tag
         uses: rickstaa/action-create-tag@v1
         with:
           tag: "${{ steps.rename-oci-archive.outputs.name }}"
-          message: 'upload(${{ matrix.name }}): Build and upload new image revision ${{ steps.get-revision.outputs.revision }}'
+          message: "upload(${{ matrix.name }}): Build and upload new image revision ${{ matrix.revision }}"
           force_push_tag: true
           github_token: ${{ secrets.ROCKSBOT_TOKEN }}
 
-      - name: Prepare releases
-        id: prepare-releases
-        run: |
-          set -x
-          file="${{ steps.rename-oci-archive.outputs.name }}.pre-release.json"
-
-          if [ ! -z ${{ matrix.release-to }} ]
-          then
-            risks=$(echo '${{ toJSON(matrix.release-to.risks) }}' | jq -r 'join(",")')
-            
-            jq -n --arg track ${{ steps.get-track.outputs.track }} '{"track": $track}' \
-              | jq --arg revision ${{ steps.get-revision.outputs.revision }} ' . + {"revision": $revision}' \
-              | jq --arg risks $risks '. + {"risks": $risks}' > $file
-          else
-            echo '{}' > $file
-          fi
-
-          echo "pre-release-file=$file" >> "$GITHUB_OUTPUT"
-
-      - name: Upload pre-release artefacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ steps.prepare-releases.outputs.pre-release-file }}
-          path: ${{ steps.prepare-releases.outputs.pre-release-file }}
-          if-no-files-found: error
-
-
-  # We need this job because the releases.yaml should be updated with a
-  # single commit. If we update it within a matrix, we risk having conflicts
-  prepare-releases:
-    name: Prepare releases
+  # We need this job because we want to make the releases all in one go,
+  # so that we know which revisions to release, and so that we can update
+  # and commit the _releases.yaml file in a single commit, outside a matrix job
+  dispatch-releases:
+    name: Dispatch releases
     needs: [prepare-build, upload]
     runs-on: ubuntu-22.04
     if: ${{ needs.prepare-build.outputs.release-to != '' }}
     concurrency:
       group: ${{ needs.prepare-build.outputs.oci-img-path }}
       cancel-in-progress: true
+    env:
+      REVISION_DATA_DIR: revision-data
     steps:
       - uses: actions/setup-python@v4
         with:
@@ -460,49 +453,64 @@ jobs:
         with:
           persist-credentials: false
 
-      - run: pip install -r src/releases/requirements.txt
-
-      - uses: actions/download-artifact@v3
-        id: download
+      - uses: actions/cache/restore@v3
         with:
-          path: artifacts
+          path: ${{ env.REVISION_DATA_DIR }}
+          key: ${{ needs.prepare-build.outputs.revision-data-cache-key }}
+          fail-on-cache-miss: true
 
-      - name: Update releases trigger
-        id: update-releases-trigger
+      - run: pip install -r src/image/requirements.txt
+
+      - name: Merge release requests
+        id: merge-release-requests
+        env:
+          PYTHONUNBUFFERED: 1
         run: |
           set -ex
-          for pre_release_file in `ls ${{ steps.download.outputs.download-path }}/*/*.pre-release.json`
+          for revision_file in `ls ${{ env.REVISION_DATA_DIR }}`
           do
             ret=0
-            track=$(jq -er .track < $pre_release_file) || ret=1
+            release=$(jq -er .release < ${{ env.REVISION_DATA_DIR }}/$revision_file) || ret=1
             
             if [ $ret -eq 1 ]
             then
-              echo "Nothing marked for release in $pre_release_file"
+              echo "Revision $revision_file not marked for release"
               continue
             fi
 
-            revision=$(jq -er .revision < $pre_release_file)
-            risks=$(jq -er .risks < $pre_release_file)
-            ./src/releases/update_releases_file.py \
-              --releases-trigger "${{ needs.prepare-build.outputs.oci-img-path }}/releases.yaml" \
-              --release-to-risks "${risks}" \
-              --release-to-track "${track}" \
-              --revision "${revision}"
+            echo "Merge revision $revision_file with requested releases"
+
+            ./src/image/merge_release_info.py \
+              --image-trigger "${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml" \
+              --revision-data-file "${{ env.REVISION_DATA_DIR }}/${revision_file}"
           done
-          
-          echo "releases-trigger=${{ needs.prepare-build.outputs.oci-img-path }}/releases.yaml" >> "$GITHUB_OUTPUT"
 
-      - name: Trigger releases via commit
-        uses: actions-x/commit@v6
+      - uses: actions/cache/save@v3
         with:
-          token: ${{ secrets.ROCKSBOT_TOKEN }}
-          branch: 'main'
-          message: 'ci: automatic trigger of releases for ${{ needs.prepare-build.outputs.oci-img-path }}, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-          files: ${{ steps.update-releases-trigger.outputs.releases-trigger }}
-          email: rocks-dev@lists.canonical.com
+          path: ${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml
+          key: ${{ github.run_id }}-image-trigger
 
-          
+      - name: Dispatch Releases workflow
+        # Using this action because others can have this problem:
+        # https://github.com/convictional/trigger-workflow-and-wait/issues/61
+        uses: mathze/workflow-dispatch-action@v1.2.0
+        id: run-releases
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref_name }}
+          fail-on-error: true
+          workflow-name: Release.yaml
+          payload: '{ "oci-image-name": "${{ needs.prepare-build.outputs.oci-img-name }}", "image-trigger-cache-key": "${{ github.run_id }}-image-trigger"}'
+          run-id: dummy
+          trigger-timeout: "3m"
+          use-marker-step: true
+
+      - name: Write step summary
+        run: |
+          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-releases.outputs.run-id }}'
+          echo " - Triggered releases for '${{ needs.prepare-build.outputs.oci-img-name }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
+
+
   generate-provenance:
     name: Generate SLSA provenance
     needs: [upload]
@@ -512,17 +520,17 @@ jobs:
         id: download
         with:
           path: artifacts
-    
+
       - name: Generate provenance
         uses: philips-labs/slsa-provenance-action@v0.8.0
         with:
           command: generate
           subcommand: files
           arguments: --artifact-path ${{ steps.download.outputs.download-path }} --output-path provenance.json
-          
+
       # - uses: sigstore/cosign-installer@v3.0.1
       #   with:
-      #     cosign-release: 'v2.0.0' 
+      #     cosign-release: 'v2.0.0'
 
       # - name: Sign provenance file
       #   env:
@@ -546,7 +554,7 @@ jobs:
       # - name: Generate checksums
       #   working-directory: ${{ steps.download.outputs.download-path }}
       #   run: sha256sum * > SHA256SUMS || true
-      
+
       # - name: Upload SHA256SUMS file
       #   uses: actions/upload-artifact@v3
       #   with:
@@ -571,10 +579,3 @@ jobs:
   #   uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.5.0
   #   with:
   #     base64-subjects: "${{ needs.upload.outputs.artefacts-hashes }}"
-
-
-  
-  
-  
-  
-  

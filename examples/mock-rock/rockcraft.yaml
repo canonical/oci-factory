@@ -2,7 +2,8 @@ name: mock-rock
 summary: Hello World
 description: The most basic example of a ROCK.
 version: "1.0"
-base: ubuntu:20.04
+base: bare
+build-base: ubuntu:22.04
 license: Apache-2.0
 platforms:
   amd64:
@@ -10,5 +11,5 @@ platforms:
 parts:
   hello:
     plugin: nil
-    overlay-packages:
+    stage-packages:
       - hello

@@ -1,0 +1,137 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      oci-image-name:
+        description: 'OCI image to run releases for'
+        required: true
+      image-trigger-cache-key:
+        description: 'Cache key (to fetch image trigger from cache)'
+        required: false
+        type: string
+      external_ref_id: #(1)
+        description: 'Optional ID for unique run detection'
+        required: false
+        type: string
+        default: "default-id"
+        
+jobs:
+  validate-push-release-request:
+    runs-on: ubuntu-22.04
+    name: Validate push release request
+    outputs:
+      oci-image-name: ${{ steps.get-image-name.outputs.img-name }}
+    steps:
+      - name: ${{ inputs.external_ref_id }} #(2)
+        run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
+        
+      - uses: actions/checkout@v3
+
+      - name: Infer number of image triggers
+        uses: tj-actions/changed-files@v35
+        id: changed-files
+        with:
+          dir_names: "true"
+          separator: ","
+          files: |
+            oci/*/image.y*ml
+
+      - name: Fail if more than one image
+        id: get-image-name
+        run: |
+          set -ex
+
+          img_dir="${{ steps.changed-files.outputs.all_changed_files }}"
+          occurrences="${img_dir//[^,]}"
+          if [ ${#occurrences} -ne 0 ]
+          then
+            echo "ERR: can only release 1 image at a time, but trying to release ${img_dir}"
+            exit 1
+          fi
+
+          echo "img-name=$(basename ${img_dir})" >> "$GITHUB_OUTPUT"
+
+
+  do-releases:
+    runs-on: ubuntu-22.04
+    name: Release
+    needs: [validate-push-release-request]
+    env:
+      IS_PROD: ${{ ! startsWith(inputs.oci-image-name, 'mock-') }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache/restore@v3
+        if: ${{ inputs.image-trigger-cache-key != '' }}
+        with:
+          path: oci/${{ inputs.oci-image-name }}/image.yaml
+          key: ${{ inputs.image-trigger-cache-key }}
+          fail-on-cache-miss: true
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - env:
+          ROCKS_DEV_LP_SSH_PRIVATE: ${{ secrets.ROCKS_DEV_LP_SSH_PRIVATE }}
+          ROCKS_DEV_LP_USERNAME: ${{ secrets.ROCKS_DEV_LP_USERNAME }}
+          CPC_BUILD_TOOLS_REPO: git.launchpad.net/~cloudware/cloudware/+git/cpc_build_tools
+          # CPC_BUILD_TOOLS_REPO_REF: 9b716ed8a8ba728d036b54b1bb17a8f49dbda434
+          SKOPEO_BRANCH: 'v1.9.1'
+          SKOPEO_URL: 'https://github.com/containers/skopeo'
+        run: | 
+          ./src/image/requirements.sh
+          pip install -r src/image/requirements.txt
+
+      - name: Get all revisions per track
+        id: get-all-canonical-tags
+        env:
+          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
+          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
+          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+          IMAGE_NAME: ${{ inputs.oci-image-name }}
+          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
+        run: ./src/image/get_canonical_tags_from_swift.sh
+
+      - name: Do releases from ${{ inputs.oci-image-name }}
+        env:
+          # GH has issues with boolean expressions
+          # https://github.com/actions/runner/issues/1483
+          DOCKER_HUB_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.DOCKER_HUB_CREDS_PSW || secrets.DOCKER_HUB_CREDS_PSW_DEV }}
+          DOCKER_HUB_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.DOCKER_HUB_CREDS_USR || secrets.DOCKER_HUB_CREDS_USR_DEV }}
+          ACR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_USR || secrets.ACR_CREDS_USR_DEV }}
+          ACR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_PSW || secrets.ACR_CREDS_PSW_DEV }}
+          ECR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_USR || secrets.ECR_CREDS_USR_DEV }}
+          ECR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_PSW || secrets.ECR_CREDS_PSW_DEV }}
+          # ECR_LTS_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ECR_LTS_CREDS_USR || secrets.ECR_LTS_CREDS_USR_DEV }}
+          # ECR_LTS_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ECR_LTS_CREDS_PSW || secrets.ECR_LTS_CREDS_PSW_DEV }}
+          
+          ACR_NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu.azurecr.io' || secrets.ACR_NAMESPACE_DEV }}
+          DOCKER_HUB_NAMESPACE: ${{ env.IS_PROD == 'true' && 'docker.io/ubuntu' || secrets.DOCKER_HUB_NAMESPACE_DEV }}
+          ECR_NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu' || secrets.ECR_NAMESPACE_DEV }}
+          # ECR_LTS_NAMESPACE: ${{ env.IS_PROD == 'true' && 'lts' || secrets.ECR_LTS_NAMESPACE_DEV }}
+
+          PYTHONUNBUFFERED: 1
+        run: |
+          set -ex
+          echo "Running in production?  ${{ env.IS_PROD == 'true' && 'YES' || 'NO' }}"
+          
+          ./src/image/release.py \
+            --image-trigger oci/${{ inputs.oci-image-name }}/image.yaml \
+            --image-name ${{ inputs.oci-image-name }} \
+            --all-releases oci/${{ inputs.oci-image-name }}/_releases.yaml \
+            --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
+            --ghcr-repo "${{ github.repository_owner }}/oci-factory"
+      
+      - run: git pull --quiet
+
+      - name: Commit oci/${{ inputs.oci-image-name }}/_releases.yaml
+        uses: actions-x/commit@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+          message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.yaml, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          files: oci/${{ inputs.oci-image-name }}/_releases.yaml
+          email: rocks-dev@lists.canonical.com
