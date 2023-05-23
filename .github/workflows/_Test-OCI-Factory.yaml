@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - ".github/workflows/*"
+      - "!.github/workflows/CLA-Check.yaml"
       - "oci/mock-*"
       - "examples/**"
       - "src/**"
