@@ -4,7 +4,8 @@ release:
   latest:
     end-of-life: "2024-05-01T00:00:00Z"
     candidate: 1.0-22.04_candidate
-
+    edge: 1.1-22.04_edge
+    
 upload:  
   - source: "cjdcordeiro/oci-factory"
     commit: fd2ca266c089d57d85c33d3d9b8eb0efbdf0d0d9
