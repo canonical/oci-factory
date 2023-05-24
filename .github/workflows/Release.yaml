@@ -121,17 +121,17 @@ jobs:
           ./src/image/release.py \
             --image-trigger oci/${{ inputs.oci-image-name }}/image.yaml \
             --image-name ${{ inputs.oci-image-name }} \
-            --all-releases oci/${{ inputs.oci-image-name }}/_releases.yaml \
+            --all-releases oci/${{ inputs.oci-image-name }}/_releases.json \
             --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
             --ghcr-repo "${{ github.repository_owner }}/oci-factory"
       
       - run: git pull --quiet
 
-      - name: Commit oci/${{ inputs.oci-image-name }}/_releases.yaml
+      - name: Commit oci/${{ inputs.oci-image-name }}/_releases.json
         uses: actions-x/commit@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
-          message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.yaml, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-          files: oci/${{ inputs.oci-image-name }}/_releases.yaml
+          message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          files: oci/${{ inputs.oci-image-name }}/_releases.json
           email: rocks-dev@lists.canonical.com

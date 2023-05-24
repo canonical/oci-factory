@@ -34,7 +34,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--all-releases",
-    help="Path to the _releases.yaml file.",
+    help="Path to the _releases.json file.",
     required=True,
 )
 parser.add_argument(
@@ -82,7 +82,7 @@ print(f"Reading all previous releases from {args.all_releases}...")
 tag_mapping_from_all_releases = {}
 try:
     with open(args.all_releases, encoding="UTF-8") as all_releases_fd:
-        all_releases = yaml.safe_load(all_releases_fd).get("channels", {})
+        all_releases = json.load(all_releases_fd)
 
     # map the existing tags into a struct similar to tag_mapping_from_trigger
     for track, risks in all_releases.items():
