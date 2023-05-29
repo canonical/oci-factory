@@ -135,3 +135,15 @@ jobs:
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: oci/${{ inputs.oci-image-name }}/_releases.json
           email: rocks-dev@lists.canonical.com
+      
+      - name: get the revision
+        id: get-revision
+        run: |
+          revision=$(cat "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" | tr ',' '\n' | sort -t '_' -k 2 -n | tail -n 1)
+          echo "tag-name=$revision" >> "$GITHUB_OUTPUT"
+
+      
+      - uses: "softprops/action-gh-release@v1"
+        with:
+          tag_name: "${{ inputs.oci-image-name }}_${{ steps.get-revision.outputs.tag-name}}"
+          token: "${{ secrets.GITHUB_TOKEN }}"
