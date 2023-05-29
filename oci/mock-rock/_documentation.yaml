@@ -1,0 +1,19 @@
+version: 1
+application: Mock ROCK
+is_chiselled: true
+description: |-
+  This is a long description for a mock ROCK that is only used for **testing**
+  and **demonstration** purposes.
+repo: mock-rock
+releases:
+- track: '1.0'
+  base: '22.04'
+  architectures:
+  - amd64
+  tags:
+  - candidate
+  risk: candidate
+debug: null
+parameters: null
+docker: null
+microk8s: null
