@@ -510,7 +510,19 @@ jobs:
           url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-releases.outputs.run-id }}'
           echo " - Triggered releases for '${{ needs.prepare-build.outputs.oci-img-name }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
 
+      - name: git checkout
+        run: |
+          git fetch
+          git pull
 
+      - uses: actions/download-artifact@v3
+        id: download-release
+        with:
+          path: artifacts
+      - name: git checkout
+        run: |
+          ls artifacts
+          
   generate-provenance:
     name: Generate SLSA provenance
     needs: [upload]
