@@ -14,7 +14,7 @@ on:
         required: false
         type: string
         default: "default-id"
-        
+           
 jobs:
   validate-push-release-request:
     runs-on: ubuntu-22.04
@@ -35,12 +35,10 @@ jobs:
           separator: ","
           files: |
             oci/*/image.y*ml
-
       - name: Fail if more than one image
         id: get-image-name
         run: |
           set -ex
-
           img_dir="${{ steps.changed-files.outputs.all_changed_files }}"
           occurrences="${img_dir//[^,]}"
           if [ ${#occurrences} -ne 0 ]
@@ -48,14 +46,13 @@ jobs:
             echo "ERR: can only release 1 image at a time, but trying to release ${img_dir}"
             exit 1
           fi
-
           echo "img-name=$(basename ${img_dir})" >> "$GITHUB_OUTPUT"
-
-
   do-releases:
     runs-on: ubuntu-22.04
     name: Release
     needs: [validate-push-release-request]
+    outputs:
+      github-list-of-tags: ${{ steps.release-image.outputs.github-list-of-tags }}
     env:
       IS_PROD: ${{ ! startsWith(inputs.oci-image-name, 'mock-') }}
     steps:
@@ -82,7 +79,6 @@ jobs:
         run: | 
           ./src/image/requirements.sh
           pip install -r src/image/requirements.txt
-
       - name: Get all revisions per track
         id: get-all-canonical-tags
         env:
@@ -96,19 +92,20 @@ jobs:
         run: ./src/image/get_canonical_tags_from_swift.sh
 
       - name: Do releases from ${{ inputs.oci-image-name }}
+        id: release-image
         env:
           # GH has issues with boolean expressions
           # https://github.com/actions/runner/issues/1483
           DOCKER_HUB_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.DOCKER_HUB_CREDS_PSW || secrets.DOCKER_HUB_CREDS_PSW_DEV }}
           DOCKER_HUB_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.DOCKER_HUB_CREDS_USR || secrets.DOCKER_HUB_CREDS_USR_DEV }}
-          ACR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_USR || secrets.ACR_CREDS_USR_DEV }}
-          ACR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_PSW || secrets.ACR_CREDS_PSW_DEV }}
+          # ACR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_USR || secrets.ACR_CREDS_USR_DEV }}
+          # ACR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_PSW || secrets.ACR_CREDS_PSW_DEV }}
           ECR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_USR || secrets.ECR_CREDS_USR_DEV }}
           ECR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_PSW || secrets.ECR_CREDS_PSW_DEV }}
           # ECR_LTS_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ECR_LTS_CREDS_USR || secrets.ECR_LTS_CREDS_USR_DEV }}
           # ECR_LTS_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ECR_LTS_CREDS_PSW || secrets.ECR_LTS_CREDS_PSW_DEV }}
           
-          ACR_NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu.azurecr.io' || secrets.ACR_NAMESPACE_DEV }}
+          # ACR_NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu.azurecr.io' || secrets.ACR_NAMESPACE_DEV }}
           DOCKER_HUB_NAMESPACE: ${{ env.IS_PROD == 'true' && 'docker.io/ubuntu' || secrets.DOCKER_HUB_NAMESPACE_DEV }}
           ECR_NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu' || secrets.ECR_NAMESPACE_DEV }}
           # ECR_LTS_NAMESPACE: ${{ env.IS_PROD == 'true' && 'lts' || secrets.ECR_LTS_NAMESPACE_DEV }}
@@ -135,3 +132,48 @@ jobs:
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: oci/${{ inputs.oci-image-name }}/_releases.json
           email: rocks-dev@lists.canonical.com
+
+  do-github-release:
+    runs-on: ubuntu-22.04
+    name: Github-Release
+    needs: [do-releases]
+    strategy:
+      fail-fast: true
+      matrix: ${{ fromJSON(needs.do-releases.outputs.github-list-of-tags) }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+            fetch-depth: 0
+      
+      - uses: rickstaa/action-contains-tag@v1
+        id: contains_tag
+        with:
+          reference: "${{ github.ref_name }}"
+          tag: "${{matrix.canonical-tag}}"
+        
+      - uses: mukunku/tag-exists-action@v1.2.0
+        id: checkTag
+        with: 
+          tag: "${{matrix.release-name}}"
+
+      - uses: liudonghua123/delete-release-action@v1
+        if: ${{ steps.checkTag.outputs.exists == 'true' }}
+        with:
+          release-name: "${{matrix.release-name}}"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+                
+      - name: Create Git tag
+        uses: rickstaa/action-create-tag@v1
+        with:
+          tag: "${{matrix.release-name}}"
+          message: "upload(${{ matrix.name }}): Build and upload new image revision ${{ matrix.revision }}"
+          github_token: ${{ secrets.ROCKSBOT_TOKEN }}
+          commit_sha: "${{steps.contains_tag.outputs.linked_commit }}"
+          force_push_tag: true
+
+      - uses: "softprops/action-gh-release@v1"
+        with:
+          name: "${{matrix.release-name}}"
+          tag_name: "${{matrix.release-name}}"
+          token: "${{ secrets.GITHUB_TOKEN }}"
+          

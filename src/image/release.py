@@ -57,9 +57,7 @@ img_name = (
 
 print(f"Preparing to release revision tags for {img_name}")
 with open(args.all_revision_tags, encoding="UTF-8") as rev_tags_f:
-    all_revision_tags = (
-        rev_tags_f.read().strip().rstrip(",").lstrip(",").split(",")
-    )
+    all_revision_tags = rev_tags_f.read().strip().rstrip(",").lstrip(",").split(",")
 revision_to_track = {}
 for track_revision in all_revision_tags:
     track, revision = track_revision.split("_")
@@ -212,8 +210,7 @@ print(
 for revision, tags in group_by_revision.items():
     revision_track = revision_to_track[revision]
     source_img = (
-        "docker://ghcr.io/"
-        f"{args.ghcr_repo}/{img_name}:{revision_track}_{revision}"
+        "docker://ghcr.io/" f"{args.ghcr_repo}/{img_name}:{revision_track}_{revision}"
     )
     this_dir = os.path.dirname(__file__)
     print(f"Releasing {source_img} with tags:\n{tags}")
@@ -222,8 +219,23 @@ for revision, tags in group_by_revision.items():
     )
 
 print(
-    f"Updating {args.all_releases} file with:\n"
-    f"{json.dumps(all_releases, indent=2)}"
+    f"Updating {args.all_releases} file with:\n" f"{json.dumps(all_releases, indent=2)}"
 )
 with open(args.all_releases, "w") as fd:
     json.dump(all_releases, fd, indent=4)
+
+github_tags = []
+for revision, tags in group_by_revision.items():
+    tag_track = revision_to_track[revision]
+    for tag in tags:
+        tag_in_loop = {}
+        tag_in_loop["canonical-tag"] = f"{img_name}_{tag_track}_{revision}"
+        tag_in_loop["release-name"] = f"{img_name}_{tag}_{revision}"
+        tag_in_loop["name"] = f"{img_name}"
+        tag_in_loop["revision"] = f"{revision}"
+        github_tags.append(tag_in_loop)
+
+matrix = {"include": github_tags}
+
+with open(os.environ["GITHUB_OUTPUT"], "a", encoding="UTF-8") as gh_out:
+    print(f"github-list-of-tags={matrix}", file=gh_out)

@@ -188,11 +188,11 @@ publish_to_aws_ecr_public \
 #         --registry-id="099720109477" --repository-name ubuntu --catalog-data "$(cat ecr-docs.json)"
 
 ### ACR
-publish_with_username_password \
-    "$ACR_CREDS_USR" \
-    "$ACR_CREDS_PSW" \
-    ${acr_repo_name} \
-    "${tag_names[@]}"
+# publish_with_username_password \
+#     "$ACR_CREDS_USR" \
+#     "$ACR_CREDS_PSW" \
+#     ${acr_repo_name} \
+#     "${tag_names[@]}"
 
 # ### OCIR
 # publish_with_username_password \
