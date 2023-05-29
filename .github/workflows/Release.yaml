@@ -148,7 +148,13 @@ jobs:
       fail-fast: true
       matrix: ${{ fromJSON(needs.do-releases.outputs.github-list-of-tags) }}
     steps:
+      - uses: mukunku/tag-exists-action@v1.2.0
+        id: checkTag
+        with: 
+          tag: "${{matrix.name}}"
+
       - uses: "softprops/action-gh-release@v1"
+        if: ${{ steps.checkTag.outputs.exists }}
         with:
           tag_name: "${{matrix.name}}"
           token: "${{ secrets.GITHUB_TOKEN }}"
