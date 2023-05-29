@@ -541,11 +541,11 @@ jobs:
 
           ls -la artifacts
       
-      - uses: "marvinpinto/action-automatic-releases@latest"
+      - uses: "softprops/action-gh-release@v1"
         with:
           files	: "artifacts/*"
-          tag: "${{ needs.upload.outputs.tag-name }}"
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          tag_name: "${{ needs.upload.outputs.tag-name }}"
+          token: "${{ secrets.GITHUB_TOKEN }}"
 
         
   generate-provenance:
