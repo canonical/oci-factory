@@ -212,6 +212,7 @@ jobs:
       VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"
     outputs:
       artefacts-hashes: ${{ steps.artefacts-hashes.outputs.hashes }}
+      tag-name: "${{ steps.rename-oci-archive.outputs.name }}"
     steps:
       - uses: actions/checkout@v3
 
@@ -436,7 +437,7 @@ jobs:
   # and commit the _releases.json file in a single commit, outside a matrix job
   dispatch-releases:
     name: Dispatch releases
-    needs: [prepare-build, upload]
+    needs: [prepare-build, upload,generate-provenance]
     runs-on: ubuntu-22.04
     if: ${{ needs.prepare-build.outputs.release-to != '' }}
     concurrency:
@@ -510,6 +511,45 @@ jobs:
           url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-releases.outputs.run-id }}'
           echo " - Triggered releases for '${{ needs.prepare-build.outputs.oci-img-name }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
 
+      - name: git checkout
+        run: |
+          git fetch
+          git pull
+
+      - uses: actions/download-artifact@v3
+        id: download-release
+        with:
+          path: artifacts
+      
+      - name: move file
+        env:
+          YQ_VERSION: "v4.32.2"
+          YQ_BINARY: yq_linux_amd64
+        run: |
+          cp "${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml" artifacts
+          cp "${{ needs.prepare-build.outputs.oci-img-path }}/documentation.yaml" artifacts
+          wget https://github.com/mikefarah/yq/releases/download/${{ env.YQ_VERSION }}/${{ env.YQ_BINARY }}
+          sudo mv ${{ env.YQ_BINARY }} /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
+          source_folder=$(yq eval '.upload[0].directory' "${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml")
+
+          if [ -f "$source_folder/Dockerfile" ]; then
+            cp "$source_folder/Dockerfile" artifacts
+          else
+            cp "$source_folder/rockcraft.yaml" artifacts
+          fi
+      
+      - uses: "softprops/action-gh-release@v1"
+        with:
+          files	: |
+             artifacts/*.yaml
+             artifacts/Dockerfile
+             artifacts/${{ needs.upload.outputs.tag-name }}
+             artifacts/*.zip
+             artifacts/*.json
+             artifacts/provenance
+          tag_name: "${{ needs.upload.outputs.tag-name }}"
+          token: "${{ secrets.GITHUB_TOKEN }}"
 
   generate-provenance:
     name: Generate SLSA provenance
