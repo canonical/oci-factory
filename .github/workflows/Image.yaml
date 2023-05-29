@@ -525,6 +525,8 @@ jobs:
           cp "${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml" artifacts
           cp "${{ needs.prepare-build.outputs.oci-img-path }}/documentation.yaml" artifacts
           ls artifacts
+          ls ${{ matrix.directory }}
+
 
   generate-provenance:
     name: Generate SLSA provenance
