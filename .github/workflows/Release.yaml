@@ -135,3 +135,22 @@ jobs:
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: oci/${{ inputs.oci-image-name }}/_releases.json
           email: rocks-dev@lists.canonical.com
+
+      - name: Extract GitHub Run ID
+        id: extract-github-run-id
+        if: ${{ inputs.image-trigger-cache-key != '' }}
+        run: echo "image-github-run-id=$(echo ${{ inputs.image-trigger-cache-key }} | sed -E 's/([0-9]+).*/\1/') >> $GITHUB_OUTPUT
+
+
+      - name: Download provenance
+        uses: dawidd6/action-download-artifact@v2
+        if: ${{ inputs.image-trigger-cache-key != '' }}
+        with:
+          workflow: Image.yaml
+          run_id: ${{ steps.extract-github-run-id.outputs.image-github-run-id }}"
+          path: "."
+          name: provenance
+      
+      - name: test ls
+        id: test-ls
+        run: ls
