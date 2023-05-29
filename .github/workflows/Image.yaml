@@ -521,11 +521,24 @@ jobs:
           path: artifacts
       
       - name: move file
+        env:
+          YQ_VERSION: "v4.32.2"
+          YQ_BINARY: yq_linux_amd64
         run: |
           cp "${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml" artifacts
           cp "${{ needs.prepare-build.outputs.oci-img-path }}/documentation.yaml" artifacts
+          wget https://github.com/mikefarah/yq/releases/download/${{ env.YQ_VERSION }}/${{ env.YQ_BINARY }}
+          sudo mv ${{ env.YQ_BINARY }} /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
+          source_folder=$(yq eval '.upload[0].source' "${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml")
+
+          if [ -f "$source_folder/Dockerfile" ]; then
+            cp "$source_folder/Dockerfile" artifacts
+          else
+            cp "$source_folder/rockcraft.yaml" artifacts
+          fi
+
           ls artifacts
-          ls ${{ matrix.directory }}
 
 
   generate-provenance:
