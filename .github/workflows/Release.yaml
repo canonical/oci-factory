@@ -14,7 +14,8 @@ on:
         required: false
         type: string
         default: "default-id"
-        
+
+       
 jobs:
   validate-push-release-request:
     runs-on: ubuntu-22.04
@@ -56,6 +57,8 @@ jobs:
     runs-on: ubuntu-22.04
     name: Release
     needs: [validate-push-release-request]
+    outputs:
+      github-list-of-tags: ${{ steps.release-image.outputs.github-list-of-tags }}
     env:
       IS_PROD: ${{ ! startsWith(inputs.oci-image-name, 'mock-') }}
     steps:
@@ -96,19 +99,20 @@ jobs:
         run: ./src/image/get_canonical_tags_from_swift.sh
 
       - name: Do releases from ${{ inputs.oci-image-name }}
+        id: release-image
         env:
           # GH has issues with boolean expressions
           # https://github.com/actions/runner/issues/1483
           DOCKER_HUB_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.DOCKER_HUB_CREDS_PSW || secrets.DOCKER_HUB_CREDS_PSW_DEV }}
           DOCKER_HUB_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.DOCKER_HUB_CREDS_USR || secrets.DOCKER_HUB_CREDS_USR_DEV }}
-          ACR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_USR || secrets.ACR_CREDS_USR_DEV }}
-          ACR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_PSW || secrets.ACR_CREDS_PSW_DEV }}
+          # ACR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_USR || secrets.ACR_CREDS_USR_DEV }}
+          # ACR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_PSW || secrets.ACR_CREDS_PSW_DEV }}
           ECR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_USR || secrets.ECR_CREDS_USR_DEV }}
           ECR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_PSW || secrets.ECR_CREDS_PSW_DEV }}
           # ECR_LTS_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ECR_LTS_CREDS_USR || secrets.ECR_LTS_CREDS_USR_DEV }}
           # ECR_LTS_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ECR_LTS_CREDS_PSW || secrets.ECR_LTS_CREDS_PSW_DEV }}
           
-          ACR_NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu.azurecr.io' || secrets.ACR_NAMESPACE_DEV }}
+          # ACR_NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu.azurecr.io' || secrets.ACR_NAMESPACE_DEV }}
           DOCKER_HUB_NAMESPACE: ${{ env.IS_PROD == 'true' && 'docker.io/ubuntu' || secrets.DOCKER_HUB_NAMESPACE_DEV }}
           ECR_NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu' || secrets.ECR_NAMESPACE_DEV }}
           # ECR_LTS_NAMESPACE: ${{ env.IS_PROD == 'true' && 'lts' || secrets.ECR_LTS_NAMESPACE_DEV }}
@@ -118,7 +122,7 @@ jobs:
           set -ex
           echo "Running in production?  ${{ env.IS_PROD == 'true' && 'YES' || 'NO' }}"
           
-          ./src/image/release.py \
+          python3 -m src.image.release \
             --image-trigger oci/${{ inputs.oci-image-name }}/image.yaml \
             --image-name ${{ inputs.oci-image-name }} \
             --all-releases oci/${{ inputs.oci-image-name }}/_releases.json \
@@ -135,3 +139,48 @@ jobs:
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: oci/${{ inputs.oci-image-name }}/_releases.json
           email: rocks-dev@lists.canonical.com
+
+
+  do-github-release:
+    runs-on: ubuntu-22.04
+    name: Github-Release
+    needs: [do-releases]
+    strategy:
+      fail-fast: true
+      matrix: ${{ fromJSON(needs.do-releases.outputs.github-list-of-tags) }}
+    steps:
+      - name: Delete Github Release if exist
+        id: delete_release
+        run: |
+          list_github_releases=$(curl -L \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"\
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{github.repository}}/releases")
+  
+          echo "$list_github_releases" > list_github_releases.txt
+          release_to_delete=$(jq --arg name "${{matrix.release-name}}" -r '.[] | select(.name == $name )' < list_github_releases.txt)
+
+          if [ -n "$release_to_delete" ]; then
+                  echo "Github Release found,delete it"
+                  release_to_delete_id=$(echo "$release_to_delete" | jq -r '.id')
+                  curl -L \
+                  -X DELETE \
+                  -H "Accept: application/vnd.github+json" \
+                  -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"\
+                  "https://api.github.com/repos/${{github.repository}}/releases/$release_to_delete_id"
+                  echo "Github Release deleted"
+          else
+                  echo "No Github Release found"
+          fi
+
+      - uses: mukunku/tag-exists-action@v1.2.0
+        id: checkTag
+        with: 
+          tag: "${{matrix.tag-name}}"
+
+       - uses: "softprops/action-gh-release@v1"
+          if: ${{ steps.checkTag.outputs.exists == 'true' }}
+          with:
+            name: "${{matrix.release-name}}"
+            tag_name: "${{matrix.tag-name}}"
+          token: "${{ secrets.GITHUB_TOKEN }}"
