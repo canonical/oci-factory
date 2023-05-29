@@ -519,10 +519,13 @@ jobs:
         id: download-release
         with:
           path: artifacts
-      - name: git checkout
+      
+      - name: move file
         run: |
+          cp "${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml" artifacts
+          cp "${{ needs.prepare-build.outputs.oci-img-path }}/documentation.yaml" artifacts
           ls artifacts
-          
+
   generate-provenance:
     name: Generate SLSA provenance
     needs: [upload]
