@@ -212,6 +212,7 @@ jobs:
       VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"
     outputs:
       artefacts-hashes: ${{ steps.artefacts-hashes.outputs.hashes }}
+      tag-name: "${{ steps.rename-oci-archive.outputs.name }}"
     steps:
       - uses: actions/checkout@v3
 
@@ -436,7 +437,7 @@ jobs:
   # and commit the _releases.json file in a single commit, outside a matrix job
   dispatch-releases:
     name: Dispatch releases
-    needs: [prepare-build, upload]
+    needs: [prepare-build, upload,generate-provenance]
     runs-on: ubuntu-22.04
     if: ${{ needs.prepare-build.outputs.release-to != '' }}
     concurrency:
@@ -500,7 +501,7 @@ jobs:
           ref: ${{ github.ref_name }}
           fail-on-error: true
           workflow-name: Release.yaml
-          payload: '{ "oci-image-name": "${{ needs.prepare-build.outputs.oci-img-name }}", "image-trigger-cache-key": "${{ github.run_id }}-image-trigger"}'
+          payload: '{ "oci-image-name": "${{ needs.prepare-build.outputs.oci-img-name }}", "image-trigger-cache-key": "${{ github.run_id }}-image-trigger","image-tag":"${{ needs.upload.outputs.tag-name }}"}'
           run-id: dummy
           trigger-timeout: "3m"
           use-marker-step: true
@@ -509,7 +510,6 @@ jobs:
         run: |
           url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-releases.outputs.run-id }}'
           echo " - Triggered releases for '${{ needs.prepare-build.outputs.oci-img-name }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
-
 
   generate-provenance:
     name: Generate SLSA provenance
