@@ -149,7 +149,6 @@ jobs:
           workflow: Image.yaml
           run_id: ${{ steps.extract-github-run-id.outputs.image-github-run-id }}
           path: "."
-          name: provenance
       
       - name: test ls
         id: test-ls
