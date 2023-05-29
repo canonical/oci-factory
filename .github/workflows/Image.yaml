@@ -543,7 +543,8 @@ jobs:
       
       - uses: "softprops/action-gh-release@v1"
         with:
-          files	: "artifacts/*"
+          files	: |
+           $(find artifacts -type f)
           tag_name: "${{ needs.upload.outputs.tag-name }}"
           token: "${{ secrets.GITHUB_TOKEN }}"
 
