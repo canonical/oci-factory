@@ -539,12 +539,14 @@ jobs:
             cp "$source_folder/rockcraft.yaml" artifacts
           fi
 
-          ls artifacts
+          ls -la artifacts
       
-      - uses: ncipollo/release-action@v1
+      - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          artifacts: "artifacts/*"
+          files	: "artifacts/*"
           tag: "${{ needs.upload.outputs.tag-name }}"
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+
         
   generate-provenance:
     name: Generate SLSA provenance
