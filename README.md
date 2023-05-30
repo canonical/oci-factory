@@ -167,7 +167,7 @@ release:
     edge: "1.2-22.04_edge"      # follow whatever revision is in that channel
 
 upload:
- - source: https://github.com/canonical/foo-bar
+ - source: canonical/foo-bar
    commit: 24125d66dd60288fd2a0d68eb0e368ca384fcdcd
    directory: .
    release:
