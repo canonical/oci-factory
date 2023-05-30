@@ -12,6 +12,30 @@ docker:
     - -p 9090:9090
   access: Access your Prometheus instance at `http://localhost:9090`.
 parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone.
   - type: -p
     value: '9090:9090'
     description: Expose Prometheus on `localhost:9090`.
+  - type: -v 
+    value: "/path/to/prometheus.yml:/etc/prometheus/prometheus.yml"
+    description: Local configuration file `prometheus.yml`.
+  - type: -v
+    value: "/path/to/alerts.yml:/etc/prometheus/alerts.yml"
+    description: Local alerts configuration file `alerts.yml`.
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+
+    ```bash
+    docker logs -f prometheus-container
+    ```
+
+    To get an interactive shell:
+
+    ```bash
+    docker exec -it prometheus-container /bin/bash
+    ```
