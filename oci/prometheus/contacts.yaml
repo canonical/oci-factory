@@ -1,0 +1,5 @@
+notify:
+  emails:
+    - luca.bello@canonical.com
+  mattermost-channels:
+    - ew86pwdhrbf7zkp35xt7pp5abo

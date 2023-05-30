@@ -1,0 +1,19 @@
+version: 1
+
+upload:
+  - source: https://github.com/canonical/prometheus-rock
+    commit: some_sha
+    directory: 2.43.0
+    release:
+      2.43.0-22.04:
+        end-of-life: "2024-05-01"
+        risks:
+          - stable
+      2.43-22.04:
+        end-of-life: "2024-05-01"
+        risks:
+          - stable
+      2-22.04:
+        end-of-life: "2024-05-01"
+        risks:
+          - stable
