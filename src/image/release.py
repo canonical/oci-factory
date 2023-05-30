@@ -1,4 +1,4 @@
-#!/usr/bin/env -S python3 -m src.shared.functions
+#!/usr/bin/env python3
 
 """
 Takes a releases trigger file and created a mapping of all the
