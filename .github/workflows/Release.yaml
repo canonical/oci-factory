@@ -101,14 +101,14 @@ jobs:
           # https://github.com/actions/runner/issues/1483
           DOCKER_HUB_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.DOCKER_HUB_CREDS_PSW || secrets.DOCKER_HUB_CREDS_PSW_DEV }}
           DOCKER_HUB_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.DOCKER_HUB_CREDS_USR || secrets.DOCKER_HUB_CREDS_USR_DEV }}
-          ACR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_USR || secrets.ACR_CREDS_USR_DEV }}
-          ACR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_PSW || secrets.ACR_CREDS_PSW_DEV }}
+          # ACR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_USR || secrets.ACR_CREDS_USR_DEV }}
+          # ACR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_PSW || secrets.ACR_CREDS_PSW_DEV }}
           ECR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_USR || secrets.ECR_CREDS_USR_DEV }}
           ECR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_PSW || secrets.ECR_CREDS_PSW_DEV }}
           # ECR_LTS_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ECR_LTS_CREDS_USR || secrets.ECR_LTS_CREDS_USR_DEV }}
           # ECR_LTS_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ECR_LTS_CREDS_PSW || secrets.ECR_LTS_CREDS_PSW_DEV }}
           
-          ACR_NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu.azurecr.io' || secrets.ACR_NAMESPACE_DEV }}
+          # ACR_NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu.azurecr.io' || secrets.ACR_NAMESPACE_DEV }}
           DOCKER_HUB_NAMESPACE: ${{ env.IS_PROD == 'true' && 'docker.io/ubuntu' || secrets.DOCKER_HUB_NAMESPACE_DEV }}
           ECR_NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu' || secrets.ECR_NAMESPACE_DEV }}
           # ECR_LTS_NAMESPACE: ${{ env.IS_PROD == 'true' && 'lts' || secrets.ECR_LTS_NAMESPACE_DEV }}
