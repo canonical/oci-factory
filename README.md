@@ -172,7 +172,7 @@ upload:
    directory: .
    release:
      1.2-22.04:
-       end-of-life: "2024-05-01"
+       end-of-life: "2024-05-01T00:00:00Z"
        risks:
          - edge
 ```
