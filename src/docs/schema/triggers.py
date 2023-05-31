@@ -2,7 +2,7 @@
 this module is the pydantic version
 of the documentation.yaml schema.
 """
-from typing import List, Optional
+from typing import Optional
 from pydantic import BaseModel, Extra, constr, conlist
 
 
@@ -23,7 +23,7 @@ class Microk8sConfigMap(BaseModel):
     """Schema of the microk8s[configmap] section."""
 
     name: Optional[str]
-    files: conlist(item_type=List[ConfigMapFile], min_items=1) = None
+    files: conlist(item_type=ConfigMapFile, min_items=1) = None
 
     class Config:
         """permit to not accept extra parameters"""
@@ -58,7 +58,7 @@ class Microk8sInfo(BaseModel):
 class DockerRunParameters(BaseModel):
     """Schema of the docker section."""
 
-    parameters: conlist(item_type=List[str], min_items=1)
+    parameters: conlist(item_type=str, min_items=1)
     access: Optional[str]
 
     class Config:
@@ -99,7 +99,7 @@ class DocSchema(BaseModel):
     is_chiselled: Optional[bool]
     description: constr(min_length=1, strip_whitespace=True)
     docker: Optional[DockerRunParameters]
-    parameters: Optional[conlist(item_type=List[Parameter], min_items=1)]
+    parameters: Optional[conlist(item_type=Parameter, min_items=1)]
     debug: Optional[DebugInfo]
     microk8s: Optional[Microk8sInfo]
 

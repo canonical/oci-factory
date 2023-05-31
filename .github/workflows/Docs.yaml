@@ -2,7 +2,7 @@ name: Documentation
 on:
   push:
     branches:
-      - docs
+      - main
     paths:
       - "oci/*/documentation.y*ml"
   workflow_dispatch:
@@ -10,6 +10,11 @@ on:
       oci-image-name:
         description: 'Name of OCI image to generate the documentation'
         required: true
+      external_ref_id: #(1)
+        description: 'Optional ID for unique run detection'
+        required: false
+        type: string
+        default: "default-id"
 
 jobs:
   prepare-documentation-matrix:
@@ -91,17 +96,18 @@ jobs:
           OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
           OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
           OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
-          IMAGE_NAME: ${{ inputs.oci-image-name }}
+          IMAGE_NAME: "${{ matrix.name }}"
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
-        run: ./src/image/get_canonical_tags_from_swift.sh
+        run: |
+          pip install -r ./src/image/requirements.txt
+          ./src/image/get_canonical_tags_from_swift.sh
 
       - name: Generate documentation for ${{ matrix.name }}
         run: |
           set -ex
           pip install -r ./src/docs/requirements.txt
           python3 -m src.docs.generate_oci_documentation \
-            --all-releases "${{ matrix.all-releases }}"" \
             --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
             --oci-image-name "${{ matrix.name }}" \
-            --repository-basename "${{ vars.repository_basename }}"
+            --repository-basename rocksdev
           cat ./oci/"${{ matrix.name }}"/_documentation.yaml

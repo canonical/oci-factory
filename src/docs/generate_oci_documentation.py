@@ -36,15 +36,11 @@ class GenerateOciYaml:
         name_of_oci: The name of the OCI image.
         repository: The repository basename on DockerHub.
         password: The password/token on DockerHub.
-        all_revision_tags: file with a comma-separated list of all revision (<track>_<rev>) tags.
-        all_releases: The path to the _releases.json file.
-        image_trigger: The path to the image trigger file.
         url: The image's registry URL.
 
     Methods:
         __init__: Initializes the GenerateOciYaml class.
-        cli_args: Configures the command-line argument parser.
-        validate_args: Parses and validates the CLI arguments.
+        cli_args: Configures and parse the command-line argument parser.
         build_image_endpoint: Defines the image's registry URL.
         add_yaml_representer: Adds a presenter to handle multiline strings in YAML.
         process_run: Runs a command and handles its output.
@@ -65,16 +61,12 @@ class GenerateOciYaml:
         self.name_of_oci = None
         self.repository = None
         self.password = None
-        self.all_revision_tags = None
-        self.all_releases = None
-        self.image_trigger = None
         self.url = None
+        self.all_revision_tags = None
         self.cli_args()
-        self.validate_args()
         self.build_image_endpoint()
 
-    @staticmethod
-    def cli_args() -> argparse.ArgumentParser:
+    def cli_args(self) -> argparse.ArgumentParser:
         """Argument parser"""
         parser = argparse.ArgumentParser(
             description="""
@@ -86,6 +78,12 @@ class GenerateOciYaml:
             "--username",
             dest="username",
             help="username on DockerHub",
+        )
+
+        parser.add_argument(
+            "--all-revision-tags",
+            help="File w/ comma-separated list of all revision (<track>_<rev>) tags.",
+            required=True,
         )
 
         parser.add_argument(
@@ -115,39 +113,7 @@ class GenerateOciYaml:
             help="Where the output file will be stored",
         )
 
-        parser.add_argument(
-            "--image-trigger",
-            help="Path to the image trigger file.",
-            required=True,
-        )
-
-        parser.add_argument(
-            "--all-releases",
-            help="Path to the _releases.json file.",
-            required=True,
-        )
-        parser.add_argument(
-            "--all-revision-tags",
-            help="File w/ comma-separated list of all revision (<track>_<rev>) tags.",
-            required=True,
-        )
-
-        return parser
-
-    def validate_args(self) -> None:
-        """Parse and validate the CLI arguments"""
-        parser = self.cli_args()
         parser.parse_args(namespace=self)
-        if (
-            self.repository is None
-            or self.name_of_oci is None
-            or self.all_revision_tags is None
-            or self.all_releases is None
-            or self.image_trigger is None
-        ):
-            parser.error(
-                """The repository, name_of_oci and the tag.json can't be empty"""
-            )
 
     def build_image_endpoint(self) -> None:
         """Define the image's registry URL"""
@@ -273,8 +239,12 @@ class GenerateOciYaml:
             release_data["track"] = track
             release_data["base"] = base
 
+            tags_section = [
+                tag_to_replace.replace("latest_", "") for tag_to_replace in tags
+            ]
+
             manifest_list = self.run_skopeo_command(
-                "inspect", [f"docker://{self.url}:" + tags[0], "--raw"]
+                "inspect", [f"docker://{self.url}:" + tags_section[0], "--raw"]
             )
 
             if "manifests" in manifest_list:
@@ -283,12 +253,12 @@ class GenerateOciYaml:
                 )
             else:
                 manifest_list = self.run_skopeo_command(
-                    "inspect", [f"docker://{self.url}:" + tags[0]]
+                    "inspect", [f"docker://{self.url}:" + tags_section[0]]
                 )
 
                 release_data["architectures"] = [manifest_list["Architecture"]]
 
-            release_data["tags"] = tags
+            release_data["tags"] = tags_section
 
             release_data["risk"] = self.get_lowest_risk(release_data["tags"])
             releases.append(release_data)
@@ -331,27 +301,25 @@ class GenerateOciYaml:
         dict_file = self.read_data_template()
         logging.info("Getting tags by revision")
 
-        all_revision_tags = shared.get_all_revision_tags(self.all_revision_tags)
-        revision_to_track = shared.get_revision_to_track(all_revision_tags)
-        all_releases = shared.get_all_releases(self.all_releases)
+        all_releases = shared.get_all_releases(
+            f"{self.data_dir}/{self.name_of_oci}/_releases.json"
+        )
         tag_mapping_from_all_releases = shared.get_tag_mapping_from_all_releases(
             all_releases
         )
-        image_trigger = shared.get_image_trigger(self.image_trigger)
-        tag_mapping_from_trigger, all_releases = shared.get_tag_mapping_from_trigger(
-            image_trigger, all_releases
-        )
-        all_tags_mapping = {
-            **tag_mapping_from_all_releases,
-            **tag_mapping_from_trigger,
-        }
-        tag_to_revision = shared.get_tag_to_revision(
-            tag_mapping_from_trigger, all_tags_mapping, revision_to_track
-        )
-        release_tags = shared.get_releases_tags(tag_to_revision)
-        group_by_revision = shared.get_group_by_revision(release_tags)
+        all_revision_tags = shared.get_all_revision_tags(self.all_revision_tags)
+        revision_to_track = shared.get_revision_to_track(all_revision_tags)
+
+        group_by_revision = {}
+        for key, value in tag_mapping_from_all_releases.items():
+            while (
+                value in tag_mapping_from_all_releases
+            ):  # Follow the chain until a non-key value is reached
+                value = tag_mapping_from_all_releases[value]
+            group_by_revision.setdefault(value, []).append(key)
 
         logging.info("Building releases info")
+
         releases = self.build_releases_data(group_by_revision, revision_to_track)
 
         dict_file["repo"] = self.name_of_oci
