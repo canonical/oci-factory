@@ -154,7 +154,7 @@ jobs:
           tag: "${{matrix.name}}"
 
       - uses: "softprops/action-gh-release@v1"
-        if: ${{ steps.checkTag.outputs.exists }}
+        if: ${{ steps.checkTag.outputs.exists == 'true' }}
         with:
           tag_name: "${{matrix.name}}"
           token: "${{ secrets.GITHUB_TOKEN }}"
