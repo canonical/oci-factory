@@ -118,7 +118,7 @@ jobs:
           set -ex
           echo "Running in production?  ${{ env.IS_PROD == 'true' && 'YES' || 'NO' }}"
           
-          ./src/image/release.py \
+          python3 -m src.image.release \
             --image-trigger oci/${{ inputs.oci-image-name }}/image.yaml \
             --image-name ${{ inputs.oci-image-name }} \
             --all-releases oci/${{ inputs.oci-image-name }}/_releases.json \
@@ -135,15 +135,17 @@ jobs:
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: oci/${{ inputs.oci-image-name }}/_releases.json
           email: rocks-dev@lists.canonical.com
-      
-      - name: get the revision
-        id: get-revision
-        run: |
-          revision=$(cat "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" | tr ',' '\n' | sort -t '_' -k 2 -n | tail -n 1)
-          echo "tag-name=$revision" >> "$GITHUB_OUTPUT"
 
-      
+
+  do-github-release:
+    runs-on: ubuntu-22.04
+    name: Github-Release
+    needs: [do-releases]
+    strategy:
+      fail-fast: true
+      matrix: ${{ fromJSON(needs.do-releases.outputs.github-list-of-tags) }}
+    steps:
       - uses: "softprops/action-gh-release@v1"
         with:
-          tag_name: "${{ inputs.oci-image-name }}_${{ steps.get-revision.outputs.tag-name}}"
+          tag_name: "{{matrix.name}}"
           token: "${{ secrets.GITHUB_TOKEN }}"
