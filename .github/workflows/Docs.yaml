@@ -2,7 +2,7 @@ name: Documentation
 on:
   push:
     branches:
-      - docs
+      - main
     paths:
       - "oci/*/documentation.y*ml"
   workflow_dispatch:
@@ -10,6 +10,11 @@ on:
       oci-image-name:
         description: 'Name of OCI image to generate the documentation'
         required: true
+      external_ref_id: #(1)
+        description: 'Optional ID for unique run detection'
+        required: false
+        type: string
+        default: "default-id"
 
 jobs:
   prepare-documentation-matrix:
@@ -100,8 +105,7 @@ jobs:
           set -ex
           pip install -r ./src/docs/requirements.txt
           python3 -m src.docs.generate_oci_documentation \
-            --all-releases "${{ matrix.all-releases }}"" \
             --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
             --oci-image-name "${{ matrix.name }}" \
-            --repository-basename "${{ vars.repository_basename }}"
+            --repository-basename "rocksdev"
           cat ./oci/"${{ matrix.name }}"/_documentation.yaml

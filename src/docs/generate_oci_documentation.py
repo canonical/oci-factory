@@ -37,8 +37,6 @@ class GenerateOciYaml:
         repository: The repository basename on DockerHub.
         password: The password/token on DockerHub.
         all_revision_tags: file with a comma-separated list of all revision (<track>_<rev>) tags.
-        all_releases: The path to the _releases.json file.
-        image_trigger: The path to the image trigger file.
         url: The image's registry URL.
 
     Methods:
@@ -66,8 +64,6 @@ class GenerateOciYaml:
         self.repository = None
         self.password = None
         self.all_revision_tags = None
-        self.all_releases = None
-        self.image_trigger = None
         self.url = None
         self.cli_args()
         self.validate_args()
@@ -116,17 +112,6 @@ class GenerateOciYaml:
         )
 
         parser.add_argument(
-            "--image-trigger",
-            help="Path to the image trigger file.",
-            required=True,
-        )
-
-        parser.add_argument(
-            "--all-releases",
-            help="Path to the _releases.json file.",
-            required=True,
-        )
-        parser.add_argument(
             "--all-revision-tags",
             help="File w/ comma-separated list of all revision (<track>_<rev>) tags.",
             required=True,
@@ -142,11 +127,9 @@ class GenerateOciYaml:
             self.repository is None
             or self.name_of_oci is None
             or self.all_revision_tags is None
-            or self.all_releases is None
-            or self.image_trigger is None
         ):
             parser.error(
-                """The repository, name_of_oci and the tag.json can't be empty"""
+                """The repository, name_of_oci and the all_revision_tags can't be empty"""
             )
 
     def build_image_endpoint(self) -> None:
@@ -333,11 +316,15 @@ class GenerateOciYaml:
 
         all_revision_tags = shared.get_all_revision_tags(self.all_revision_tags)
         revision_to_track = shared.get_revision_to_track(all_revision_tags)
-        all_releases = shared.get_all_releases(self.all_releases)
+        all_releases = shared.get_all_releases(
+            f"{self.data_dir}/{self.name_of_oci}/_releases.json"
+        )
         tag_mapping_from_all_releases = shared.get_tag_mapping_from_all_releases(
             all_releases
         )
-        image_trigger = shared.get_image_trigger(self.image_trigger)
+        image_trigger = shared.get_image_trigger(
+            f"{self.data_dir}/{self.name_of_oci}/image.yaml"
+        )
         tag_mapping_from_trigger, all_releases = shared.get_tag_mapping_from_trigger(
             image_trigger, all_releases
         )
