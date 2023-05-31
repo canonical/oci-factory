@@ -1,7 +1,7 @@
 version: 1
 
 upload:
-  - source: https://github.com/canonical/prometheus-rock
+  - source: canonical/prometheus-rock
     commit: some_sha
     directory: 2.43.0
     release:
