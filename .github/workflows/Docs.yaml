@@ -2,7 +2,7 @@ name: Documentation
 on:
   push:
     branches:
-      - docs
+      - main
     paths:
       - "oci/*/documentation.y*ml"
   workflow_dispatch:
@@ -103,5 +103,5 @@ jobs:
             --all-releases "${{ matrix.all-releases }}"" \
             --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
             --oci-image-name "${{ matrix.name }}" \
-            --repository-basename "${{ vars.repository_basename }}"
+            --repository-basename "rocksdev"
           cat ./oci/"${{ matrix.name }}"/_documentation.yaml
