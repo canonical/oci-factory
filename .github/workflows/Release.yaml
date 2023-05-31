@@ -56,6 +56,8 @@ jobs:
     runs-on: ubuntu-22.04
     name: Release
     needs: [validate-push-release-request]
+    outputs:
+      github-list-of-tags: ${{ steps.release-image.outputs.github-list-of-tags }}
     env:
       IS_PROD: ${{ ! startsWith(inputs.oci-image-name, 'mock-') }}
     steps:
@@ -96,6 +98,7 @@ jobs:
         run: ./src/image/get_canonical_tags_from_swift.sh
 
       - name: Do releases from ${{ inputs.oci-image-name }}
+        id: release-image
         env:
           # GH has issues with boolean expressions
           # https://github.com/actions/runner/issues/1483
