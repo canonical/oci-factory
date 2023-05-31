@@ -1,0 +1,113 @@
+name: Documentation
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "oci/*/documentation.y*ml"
+  workflow_dispatch:
+    inputs:
+      oci-image-name:
+        description: 'Name of OCI image to generate the documentation'
+        required: true
+      external_ref_id: #(1)
+        description: 'Optional ID for unique run detection'
+        required: false
+        type: string
+        default: "default-id"
+
+jobs:
+  prepare-documentation-matrix:
+    runs-on: ubuntu-22.04
+    name: Prepare documentation
+    outputs:
+      multi-image-documentation-matrix: ${{ steps.prepare-documentation.outputs.multi-image-documentation-matrix }}
+      oci-img-path: ${{ steps.validate-image.outputs.img-path }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Infer images to releaase
+        uses: tj-actions/changed-files@v35
+        id: changed-files
+        if: github.event_name != 'workflow_dispatch'
+        with:
+          dir_names: "true"
+          separator: ","
+          files: |
+            oci/*/documentation.y*ml
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Validate image from dispatch
+        id: validate-image
+        run: |
+          set -ex
+
+          if [[ "${{ github.event_name }}" != "workflow_dispatch" ]]
+          then
+            img_path="${{ steps.changed-files.outputs.all_changed_files }}"
+            occurrences="${img_path//[^,]}"
+            if [ ${#occurrences} -ne 0 ]
+            then
+              echo "ERR: can only build documentation for 1 image at a time, but trying to trigger ${img_path}"
+              exit 1
+            fi
+          else
+            img_path="oci/${{ inputs.oci-image-name }}"
+          fi
+          test -d "${img_path}"
+
+          echo "img-path=${img_path}" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare documentation matrix
+        id: prepare-documentation
+        run: |
+          set -ex
+          pip install -r ./src/docs/requirements.txt
+
+          ./src/docs/prepare_multi_image_documentation_matrix.py \
+            --oci-paths "${{steps.validate-image.outputs.img-path }}"
+
+
+  do-documentation:
+    runs-on: ubuntu-22.04
+    name: Documentation
+    needs: [prepare-documentation-matrix]
+    if: ${{ needs.prepare-documentation-matrix.outputs.multi-image-documentation-matrix }}
+    strategy:
+      fail-fast: true
+      max-parallel: 1
+      matrix: ${{ fromJSON(needs.prepare-documentation-matrix.outputs.multi-image-documentation-matrix) }}
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Get all revisions per track
+        id: get-all-canonical-tags
+        env:
+          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
+          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
+          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+          IMAGE_NAME: "${{ matrix.name }}"
+          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
+        run: |
+          pip install -r ./src/image/requirements.txt
+          ./src/image/get_canonical_tags_from_swift.sh
+
+      - name: Generate documentation for ${{ matrix.name }}
+        run: |
+          set -ex
+          pip install -r ./src/docs/requirements.txt
+          python3 -m src.docs.generate_oci_documentation \
+            --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
+            --oci-image-name "${{ matrix.name }}" \
+            --repository-basename "${{ vars.repository_basename }}"
+          cat ./oci/"${{ matrix.name }}"/_documentation.yaml

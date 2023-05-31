@@ -135,3 +135,18 @@ jobs:
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: oci/${{ inputs.oci-image-name }}/_releases.json
           email: rocks-dev@lists.canonical.com
+        
+      - name: Run documentation
+        # Using this actions cause others can have this problem:
+        # https://github.com/convictional/trigger-workflow-and-wait/issues/61
+        uses: mathze/workflow-dispatch-action@v1.2.0
+        id: run-documentation
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref_name }}
+          fail-on-error: true
+          workflow-name: Docs.yaml
+          payload: '{ "oci-image-name": "${{ inputs.oci-image-name }}"}'
+          use-marker-step: true
+          trigger-timeout: '30m'
+          run-id: dummy
