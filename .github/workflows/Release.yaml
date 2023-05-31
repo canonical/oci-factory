@@ -118,7 +118,7 @@ jobs:
           set -ex
           echo "Running in production?  ${{ env.IS_PROD == 'true' && 'YES' || 'NO' }}"
           
-          ./src/image/release.py \
+          python3 -m src.image.release \
             --image-trigger oci/${{ inputs.oci-image-name }}/image.yaml \
             --image-name ${{ inputs.oci-image-name }} \
             --all-releases oci/${{ inputs.oci-image-name }}/_releases.json \
@@ -135,3 +135,18 @@ jobs:
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: oci/${{ inputs.oci-image-name }}/_releases.json
           email: rocks-dev@lists.canonical.com
+        
+      - name: Run documentation
+        # Using this actions cause others can have this problem:
+        # https://github.com/convictional/trigger-workflow-and-wait/issues/61
+        uses: mathze/workflow-dispatch-action@v1.2.0
+        id: run-documentation
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref_name }}
+          fail-on-error: true
+          workflow-name: Docs.yaml
+          payload: '{ "oci-image-name": "${{ matrix.name }}"}'
+          use-marker-step: true
+          trigger-timeout: '3m'
+          run-id: dummy
