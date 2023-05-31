@@ -99,9 +99,11 @@ if __name__ == "__main__":
     
     github_tag = []
     for revision, tags in group_by_revision.items():
-        tag = {}
-        tag["name"] = f"{img_name}_{tags}_{revision}"
-        github_tag.append(tag)
+        for tag in tags:
+            tag_in_loop = {}
+            tag_split=tag.split("_")[0]
+            tag_in_loop["name"] = f"{img_name}_{tag_split}_{revision}"
+            github_tag.append(tag_in_loop)
 
     matrix = {"include": github_tag}
 
