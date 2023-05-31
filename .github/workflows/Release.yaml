@@ -150,5 +150,5 @@ jobs:
     steps:
       - uses: "softprops/action-gh-release@v1"
         with:
-          tag_name: "{{matrix.name}}"
+          tag_name: "${{matrix.name}}"
           token: "${{ secrets.GITHUB_TOKEN }}"
