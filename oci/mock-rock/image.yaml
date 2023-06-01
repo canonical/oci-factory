@@ -4,7 +4,7 @@ release:
   latest:
     end-of-life: "2024-05-01T00:00:00Z"
     candidate: 1.0-22.04_candidate
-    edge: 1.1-22.04_edge
+    beta: 1.0-22.04_beta
     
 upload:  
   - source: "cjdcordeiro/oci-factory"
@@ -16,3 +16,4 @@ upload:
         risks: 
           - candidate
           - edge
+          - beta

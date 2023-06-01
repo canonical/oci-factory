@@ -5,9 +5,6 @@
         },
         "beta": {
             "target": "latest_candidate"
-        },
-        "edge": {
-            "target": "1.1-22.04_edge"
         }
     },
     "1.0-22.04": {
@@ -19,17 +16,6 @@
         },
         "edge": {
             "target": "67"
-        }
-    },
-    "1.1-22.04": {
-        "candidate": {
-            "target": "68"
-        },
-        "beta": {
-            "target": "1.1-22.04_candidate"
-        },
-        "edge": {
-            "target": "68"
         }
     }
 }
