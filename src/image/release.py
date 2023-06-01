@@ -10,11 +10,11 @@ import json
 import os
 import re
 import subprocess
-from collections import defaultdict
 import yaml
-from utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
-import shared.release_function as shared
 
+from collections import defaultdict
+from src.image.utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
+import src.shared.release_function as shared 
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -52,19 +52,17 @@ img_name = (
 )
 
 print(f"Preparing to release revision tags for {img_name}")
-all_revision_tags = shared.get_all_revision_tags(args.all_revision_tags)
-
+all_revision_tags=shared.get_all_revision_tags(args.all_revision_tags)
 revision_to_track = shared.get_revision_to_track(all_revision_tags)
 
-img_name = (
-    args.image_name
-    if args.image_name
-    else os.path.abspath(args.image_trigger).split("/")[-2]
+print(
+    "Revision (aka 'canonical') tags grouped by revision:\n"
+    f"{json.dumps(revision_to_track, indent=2)}"
 )
 
 print(f"Reading all previous releases from {args.all_releases}...")
-all_releases = shared.get_all_releases(args.all_releases)
-# map the existing tags into a struct similar to tag_mapping_from_trigger
+
+all_releases=shared.get_all_releases(args.all_releases)
 tag_mapping_from_all_releases = shared.get_tag_mapping_from_all_releases(all_releases)
 
 print(f"Parsing image trigger {args.image_trigger}")
@@ -185,19 +183,18 @@ print(
 for revision, tags in group_by_revision.items():
     revision_track = revision_to_track[revision]
     source_img = (
-        "docker://ghcr.io/" f"{args.ghcr_repo}/{img_name}:{revision_track}_{revision}"
+        "docker://ghcr.io/"
+        f"{args.ghcr_repo}/{img_name}:{revision_track}_{revision}"
     )
     this_dir = os.path.dirname(__file__)
-    shared.upload_image(
-        group_by_revision, revision_to_track, args.ghcr_repo, img_name, this_dir
-    )
-    print(
-        f"Updating {args.all_releases} file with:\n"
-        f"{json.dumps(all_releases, indent=2)}"
+    print(f"Releasing {source_img} with tags:\n{tags}")
+    subprocess.check_call(
+        [f"{this_dir}/tag_and_publish.sh", source_img, img_name] + tags
     )
 
 print(
-    f"Updating {args.all_releases} file with:\n" f"{json.dumps(all_releases, indent=2)}"
+    f"Updating {args.all_releases} file with:\n"
+    f"{json.dumps(all_releases, indent=2)}"
 )
 with open(args.all_releases, "w") as fd:
     json.dump(all_releases, fd, indent=4)
