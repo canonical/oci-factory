@@ -13,7 +13,7 @@ import subprocess
 from collections import defaultdict
 import yaml
 from src.image.utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
-import shared.release_info as shared
+import src.shared.release_info as shared
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
