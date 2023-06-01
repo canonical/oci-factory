@@ -14,8 +14,7 @@ on:
         required: false
         type: string
         default: "default-id"
-
-       
+           
 jobs:
   validate-push-release-request:
     runs-on: ubuntu-22.04
@@ -122,7 +121,7 @@ jobs:
           set -ex
           echo "Running in production?  ${{ env.IS_PROD == 'true' && 'YES' || 'NO' }}"
           
-          python3 -m src.image.release \
+          ./src/image/release.py \
             --image-trigger oci/${{ inputs.oci-image-name }}/image.yaml \
             --image-name ${{ inputs.oci-image-name }} \
             --all-releases oci/${{ inputs.oci-image-name }}/_releases.json \
@@ -139,7 +138,6 @@ jobs:
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: oci/${{ inputs.oci-image-name }}/_releases.json
           email: rocks-dev@lists.canonical.com
-
 
   do-github-release:
     runs-on: ubuntu-22.04
@@ -178,9 +176,9 @@ jobs:
         with: 
           tag: "${{matrix.tag-name}}"
 
-       - uses: "softprops/action-gh-release@v1"
-          if: ${{ steps.checkTag.outputs.exists == 'true' }}
-          with:
-            name: "${{matrix.release-name}}"
-            tag_name: "${{matrix.tag-name}}"
+      - uses: "softprops/action-gh-release@v1"
+        if: ${{ steps.checkTag.outputs.exists == 'true' }}
+        with:
+          name: "${{matrix.release-name}}"
+          tag_name: "${{matrix.tag-name}}"
           token: "${{ secrets.GITHUB_TOKEN }}"

@@ -227,3 +227,17 @@ print(
 )
 with open(args.all_releases, "w") as fd:
     json.dump(all_releases, fd, indent=4)
+    
+github_tag = []
+for revision, tags in group_by_revision.items():
+    for tag in tags:
+        tag_in_loop = {}
+        tag_split=tag.split("_")[0]
+        tag_in_loop["tag-name"] = f"{img_name}_{tag_split}_{revision}"
+        tag_in_loop["release-name"] = f"{img_name}_{tag}"
+        github_tag.append(tag_in_loop)
+
+matrix = {"include": github_tag}
+
+with open(os.environ["GITHUB_OUTPUT"], "a", encoding="UTF-8") as gh_out:
+    print(f"github-list-of-tags={matrix}", file=gh_out)
