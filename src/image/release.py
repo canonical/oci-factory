@@ -228,14 +228,15 @@ github_tags = []
 for revision, tags in group_by_revision.items():
     tag_track = revision_to_track[revision]
     for tag in tags:
-        tag_in_loop = {}
-        tag_in_loop["canonical-tag"] = f"{img_name}_{tag_track}_{revision}"
-        tag_in_loop["release-name"] = f"{img_name}_{tag}_{revision}"
-        tag_in_loop["name"] = f"{img_name}"
-        tag_in_loop["revision"] = f"{revision}"
-        github_tags.append(tag_in_loop)
+        gh_release_info = {}
+        gh_release_info["canonical-tag"] = f"{img_name}_{tag_track}_{revision}"
+        gh_release_info["release-name"] = f"{img_name}_{tag}"
+        gh_release_info["name"] = f"{img_name}"
+        gh_release_info["revision"] = f"{revision}"
+        gh_release_info["channel"] = f"{tag}"
+        github_tags.append(gh_release_info)
 
 matrix = {"include": github_tags}
 
 with open(os.environ["GITHUB_OUTPUT"], "a", encoding="UTF-8") as gh_out:
-    print(f"github-list-of-tags={matrix}", file=gh_out)
+    print(f"gh-releases-matrix={matrix}", file=gh_out)
