@@ -144,20 +144,14 @@ jobs:
       - uses: actions/checkout@v3
         with:
             fetch-depth: 0
+            ref: ${{ matrix.canonical-tag }}
       
-      - uses: rickstaa/action-contains-tag@v1
-        id: contains_tag
-        with:
-          reference: "${{ github.ref_name }}"
-          tag: "${{ matrix.canonical-tag }}"
-                
       - name: Create Git tag
         uses: rickstaa/action-create-tag@v1
         with:
           tag: "${{ matrix.release-name }}"
           message: "release(${{ matrix.name }}): Release image revision ${{ matrix.revision }} to ${{ matrix.channel }}"
           github_token: ${{ secrets.ROCKSBOT_TOKEN }}
-          commit_sha: "${{ steps.contains_tag.outputs.linked_commit }}"
           force_push_tag: true
 
       - uses: "softprops/action-gh-release@v1"
