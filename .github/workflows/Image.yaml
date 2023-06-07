@@ -1,5 +1,5 @@
 name: Image
-run-name: 'Image(${{ inputs.oci-image-name }}): ${{ github.event.head_commit.message }}'
+run-name: 'Image - ${{ inputs.oci-image-name }} - ${{ github.ref }}'
 
 on:
   push:
@@ -38,7 +38,7 @@ jobs:
       - name: ${{ inputs.external_ref_id }} #(2)
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
-      - run: exit 1
+
       - uses: actions/checkout@v3
 
       - name: Infer number of image triggers

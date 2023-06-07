@@ -1,5 +1,5 @@
 name: Release
-run-name: 'Release(${{ inputs.oci-image-name }}): ${{ github.event.head_commit.message }}'
+run-name: 'Release - ${{ inputs.oci-image-name }} - ${{ github.ref }}'
 
 on:
   workflow_dispatch:
