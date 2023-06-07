@@ -127,7 +127,7 @@ jobs:
       - name: Commit oci/${{ inputs.oci-image-name }}/_releases.json
         uses: actions-x/commit@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.ROCKSBOT_TOKEN }}
           branch: ${{ github.ref }}
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: oci/${{ inputs.oci-image-name }}/_releases.json
@@ -146,12 +146,22 @@ jobs:
             fetch-depth: 0
             ref: ${{ matrix.canonical-tag }}
       
+      - uses: dev-drprasad/delete-tag-and-release@v1.0]
+        # We force delete an existing tag because otherwise we won't get
+        # an email notification and the GH release will have the date from when
+        # it was created the first time (i.e. force-push won't update the date)
+        continue-on-error: true
+        with:
+          tag_name: ${{ matrix.release-name }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          
       - name: Create Git tag
         uses: rickstaa/action-create-tag@v1
         with:
           tag: "${{ matrix.release-name }}"
           message: "release(${{ matrix.name }}): Release image revision ${{ matrix.revision }} to ${{ matrix.channel }}"
           github_token: ${{ secrets.ROCKSBOT_TOKEN }}
+          commit_sha: ${{ matrix.canonical-tag }}
           force_push_tag: true
 
       - uses: "softprops/action-gh-release@v1"
