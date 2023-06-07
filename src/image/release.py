@@ -10,15 +10,10 @@ import json
 import os
 import re
 import subprocess
-import yaml
-
 from collections import defaultdict
-from utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
-
-
-class BadChannel(Exception):
-    """Error validating release channel."""
-
+import yaml
+from src.image.utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
+import src.shared.release_info as shared
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -56,22 +51,8 @@ img_name = (
 )
 
 print(f"Preparing to release revision tags for {img_name}")
-with open(args.all_revision_tags, encoding="UTF-8") as rev_tags_f:
-    all_revision_tags = (
-        rev_tags_f.read().strip().rstrip(",").lstrip(",").split(",")
-    )
-revision_to_track = {}
-for track_revision in all_revision_tags:
-    track, revision = track_revision.split("_")
-    if revision in revision_to_track:
-        msg = (
-            "Each revision can only have 1 canonical tag, "
-            f"but revision {revision} is associated with tracks "
-            f"{track} and {revision_to_track['revision']}!"
-        )
-        raise BadChannel(msg)
-
-    revision_to_track[int(revision)] = track
+all_revision_tags = shared.get_all_revision_tags(args.all_revision_tags)
+revision_to_track = shared.get_revision_to_track(all_revision_tags)
 
 print(
     "Revision (aka 'canonical') tags grouped by revision:\n"
@@ -79,20 +60,9 @@ print(
 )
 
 print(f"Reading all previous releases from {args.all_releases}...")
-tag_mapping_from_all_releases = {}
-try:
-    with open(args.all_releases, encoding="UTF-8") as all_releases_fd:
-        all_releases = json.load(all_releases_fd)
 
-    # map the existing tags into a struct similar to tag_mapping_from_trigger
-    for track, risks in all_releases.items():
-        for risk, values in risks.items():
-            if risk in KNOWN_RISKS_ORDERED:
-                tag = f"{track}_{risk}"
-
-                tag_mapping_from_all_releases[tag] = values["target"]
-except FileNotFoundError:
-    all_releases = {}
+all_releases = shared.read_json_file(args.all_releases)
+tag_mapping_from_all_releases = shared.get_tag_mapping_from_all_releases(all_releases)
 
 print(f"Parsing image trigger {args.image_trigger}")
 with open(args.image_trigger, encoding="UTF-8") as trigger:
@@ -138,7 +108,7 @@ for channel_tag, target in tag_mapping_from_trigger.items():
     # a target cannot follow its own tag
     if target == channel_tag:
         msg = f"A tag cannot follow itself ({target})"
-        raise BadChannel(msg)
+        raise shared.BadChannel(msg)
 
     # we need to map tags to a revision number,
     # even those that point to other tags
@@ -151,7 +121,7 @@ for channel_tag, target in tag_mapping_from_trigger.items():
                 f"The tag {channel_tag} wants to follow channel {follow_tag},"
                 " which is undefined and doesn't point to a revision"
             )
-            raise BadChannel(msg)
+            raise shared.BadChannel(msg)
 
         if follow_tag in followed_tags:
             # then we have a circular dependency, tags are following each
@@ -160,7 +130,7 @@ for channel_tag, target in tag_mapping_from_trigger.items():
                 f"The tag {channel_tag} was caught is a circular dependency, "
                 "following tags that follow themselves. Cannot pin a revision."
             )
-            raise BadChannel(msg)
+            raise shared.BadChannel(msg)
         followed_tags.append(follow_tag)
 
         # follow the parent tag until it is a digit (ie. revision number)
@@ -174,7 +144,7 @@ for channel_tag, target in tag_mapping_from_trigger.items():
             f"The tag {channel_tag} points to revision {follow_tag}, "
             "which doesn't exist!"
         )
-        raise BadChannel(msg)
+        raise shared.BadChannel(msg)
 
     tag_to_revision[channel_tag] = int(follow_tag)
 
@@ -212,8 +182,7 @@ print(
 for revision, tags in group_by_revision.items():
     revision_track = revision_to_track[revision]
     source_img = (
-        "docker://ghcr.io/"
-        f"{args.ghcr_repo}/{img_name}:{revision_track}_{revision}"
+        "docker://ghcr.io/" f"{args.ghcr_repo}/{img_name}:{revision_track}_{revision}"
     )
     this_dir = os.path.dirname(__file__)
     print(f"Releasing {source_img} with tags:\n{tags}")
@@ -222,8 +191,25 @@ for revision, tags in group_by_revision.items():
     )
 
 print(
-    f"Updating {args.all_releases} file with:\n"
-    f"{json.dumps(all_releases, indent=2)}"
+    f"Updating {args.all_releases} file with:\n" f"{json.dumps(all_releases, indent=2)}"
 )
-with open(args.all_releases, "w") as fd:
+
+with open(args.all_releases, "w", encoding="UTF-8") as fd:
     json.dump(all_releases, fd, indent=4)
+
+github_tags = []
+for revision, tags in group_by_revision.items():
+    revision_track = revision_to_track[revision]
+    for tag in tags:
+        gh_release_info = {}
+        gh_release_info["canonical-tag"] = f"{img_name}_{revision_track}_{revision}"
+        gh_release_info["release-name"] = f"{img_name}_{tag}"
+        gh_release_info["name"] = f"{img_name}"
+        gh_release_info["revision"] = f"{revision}"
+        gh_release_info["channel"] = f"{tag}"
+        github_tags.append(gh_release_info)
+
+matrix = {"include": github_tags}
+
+with open(os.environ["GITHUB_OUTPUT"], "a", encoding="UTF-8") as gh_out:
+    print(f"gh-releases-matrix={matrix}", file=gh_out)

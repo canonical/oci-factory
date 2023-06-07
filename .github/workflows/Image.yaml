@@ -1,4 +1,6 @@
 name: Image
+run-name: 'Image - ${{ inputs.oci-image-name }} - ${{ github.ref }}'
+
 on:
   push:
     paths:
