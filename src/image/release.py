@@ -195,3 +195,20 @@ print(
 )
 with open(args.all_releases, "w", encoding="UTF-8") as fd:
     json.dump(all_releases, fd, indent=4)
+
+github_tags = []
+for revision, tags in group_by_revision.items():
+    revision_track = revision_to_track[revision]
+    for tag in tags:
+        gh_release_info = {}
+        gh_release_info["canonical-tag"] = f"{img_name}_{revision_track}_{revision}"
+        gh_release_info["release-name"] = f"{img_name}_{tag}"
+        gh_release_info["name"] = f"{img_name}"
+        gh_release_info["revision"] = f"{revision}"
+        gh_release_info["channel"] = f"{tag}"
+        github_tags.append(gh_release_info)
+
+matrix = {"include": github_tags}
+
+with open(os.environ["GITHUB_OUTPUT"], "a", encoding="UTF-8") as gh_out:
+    print(f"gh-releases-matrix={matrix}", file=gh_out)
