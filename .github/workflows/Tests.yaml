@@ -1,4 +1,5 @@
 name: Tests
+run-name: Test [${{ inputs.oci-image-name }}]
 on:
   workflow_dispatch:
     inputs:

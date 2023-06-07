@@ -1,4 +1,5 @@
 name: Image
+run-name: Image [${{ inputs.oci-image-name }}] workflow
 on:
   push:
     paths:
