@@ -1,4 +1,6 @@
 name: Tests
+run-name: 'Tests - ${{ inputs.oci-image-name }} - ${{ github.ref }}'
+
 on:
   workflow_dispatch:
     inputs:
