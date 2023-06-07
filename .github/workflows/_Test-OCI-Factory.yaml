@@ -4,6 +4,7 @@ on:
     paths:
       - ".github/workflows/*"
       - "!.github/workflows/CLA-Check.yaml"
+      - "!.github/workflows/PR-Validator.yaml"
       - "oci/mock-*"
       - "examples/**"
       - "src/**"
@@ -36,3 +37,6 @@ jobs:
         run: |
           url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-image.outputs.run-id }}'
           echo " - Triggered image '${{ matrix.oci-image }}' workflow at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
+          echo "Failed? ${{ steps.run-image.outputs.failed }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Status: ${{ steps.run-image.outputs.run-status }}" | tee $GITHUB_STATE >> "$GITHUB_STEP_SUMMARY"
+          echo "Conclusion: ${{ steps.run-image.outputs.run-conclusion }}" >> "$GITHUB_STEP_SUMMARY"
