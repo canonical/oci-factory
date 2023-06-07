@@ -150,6 +150,20 @@ jobs:
           trigger-timeout: '30m'
           run-id: dummy
 
+      - name: Write step summary
+        run: |
+          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-documentation.outputs.run-id }}'
+          echo " - Triggered documentation updates for '${{ inputs.oci-image-name }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Enforce docs conclusion
+        if: ${{ steps.run-documentation.outputs.run-conclusion != 'success' }}
+        # The previous step doesn't always raise an error
+        run: |
+          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-documentation.outputs.run-id }}'
+          echo "Failed to generate docs for '${{ inputs.oci-image-name }}' at [${url}](${url})."
+          exit 1
+
+
   do-github-release:
     runs-on: ubuntu-22.04
     name: Github-Release
