@@ -3,16 +3,6 @@
 """
 This module provides functions for parsing and processing 
 data related to _release.json and revision tags.
-
-Module functions:
-- get_all_releases: Reads a JSON file and returns the parsed data.
-- get_tag_mapping_from_all_releases: Extracts tags from a dictionary 
-                                    and creates a tag mapping like this {"latest_beta":"87"}.
-- get_all_revision_tags: Reads a file and extracts revision tags.
-- get_revision_to_track: Builds a dictionary mapping revision numbers to tracks.
-
-Exceptions:
-- BadChannel: Raised when there is an error validating the release channel.
 """
 
 import json
@@ -23,25 +13,26 @@ class BadChannel(Exception):
     """Error validating release channel."""
 
 
-def get_all_releases(file_all_releases):
+def read_json_file(json_file: str) -> dict:
     """
     Reads a JSON file and returns the parsed data.
     """
     try:
-        with open(file_all_releases, encoding="UTF-8") as all_releases_fd:
-            return json.load(all_releases_fd)
+        with open(json_file, encoding="UTF-8") as fd:
+            return json.load(fd)
     except FileNotFoundError:
         return {}
 
 
-def get_tag_mapping_from_all_releases(all_releases_dict):
+def get_tag_mapping_from_all_releases(all_releases_dict: dict) -> dict:
     """
     Iterates over the provided dictionary
+    with all the releases (_releases.json)
     and extracts the tags in this format
     track_risk. The resulting tag mapping
     associates each tag with its
     corresponding target value.
-    example: {"latest_beta":"87"}
+    Example: {"latest_beta":"87"}
     """
     mapping_from_all_releases = {}
     for track, risks in all_releases_dict.items():
@@ -53,9 +44,11 @@ def get_tag_mapping_from_all_releases(all_releases_dict):
     return mapping_from_all_releases
 
 
-def get_all_revision_tags(file_all_revision_tags):
+def get_all_revision_tags(file_all_revision_tags: str) -> list:
     """
-    Reads the specified file and processes
+    Reads the specified file (which must contain
+    1 text line with all the revision tags,
+    eg. '1.0-22.04_1,1.2-20.04_76') and processes
     its contents to extract revision tags.
     The tags are returned as a list after
     removing leading and trailing commas
@@ -65,10 +58,11 @@ def get_all_revision_tags(file_all_revision_tags):
         return rev_tags_f.read().strip().rstrip(",").lstrip(",").split(",")
 
 
-def get_revision_to_track(all_revisions_tags):
+def get_revision_to_track(all_revisions_tags: list) -> dict:
     """
     Iterates over a list of track_revision
-    tags and builds a dictionary that maps
+    tags (aka revision/canonical tags)
+    and builds a dictionary that maps
     each revision number to its corresponding
     track. If a revision number is associated
     with multiple tracks, an exception of type

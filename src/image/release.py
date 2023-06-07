@@ -61,7 +61,7 @@ print(
 
 print(f"Reading all previous releases from {args.all_releases}...")
 
-all_releases = shared.get_all_releases(args.all_releases)
+all_releases = shared.read_json_file(args.all_releases)
 tag_mapping_from_all_releases = shared.get_tag_mapping_from_all_releases(all_releases)
 
 print(f"Parsing image trigger {args.image_trigger}")
