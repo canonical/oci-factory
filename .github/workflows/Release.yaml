@@ -115,7 +115,7 @@ jobs:
           set -ex
           echo "Running in production?  ${{ env.IS_PROD == 'true' && 'YES' || 'NO' }}"
           
-          ./src/image/release.py \
+          python3 -m src.image.release \
             --image-trigger oci/${{ inputs.oci-image-name }}/image.yaml \
             --image-name ${{ inputs.oci-image-name }} \
             --all-releases oci/${{ inputs.oci-image-name }}/_releases.json \
