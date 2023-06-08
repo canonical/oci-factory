@@ -1,4 +1,6 @@
 name: Image
+run-name: 'Image - ${{ inputs.oci-image-name }} - ${{ github.ref }}'
+
 on:
   push:
     paths:
@@ -433,7 +435,7 @@ jobs:
 
   # We need this job because we want to make the releases all in one go,
   # so that we know which revisions to release, and so that we can update
-  # and commit the _releases.yaml file in a single commit, outside a matrix job
+  # and commit the _releases.json file in a single commit, outside a matrix job
   dispatch-releases:
     name: Dispatch releases
     needs: [prepare-build, upload]

@@ -7,3 +7,6 @@ jobs:
     steps:
       - name: Check if CLA signed
         uses: canonical/has-signed-canonical-cla@v1
+        with:
+          # This is to avoid failing the checks for ROCKsBot
+          accept-existing-contributors: true

@@ -50,7 +50,7 @@ class ImageUploadSchema(pydantic.BaseModel):
 
 
 class ChannelsSchema(pydantic.BaseModel):
-    """Schema of the Channels within the releases.yaml file."""
+    """Schema of the 'release' tracks within the image.yaml file."""
 
     end_of_life: Optional[datetime] = pydantic.Field(
         alias="end-of-life", default=None
