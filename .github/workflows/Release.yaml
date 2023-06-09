@@ -135,7 +135,13 @@ jobs:
           branch: ${{ github.ref }}
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: oci/${{ inputs.oci-image-name }}/_releases.json
-        
+
+
+  dispatch-documentation:
+    runs-on: ubuntu-22.04
+    name: Dispatch documentation
+    needs: [do-releases]
+    steps:
       - name: Run documentation
         # Using this actions cause others can have this problem:
         # https://github.com/convictional/trigger-workflow-and-wait/issues/61
