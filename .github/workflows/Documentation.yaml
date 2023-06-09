@@ -102,7 +102,7 @@ jobs:
           python3 -m src.docs.generate_oci_doc_yaml \
             --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
             --ecr-api-key "${ECR_CREDS_USR}" \
-            --ecr-api-secret $"{ECR_CREDS_PSW}" \
+            --ecr-api-secret "${ECR_CREDS_PSW}" \
             --oci-image-path "${{ needs.validate-documentation-request.outputs.oci-img-path }}" \
             --repository "${ECR_NAMESPACE}" \
             --doc-data-dir data
