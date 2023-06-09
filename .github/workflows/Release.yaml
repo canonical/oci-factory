@@ -49,6 +49,8 @@ jobs:
             exit 1
           fi
           echo "img-name=$(basename ${img_dir})" >> "$GITHUB_OUTPUT"
+
+  
   do-releases:
     runs-on: ubuntu-22.04
     name: Release
@@ -129,11 +131,10 @@ jobs:
       - name: Commit oci/${{ inputs.oci-image-name }}/_releases.json
         uses: actions-x/commit@v6
         with:
-          token: ${{ secrets.ROCKSBOT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: oci/${{ inputs.oci-image-name }}/_releases.json
-          email: rocks-dev@lists.canonical.com
         
       - name: Run documentation
         # Using this actions cause others can have this problem:

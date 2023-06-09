@@ -23,7 +23,7 @@ class Microk8sConfigMap(BaseModel):
     """Schema of the microk8s[configmap] section."""
 
     name: Optional[str]
-    files: conlist(item_type=ConfigMapFile, min_items=1) = None
+    files: conlist(item_type=ConfigMapFile, min_items=1)
 
     class Config:
         """permit to not accept extra parameters"""
@@ -72,7 +72,7 @@ class Parameter(BaseModel):
 
     type: str
     value: str
-    description: Optional[str]
+    description: str
 
     class Config:
         """permit to not accept extra parameters"""
@@ -94,7 +94,7 @@ class DebugInfo(BaseModel):
 class DocSchema(BaseModel):
     """Schema of the documentation.yaml file, and also validation of the schema"""
 
-    version: int
+    version: str
     application: constr(min_length=1, strip_whitespace=True)
     is_chiselled: Optional[bool]
     description: constr(min_length=1, strip_whitespace=True)
