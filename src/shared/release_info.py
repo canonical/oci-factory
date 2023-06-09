@@ -70,7 +70,7 @@ def get_revision_to_track(all_revisions_tags: list) -> dict:
     """
     revision_track = {}
     for track_revision in all_revisions_tags:
-        track, revision = track_revision.split("_")
+        track, revision = track_revision.rsplit("_", 1)
         if revision in revision_track:
             msg = (
                 "Each revision can only have 1 canonical tag, "
