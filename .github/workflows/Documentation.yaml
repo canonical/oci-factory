@@ -69,6 +69,8 @@ jobs:
     runs-on: ubuntu-22.04
     name: Documentation
     needs: [validate-documentation-request]
+    env:
+      IS_PROD: ${{ ! startsWith(needs.validate-documentation-request.outputs.oci-img-name, 'mock-') }}
     steps:
       - uses: actions/checkout@v3
       
@@ -93,11 +95,23 @@ jobs:
           ./src/image/get_canonical_tags_from_swift.sh
 
       - name: Generate documentation for ${{ needs.validate-documentation-request.outputs.oci-img-name }}
+        env:
+          ECR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_USR || secrets.ECR_CREDS_USR_DEV }}
+          ECR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_PSW || secrets.ECR_CREDS_PSW_DEV }}
+          ECR_NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu' || secrets.ECR_NAMESPACE_DEV }}
         run: |
           set -ex
           python3 -m src.docs.generate_oci_doc_yaml \
             --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
-            --oci-image-name "${{ needs.validate-documentation-request.outputs.oci-img-name }}" \
+            --ecr-api-key "${ECR_CREDS_USR}" \
+            --ecr-api-secret $"{ECR_CREDS_PSW}" \
             --oci-image-path "${{ needs.validate-documentation-request.outputs.oci-img-path }}" \
-            --repository-basename "${{ vars.repository_basename }}"
-          cat ./oci/"${{ matrix.name }}"/_documentation.yaml
+            --repository "${ECR_NAMESPACE}" \
+            --doc-data-dir data
+      
+      - name: Upload documentation data YAML
+        uses: actions/upload-artifact@v3
+        with:
+          name: '${{ needs.validate-documentation-request.outputs.oci-img-name }}.doc.yaml'
+          path: data/*.y*ml
+          if-no-files-found: error

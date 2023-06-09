@@ -145,7 +145,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.ref_name }}
           fail-on-error: true
-          workflow-name: Docs.yaml
+          workflow-name: Documentation.yaml
           payload: '{ "oci-image-name": "${{ inputs.oci-image-name }}"}'
           use-marker-step: true
           trigger-timeout: '30m'
