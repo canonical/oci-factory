@@ -3,8 +3,6 @@ run-name: 'Documentation - ${{ inputs.oci-image-name }} - ${{ github.ref }}'
 
 on:
   push:
-    branches:
-      - main
     paths:
       - "oci/*/documentation.y*ml"
   workflow_dispatch:
