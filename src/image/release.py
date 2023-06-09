@@ -179,6 +179,7 @@ print(
     "Processed tag aliases and ready to release the following revisions:\n"
     f"{json.dumps(group_by_revision, indent=2)}"
 )
+github_tags = []
 for revision, tags in group_by_revision.items():
     revision_track = revision_to_track[revision]
     source_img = (
@@ -190,15 +191,6 @@ for revision, tags in group_by_revision.items():
         [f"{this_dir}/tag_and_publish.sh", source_img, img_name] + tags
     )
 
-print(
-    f"Updating {args.all_releases} file with:\n" f"{json.dumps(all_releases, indent=2)}"
-)
-with open(args.all_releases, "w", encoding="UTF-8") as fd:
-    json.dump(all_releases, fd, indent=4)
-
-github_tags = []
-for revision, tags in group_by_revision.items():
-    revision_track = revision_to_track[revision]
     for tag in tags:
         gh_release_info = {}
         gh_release_info["canonical-tag"] = f"{img_name}_{revision_track}_{revision}"
@@ -207,6 +199,13 @@ for revision, tags in group_by_revision.items():
         gh_release_info["revision"] = f"{revision}"
         gh_release_info["channel"] = f"{tag}"
         github_tags.append(gh_release_info)
+
+print(
+    f"Updating {args.all_releases} file with:\n" f"{json.dumps(all_releases, indent=2)}"
+)
+
+with open(args.all_releases, "w", encoding="UTF-8") as fd:
+    json.dump(all_releases, fd, indent=4)    
 
 matrix = {"include": github_tags}
 

@@ -49,6 +49,8 @@ jobs:
             exit 1
           fi
           echo "img-name=$(basename ${img_dir})" >> "$GITHUB_OUTPUT"
+
+  
   do-releases:
     runs-on: ubuntu-22.04
     name: Release
@@ -129,11 +131,45 @@ jobs:
       - name: Commit oci/${{ inputs.oci-image-name }}/_releases.json
         uses: actions-x/commit@v6
         with:
-          token: ${{ secrets.ROCKSBOT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: oci/${{ inputs.oci-image-name }}/_releases.json
-          email: rocks-dev@lists.canonical.com
+
+
+  dispatch-documentation:
+    runs-on: ubuntu-22.04
+    name: Dispatch documentation
+    needs: [do-releases]
+    steps:
+      - name: Run documentation
+        # Using this actions cause others can have this problem:
+        # https://github.com/convictional/trigger-workflow-and-wait/issues/61
+        uses: mathze/workflow-dispatch-action@v1.2.0
+        id: run-documentation
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref_name }}
+          fail-on-error: true
+          workflow-name: Documentation.yaml
+          payload: '{ "oci-image-name": "${{ inputs.oci-image-name }}"}'
+          use-marker-step: true
+          trigger-timeout: '30m'
+          run-id: dummy
+
+      - name: Write step summary
+        run: |
+          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-documentation.outputs.run-id }}'
+          echo " - Triggered documentation updates for '${{ inputs.oci-image-name }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Enforce docs conclusion
+        if: ${{ steps.run-documentation.outputs.run-conclusion != 'success' }}
+        # The previous step doesn't always raise an error
+        run: |
+          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-documentation.outputs.run-id }}'
+          echo "Failed to generate docs for '${{ inputs.oci-image-name }}' at [${url}](${url})."
+          exit 1
+
 
   do-github-release:
     runs-on: ubuntu-22.04
@@ -171,4 +207,3 @@ jobs:
           name: "${{ matrix.release-name }}"
           tag_name: "${{ matrix.release-name }}"
           token: "${{ secrets.GITHUB_TOKEN }}"
-          

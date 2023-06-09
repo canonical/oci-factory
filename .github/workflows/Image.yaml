@@ -284,7 +284,7 @@ jobs:
           fail-on-error: true
           workflow-name: Tests.yaml
           payload: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }}, "cache-key": "${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}", "vulnerability-report-suffix": "${{ env.VULNERABILITY_REPORT_SUFFIX }}" }'
-          trigger-timeout: "3m"
+          trigger-timeout: "5m"
           run-id: dummy
           use-marker-step: true
       
@@ -292,6 +292,14 @@ jobs:
         run: |
           url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-tests.outputs.run-id }}'
           echo " - Triggered tests for '${{ matrix.name }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Enforce test conclusion
+        if: ${{ steps.run-tests.outputs.run-conclusion != 'success' }}
+        # The previous step doesn't always raise an error
+        run: |
+          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-tests.outputs.run-id }}'
+          echo "Testing of image '${{ matrix.oci-image }}' failed at [${url}](${url})."
+          exit 1
 
       # Wait to make sure the test artifacts are uploaded
       - run: sleep 5
@@ -512,6 +520,13 @@ jobs:
           url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-releases.outputs.run-id }}'
           echo " - Triggered releases for '${{ needs.prepare-build.outputs.oci-img-name }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Enforce release conclusion
+        if: ${{ steps.run-releases.outputs.run-conclusion != 'success' }}
+        # The previous step doesn't always raise an error
+        run: |
+          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-releases.outputs.run-id }}'
+          echo "Failed to release '${{ needs.prepare-build.outputs.oci-img-name }}' at [${url}](${url})."
+          exit 1
 
   generate-provenance:
     name: Generate SLSA provenance
