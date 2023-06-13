@@ -24,6 +24,10 @@ on:
         type: string
         default: "default-id"
 
+env:
+  YQ_VERSION: "v4.32.2"
+  YQ_BINARY: yq_linux_amd64
+
 jobs:
   prepare-build:
     runs-on: ubuntu-22.04
@@ -76,6 +80,8 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.x"
+      
+      - run: exit 1
 
       - run: pip install -r src/image/requirements.txt
 
@@ -129,9 +135,6 @@ jobs:
 
       - name: Validate image naming and base
         working-directory: ${{ matrix.directory }}
-        env:
-          YQ_VERSION: "v4.32.2"
-          YQ_BINARY: yq_linux_amd64
         run: |
           if [ -z ${{ matrix.dockerfile-build }} ]
           then
@@ -596,3 +599,68 @@ jobs:
   #   uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.5.0
   #   with:
   #     base64-subjects: "${{ needs.upload.outputs.artefacts-hashes }}"
+
+  notify:
+    runs-on: ubuntu-22.04
+    name: Add comment to PR
+    needs: [prepare-build, run-build, upload, dispatch-releases, generate-provenance]
+    if: ${{ always() && contains(needs.*.result, 'failure') }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          
+      - name: Summarize workflow failure message
+        uses: jannekem/run-python-script-action@v1
+        id: get-summary
+        with:
+          script: |
+            import json
+            previous_jobs = json.loads('''${{ toJson(needs) }}''')
+            summary = []
+            for job, details in previous_jobs.items():
+              if "fail" in details["result"]:
+                icon = ":gh-failure-octicon-xcirclefillicon:"
+              elif "skip" in details["result"]:
+                icon = ":gh-skip-octicon-skipicon:"
+              elif "cancel" in details["result"]:
+                icon = ":gh-cancelled-octicon-stopicon:"
+              elif "succe" in details["result"]:
+                icon = ":gh-success-octicon-checkcirclefillicon:"
+              else:
+                icon = ":grey_question:"
+
+              summary.append(f"{icon} {job}")
+            
+            with open(os.environ["GITHUB_OUTPUT"], "a") as gh_out:
+              print(f"summary={' | '.join('summary')}", file=gh_out)
+
+      - name: Get contacts for ${{ needs.prepare-build.outputs.oci-img-name }}
+        id: get-contacts
+        working-directory: ${{ needs.prepare-build.outputs.oci-img-path }}
+        run: |
+          wget https://github.com/mikefarah/yq/releases/download/${{ env.YQ_VERSION }}/${{ env.YQ_BINARY }}
+          sudo mv ${{ env.YQ_BINARY }} /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
+
+          mm_channels=$(cat contacts.y*ml | yq -r '.notify | ."mattermost-channels" | join(",")')
+          echo "mattermost-channels=${mm_channels}" >> "$GITHUB_OUTPUT"
+
+      - name: Notify via Mattermost
+        env:
+          MM_BOT_TOKEN: ${{ secrets.MM_BOT_TOKEN }}
+          FINAL_STATUS: failure
+          MM_SERVER: ${{ secrets.MM_SERVER }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+          URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RUN_ID: ${{ github.run_id }}
+          TRIGGERED_BY: ${{ github.actor }}
+          IMAGE_NAME: ${{ needs.prepare-build.outputs.oci-img-name }}
+          SUMMARY: ${{ steps.get-summary.outputs.summary }}
+        run: |
+          for channel in $(echo ${{ steps.get-contacts.outputs.mattermost-channels }} | tr ',' ' ')
+          do
+            MM_CHANNEL_ID="${channel}" ./src/notifications/send-to-mattermost.sh
+          done
