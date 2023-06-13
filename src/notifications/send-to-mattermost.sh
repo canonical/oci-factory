@@ -7,7 +7,6 @@ set -o pipefail
 
 # If not given as an env, script will fail
 MM_CHANNEL_ID=${MM_CHANNEL_ID:-}
-MM_AUTHOR=${MM_AUTHOR:-"bot"}
 MM_BOT_TOKEN=${MM_BOT_TOKEN:-}
 MM_SERVER=${MM_SERVER:-}
 
@@ -25,24 +24,13 @@ FINAL_STATUS=${FINAL_STATUS:-"unkown"}
 
 # Set "grey" for unknown states, "red" and "green" for error and success, respectively
 COLOR="#B0B0B0"
-MM_AUTHOR_ICON="${MM_SERVER}/api/v4/emoji/dspgf84kwidqzg1ujahyx1yqeh/image"
-TITLE="Inconclusive ending for job ${WORKFLOW_NAME}"
 if [[ "${FINAL_STATUS}" == "success" ]]
 then
     COLOR="#33CC33"
-    MM_AUTHOR_ICON="${MM_SERVER}/api/v4/emoji/uz544kdh43nstyy5rnw1oc9sio/image"
-    TITLE="Successfully finished job ${WORKFLOW_NAME}"
 elif [[ "${FINAL_STATUS}" == "fail"* ]]
 then
     COLOR="#CC0000"
-    MM_AUTHOR_ICON="${MM_SERVER}/api/v4/emoji/qy1jz413bf8zbyterhxe719xyh/image"
-    TITLE="Job ${WORKFLOW_NAME} ended in ERROR"
 fi
-
-
-TEXT="[$(date)] This is [${WORKFLOW_NAME}](${URL})'s \
-build number [#${RUN_ID}](${URL}). ${SUMMARY}.\
-See the [logs](${URL})"
 
 cat>${PAYLOAD_FILE} <<EOF
 {
@@ -50,25 +38,15 @@ cat>${PAYLOAD_FILE} <<EOF
     "props": {
         "attachments": [
             {
-                "fallback": "MM notification for job ${WORKFLOW_NAME}",
-                "text": "${TEXT}",
+                "fallback": "${SUMMARY}",
+                "text": "${SUMMARY}",
                 "color": "${COLOR}",
-                "author_name": "${MM_AUTHOR}",
-                "author_icon": "${MM_AUTHOR_ICON}",
-                "title": "${TITLE}", 
+                "title": "[${FINAL_STATUS}] ${TITLE}", 
                 "title_link": "${URL}",
-                "fields": [
-                    {
-                        "short": true,
-                        "title": "Image",
-                        "value": "${IMAGE_NAME}"
-                    }
-                ],
-                "footer": "Started by ${TRIGGERED_BY} on $(date)"
+                "footer": "Started by ${TRIGGERED_BY} on $(date). Ref: ${REF}. Attempts: ${ATTEMPTS}"
             }
         ]
-    },
-    "message": "###### ${WORKFLOW_NAME} has finished with \`${FINAL_STATUS}\`"
+    }
 }
 EOF
 

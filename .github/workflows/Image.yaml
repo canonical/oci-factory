@@ -635,7 +635,7 @@ jobs:
               summary.append(f"{icon} {job}")
             
             with open(os.environ["GITHUB_OUTPUT"], "a") as gh_out:
-              print(f"summary={' | '.join('summary')}", file=gh_out)
+              print(f"summary={' | '.join(summary)}", file=gh_out)
 
       - name: Get contacts for ${{ needs.prepare-build.outputs.oci-img-name }}
         id: get-contacts
@@ -653,12 +653,12 @@ jobs:
           MM_BOT_TOKEN: ${{ secrets.MM_BOT_TOKEN }}
           FINAL_STATUS: failure
           MM_SERVER: ${{ secrets.MM_SERVER }}
-          WORKFLOW_NAME: ${{ github.workflow }}
           URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          RUN_ID: ${{ github.run_id }}
-          TRIGGERED_BY: ${{ github.actor }}
-          IMAGE_NAME: ${{ needs.prepare-build.outputs.oci-img-name }}
+          TRIGGERED_BY: ${{ github.triggering_actor }}
           SUMMARY: ${{ steps.get-summary.outputs.summary }}
+          REF: ${{ github.ref }}
+          ATTEMPTS: ${{ github.run_attempt }}
+          TITLE: '${{ needs.prepare-build.outputs.oci-img-name }}: failed to build->upload->release'
         run: |
           for channel in $(echo ${{ steps.get-contacts.outputs.mattermost-channels }} | tr ',' ' ')
           do
