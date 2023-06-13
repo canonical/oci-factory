@@ -10,3 +10,17 @@ jobs:
         with:
           # This is to avoid failing the checks for ROCKsBot
           accept-existing-contributors: true
+
+  update-pr:
+    runs-on: ubuntu-22.04
+    name: Add comment to PR
+    needs: [cla-check]
+    if: ${{ always() && contains(needs.*.result, 'failure') }}
+    steps:
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            ${{ github.actor }} please make sure all PR contributors have signed the CLA.
+          comment_tag: cla-check
+          mode: recreate
