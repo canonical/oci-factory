@@ -93,3 +93,19 @@ jobs:
           import src.docs.generate_oci_doc_yaml as OCIDoc
           OCIDoc.OCIDocumentationData.read_documentation_yaml("${{ matrix.filename }}")
           '
+
+  update-pr:
+    runs-on: ubuntu-22.04
+    name: Add comment to PR
+    needs: [get-submitted-files, check-missing-files, validate-submitted-files]
+    if: ${{ always() && contains(needs.*.result, 'failure') }}
+    steps:
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            One or more files in this PR are not valid! :grimacing:
+            _Run ID: **${{ github.run_id }}** ; Attempt: **${{ github.run_attempt }}**_
+
+            See [logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          reactions: eyes
