@@ -74,8 +74,22 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
       - name: Validate YAML format
         run: |
           set -eux
           pip install yamllint
           yamllint -c .yamllint.yaml ${{ matrix.filename }}
+
+      - name: Validate documentation trigger file
+        if: ${{ contains(matrix.filename, 'documentation.yaml') }}
+        run: |
+          pip install -r src/docs/requirements.txt
+
+          python3 -c '
+          import src.docs.generate_oci_doc_yaml as OCIDoc
+          OCIDoc.OCIDocumentationData.read_documentation_yaml("${{ matrix.filename }}")
+          '

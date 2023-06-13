@@ -160,7 +160,7 @@ class OCIDocumentationData:
             with open(auth_file, "w", encoding="UTF-8") as file:
                 os.fchmod(file.fileno(), 0o600)
                 json.dump(auth_config, file)
-                
+
             command = ["skopeo", cmd] + ["--authfile", auth_file] + args
 
             return json.loads(self.process_run(command))
@@ -180,9 +180,11 @@ class OCIDocumentationData:
             for arch in manifest_list["manifests"]:
                 arch_list.append(arch["platform"]["architecture"])
         else:
-            arch_list = [self.run_skopeo_command(
-                "inspect", [f"docker://{self.registry_url}:" + tag]
-            )["Architecture"]]
+            arch_list = [
+                self.run_skopeo_command(
+                    "inspect", [f"docker://{self.registry_url}:" + tag]
+                )["Architecture"]
+            ]
 
         return arch_list
 
@@ -265,9 +267,9 @@ class OCIDocumentationData:
 
         return releases
 
-    def read_documentation_yaml(self) -> Dict:
-        """Reads and parses the YAML contents of the documentation.yaml file"""
-        doc_file = f"{self.image_path}/documentation.yaml"
+    @staticmethod
+    def read_documentation_yaml(doc_file: str) -> Dict:
+        """Reads and parses the YAML contents of the documentation trigger file"""
         logging.info("Opening file %s", doc_file)
         with open(doc_file, "r", encoding="UTF-8") as file:
             try:
@@ -298,7 +300,9 @@ class OCIDocumentationData:
         """Main function for generating the documentation data YAML file"""
 
         logging.info("Opening the documentation.yaml file")
-        base_doc_yaml = self.read_documentation_yaml()
+        base_doc_yaml = self.read_documentation_yaml(
+            f"{self.image_path}/documentation.yaml"
+        )
 
         # Get a list of all revision tags, eg. ["1.0-22.04_1", "1.1-23.04_42", ...]
         all_revision_tags = shared.get_all_revision_tags(self.all_revision_tags)
