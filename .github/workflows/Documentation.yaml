@@ -62,8 +62,6 @@ jobs:
           echo "img-name=$(basename ${img_path})" >> "$GITHUB_OUTPUT"
           echo "img-path=${img_path}" >> "$GITHUB_OUTPUT"
 
-      - run: exit 1
-
 
   do-documentation:
     runs-on: ubuntu-22.04
@@ -151,13 +149,11 @@ jobs:
           FINAL_STATUS: failure
           MM_SERVER: ${{ secrets.MM_SERVER }}
           URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          TRIGGERED_BY: ${{ github.triggering_actor }}
           SUMMARY: ${{ steps.get-summary.outputs.summary }}
-          REF: ${{ github.ref }}
-          ATTEMPTS: ${{ github.run_attempt }}
+          FOOTER: "Triggered by ${{ github.triggering_actor }}. Ref: ${{ github.ref }}. Attempts: ${{ github.run_attempt }}"
           TITLE: '${{ needs.validate-documentation-request.outputs.oci-img-name }}: failed to generate docs'
         run: |
           for channel in $(echo ${{ steps.get-contacts.outputs.mattermost-channels }} | tr ',' ' ')
           do
-            MM_CHANNEL_ID="${channel}" ./src/notifications/send-to-mattermost.sh
+            MM_CHANNEL_ID="${channel}" ./src/notifications/send_to_mattermost.sh
           done
