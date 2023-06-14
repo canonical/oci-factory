@@ -41,9 +41,9 @@ cat>${PAYLOAD_FILE} <<EOF
                 "fallback": "${SUMMARY}",
                 "text": "${SUMMARY}",
                 "color": "${COLOR}",
-                "title": "[${FINAL_STATUS}] ${TITLE}", 
+                "title": "${TITLE}", 
                 "title_link": "${URL}",
-                "footer": "Started by ${TRIGGERED_BY} on $(date). Ref: ${REF}. Attempts: ${ATTEMPTS}"
+                "footer": "${FOOTER}"
             }
         ]
     }

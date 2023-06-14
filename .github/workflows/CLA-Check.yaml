@@ -21,6 +21,6 @@ jobs:
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
-            ${{ github.actor }} please make sure all PR contributors have signed the CLA.
+            @${{ github.actor }} please make sure all PR contributors have signed the CLA.
           comment_tag: cla-check
           mode: recreate
