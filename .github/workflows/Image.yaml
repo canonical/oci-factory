@@ -80,8 +80,6 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.x"
-      
-      - run: exit 1
 
       - run: pip install -r src/image/requirements.txt
 
@@ -402,8 +400,8 @@ jobs:
       - name: Upload to GHCR
         env:
           GHCR_REPO: ghcr.io/${{ github.repository_owner }}/oci-factory
-          GHCR_USERNAME: ${{ github.actor }}
-          GHCR_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USERNAME: ROCKsBot
+          GHCR_PASSWORD: ${{ secrets.ROCKSBOT_TOKEN }}
         run: |
           oci_images="${PWD}/images-oci"
           rm -fr $oci_images
@@ -602,7 +600,7 @@ jobs:
 
   notify:
     runs-on: ubuntu-22.04
-    name: Add comment to PR
+    name: Notify
     needs: [prepare-build, run-build, upload, dispatch-releases, generate-provenance]
     if: ${{ always() && contains(needs.*.result, 'failure') }}
     steps:
@@ -634,13 +632,11 @@ jobs:
           FINAL_STATUS: failure
           MM_SERVER: ${{ secrets.MM_SERVER }}
           URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          TRIGGERED_BY: ${{ github.triggering_actor }}
           SUMMARY: ${{ steps.get-summary.outputs.summary }}
-          REF: ${{ github.ref }}
-          ATTEMPTS: ${{ github.run_attempt }}
+          FOOTER: "Triggered by ${{ github.triggering_actor }}. Ref: ${{ github.ref }}. Attempts: ${{ github.run_attempt }}"
           TITLE: '${{ needs.prepare-build.outputs.oci-img-name }}: failed to build->upload->release'
         run: |
           for channel in $(echo ${{ steps.get-contacts.outputs.mattermost-channels }} | tr ',' ' ')
           do
-            MM_CHANNEL_ID="${channel}" ./src/notifications/send-to-mattermost.sh
+            MM_CHANNEL_ID="${channel}" ./src/notifications/send_to_mattermost.sh
           done
