@@ -611,41 +611,21 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.x'
+      
+      - name: Install requirements
+        run: ./src/notifications/requirements.sh
           
       - name: Summarize workflow failure message
-        uses: jannekem/run-python-script-action@v1
         id: get-summary
-        with:
-          script: |
-            import json
-            previous_jobs = json.loads('''${{ toJson(needs) }}''')
-            summary = []
-            for job, details in previous_jobs.items():
-              if "fail" in details["result"]:
-                icon = ":gh-failure-octicon-xcirclefillicon:"
-              elif "skip" in details["result"]:
-                icon = ":gh-skip-octicon-skipicon:"
-              elif "cancel" in details["result"]:
-                icon = ":gh-cancelled-octicon-stopicon:"
-              elif "succe" in details["result"]:
-                icon = ":gh-success-octicon-checkcirclefillicon:"
-              else:
-                icon = ":grey_question:"
-
-              summary.append(f"{icon} {job}")
-            
-            with open(os.environ["GITHUB_OUTPUT"], "a") as gh_out:
-              print(f"summary={' | '.join(summary)}", file=gh_out)
+        run: |
+          echo '${{ toJson(needs) }}' > jobs.json
+          ./src/notifications/summarize_workflow_results.py --jobs-file jobs.json
 
       - name: Get contacts for ${{ needs.prepare-build.outputs.oci-img-name }}
         id: get-contacts
         working-directory: ${{ needs.prepare-build.outputs.oci-img-path }}
         run: |
-          wget https://github.com/mikefarah/yq/releases/download/${{ env.YQ_VERSION }}/${{ env.YQ_BINARY }}
-          sudo mv ${{ env.YQ_BINARY }} /usr/bin/yq
-          sudo chmod +x /usr/bin/yq
-
-          mm_channels=$(cat contacts.y*ml | yq -r '.notify | ."mattermost-channels" | join(",")')
+          mm_channels=$(yq -r '.notify | ."mattermost-channels" | join(",")' < contacts.y*ml)
           echo "mattermost-channels=${mm_channels}" >> "$GITHUB_OUTPUT"
 
       - name: Notify via Mattermost
