@@ -31,7 +31,7 @@ jobs:
           all_images=`ls oci/`
           for img in $all_images
           do
-            if [[ "${{ env.NAME }}" == "${img}_"* ]]
+            if [[ "${{ env.NAME }}" == "${img}_"* ]] || [[ "${{ env.NAME }}" == "oci-factory/${img}_"* ]]
             then
               echo "Image name: ${img}" >> "$GITHUB_STEP_SUMMARY"
               echo "img-name=${img}" >> "$GITHUB_OUTPUT"
