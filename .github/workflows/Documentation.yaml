@@ -114,10 +114,13 @@ jobs:
           path: data/*.y*ml
           if-no-files-found: error
 
-
-
       - name: Publish Documentation for ${{ needs.validate-documentation-request.outputs.oci-img-name }}
         env:
+          # In Dev, images go into the personal space of DOCKER_HUB_CREDS_USR_DEV
+          # so we can reuse its username (with a more privileged PAT) for updating the docs.
+          # In Prod, however, since it's an org, the collaborating DH account is different to
+          # segregate access and ensure other jobs in this pipeline don't abuse the privileged
+          # access that is needed here, for updating the docs.
           DOCKER_HUB_CREDS_PSW_DOC: ${{ env.IS_PROD == 'true' && secrets.DOCKER_HUB_CREDS_PSW_DOC || secrets.DOCKER_HUB_CREDS_PSW_DOC_DEV }}
           DOCKER_HUB_CREDS_USR_DOC: ${{ env.IS_PROD == 'true' && secrets.DOCKER_HUB_CREDS_USR_DOC || secrets.DOCKER_HUB_CREDS_USR_DEV }}
           ECR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_USR || secrets.ECR_CREDS_USR_DEV }}
@@ -128,7 +131,5 @@ jobs:
           YQ_BINARY: yq_linux_amd64
         run: |
           set -ex
-          wget https://github.com/mikefarah/yq/releases/download/${{ env.YQ_VERSION }}/${{ env.YQ_BINARY }}
-          sudo mv ${{ env.YQ_BINARY }} /usr/bin/yq
-          sudo chmod +x /usr/bin/yq
-          ./src/docs/utils/publish_docs.sh ${{ needs.validate-documentation-request.outputs.oci-img-name }} 
+          ./src/notifications/requirements.sh
+          ./src/docs/publish_docs.sh ${{ needs.validate-documentation-request.outputs.oci-img-name }} ${{ needs.validate-documentation-request.outputs.oci-img-name }}_doc_data data
