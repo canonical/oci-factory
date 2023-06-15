@@ -57,10 +57,18 @@ DH_NAMESPACE="${DOCKER_HUB_NAMESPACE#docker.io/}"
 # ## we could also add "description" to the payload, for the image's
 # ## short summary, but that's unlikely to ever change, so no need to 
 # ## keep overwriting it on every build.
-curl -X PATCH "https://hub.docker.com/v2/repositories/${DH_NAMESPACE}/${image_name}" \
+dockerhub_json_output=$(curl -X PATCH "https://hub.docker.com/v2/repositories/${DH_NAMESPACE}/${image_name}" \
      -H "Authorization: JWT ${dh_jw_token}" \
      -H "Content-Type: application/json" \
-     -d @dockerhub-docs.json
+     -d @dockerhub-docs.json)
+
+# 4) check if an error occur
+
+if [[ $(echo "$dockerhub_json_output" | jq -e 'has("errinfo")') == "true" ]]; then
+    echo $dockerhub_json_output
+    exit 1
+fi
+
 
 ### ECR
 
