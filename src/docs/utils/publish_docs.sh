@@ -35,70 +35,114 @@ mv "${folder_of_the_image_documentation}/${image_doc_filename}.yaml" ${docs_dir_
 
 # 1) build the docs
 (cd ${docs_dir_git} && make DATADIR="${image_name}" dockerhub-docs)
+renderdown_dockerhub_exit_code=$?
 
-# 2) login using DockerHub API to get the token to publish the doc
-dh_jw_token=$(curl -X POST  https://hub.docker.com/v2/users/login \
-                 -H "Content-Type: application/json" \
-                 -d '{"username":"'"${DOCKER_HUB_CREDS_USR_DOC}"'","password":"'"${DOCKER_HUB_CREDS_PSW_DOC}"'"}' | jq -r .token)
+if [[ "$renderdown_dockerhub_exit_code" -eq 0 ]]; then
 
-if [[ "$dh_jw_token" == "null" ]]; then
-    echo "The token is null"
-    exit 1
-fi
-# 3) build and ship the doc payload
-cat >dockerhub-docs.json <<EOF
- {
- "full_description": "$(awk '{printf "%s\\n", $0}' ${docs_dir_git}/docs/docker.io/ubuntu/"${image_doc_filename}".md | sed 's/"/\\"/g')"
- }
+
+    # 2) login using DockerHub API to get the token to publish the doc
+    dh_jw_token=$(curl -X POST  https://hub.docker.com/v2/users/login \
+                    -H "Content-Type: application/json" \
+                    -d '{"username":"'"${DOCKER_HUB_CREDS_USR_DOC}"'","password":"'"${DOCKER_HUB_CREDS_PSW_DOC}"'"}' | jq -r .token)
+
+
+    # 3) build and ship the doc payload
+    cat >dockerhub-docs.json <<EOF
+    {
+    "full_description": "$(awk '{printf "%s\\n", $0}' ${docs_dir_git}/docs/docker.io/ubuntu/"${image_doc_filename}".md | sed 's/"/\\"/g')"
+    }
 EOF
 
 
-# We need to remove the docker.io/ before the namespace
-# because we only need the namespace for the API
+    # We need to remove the docker.io/ before the namespace
+    # because we only need the namespace for the API
 
-DH_NAMESPACE="${DOCKER_HUB_NAMESPACE#docker.io/}"
+    DH_NAMESPACE="${DOCKER_HUB_NAMESPACE#docker.io/}"
 
-# ## we could also add "description" to the payload, for the image's
-# ## short summary, but that's unlikely to ever change, so no need to 
-# ## keep overwriting it on every build.
-dockerhub_json_output=$(curl -X PATCH "https://hub.docker.com/v2/repositories/${DH_NAMESPACE}/${image_name}" \
-     -H "Authorization: JWT ${dh_jw_token}" \
-     -H "Content-Type: application/json" \
-     -d @dockerhub-docs.json)
-
-# 4) check if an error occur
-
-if [[ $(echo "$dockerhub_json_output" | jq -e 'has("errinfo")') == "true" ]]; then
-    echo "$dockerhub_json_output"
-    exit 1
+    # ## we could also add "description" to the payload, for the image's
+    # ## short summary, but that's unlikely to ever change, so no need to 
+    # ## keep overwriting it on every build.
+    dockerhub_json_output=$(curl -X PATCH "https://hub.docker.com/v2/repositories/${DH_NAMESPACE}/${image_name}" \
+        -H "Authorization: JWT ${dh_jw_token}" \
+        -H "Content-Type: application/json" \
+        -d @dockerhub-docs.json)
+    
 fi
+
+
 
 
 ### ECR
 
 # 1) build the docs
 (cd ${docs_dir_git} && make DATADIR="${image_name}" ecr-docs)
+renderdown_ecr_exit_code=$?
 
-# # 2) build and ship the doc payload
-# # ECR accepts architecture data, but it needs to abide by their naming conventions:
-# # https://docs.aws.amazon.com/cli/latest/reference/ecr-public/put-repository-catalog-data.html#options
-ecr_archs="${AVAILABLE_ARCHS} $(echo "${AVAILABLE_ARCHS}" | sed 's/armhf/arm/g' | tr '[:lower:]' '[:upper:]' | sed 's/AMD64/x86-64/g')"
-if [[ "${ecr_archs}" == *"ARM64"* ]]
-then
-     ecr_archs_mapped="$(echo "$ecr_archs" | jq -R 'split(" ")' | jq '. |= . + ["ARM 64"]')"
-else
-     ecr_archs_mapped="$(echo "$ecr_archs" | jq -R 'split(" ")')"
-fi
-cat >ecr-docs.json <<EOF
- {
- "architectures": ["Linux"],
- "operatingSystems": ${ecr_archs_mapped},
- "usageText": "$(awk '{printf "%s\\n", $0}' ${docs_dir_git}/docs/public.ecr.aws/ubuntu/usage/"${image_doc_filename}".md | sed 's/"/\\"/g')",
- "aboutText": "$(awk '{printf "%s\\n", $0}' ${docs_dir_git}/docs/public.ecr.aws/ubuntu/"${image_doc_filename}".md | sed 's/"/\\"/g')"
- }
+
+if [[ "$renderdown_ecr_exit_code" -eq 0 ]]; then
+
+    # # 2) build and ship the doc payload
+    # # ECR accepts architecture data, but it needs to abide by their naming conventions:
+    # # https://docs.aws.amazon.com/cli/latest/reference/ecr-public/put-repository-catalog-data.html#options
+    ecr_archs="${AVAILABLE_ARCHS} $(echo "${AVAILABLE_ARCHS}" | sed 's/armhf/arm/g' | tr '[:lower:]' '[:upper:]' | sed 's/AMD64/x86-64/g')"
+    if [[ "${ecr_archs}" == *"ARM64"* ]]
+    then
+        ecr_archs_mapped="$(echo "$ecr_archs" | jq -R 'split(" ")' | jq '. |= . + ["ARM 64"]')"
+    else
+        ecr_archs_mapped="$(echo "$ecr_archs" | jq -R 'split(" ")')"
+    fi
+    cat >ecr-docs.json <<EOF
+    {
+    "architectures": ["Linux"],
+    "operatingSystems": ${ecr_archs_mapped},
+    "usageText": "$(awk '{printf "%s\\n", $0}' ${docs_dir_git}/docs/public.ecr.aws/ubuntu/usage/"${image_doc_filename}".md | sed 's/"/\\"/g')",
+    "aboutText": "$(awk '{printf "%s\\n", $0}' ${docs_dir_git}/docs/public.ecr.aws/ubuntu/"${image_doc_filename}".md | sed 's/"/\\"/g')"
+    }
 EOF
 
 
-AWS_SECRET_ACCESS_KEY=${ECR_CREDS_PSW} AWS_ACCESS_KEY_ID=${ECR_CREDS_USR} \
-aws --region us-east-1 ecr-public put-repository-catalog-data \
-     --registry-id="${ECR_REGISTRY_ID}" --repository-name "${image_name}" --catalog-data "$(cat ecr-docs.json)"
+    (AWS_SECRET_ACCESS_KEY=${ECR_CREDS_PSW} AWS_ACCESS_KEY_ID=${ECR_CREDS_USR} \
+    aws --region us-east-1 ecr-public put-repository-catalog-data \
+        --registry-id="${ECR_REGISTRY_ID}" --repository-name "${image_name}" --catalog-data "$(cat ecr-docs.json)")
+
+    ecr_doc_exit_code=$?
+fi
+
+
+# Check for error
+
+### Dockerhub
+
+# 1) Token:
+
+if [[ "$dh_jw_token" == "null" ]]; then
+    echo "The DockerHub token is null"
+    exit 1
+fi
+
+# 2) Output of the Curl path
+
+if [[ $(echo "$dockerhub_json_output" | jq -e 'has("errinfo")') == "true" ]]; then
+    echo "The documentation for DockerHub has not been updated see : $dockerhub_json_output"
+    exit 1
+fi
+
+### ECR
+if [[ $ecr_doc_exit_code -ne 0 ]]; then
+    echo "An error occurred while running the AWS command for updating the documentation. Exit code: $ecr_doc_exit_code"
+fi
+
+
+### Renderdown
+
+# 1) Docker
+
+if [[ $renderdown_dockerhub_exit_code -ne 0 ]]; then
+    echo "An error occurred while running the RenderDown command for DockerHub. Exit code: $renderdown_dockerhub_exit_code"
+fi
+
+# 2) ECR
+
+if [[ $renderdown_ecr_exit_code -ne 0 ]]; then
+    echo "An error occurred while running the RenderDown command for ECR. Exit code: $renderdown_ecr_exit_code"
+fi
