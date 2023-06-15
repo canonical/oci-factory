@@ -114,6 +114,8 @@ jobs:
           path: data/*.y*ml
           if-no-files-found: error
 
+
+
       - name: Publish Documentation for ${{ needs.validate-documentation-request.outputs.oci-img-name }}
         env:
           DOCKER_HUB_CREDS_PSW_DOC: ${{ env.IS_PROD == 'true' && secrets.DOCKER_HUB_CREDS_PSW_DOC || secrets.DOCKER_HUB_CREDS_PSW_DOC_DEV }}
