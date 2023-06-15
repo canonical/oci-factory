@@ -41,6 +41,10 @@ dh_jw_token=$(curl -X POST  https://hub.docker.com/v2/users/login \
                  -H "Content-Type: application/json" \
                  -d '{"username":"'"${DOCKER_HUB_CREDS_USR_DOC}"'","password":"'"${DOCKER_HUB_CREDS_PSW_DOC}"'"}' | jq -r .token)
 
+if [[ "$dh_jw_token" == "null" ]]; then
+    echo "The token is null"
+    exit 1
+fi
 # 3) build and ship the doc payload
 cat >dockerhub-docs.json <<EOF
  {
@@ -65,7 +69,7 @@ dockerhub_json_output=$(curl -X PATCH "https://hub.docker.com/v2/repositories/${
 # 4) check if an error occur
 
 if [[ $(echo "$dockerhub_json_output" | jq -e 'has("errinfo")') == "true" ]]; then
-    echo $dockerhub_json_output
+    echo "$dockerhub_json_output"
     exit 1
 fi
 
