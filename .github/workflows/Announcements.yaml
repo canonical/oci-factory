@@ -91,7 +91,7 @@ jobs:
         run: |
           summary=":package: ${{ needs.get-contacts.outputs.oci-img-name }} built and uploaded to"
           summary="${summary} GHCR as [${{ env.NAME }}](${{ github.event.registry_package.html_url }})"
-          summary="${summary}\n```bash\n${{ github.event.registry_package.package_version.installation_command }}\n```"
+          summary="${summary}\n"'```bash\n${{ github.event.registry_package.package_version.installation_command }}\n```'
 
           echo "summary=${summary}" >> "$GITHUB_OUTPUT"
 
