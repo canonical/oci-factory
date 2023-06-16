@@ -133,3 +133,46 @@ jobs:
           set -ex
           ./src/notifications/requirements.sh
           ./src/docs/publish_docs.sh ${{ needs.validate-documentation-request.outputs.oci-img-name }} ${{ needs.validate-documentation-request.outputs.oci-img-name }}_doc_data data
+          
+  notify:
+    runs-on: ubuntu-22.04
+    name: Notify on failure
+    needs: [validate-documentation-request, do-documentation]
+    if: ${{ always() && contains(needs.*.result, 'failure') && github.event_name != 'workflow_dispatch' }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          
+      - name: Install requirements
+        run: ./src/notifications/requirements.sh
+          
+      - name: Summarize workflow failure message
+        id: get-summary
+        run: |
+          echo '${{ toJson(needs) }}' > jobs.json
+          ./src/notifications/summarize_workflow_results.py --jobs-file jobs.json
+
+      - name: Get contacts for ${{ needs.validate-documentation-request.outputs.oci-img-name }}
+        id: get-contacts
+        working-directory: ${{ needs.validate-documentation-request.outputs.oci-img-path }}
+        run: |
+          mm_channels=$(yq -r '.notify | ."mattermost-channels" | join(",")' < contacts.y*ml)
+          echo "mattermost-channels=${mm_channels}" >> "$GITHUB_OUTPUT"
+
+      - name: Notify via Mattermost
+        env:
+          MM_BOT_TOKEN: ${{ secrets.MM_BOT_TOKEN }}
+          FINAL_STATUS: failure
+          MM_SERVER: ${{ secrets.MM_SERVER }}
+          URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SUMMARY: ${{ steps.get-summary.outputs.summary }}
+          FOOTER: "Triggered by ${{ github.triggering_actor }}. Ref: ${{ github.ref }}. Attempts: ${{ github.run_attempt }}"
+          TITLE: '${{ needs.validate-documentation-request.outputs.oci-img-name }}: failed to generate docs'
+        run: |
+          for channel in $(echo ${{ steps.get-contacts.outputs.mattermost-channels }} | tr ',' ' ')
+          do
+            MM_CHANNEL_ID="${channel}" ./src/notifications/send_to_mattermost.sh
+          done
