@@ -19,7 +19,7 @@ fi
 # The message payload
 PAYLOAD_FILE="${PWD}/payload.json"
 
-# # What's the status of the job/pipeline that triggered this script?
+# What's the status of the job/pipeline that triggered this script?
 FINAL_STATUS=${FINAL_STATUS:-"unkown"}
 
 # Set "grey" for unknown states, "red" and "green" for error and success, respectively
@@ -47,10 +47,10 @@ cat>${PAYLOAD_FILE} <<EOF
             }
         ]
     }
-}
+}ramm
 EOF
 
-echo "Posting message to Mattermost channel ${MM_CHANNEL_ID}"
+echo "Posting message to Mattermost's channel ${MM_CHANNEL_ID}"
 
 curl_out=$(mktemp)
 HTTP_CODE=$(curl -i -o ${curl_out} --write-out "%{http_code}" \
