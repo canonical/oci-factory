@@ -58,7 +58,6 @@ jobs:
             img_path="oci/${{ inputs.oci-image-name }}"
           fi
           test -d "${img_path}"
-
           echo "img-name=$(basename ${img_path})" >> "$GITHUB_OUTPUT"
           echo "img-path=${img_path}" >> "$GITHUB_OUTPUT"
 
@@ -93,6 +92,7 @@ jobs:
           ./src/image/get_canonical_tags_from_swift.sh
 
       - name: Generate documentation for ${{ needs.validate-documentation-request.outputs.oci-img-name }}
+        id: generate-documentation
         env:
           ECR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_USR || secrets.ECR_CREDS_USR_DEV }}
           ECR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_PSW || secrets.ECR_CREDS_PSW_DEV }}
@@ -111,7 +111,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: '${{ needs.validate-documentation-request.outputs.oci-img-name }}.doc.yaml'
-          path: data/*.y*ml
+          path: "${{ steps.generate-documentation.outputs.image_doc_folder }}/*.y*ml"
           if-no-files-found: error
 
       - name: Publish Documentation for ${{ needs.validate-documentation-request.outputs.oci-img-name }}
@@ -132,7 +132,7 @@ jobs:
         run: |
           set -ex
           ./src/notifications/requirements.sh
-          ./src/docs/publish_docs.sh ${{ needs.validate-documentation-request.outputs.oci-img-name }} ${{ needs.validate-documentation-request.outputs.oci-img-name }}_doc_data data
+          ./src/docs/publish_docs.sh "${{ needs.validate-documentation-request.outputs.oci-img-name }}" "${{ steps.generate-documentation.outputs.name_doc_file }}" "${{ steps.generate-documentation.outputs.image_doc_folder }}"
           
   notify:
     runs-on: ubuntu-22.04
