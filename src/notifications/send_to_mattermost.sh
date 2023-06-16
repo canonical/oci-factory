@@ -47,7 +47,7 @@ cat>${PAYLOAD_FILE} <<EOF
             }
         ]
     }
-}ramm
+}
 EOF
 
 echo "Posting message to Mattermost's channel ${MM_CHANNEL_ID}"
