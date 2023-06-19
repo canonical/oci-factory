@@ -329,8 +329,12 @@ class OCIDocumentationData:
         base_doc_yaml["is_chiselled"] = base_doc_yaml.get("is_chiselled", False)
         self.create_data_dir(doc_data_dir)
 
-        output_data_file = f"{doc_data_dir}/{self.image_name}_doc_data.yaml"
+        name_doc_file = f"{self.image_name}_doc_data.yaml"
+        output_data_file = f"{doc_data_dir}/{name_doc_file}"
         self.write_data_file(output_data_file, base_doc_yaml)
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="UTF-8") as gh_out:
+            print(f"name_doc_file={name_doc_file}", file=gh_out)
+            print(f"image_doc_folder={doc_data_dir}", file=gh_out)
 
 
 if __name__ == "__main__":
