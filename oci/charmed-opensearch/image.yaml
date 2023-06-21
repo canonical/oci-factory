@@ -7,7 +7,7 @@ release:
     edge: 2-edge
     
 upload:  
-  - source: "canonical/ charmed-opensearch-rock"
+  - source: "canonical/charmed-opensearch-rock"
     commit: f1a2551cd873226ee871c38804a08054ac589b1d
     directory: .
     release:
