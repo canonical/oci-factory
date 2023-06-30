@@ -1,10 +1,4 @@
 version: 1
-
-release:
-  2:
-    end-of-life: "2024-05-01T00:00:00Z"
-    candidate: 2.8.0-22.04_candidate
-    edge: 2-edge
     
 upload:  
   - source: "canonical/charmed-opensearch-rock"
@@ -19,3 +13,4 @@ upload:
         end-of-life: "2024-05-01T00:00:00Z"
         risks:
           - edge
+          - candidate
