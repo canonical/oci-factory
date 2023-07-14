@@ -2,7 +2,7 @@ version: 1
     
 upload:  
   - source: "canonical/charmed-opensearch-rock"
-    commit: 810ee65ed02ba77c2fdf327daa083f2e76f86f0a
+    commit: 47832c37490aac33c7f6a5e90e34cccbcfded685
     directory: .
     release:
       2.8.0-22.04:
