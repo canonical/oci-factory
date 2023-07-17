@@ -1,4 +1,4 @@
 PyYAML
-pydantic
+pydantic==1.9.0
 python-swiftclient
 python-keystoneclient
