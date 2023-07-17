@@ -100,6 +100,8 @@ jobs:
     name: Add comment to PR
     needs: [get-submitted-files, check-missing-files, validate-submitted-files]
     if: ${{ always() && contains(needs.*.result, 'failure') }}
+    permissions: 
+      pull-requests: write 
     steps:
       - name: Comment PR
         uses: thollander/actions-comment-pull-request@v2

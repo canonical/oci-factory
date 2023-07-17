@@ -1,0 +1,124 @@
+name: '🤝 Image Onboarding'
+description: Request adding a new image to the OCI Factory
+labels: "onboarding"
+title: "[ONBOARDING] "
+assignees:
+  - cjdcordeiro
+  - valentincanonical
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Thank you for your interest in the OCI Factory. Before we can add
+        your OCI image to this catalogue, we need to make sure the Maintainer
+        guidelines are being followed and that your use case fits this
+        project's purpose. If you haven't yet read the
+        [CONTRIBUTING](https://github.com/canonical/oci-factory/blob/main/CONTRIBUTING.md)
+        guidelines and the underlying
+        [Image Maintainer Agreement](https://github.com/canonical/oci-factory/blob/main/IMAGE_MAINTAINER_AGREEMENT.md),
+        please do so before submitting this issue.
+
+  - type: input
+    id: name
+    attributes:
+      label: Image name
+      description: What is the name of your OCI image?
+      placeholder: ex. my-rock
+    validations:
+      required: true
+
+  - type: input
+    id: repo
+    attributes:
+      label: Image repository
+      description: What is the URL for this image's Git repository
+      placeholder: ex. https://github.com/canonical/my-rock
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Image type
+      description: Is this a ROCK or a Dockerfile-based image?
+      options:
+        - ROCK
+        - Docker image
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Maintainer agreement
+      description: By submitting this issue, you agree to follow our [guidelines](https://github.com/canonical/oci-factory/blob/main/CONTRIBUTING.md)
+      options:
+        - label: I agree to follow this project's [Code of Conduct](https://github.com/canonical/oci-factory/blob/main/CODE_OF_CONDUCT.md)
+          required: true
+        - label: |
+            I understand and acknowledge the [CONTRIBUTING](https://github.com/canonical/oci-factory/blob/main/CONTRIBUTING.md) guidelines and [Image Maintainer Agreement](https://github.com/canonical/oci-factory/blob/main/IMAGE_MAINTAINER_AGREEMENT.md)
+          required: true
+        - label: |
+            This image is either a ROCK or a Docker image which already exists in the 'ubuntu' namespace
+          required: true
+        - label: |
+            I agree to be the image's Maintainer and thus own it and be responsible for it, thus committing to maintaining it throughout its lifetime
+          required: true
+        - label: |
+            My image's repository (where the build recipes are hosted) is public
+          required: true
+        - label: |
+            I agree to have the provided contacts added to the Image Maintainers mailing list in Launchpad
+          required: true
+        - label: |
+            This image is meant to be published to the 'ubuntu' namespace, and thus a new registry repository should be created
+          required: false
+        - label: |
+            I acknowledge that this image shall be monitored by the security team and that I've made the [necessary modifications](https://github.com/canonical/oci-factory/blob/main/IMAGE_MAINTAINER_AGREEMENT.md#enable-security-monitoring)
+            to support that
+          required: true
+        - label: |
+            I commit to address image issues in a timely manner and according to their severity
+          required: true
+        - label: I will always provide up-to-date documentation for this image
+          required: true
+        - label: |
+            I understand the [OCI tagging convention](https://github.com/canonical/oci-factory/blob/main/IMAGE_MAINTAINER_AGREEMENT.md#acknowledge-the-oci-tagging-convention)
+          required: true
+        - label: |
+            I understand the [image's stability commitments](https://github.com/canonical/oci-factory/blob/main/IMAGE_MAINTAINER_AGREEMENT.md#understand-the-ubuntu-rocks-stability-commitments)
+          required: true
+        - label: I will test my image before proposing new build and releases
+          required: true
+          
+  - type: textarea
+    id: security
+    attributes:
+      label: Security enablement
+      description: |
+        List of image dependencies and any additional information that is relevant for the security monitoring (/cc @metorino)
+      placeholder: "ex. List of Ubuntu source packages associate with the image's dependencies:..."
+    validations:
+      required: false
+
+  - type: input
+    id: contact
+    attributes:
+      label: Primary contact
+      description: |
+        Please provide a contact email for the lead Maintainer of this image. It can be a mailing list, provided it has 2 or more members.
+
+        _Reach out to the ROCKS Team (via Mattermost or <rocks@canonical.com>) if you prefer sharing this information quietly_.
+      placeholder: ex. email@example.com
+    validations:
+      required: true
+  
+  - type: input
+    id: secondary-contact
+    attributes:
+      label: Backup contact
+      description: |
+        If the primary contact is and individual email, please provide a backup contact.
+      placeholder: ex. backup@example.com
+    validations:
+      required: false

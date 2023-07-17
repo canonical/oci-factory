@@ -602,7 +602,7 @@ jobs:
     runs-on: ubuntu-22.04
     name: Notify
     needs: [prepare-build, run-build, upload, dispatch-releases, generate-provenance]
-    if: ${{ always() && contains(needs.*.result, 'failure') }}
+    if: ${{ always() && contains(needs.*.result, 'failure') && github.event_name != 'pull_request' }}
     steps:
       - uses: actions/checkout@v3
 

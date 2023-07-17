@@ -77,7 +77,8 @@ make your first PR as a Maintainer:
 1. you must follow the [CONTRIBUTING](/CONTRIBUTING.md) guidelines;
    - that includes abiding by the
 [Image Maintainer Agreement](/IMAGE_MAINTAINER_AGREEMENT.md);
-2. each PR **must** only target one OCI image, i.e. you can ask the OCI Factory
+2. before making your first PR, you **must** [request the onboarding of a new image](https://github.com/canonical/oci-factory/issues/new/choose);
+3. each PR **must** only target one OCI image, i.e. you can ask the OCI Factory
 to build multiple versions of the same image with a single PR, but **not**
 multiple images;
    - that means one PR can only propose changes to
