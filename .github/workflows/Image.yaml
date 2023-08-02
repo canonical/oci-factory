@@ -1,4 +1,6 @@
 name: Image
+run-name: 'Image - ${{ inputs.oci-image-name }} - ${{ github.ref }}'
+
 on:
   push:
     paths:
@@ -21,6 +23,10 @@ on:
         required: false
         type: string
         default: "default-id"
+
+env:
+  YQ_VERSION: "v4.32.2"
+  YQ_BINARY: yq_linux_amd64
 
 jobs:
   prepare-build:
@@ -127,9 +133,6 @@ jobs:
 
       - name: Validate image naming and base
         working-directory: ${{ matrix.directory }}
-        env:
-          YQ_VERSION: "v4.32.2"
-          YQ_BINARY: yq_linux_amd64
         run: |
           if [ -z ${{ matrix.dockerfile-build }} ]
           then
@@ -282,7 +285,7 @@ jobs:
           fail-on-error: true
           workflow-name: Tests.yaml
           payload: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }}, "cache-key": "${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}", "vulnerability-report-suffix": "${{ env.VULNERABILITY_REPORT_SUFFIX }}" }'
-          trigger-timeout: "3m"
+          trigger-timeout: "5m"
           run-id: dummy
           use-marker-step: true
       
@@ -290,6 +293,14 @@ jobs:
         run: |
           url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-tests.outputs.run-id }}'
           echo " - Triggered tests for '${{ matrix.name }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Enforce test conclusion
+        if: ${{ steps.run-tests.outputs.run-conclusion != 'success' }}
+        # The previous step doesn't always raise an error
+        run: |
+          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-tests.outputs.run-id }}'
+          echo "Testing of image '${{ matrix.oci-image }}' failed at [${url}](${url})."
+          exit 1
 
       # Wait to make sure the test artifacts are uploaded
       - run: sleep 5
@@ -389,8 +400,8 @@ jobs:
       - name: Upload to GHCR
         env:
           GHCR_REPO: ghcr.io/${{ github.repository_owner }}/oci-factory
-          GHCR_USERNAME: ${{ github.actor }}
-          GHCR_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USERNAME: ROCKsBot
+          GHCR_PASSWORD: ${{ secrets.ROCKSBOT_TOKEN }}
         run: |
           oci_images="${PWD}/images-oci"
           rm -fr $oci_images
@@ -510,6 +521,13 @@ jobs:
           url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-releases.outputs.run-id }}'
           echo " - Triggered releases for '${{ needs.prepare-build.outputs.oci-img-name }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Enforce release conclusion
+        if: ${{ steps.run-releases.outputs.run-conclusion != 'success' }}
+        # The previous step doesn't always raise an error
+        run: |
+          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-releases.outputs.run-id }}'
+          echo "Failed to release '${{ needs.prepare-build.outputs.oci-img-name }}' at [${url}](${url})."
+          exit 1
 
   generate-provenance:
     name: Generate SLSA provenance
@@ -579,3 +597,46 @@ jobs:
   #   uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.5.0
   #   with:
   #     base64-subjects: "${{ needs.upload.outputs.artefacts-hashes }}"
+
+  notify:
+    runs-on: ubuntu-22.04
+    name: Notify
+    needs: [prepare-build, run-build, upload, dispatch-releases, generate-provenance]
+    if: ${{ always() && contains(needs.*.result, 'failure') && github.event_name != 'pull_request' }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      
+      - name: Install requirements
+        run: ./src/notifications/requirements.sh
+          
+      - name: Summarize workflow failure message
+        id: get-summary
+        run: |
+          echo '${{ toJson(needs) }}' > jobs.json
+          ./src/notifications/summarize_workflow_results.py --jobs-file jobs.json
+
+      - name: Get contacts for ${{ needs.prepare-build.outputs.oci-img-name }}
+        id: get-contacts
+        working-directory: ${{ needs.prepare-build.outputs.oci-img-path }}
+        run: |
+          mm_channels=$(yq -r '.notify | ."mattermost-channels" | join(",")' < contacts.y*ml)
+          echo "mattermost-channels=${mm_channels}" >> "$GITHUB_OUTPUT"
+
+      - name: Notify via Mattermost
+        env:
+          MM_BOT_TOKEN: ${{ secrets.MM_BOT_TOKEN }}
+          FINAL_STATUS: failure
+          MM_SERVER: ${{ secrets.MM_SERVER }}
+          URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SUMMARY: ${{ steps.get-summary.outputs.summary }}
+          FOOTER: "Triggered by ${{ github.triggering_actor }}. Ref: ${{ github.ref }}. Attempts: ${{ github.run_attempt }}"
+          TITLE: '${{ needs.prepare-build.outputs.oci-img-name }}: failed to build->upload->release'
+        run: |
+          for channel in $(echo ${{ steps.get-contacts.outputs.mattermost-channels }} | tr ',' ' ')
+          do
+            MM_CHANNEL_ID="${channel}" ./src/notifications/send_to_mattermost.sh
+          done

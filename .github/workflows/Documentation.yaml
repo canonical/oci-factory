@@ -1,0 +1,178 @@
+name: Documentation
+run-name: 'Documentation - ${{ inputs.oci-image-name }} - ${{ github.ref }}'
+
+on:
+  push:
+    paths:
+      - "oci/*/documentation.y*ml"
+  workflow_dispatch:
+    inputs:
+      oci-image-name:
+        description: 'OCI image to generate the documentation for'
+        required: true
+      external_ref_id: #(1)
+        description: 'Optional ID for unique run detection'
+        required: false
+        type: string
+        default: "default-id"
+
+jobs:
+  validate-documentation-request:
+    runs-on: ubuntu-22.04
+    name: Validate documentation request
+    outputs:
+      oci-img-path: ${{ steps.validate-image.outputs.img-path }}
+      oci-img-name: ${{ steps.validate-image.outputs.img-name }}
+    steps:
+      - name: ${{ inputs.external_ref_id }} #(2)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/checkout@v3
+
+      - name: Infer images to document
+        uses: tj-actions/changed-files@v35
+        id: changed-files
+        if: github.event_name != 'workflow_dispatch'
+        with:
+          dir_names: "true"
+          separator: ","
+          files: |
+            oci/*/documentation.y*ml
+
+      - name: Validate image from dispatch
+        id: validate-image
+        run: |
+          set -ex
+
+          if [[ "${{ github.event_name }}" != "workflow_dispatch" ]]
+          then
+            img_path="${{ steps.changed-files.outputs.all_changed_files }}"
+            occurrences="${img_path//[^,]}"
+            if [ ${#occurrences} -ne 0 ]
+            then
+              echo "ERR: can only build documentation for 1 image at a time, but trying to document ${img_path}"
+              exit 1
+            fi
+          else
+            img_path="oci/${{ inputs.oci-image-name }}"
+          fi
+          test -d "${img_path}"
+          echo "img-name=$(basename ${img_path})" >> "$GITHUB_OUTPUT"
+          echo "img-path=${img_path}" >> "$GITHUB_OUTPUT"
+
+
+  do-documentation:
+    runs-on: ubuntu-22.04
+    name: Documentation
+    needs: [validate-documentation-request]
+    env:
+      IS_PROD: ${{ ! startsWith(needs.validate-documentation-request.outputs.oci-img-name, 'mock-') }}
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Setup environment
+        run: pip install -r ./src/image/requirements.txt -r ./src/docs/requirements.txt
+
+      - name: Get all revisions per track
+        id: get-all-canonical-tags
+        env:
+          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
+          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
+          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+          IMAGE_NAME: "${{ needs.validate-documentation-request.outputs.oci-img-name }}"
+          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
+        run: |
+          ./src/image/get_canonical_tags_from_swift.sh
+
+      - name: Generate documentation for ${{ needs.validate-documentation-request.outputs.oci-img-name }}
+        id: generate-documentation
+        env:
+          ECR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_USR || secrets.ECR_CREDS_USR_DEV }}
+          ECR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_PSW || secrets.ECR_CREDS_PSW_DEV }}
+          ECR_NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu' || secrets.ECR_NAMESPACE_DEV }}
+        run: |
+          set -ex
+          python3 -m src.docs.generate_oci_doc_yaml \
+            --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
+            --ecr-api-key "${ECR_CREDS_USR}" \
+            --ecr-api-secret "${ECR_CREDS_PSW}" \
+            --oci-image-path "${{ needs.validate-documentation-request.outputs.oci-img-path }}" \
+            --repository "${ECR_NAMESPACE}" \
+            --doc-data-dir data
+      
+      - name: Upload documentation data YAML
+        uses: actions/upload-artifact@v3
+        with:
+          name: '${{ needs.validate-documentation-request.outputs.oci-img-name }}.doc.yaml'
+          path: "${{ steps.generate-documentation.outputs.image_doc_folder }}/*.y*ml"
+          if-no-files-found: error
+
+      - name: Publish Documentation for ${{ needs.validate-documentation-request.outputs.oci-img-name }}
+        env:
+          # In Dev, images go into the personal space of DOCKER_HUB_CREDS_USR_DEV
+          # so we can reuse its username (with a more privileged PAT) for updating the docs.
+          # In Prod, however, since it's an org, the collaborating DH account is different to
+          # segregate access and ensure other jobs in this pipeline don't abuse the privileged
+          # access that is needed here, for updating the docs.
+          DOCKER_HUB_CREDS_PSW_DOC: ${{ env.IS_PROD == 'true' && secrets.DOCKER_HUB_CREDS_PSW_DOC || secrets.DOCKER_HUB_CREDS_PSW_DOC_DEV }}
+          DOCKER_HUB_CREDS_USR_DOC: ${{ env.IS_PROD == 'true' && secrets.DOCKER_HUB_CREDS_USR_DOC || secrets.DOCKER_HUB_CREDS_USR_DEV }}
+          ECR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_USR || secrets.ECR_CREDS_USR_DEV }}
+          ECR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_PSW || secrets.ECR_CREDS_PSW_DEV }}
+          ECR_REGISTRY_ID: ${{ env.IS_PROD == 'true' && secrets.ECR_REGISTRY_ID || secrets.ECR_REGISTRY_ID_DEV }}
+          DOCKER_HUB_NAMESPACE: ${{ env.IS_PROD == 'true' && 'docker.io/ubuntu' || secrets.DOCKER_HUB_NAMESPACE_DEV }}
+          YQ_VERSION: "v4.32.2"
+          YQ_BINARY: yq_linux_amd64
+        run: |
+          set -ex
+          ./src/notifications/requirements.sh
+          ./src/docs/publish_docs.sh "${{ needs.validate-documentation-request.outputs.oci-img-name }}" "${{ steps.generate-documentation.outputs.name_doc_file }}" "${{ steps.generate-documentation.outputs.image_doc_folder }}"
+          
+  notify:
+    runs-on: ubuntu-22.04
+    name: Notify on failure
+    needs: [validate-documentation-request, do-documentation]
+    if: ${{ always() && contains(needs.*.result, 'failure') && github.event_name != 'workflow_dispatch' }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          
+      - name: Install requirements
+        run: ./src/notifications/requirements.sh
+          
+      - name: Summarize workflow failure message
+        id: get-summary
+        run: |
+          echo '${{ toJson(needs) }}' > jobs.json
+          ./src/notifications/summarize_workflow_results.py --jobs-file jobs.json
+
+      - name: Get contacts for ${{ needs.validate-documentation-request.outputs.oci-img-name }}
+        id: get-contacts
+        working-directory: ${{ needs.validate-documentation-request.outputs.oci-img-path }}
+        run: |
+          mm_channels=$(yq -r '.notify | ."mattermost-channels" | join(",")' < contacts.y*ml)
+          echo "mattermost-channels=${mm_channels}" >> "$GITHUB_OUTPUT"
+
+      - name: Notify via Mattermost
+        env:
+          MM_BOT_TOKEN: ${{ secrets.MM_BOT_TOKEN }}
+          FINAL_STATUS: failure
+          MM_SERVER: ${{ secrets.MM_SERVER }}
+          URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SUMMARY: ${{ steps.get-summary.outputs.summary }}
+          FOOTER: "Triggered by ${{ github.triggering_actor }}. Ref: ${{ github.ref }}. Attempts: ${{ github.run_attempt }}"
+          TITLE: '${{ needs.validate-documentation-request.outputs.oci-img-name }}: failed to generate docs'
+        run: |
+          for channel in $(echo ${{ steps.get-contacts.outputs.mattermost-channels }} | tr ',' ' ')
+          do
+            MM_CHANNEL_ID="${channel}" ./src/notifications/send_to_mattermost.sh
+          done

@@ -1,0 +1,112 @@
+name: Announcements
+run-name: Announcement for "${{ github.event_name == 'release' && github.event.release.name || github.event.registry_package.name }}" | ${{ github.event_name }}
+
+on:
+  release:
+    types: [published]
+  registry_package:
+    types: [published, updated]
+
+env:
+  YQ_VERSION: "v4.32.2"
+  YQ_BINARY: yq_linux_amd64
+  NAME: ${{ github.event_name == 'release' && github.event.release.name || github.event.registry_package.name }}
+
+jobs:
+  get-contacts:
+    name: Get contacts and image info
+    runs-on: ubuntu-22.04
+    outputs:
+      mattermost-channels: ${{ steps.get-contacts.outputs.mattermost-channels }}
+      oci-img-name: ${{ steps.get-image-name.outputs.img-name }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install requirements
+        run: ./src/notifications/requirements.sh
+
+      - name: Get image name
+        id: get-image-name
+        run: |
+          all_images=`ls oci/`
+          for img in $all_images
+          do
+            if [[ "${{ env.NAME }}" == "${img}_"* ]] || [[ "${{ env.NAME }}" == "oci-factory/${img}"* ]]
+            then
+              echo "Image name: ${img}" >> "$GITHUB_STEP_SUMMARY"
+              echo "img-name=${img}" >> "$GITHUB_OUTPUT"
+            fi
+          done
+
+      - name: Get contacts for ${{ steps.get-image-name.outputs.img-name }}
+        id: get-contacts
+        working-directory: oci/${{ steps.get-image-name.outputs.img-name }}
+        run: |
+          mm_channels=$(yq -r '.notify | ."mattermost-channels" | join(",")' < contacts.y*ml)
+          echo "mattermost-channels=${mm_channels}" >> "$GITHUB_OUTPUT"
+
+
+  release:
+    name: New release "${{ github.event.release.name }}"
+    needs: [get-contacts]
+    if: ${{ github.event_name == 'release' }}
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build release summary
+        id: get-summary
+        run: |
+          summary=":rocket: **${{ needs.get-contacts.outputs.oci-img-name }}** released to"
+          summary="${summary} [${{ env.NAME }}](${{ github.event.release.html_url }})"
+
+          echo "summary=${summary}" >> "$GITHUB_OUTPUT"
+
+      - name: Notify via Mattermost
+        env:
+          MM_BOT_TOKEN: ${{ secrets.MM_BOT_TOKEN }}
+          FINAL_STATUS: success
+          MM_SERVER: ${{ secrets.MM_SERVER }}
+          URL: ${{ github.event.release.html_url }}
+          SUMMARY: "${{ steps.get-summary.outputs.summary }}"
+          FOOTER: ''
+          TITLE: ''
+        run: |
+          for channel in $(echo ${{ needs.get-contacts.outputs.mattermost-channels }} | tr ',' ' ')
+          do
+            MM_CHANNEL_ID="${channel}" ./src/notifications/send_to_mattermost.sh
+          done
+
+      
+  ghcr_upload:
+    name: ${{ github.event.registry_package.name }} uploaded to GHCR
+    if: ${{ github.event_name == 'registry_package' && github.event.registry_package.package_version.container_metadata.tag.name != '' }}
+    needs: [get-contacts]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build package summary
+        id: get-summary
+        run: |
+          summary=":package: **${{ needs.get-contacts.outputs.oci-img-name }}** built and uploaded to"
+          summary="${summary} GHCR on [${{ github.event.registry_package.package_version.package_url }}](${{ github.event.registry_package.package_version.html_url }})"
+          summary="${summary}\n"'```\n${{ github.event.registry_package.package_version.installation_command }}\n```'
+
+          echo "summary=${summary}" >> "$GITHUB_OUTPUT"
+
+      - name: Notify via Mattermost
+        env:
+          MM_BOT_TOKEN: ${{ secrets.MM_BOT_TOKEN }}
+          FINAL_STATUS: success
+          MM_SERVER: ${{ secrets.MM_SERVER }}
+          URL: ${{ github.event.registry_package.html_url }}
+          SUMMARY: '${{ steps.get-summary.outputs.summary }}'
+          FOOTER: ''
+          TITLE: ''
+        run: |
+          for channel in $(echo ${{ needs.get-contacts.outputs.mattermost-channels }} | tr ',' ' ')
+          do
+            MM_CHANNEL_ID="${channel}" ./src/notifications/send_to_mattermost.sh
+          done
+

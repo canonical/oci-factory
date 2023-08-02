@@ -4,6 +4,7 @@ on:
     paths:
       - ".github/workflows/*"
       - "!.github/workflows/CLA-Check.yaml"
+      - "!.github/workflows/PR-Validator.yaml"
       - "oci/mock-*"
       - "examples/**"
       - "src/**"
@@ -27,12 +28,15 @@ jobs:
           fail-on-error: true
           workflow-name: Image.yaml
           payload: '{ "oci-image-name": "${{ matrix.oci-image }}", "upload": true }'
-          trigger-timeout: "3m"
+          trigger-timeout: "5m"
           wait-timeout: "30m"
           use-marker-step: true
           run-id: dummy
 
-      - name: Write step summary
+      - name: Enforce conclusion
+        if: ${{ steps.run-image.outputs.run-conclusion != 'success' }}
+        # The previous step doesn't always raise an error
         run: |
           url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-image.outputs.run-id }}'
-          echo " - Triggered image '${{ matrix.oci-image }}' workflow at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
+          echo "Image '${{ matrix.oci-image }}' workflow at [${url}](${url}) failed."
+          exit 1
