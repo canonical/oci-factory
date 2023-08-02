@@ -1,5 +1,5 @@
 notify:
   emails:
-    - luca.bello@canonical.com
+    - observability@lists.launchpad.net
   mattermost-channels:
-    - ew86pwdhrbf7zkp35xt7pp5abo
+    - rjkzqmate38ffgi4smsrtcg8ur
