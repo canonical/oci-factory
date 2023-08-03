@@ -1,0 +1,24 @@
+{
+    "2.9.0-22.04": {
+        "candidate": {
+            "target": "1"
+        },
+        "beta": {
+            "target": "2.9.0-22.04_candidate"
+        },
+        "edge": {
+            "target": "2.9.0-22.04_beta"
+        }
+    },
+    "2": {
+        "candidate": {
+            "target": "1"
+        },
+        "beta": {
+            "target": "2_candidate"
+        },
+        "edge": {
+            "target": "1"
+        }
+    }
+}
