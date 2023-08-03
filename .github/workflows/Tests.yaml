@@ -179,6 +179,8 @@ jobs:
     outputs:
       vulnerability-report: ${{ steps.vulnerability-scan.outputs.report }}
     steps:
+      - uses: actions/checkout@v3
+
       - uses: actions/cache/restore@v3
         with:
           path: ${{ env.TEST_IMAGE_NAME}}
@@ -197,6 +199,7 @@ jobs:
         with:
           # NOTE: we're allowing images with vulnerabilities to be published
           ignore-unfixed: true
+          trivyignores: oci/${{ inputs.oci-image-name }}
           format: 'cosign-vuln'
           severity: 'HIGH,CRITICAL'
           exit-code: '1'
