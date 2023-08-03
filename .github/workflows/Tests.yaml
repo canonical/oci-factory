@@ -200,9 +200,9 @@ jobs:
       - name: Check for .trivyignore
         id: trivyignore
         run: |
-          if [ -f oci/${{ inputs.oci-image-name }}/.trivyignore ]
+          if [ -f ${{ inputs.oci-image-path }}/.trivyignore ]
           then
-            file=oci/${{ inputs.oci-image-name }}/.trivyignore
+            file=${{ inputs.oci-image-path }}/.trivyignore
           else
             # dummy .trivyignore file
             file=.trivyignore

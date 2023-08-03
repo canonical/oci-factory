@@ -1,3 +1,18 @@
+# CVEs in upstream
+
+# com.google.guava:guava:30.0-jre (insecure temporary directory creation), used in:
+# - opensearch-alerting
+# - opensearch-knn
 CVE-2023-2976
+
+# io.grpc:grpc-protobuf:1.52.1 (reachable assertion), impacting:
+# - performance-analyzer-rca
 CVE-2023-1428
+
+# io.grpc:grpc-protobuf:1.52.1 (sensitive information disclosure) impacting:
+# - performance-analyzer-rca
 CVE-2023-32731
+
+# Ignore these rules
+# Due to a demo scripts that uses some harmless test keys
+private-key
