@@ -284,7 +284,7 @@ jobs:
           ref: ${{ github.ref_name }}
           fail-on-error: true
           workflow-name: Tests.yaml
-          payload: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "is-a-rock": ${{ env.IS_A_ROCK }}, "cache-key": "${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}", "vulnerability-report-suffix": "${{ env.VULNERABILITY_REPORT_SUFFIX }}" }'
+          payload: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "oci-image-path": "oci/${{ matrix.name }}", "is-a-rock": ${{ env.IS_A_ROCK }}, "cache-key": "${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}", "vulnerability-report-suffix": "${{ env.VULNERABILITY_REPORT_SUFFIX }}" }'
           trigger-timeout: "5m"
           wait-timeout: "20m"
           run-id: dummy
