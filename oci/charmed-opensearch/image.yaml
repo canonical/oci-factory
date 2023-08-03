@@ -2,10 +2,10 @@ version: 1
     
 upload:  
   - source: "canonical/charmed-opensearch-rock"
-    commit: 47832c37490aac33c7f6a5e90e34cccbcfded685
+    commit: 353b573695674a10ab618cb6d2d8e630395c1d9d
     directory: .
     release:
-      2.8.0-22.04:
+      2.9.0-22.04:
         end-of-life: "2024-05-01T00:00:00Z"
         risks:
           - candidate
