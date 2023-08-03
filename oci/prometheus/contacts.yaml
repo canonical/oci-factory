@@ -1,0 +1,5 @@
+notify:
+  emails:
+    - observability@lists.launchpad.net
+  mattermost-channels:
+    - rjkzqmate38ffgi4smsrtcg8ur
