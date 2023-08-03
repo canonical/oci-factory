@@ -195,6 +195,8 @@ jobs:
       - name: Scan for vulnerabilities
         uses: aquasecurity/trivy-action@0.9.2
         with:
+          # NOTE: we're allowing images with vulnerabilities to be published
+          ignore-unfixed: true
           format: 'cosign-vuln'
           severity: 'HIGH,CRITICAL'
           exit-code: '1'
