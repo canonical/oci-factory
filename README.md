@@ -283,6 +283,13 @@ text dashboard).
 - `contacts.yaml`: this file is required for each OCI image. Although it won't
 trigger new builds/releases when updated by the Maintainer, it is used by the
 OCI Factory's CI to notify the Maintainer when an event of interest occurs.
+- `.trivyignore`: the vulnerability tests **should not be bypassed**!
+*However*, certain OCI images might have unfixed CVEs and/or vulnerabilities
+that come directly from the source upstream software that is being packaged. In
+these cases, it is acceptable to ignore specific CVEs, provided that the risks
+are acknowledged and proper justifications are provided.
+
+#### Contacts
 
 The `contacts.yaml` file has the following schema:
 
@@ -292,7 +299,7 @@ The `contacts.yaml` file has the following schema:
 | notify.emails | False | List[str] | List of emails that should receive notifications. |
 | notify.mattermost-channels | False | List[str] | Mattermost channel **IDs**. |
 
-#### Example: *contacts.yaml*
+##### Example: *contacts.yaml*
 
 ```yaml
 notify:
@@ -301,4 +308,20 @@ notify:
 
   mattermost-channels:
     - fbdezwkcxpfofpysjore1wpfoc
+```
+
+#### Vulnerability Filtering
+
+The `.trivyignore` file follows [Trivy's upstream
+syntax](<https://aquasecurity.github.io/trivy/v0.19.2/vulnerability/examples/filter/#by-vulnerability-ids>).
+
+##### Example: *.trivyignore*
+
+```text
+# <justifications>
+CVE-2024-0000
+
+# Trivy-specific rules
+# <justification>
+private-key
 ```
