@@ -1,0 +1,48 @@
+version: 1
+# --- OVERVIEW INFORMATION ---
+application: alertmanager
+description: >
+  The Alertmanager handles alerts sent by client application such as the
+  Prometheus server. It takes care of deduplicating, grouping, and routing them
+  to the correct receiver integrations such as email, PagerDuty, OpSGenie, or
+  many other mechanisms thanks to the webhook receiver. It also takes care of
+  silencing and inhibition of alerts.
+  Read more on the [official documentation](https://prometheus.io/docs/alerting/latest/alertmanager/)
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 9093:9093
+  access: Access your Alertmanager instance at `http://localhost:9093`.
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone.
+  - type: -p
+    value: '9093:9093'
+    description: Expose Alertmanager on `localhost:9093`.
+  - type: -v 
+    value: "/path/to/alertmanager.yml:/etc/prometheus/alertmanager.yml"
+    description: Local configuration file `alertmanager.yml`.
+  - type: -v
+    value: "/path/to/persisted/data:/alertmaanger"
+    description: >
+      Persist data instead of initializing a new database for each newly
+      launched container. **Important note**: the directory you will be using
+      to persist the data needs to belong to `nogroup:nobody`. You can run
+      `chown nogroup:nobody <path_to_persist_data>` before launching your
+      container.
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+
+    ```bash
+    docker logs -f alertmanager-container
+    ```
+
+    To get an interactive shell:
+
+    ```bash
+    docker exec -it alertmanager-container /bin/bash
+    ```
