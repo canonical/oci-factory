@@ -2,7 +2,7 @@ version: 1
 
 upload:
   - source: canonical/grafana-rock
-    commit: (commit_sha - REPLACE THIS WHEN grafana-rock is ready)
+    commit: 2debe0d755f985292dda793bdab5fbbe14f201e9
     directory: 10.0.3
     release:
       10.0.3-22.04:
