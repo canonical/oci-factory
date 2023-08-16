@@ -1,0 +1,19 @@
+version: 1
+
+upload:
+  - source: canonical/prometheus-rock
+    commit: (commit_sha - REPLACE THIS WHEN grafana-rock is ready)
+    directory: 0.35.2
+    release:
+      0.35.2-22.04:
+        end-of-life: "2024-08-16T00:00:00Z"
+        risks:
+          - stable
+      0.35-22.04:
+        end-of-life: "2024-08-16T00:00:00Z"
+        risks:
+          - stable
+      0-22.04:
+        end-of-life: "2024-08-16T00:00:00Z"
+        risks:
+          - stable
