@@ -2,7 +2,7 @@ version: 1
 
 upload:
   - source: canonical/traefik-rock
-    commit: (commit_sha - waiting for traefk-rock PR)
+    commit: 85efc8c5c917573bfc009d61d6ffa6ac0c167f60
     directory: 2.10.4
     release:
       2.10.4-22.04:
