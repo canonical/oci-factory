@@ -2,7 +2,7 @@ version: 1
 
 upload:
   - source: canonical/loki-rock
-    commit: (commit_sha - waiting for the loki-rock PR to merge)
+    commit: 240f23fd29b0c65d2692957564f947d5a74fe006
     directory: 2.8.4
     release:
       2.8.4-22.04:
