@@ -1,0 +1,19 @@
+version: 1
+
+upload:
+  - source: canonical/mimir-rock
+    commit: (commit_sha - waiting for mimir-rock PR)
+    directory: 2.6.0
+    release:
+      2.6.0-22.04:
+        end-of-life: "2024-08-16T00:00:00Z"
+        risks:
+          - stable
+      2.6-22.04:
+        end-of-life: "2024-08-16T00:00:00Z"
+        risks:
+          - stable
+      2-22.04:
+        end-of-life: "2024-08-16T00:00:00Z"
+        risks:
+          - stable
