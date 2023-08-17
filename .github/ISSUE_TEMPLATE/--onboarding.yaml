@@ -28,10 +28,19 @@ body:
       required: true
 
   - type: input
+    id: description
+    attributes:
+      label: Short description
+      description: A short description of the image.
+      placeholder: ex. this is a Foo Ubuntu ROCK for doing X, Y and Z, based on the upstream project Foo
+    validations:
+      required: true
+
+  - type: input
     id: repo
     attributes:
       label: Image repository
-      description: What is the URL for this image's Git repository
+      description: What is the URL for this image's Git repository?
       placeholder: ex. https://github.com/canonical/my-rock
     validations:
       required: true
