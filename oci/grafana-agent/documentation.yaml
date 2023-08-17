@@ -2,7 +2,7 @@ version: 1
 # --- OVERVIEW INFORMATION ---
 application: grafana-agent
 description: >
-  Grafan Agent is a batteries-included, open source telemetry collector for
+  Grafana Agent is a batteries-included, open source telemetry collector for
   collecting logs, metrics, and traces. It uses established battle-tested code
   to be fully compatible with Prometheus, Loki and Tmepo telemetry stack.
   Grafana Agent can forward metrics to any Prometheus-compatible endpoint, logs
