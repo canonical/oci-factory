@@ -401,8 +401,8 @@ jobs:
       - name: Upload to GHCR
         env:
           GHCR_REPO: ghcr.io/${{ github.repository_owner }}/oci-factory
-          GHCR_USERNAME: ROCKsBot
-          GHCR_PASSWORD: ${{ secrets.ROCKSBOT_TOKEN }}
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         run: |
           oci_images="${PWD}/images-oci"
           rm -fr $oci_images
