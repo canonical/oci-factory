@@ -1,0 +1,19 @@
+version: 1
+
+upload:
+  - source: canonical/traefik-rock
+    commit: 113c6d47242e878beb02ee7f3e595723a532050f
+    directory: 2.10.4
+    release:
+      2.10.4-22.04:
+        end-of-life: "2024-08-16T00:00:00Z"
+        risks:
+          - stable
+      2.10-22.04:
+        end-of-life: "2024-08-16T00:00:00Z"
+        risks:
+          - stable
+      2-22.04:
+        end-of-life: "2024-08-16T00:00:00Z"
+        risks:
+          - stable
