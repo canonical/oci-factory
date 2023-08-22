@@ -6,9 +6,10 @@ description: >
   Elasticsearch, Graphite, InfluxDB, OpenTSB, Prometheus and Hosted Metrics.
   Read more on the [Grafana website](https://grafana.com).
 
-  Please note that this repository is now holding a ROCK, not a
-  Dockerfile-based image. As such the entrypoint is now Pebble. Read more on
-  the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
+  Please note that the images tagged up to 8.2 are Dockerfile-based images,
+  whereas from version 10.0.3 onward the images are now ROCKs. As such the
+  entrypoint is now Pebble. Read more on the
+  [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
 # --- USAGE INFORMATION ---
 docker:
   parameters:
@@ -44,5 +45,8 @@ debug:
     To get an interactive shell:
 
     ```bash
+    # For Dockerfile-based images
+    docker exec -it grafana-container /bin/bash
+    # For ROCKs
     docker exec -it grafana-container exec /bin/bash
     ```
