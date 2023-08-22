@@ -1,0 +1,50 @@
+version: 1
+# --- OVERVIEW INFORMATION ---
+application: loki
+description: >
+  Loki is a horizontally scalable, highly available, multi-tenant log
+  aggregation system inspired by Prometheus. It is designed to be very cost
+  effective and easy to operate. It does not index the contents of the logs,
+  but rather a set of labels for each log stream.
+  Read more on the [official website](https://grafana.com/oss/loki/).
+  
+  Please note that the images tagged up to 2.4 are Dockerfile-base images,
+  whereas from version 2.8.4 onward the images are now ROCKs. As such the
+  entrypoint is now Pebble. Read more on the
+  [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 3100:3100
+  access: Access your Loki instance at `http://localhost:3100`.
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone.
+  - type: -p
+    value: '3100:3100'
+    description: Expose Loki on `localhost:3100`.
+  - type: -v 
+    value: "/path/to/config/file:/etc/loki/local-config.yaml"
+    description: Local configuration file `local-config.yml`.
+  - type: -v
+    value: "lokidata:/loki"
+    description: "Persist data in a docker volume named `lokidata`"
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+
+    ```bash
+    docker logs -f loki-container
+    ```
+
+    To get an interactive shell:
+
+    ```bash
+    # For Dockerfile-based images
+    docker exec -it loki-container /bin/bash
+    # For ROCKs
+    docker exec -it loki-container exec /bin/bash
+    ```

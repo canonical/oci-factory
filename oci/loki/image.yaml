@@ -1,0 +1,19 @@
+version: 1
+
+upload:
+  - source: canonical/loki-rock
+    commit: 240f23fd29b0c65d2692957564f947d5a74fe006
+    directory: 2.8.4
+    release:
+      2.8.4-22.04:
+        end-of-life: "2024-08-16T00:00:00Z"
+        risks:
+          - stable
+      2.8-22.04:
+        end-of-life: "2024-08-16T00:00:00Z"
+        risks:
+          - stable
+      2-22.04:
+        end-of-life: "2024-08-16T00:00:00Z"
+        risks:
+          - stable
