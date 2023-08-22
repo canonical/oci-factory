@@ -2,7 +2,7 @@ version: 1
 # --- OVERVIEW INFORMATION ---
 application: alertmanager
 description: >
-  The Alertmanager handles alerts sent by client application such as the
+  The Alertmanager handles alerts sent by client applications such as the
   Prometheus server. It takes care of deduplicating, grouping, and routing them
   to the correct receiver integrations such as email, PagerDuty, OpSGenie, or
   many other mechanisms thanks to the webhook receiver. It also takes care of
