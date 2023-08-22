@@ -8,9 +8,10 @@ description: >
   but rather a set of labels for each log stream.
   Read more on the [official website](https://grafana.com/oss/loki/).
   
-  Please note that this repository is now holding a ROCK, not a
-  Dockerfile-based image. As such the entrypoint is now Pebble. Read more on
-  the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
+  Please note that the images tagged up to 2.4 are Dockerfile-base images,
+  whereas from version 2.8.4 onward the images are now ROCKs. As such the
+  entrypoint is now Pebble. Read more on the
+  [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
 # --- USAGE INFORMATION ---
 docker:
   parameters:
@@ -42,5 +43,8 @@ debug:
     To get an interactive shell:
 
     ```bash
+    # For Dockerfile-based images
+    docker exec -it loki-container /bin/bash
+    # For ROCKs
     docker exec -it loki-container exec /bin/bash
     ```
