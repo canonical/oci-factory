@@ -8,6 +8,10 @@ description: >
   many other mechanisms thanks to the webhook receiver. It also takes care of
   silencing and inhibition of alerts.
   Read more on the [official documentation](https://prometheus.io/docs/alerting/latest/alertmanager/)
+
+  Please note that this repository is now holding a ROCK, not a
+  Dockerfile-based image. As such the entrypoint is now Pebble. Read more on
+  the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
 # --- USAGE INFORMATION ---
 docker:
   parameters:
