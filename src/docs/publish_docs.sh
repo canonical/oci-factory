@@ -77,18 +77,24 @@ trace_resume
 #  2) build and ship the doc payload
 #  ECR accepts architecture data, but it needs to abide by their naming conventions:
 #  https://docs.aws.amazon.com/cli/latest/reference/ecr-public/put-repository-catalog-data.html#options
-ecr_archs="${AVAILABLE_ARCHS} $(echo "${AVAILABLE_ARCHS}" | sed 's/armhf/arm/g' | tr '[:lower:]' '[:upper:]' | sed 's/AMD64/x86-64/g')"
-if [[ "${ecr_archs}" == *"ARM64"* ]]
+if [ -z "$AVAILABLE_ARCHS" ]
 then
-    ecr_archs_mapped="$(echo "$ecr_archs" | jq -R 'split(" ")' | jq '. |= . + ["ARM 64"]')"
+    operating_systems=""
 else
-    ecr_archs_mapped="$(echo "$ecr_archs" | jq -R 'split(" ")')"
+    ecr_archs="${AVAILABLE_ARCHS} $(echo "${AVAILABLE_ARCHS}" | sed 's/armhf/arm/g' | tr '[:lower:]' '[:upper:]' | sed 's/AMD64/x86-64/g')"
+    if [[ "${ecr_archs}" == *"ARM64"* ]]
+    then
+        ecr_archs_mapped="$(echo "$ecr_archs" | jq -R 'split(" ")' | jq '. |= . + ["ARM 64"]')"
+    else
+        ecr_archs_mapped="$(echo "$ecr_archs" | jq -R 'split(" ")')"
+    fi
+    operating_systems="\"operatingSystems\": ${ecr_archs_mapped},"
 fi
 
 cat >ecr-docs.json <<EOF
 {
 "architectures": ["Linux"],
-"operatingSystems": ${ecr_archs_mapped},
+${operating_systems}
 "usageText": "$(awk '{printf "%s\\n", $0}' ${docs_dir_git}/docs/public.ecr.aws/ubuntu/usage/"${markdown_filename}" | sed 's/"/\\"/g')",
 "aboutText": "$(awk '{printf "%s\\n", $0}' ${docs_dir_git}/docs/public.ecr.aws/ubuntu/"${markdown_filename}" | sed 's/"/\\"/g')"
 }
