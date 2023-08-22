@@ -7,6 +7,10 @@ description: >
   effective and easy to operate. It does not index the contents of the logs,
   but rather a set of labels for each log stream.
   Read more on the [official website](https://grafana.com/oss/loki/).
+  
+  Please note that this repository is now holding a ROCK, not a
+  Dockerfile-based image. As such the entrypoint is now Pebble. Read more on
+  the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
 # --- USAGE INFORMATION ---
 docker:
   parameters:
@@ -38,5 +42,5 @@ debug:
     To get an interactive shell:
 
     ```bash
-    docker exec -it loki-container /bin/bash
+    docker exec -it loki-container exec /bin/bash
     ```
