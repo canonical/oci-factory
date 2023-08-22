@@ -48,5 +48,5 @@ debug:
     To get an interactive shell:
 
     ```bash
-    docker exec -it alertmanager-container /bin/bash
+    docker exec -it alertmanager-container exec /bin/bash
     ```
