@@ -1,0 +1,19 @@
+version: 1
+
+upload:
+  - source: canonical/grafana-rock
+    commit: 2debe0d755f985292dda793bdab5fbbe14f201e9
+    directory: 10.0.3
+    release:
+      10.0.3-22.04:
+        end-of-life: "2024-08-16T00:00:00Z"
+        risks:
+          - stable
+      10.0-22.04:
+        end-of-life: "2024-08-16T00:00:00Z"
+        risks:
+          - stable
+      10-22.04:
+        end-of-life: "2024-08-16T00:00:00Z"
+        risks:
+          - stable

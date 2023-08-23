@@ -1,0 +1,52 @@
+version: 1
+# --- OVERVIEW INFORMATION ---
+application: grafana
+description: >
+  Grafana is a feature rich metrics dashboard and graph editor for Cloudwatch, 
+  Elasticsearch, Graphite, InfluxDB, OpenTSB, Prometheus and Hosted Metrics.
+  Read more on the [Grafana website](https://grafana.com).
+
+  Please note that the images tagged up to 8.2 are Dockerfile-based images,
+  whereas from version 10.0.3 onward the images are now ROCKs. As such the
+  entrypoint is now Pebble. Read more on the
+  [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 3000:3000
+  access: Access your Grafana instance at `http://localhost:3000`.
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone.
+  - type: -p
+    value: '3000:3000'
+    description: Expose Grafana on `localhost:3000`.
+  - type: -v 
+    value: "/path/to/grafana/provisioning/files/:/etc/grafana/provisioning/"
+    description: >
+      Directory to provision Grafana (see
+      [documentation](https://grafana.com/docs/grafana/latest/administration/provisioning/))`.
+  - type: -v
+    value: "/path/to/persisted/data:/var/lib/grafana"
+    description: >
+      Persist data with a volume instead of initializing a new database for
+      each newly launched container.
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+
+    ```bash
+    docker logs -f grafana-container
+    ```
+
+    To get an interactive shell:
+
+    ```bash
+    # For Dockerfile-based images
+    docker exec -it grafana-container /bin/bash
+    # For ROCKs
+    docker exec -it grafana-container exec /bin/bash
+    ```
