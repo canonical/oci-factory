@@ -1,4 +1,6 @@
 __pycache__
 *.rock
+.terraform
+*terraform.tfstate*
 .vscode
 venv
