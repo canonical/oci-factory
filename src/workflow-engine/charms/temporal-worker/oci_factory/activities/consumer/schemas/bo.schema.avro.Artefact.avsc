@@ -1,0 +1,11 @@
+{
+  "namespace": "bo.schema.avro",
+  "type": "record",
+  "name": "Artefact",
+  "fields": [
+    {"name": "digest", "type": "string"},
+    {"name": "type", "type": "string"},
+    {"name": "size", "type": "int"},
+    {"name": "created", "type": "string"}
+  ]
+}

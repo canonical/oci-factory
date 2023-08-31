@@ -1,0 +1,30 @@
+{
+  "namespace": "bo.schema.avro",
+  "type": "record",
+  "name": "Oci",
+  "fields": [
+    {"name": "message_id", "type": "string"},
+    {"name": "name", "type": "string"},
+    {"name": "description", "type": "string"},
+    {"name": "series", "type": "string"},
+    {"name": "serial", "type": "string"},
+    {"name": "build_url", "type": "string"},
+    {"name": "digest", "type": "string"},
+    {"name": "published_on", "type": "string"},
+    {"name": "extras", "type": "string"},
+    {
+      "name": "architectures",
+      "type": {
+        "type": "map",
+        "values": "bo.schema.avro.Architecture"
+      }
+    },
+    {
+      "name": "registry_tags",
+      "type": {
+        "type": "array",
+        "items": "string"
+      }
+    }
+  ]
+}

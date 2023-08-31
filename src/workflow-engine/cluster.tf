@@ -54,6 +54,8 @@ data "cloudinit_config" "control_config" {
 resource "openstack_compute_instance_v2" "rocks-temporal-workers-controller" {
   # rocks-temporal-workers-controller is the microk8s control plane
   name            = "rocks-temporal-workers-controller"
+  # The images are refreshed regularly, so the IDs might change.
+  # Double check the desired Jammy image ID before deploying.
   image_id        = "bfa876f1-456a-440f-ae52-ea49bf6e35f6" # jammy
   flavor_id       = "4"
   key_pair        = "rocks-team"

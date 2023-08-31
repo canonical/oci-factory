@@ -1,0 +1,37 @@
+{
+    "message_id": "8105e87b-038a-46cd-a0bb-e2e512c89023",
+    "name": "ubuntu",
+    "description": "New release for the Ubuntu 23.04 container image",
+    "series": "lunar",
+    "serial": "20230123",
+    "build_url": "https://jenkins.../23.04-UbuntuOCI-Build-Images/5/",
+    "digest": "sha256:678c136e4e918eff1c5e83383859e1ea2227d...754a2a",
+    "published_on": "2023-02-22T13:40:25Z",
+    "registry_tags": [
+        "public.ecr.aws/ubuntu/ubuntu:22.04",
+        "public.ecr.aws/ubuntu/ubuntu:jammy",
+        "ubuntu.azurecr.io/ubuntu:latest",
+        "docker.io/ubuntu:jammy"
+    ],
+    "architectures": {
+        "arm64v8": {
+            "digest": "sha256:52293638ba652a2e8f9...356",
+            "layers": [
+                {
+                    "digest": "sha256:67707603...536",
+                    "size": 29528717
+                }
+            ],
+            "created": "2023-01-26T04:58:02.3856365Z",
+            "artefacts": [
+                {
+                    "digest": "sha256:55212218294...3123",
+                    "type": "application/spdx+json",
+                    "size": 557,
+                    "created": "2023-02-22T13:40:25Z"
+                }
+            ]
+        }
+    },
+    "extras": "Some custom, additional and optional data"
+}
