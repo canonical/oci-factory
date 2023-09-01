@@ -1,0 +1,12 @@
+version: 1
+
+upload:
+  - source: "canonical/charmed-mongodb-rock"
+    commit: 815cacbc449fdce1a278a55b3a78816fbc102d17
+    directory: .
+    release:
+      5-22.04:
+        end-of-life: "2024-09-01T00:00:00Z"
+        risks:
+          - candidate
+          - edge
