@@ -69,7 +69,7 @@ body:
           required: true
         - label: |
             This image is either a ROCK or a Docker image which already exists in the 'ubuntu' namespace
-          required: true
+          required: false
         - label: |
             I agree to be the image's Maintainer and thus own it and be responsible for it, thus committing to maintaining it throughout its lifetime
           required: true
