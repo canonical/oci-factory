@@ -248,7 +248,7 @@ jobs:
       - id: wait-for-artifacts
         run: |
           sleep 5
-          echo "vulnerability-report=${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}.zip" >> "$GITHUB_OUTPUT"
+          echo "vulnerability-report=${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}" >> "$GITHUB_OUTPUT"
 
       - name: Download vulnerability artifacts from Tests workflow
         uses: dawidd6/action-download-artifact@v2
@@ -264,6 +264,11 @@ jobs:
           name: ${{ steps.wait-for-artifacts.outputs.vulnerability-report }}
           path: ${{ steps.wait-for-artifacts.outputs.vulnerability-report }}
           if-no-files-found: error
+
+      - uses: actions/cache/save@v3
+        with:
+          path: ${{ steps.wait-for-artifacts.outputs.vulnerability-report }}
+          key: ${{ github.run_id }}-${{ steps.wait-for-artifacts.outputs.vulnerability-report }}
 
   upload:
     runs-on: ubuntu-22.04
@@ -379,17 +384,18 @@ jobs:
 
           echo "sboms=${all_sboms_zip}" >> "$GITHUB_OUTPUT"
 
-      - name: Download vulnerability artifacts for hashing
-        uses: dawidd6/action-download-artifact@v2
+      - name: Fetch vulnerability artifacts for hashing
+        uses: actions/cache/restore@v3
         with:
-          path: "."
-          name: ${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}.zip
+          path: ${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
+          key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
+          fail-on-cache-miss: true
 
       # https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/generic/README.md
       - name: Calculate artefacts hashes
         id: artefacts-hashes
         env:
-          VULN_REPORT: ${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}.zip
+          VULN_REPORT: ${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
           SBOMS: ${{ steps.generate-sboms.outputs.sboms }}
           OCI_IMAGE_ARCHIVE: ${{ steps.rename-oci-archive.outputs.name }}
         run: |
@@ -452,7 +458,7 @@ jobs:
             ${{ matrix.revision }} \
             build_metadata.json \
             ${{ steps.generate-sboms.outputs.sboms }} \
-            ${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}.zip
+            ${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
 
       - name: Create Git tag
         uses: rickstaa/action-create-tag@v1
