@@ -27,6 +27,7 @@ on:
 env:
   YQ_VERSION: "v4.32.2"
   YQ_BINARY: yq_linux_amd64
+  VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"
 
 jobs:
   prepare-build:
@@ -202,9 +203,76 @@ jobs:
           path: ${{ env.OCI_ARCHIVE_NAME }}
           key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}
 
-  upload:
+  test:
     runs-on: ubuntu-22.04
     needs: [prepare-build, run-build]
+    name: Test
+    strategy:
+      fail-fast: true
+      matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
+    env:
+      OCI_ARCHIVE_NAME: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}
+    steps:
+      - name: Run tests
+        # Using this actions cause others can have this problem:
+        # https://github.com/convictional/trigger-workflow-and-wait/issues/61
+        uses: mathze/workflow-dispatch-action@v1.2.0
+        id: run-tests
+        env:
+          IS_A_ROCK: ${{ matrix.dockerfile-build == '' && true || false }}
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref_name }}
+          fail-on-error: true
+          workflow-name: Tests.yaml
+          payload: '{ "oci-image-name": "${{ env.OCI_ARCHIVE_NAME }}", "oci-image-path": "oci/${{ matrix.name }}", "is-a-rock": ${{ env.IS_A_ROCK }}, "cache-key": "${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}", "vulnerability-report-suffix": "${{ env.VULNERABILITY_REPORT_SUFFIX }}" }'
+          trigger-timeout: "5m"
+          wait-timeout: "45m"
+          run-id: dummy
+          use-marker-step: true
+      
+      - name: Write step summary
+        run: |
+          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-tests.outputs.run-id }}'
+          echo " - Triggered tests for '${{ matrix.name }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Enforce test conclusion
+        if: ${{ steps.run-tests.outputs.run-conclusion != 'success' }}
+        # The previous step doesn't always raise an error
+        run: |
+          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-tests.outputs.run-id }}'
+          echo "Testing of image '${{ matrix.oci-image }}' failed at [${url}](${url})."
+          exit 1
+
+      # Wait to make sure the test artifacts are uploaded
+      - id: wait-for-artifacts
+        run: |
+          sleep 5
+          echo "vulnerability-report=${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}" >> "$GITHUB_OUTPUT"
+
+      - name: Download vulnerability artifacts from Tests workflow
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: Tests.yaml
+          run_id: ${{ steps.run-tests.outputs.run-id }}
+          path: "."
+          name: ${{ steps.wait-for-artifacts.outputs.vulnerability-report }}
+
+      - name: Upload vulnerability report
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.wait-for-artifacts.outputs.vulnerability-report }}
+          path: ${{ steps.wait-for-artifacts.outputs.vulnerability-report }}
+          if-no-files-found: error
+
+      - uses: actions/cache/save@v3
+        with:
+          path: ${{ steps.wait-for-artifacts.outputs.vulnerability-report }}
+          key: ${{ github.run_id }}-${{ steps.wait-for-artifacts.outputs.vulnerability-report }}
+
+  upload:
+    runs-on: ubuntu-22.04
+    needs: [prepare-build, run-build, test]
     name: Upload
     if: ${{ inputs.upload || (github.ref_name == 'main' && github.event_name == 'push') }}
     strategy:
@@ -212,7 +280,6 @@ jobs:
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     env:
       OCI_ARCHIVE_NAME: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}
-      VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"
     outputs:
       artefacts-hashes: ${{ steps.artefacts-hashes.outputs.hashes }}
     steps:
@@ -272,48 +339,6 @@ jobs:
           path: ${{ steps.rename-oci-archive.outputs.name }}
           key: ${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}
 
-      - name: Run tests
-        # Using this actions cause others can have this problem:
-        # https://github.com/convictional/trigger-workflow-and-wait/issues/61
-        uses: mathze/workflow-dispatch-action@v1.2.0
-        id: run-tests
-        env:
-          IS_A_ROCK: ${{ matrix.dockerfile-build == '' && true || false }}
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.ref_name }}
-          fail-on-error: true
-          workflow-name: Tests.yaml
-          payload: '{ "oci-image-name": "${{ steps.rename-oci-archive.outputs.name }}", "oci-image-path": "oci/${{ matrix.name }}", "is-a-rock": ${{ env.IS_A_ROCK }}, "cache-key": "${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}", "vulnerability-report-suffix": "${{ env.VULNERABILITY_REPORT_SUFFIX }}" }'
-          trigger-timeout: "5m"
-          wait-timeout: "45m"
-          run-id: dummy
-          use-marker-step: true
-      
-      - name: Write step summary
-        run: |
-          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-tests.outputs.run-id }}'
-          echo " - Triggered tests for '${{ matrix.name }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Enforce test conclusion
-        if: ${{ steps.run-tests.outputs.run-conclusion != 'success' }}
-        # The previous step doesn't always raise an error
-        run: |
-          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-tests.outputs.run-id }}'
-          echo "Testing of image '${{ matrix.oci-image }}' failed at [${url}](${url})."
-          exit 1
-
-      # Wait to make sure the test artifacts are uploaded
-      - run: sleep 5
-
-      - name: Download vulnerability artifacts
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          workflow: Tests.yaml
-          run_id: ${{ steps.run-tests.outputs.run-id }}
-          path: "."
-          name: ${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}.zip
-
       - name: Install Syft
         uses: anchore/sbom-action/download-syft@v0
         with:
@@ -359,11 +384,18 @@ jobs:
 
           echo "sboms=${all_sboms_zip}" >> "$GITHUB_OUTPUT"
 
+      - name: Fetch vulnerability artifacts for hashing
+        uses: actions/cache/restore@v3
+        with:
+          path: ${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
+          key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
+          fail-on-cache-miss: true
+
       # https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/generic/README.md
       - name: Calculate artefacts hashes
         id: artefacts-hashes
         env:
-          VULN_REPORT: ${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
+          VULN_REPORT: ${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
           SBOMS: ${{ steps.generate-sboms.outputs.sboms }}
           OCI_IMAGE_ARCHIVE: ${{ steps.rename-oci-archive.outputs.name }}
         run: |
@@ -382,13 +414,6 @@ jobs:
         with:
           name: ${{ steps.generate-sboms.outputs.sboms }}
           path: ${{ steps.generate-sboms.outputs.sboms }}
-          if-no-files-found: error
-
-      - name: Upload vulnerability report
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
-          path: ${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
           if-no-files-found: error
 
       - name: Upload image
@@ -433,7 +458,7 @@ jobs:
             ${{ matrix.revision }} \
             build_metadata.json \
             ${{ steps.generate-sboms.outputs.sboms }} \
-            ${{ steps.rename-oci-archive.outputs.name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
+            ${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
 
       - name: Create Git tag
         uses: rickstaa/action-create-tag@v1
