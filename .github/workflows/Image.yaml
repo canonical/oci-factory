@@ -24,10 +24,6 @@ on:
         type: string
         default: "default-id"
 
-env:
-  YQ_VERSION: "v4.32.2"
-  YQ_BINARY: yq_linux_amd64
-
 jobs:
   prepare-build:
     runs-on: ubuntu-22.04
@@ -136,10 +132,6 @@ jobs:
         run: |
           if [ -z ${{ matrix.dockerfile-build }} ]
           then
-            wget https://github.com/mikefarah/yq/releases/download/${{ env.YQ_VERSION }}/${{ env.YQ_BINARY }}
-            sudo mv ${{ env.YQ_BINARY }} /usr/bin/yq
-            sudo chmod +x /usr/bin/yq
-            
             rock_name=`cat rockcraft.y*ml | yq -r .name`
             if [[ "${{ matrix.path }}" != *"${rock_name}"* ]]
             then
@@ -610,9 +602,6 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.x'
-      
-      - name: Install requirements
-        run: ./src/notifications/requirements.sh
           
       - name: Summarize workflow failure message
         id: get-summary
