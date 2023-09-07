@@ -12,13 +12,13 @@
     },
     "1.0-22.04": {
         "candidate": {
-            "target": "117"
+            "target": "119"
         },
         "beta": {
-            "target": "117"
+            "target": "119"
         },
         "edge": {
-            "target": "117"
+            "target": "119"
         }
     },
     "test": {
