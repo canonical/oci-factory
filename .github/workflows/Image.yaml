@@ -124,10 +124,17 @@ jobs:
     env:
       OCI_ARCHIVE_NAME: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Clone GitHub image repository
+        uses: actions/checkout@v3
+        continue-on-error: true
         with:
           repository: ${{ matrix.source }}
           fetch-depth: 0
+
+      - name: Clone generic image repository
+        if: ${{ failure() }}
+        run: |
+          git clone ${{ matrix.source }} .
 
       - run: git checkout ${{ matrix.commit }}
 
@@ -235,11 +242,19 @@ jobs:
           ./src/uploads/requirements.sh
           pip install -r src/uploads/requirements.txt -r src/image/requirements.txt
 
-      - uses: actions/checkout@v3
+      - name: Clone GitHub image repository
+        uses: actions/checkout@v3
+        id: clone-image-repo
+        continue-on-error: true
         with:
           repository: ${{ matrix.source }}
           fetch-depth: 0
           path: source
+
+      - name: Clone generic image repository
+        if: ${{ failure() && steps.clone-image-repo.conclusion == 'failure' }}
+        run: |
+          git clone ${{ matrix.source }} source
 
       - run: cd source && git checkout ${{ matrix.commit }}
 
