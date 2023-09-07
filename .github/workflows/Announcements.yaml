@@ -8,8 +8,6 @@ on:
     types: [published, updated]
 
 env:
-  YQ_VERSION: "v4.32.2"
-  YQ_BINARY: yq_linux_amd64
   NAME: ${{ github.event_name == 'release' && github.event.release.name || github.event.registry_package.name }}
 
 jobs:
@@ -21,9 +19,6 @@ jobs:
       oci-img-name: ${{ steps.get-image-name.outputs.img-name }}
     steps:
       - uses: actions/checkout@v3
-
-      - name: Install requirements
-        run: ./src/notifications/requirements.sh
 
       - name: Get image name
         id: get-image-name
