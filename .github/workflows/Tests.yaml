@@ -295,5 +295,5 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: ${{ needs.test-vulnerabilities.outputs.vulnerability-report }}.zip
+          name: ${{ needs.test-vulnerabilities.outputs.vulnerability-report }}
           path: ${{ needs.test-vulnerabilities.outputs.vulnerability-report }}
