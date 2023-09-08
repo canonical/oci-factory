@@ -207,6 +207,7 @@ jobs:
 
   test:
     needs: [prepare-build, run-build]
+    name: Test
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
