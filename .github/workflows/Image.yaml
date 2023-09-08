@@ -125,13 +125,14 @@ jobs:
     steps:
       - name: Clone GitHub image repository
         uses: actions/checkout@v3
+        id: clone-image-repo
         continue-on-error: true
         with:
           repository: ${{ matrix.source }}
           fetch-depth: 0
 
       - name: Clone generic image repository
-        if: ${{ failure() }}
+        if: ${{ steps.clone-image-repo.outcome == 'failure' }}
         run: |
           git clone ${{ matrix.source }} .
 
@@ -208,6 +209,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [prepare-build, run-build]
     name: Test
+    permissions: write-all
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
@@ -222,7 +224,7 @@ jobs:
         env:
           IS_A_ROCK: ${{ matrix.dockerfile-build == '' && true || false }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.ROCKSBOT_TOKEN }}
           ref: ${{ github.ref_name }}
           fail-on-error: true
           workflow-name: Tests.yaml
@@ -313,7 +315,7 @@ jobs:
           path: source
 
       - name: Clone generic image repository
-        if: ${{ failure() && steps.clone-image-repo.conclusion == 'failure' }}
+        if: ${{ steps.clone-image-repo.outcome == 'failure' }}
         run: |
           git clone ${{ matrix.source }} source
 
