@@ -2,6 +2,40 @@ name: Tests
 run-name: 'Tests - ${{ inputs.oci-image-name }} - ${{ github.ref }}'
 
 on:
+  workflow_call:
+    inputs:
+      oci-image-name:
+        description: 'Name of the image to be fetched and tested'
+        required: true
+        type: string
+      oci-image-path:
+        description: 'Path to the image in this repo (eg. "oci/foo")'
+        required: true
+        type: string
+      test-from:
+        description: 'From where to fetch the OCI image to be tested'
+        required: true
+        default: 'cache'
+        type: string
+      cache-key:
+        description: 'Cache key (when fetching from cache)'
+        required: false
+        type: string
+      is-a-rock:
+        description: 'Run additional ROCK-specific tests'
+        required: true
+        type: boolean
+        default: false
+      vulnerability-report-suffix:
+        description: 'Suffix for the vulnerability report artefact'
+        required: false
+        type: string
+        default: '.vulnerability-report.json'
+      external_ref_id: #(1)
+        description: 'Optional ID for unique run detection'
+        required: false
+        type: string
+        default: "default-id"
   workflow_dispatch:
     inputs:
       oci-image-name:
