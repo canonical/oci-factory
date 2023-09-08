@@ -181,6 +181,8 @@ jobs:
     runs-on: ubuntu-22.04
     name: Efficiency test
     needs: [fetch-oci-image]
+    # TODO: remove once https://chat.charmhub.io/charmhub/pl/o5wxpb65ffbfzy7bcmi8kzftzy is fixed
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v3
 
