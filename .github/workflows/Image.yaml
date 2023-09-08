@@ -125,13 +125,14 @@ jobs:
     steps:
       - name: Clone GitHub image repository
         uses: actions/checkout@v3
+        id: clone-image-repo
         continue-on-error: true
         with:
           repository: ${{ matrix.source }}
           fetch-depth: 0
 
       - name: Clone generic image repository
-        if: ${{ failure() }}
+        if: ${{ steps.clone-image-repo.outcome == 'failure' }}
         run: |
           git clone ${{ matrix.source }} .
 
@@ -313,7 +314,7 @@ jobs:
           path: source
 
       - name: Clone generic image repository
-        if: ${{ failure() && steps.clone-image-repo.conclusion == 'failure' }}
+        if: ${{ steps.clone-image-repo.outcome == 'failure' }}
         run: |
           git clone ${{ matrix.source }} source
 
