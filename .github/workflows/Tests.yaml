@@ -28,7 +28,7 @@ on:
         default: false
       vulnerability-report-suffix:
         description: 'Suffix for the vulnerability report artefact'
-        required: false
+        required: true
         type: string
         default: '.vulnerability-report.json'
       external_ref_id: #(1)
