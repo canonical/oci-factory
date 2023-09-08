@@ -1,0 +1,6 @@
+version: 1
+
+upload:  
+  - source: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/nginx
+    commit: 496aa25c71bb921046536bace83669d6cb01c7b7
+    directory: .
