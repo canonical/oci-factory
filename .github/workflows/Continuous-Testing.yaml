@@ -21,43 +21,16 @@ jobs:
         id: prepare-test-matrix
         run: ./src/tests/get_released_revisions.py --oci-images-path $PWD/oci
 
-  dispatch-tests:
-    runs-on: ubuntu-latest
-    name: Dispatch tests for released images
+  run-tests:
+    name: Run tests for released images
     needs: [list-released-images]
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.list-released-images.outputs.released-revisions-matrix) }}
-    steps:
-      - name: Run tests for ${{ matrix.source-image }}
-        # Using this actions cause others can have this problem:
-        # https://github.com/convictional/trigger-workflow-and-wait/issues/61
-        uses: mathze/workflow-dispatch-action@v1.2.0
-        id: run-tests
-        env:
-          IS_A_ROCK: ${{ matrix.dockerfile-build == '' && true || false }}
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.ref_name }}
-          fail-on-error: true
-          workflow-name: Tests.yaml
-          # For continuous auditing, let's assume all images are NOT ROCKs and
-          # thus only run the most generic tests
-          payload: '{ "oci-image-name": "${{ matrix.source-image }}", "oci-image-path": "oci/${{ matrix.name }}", "is-a-rock": false, "test-from": "registry"}'
-          trigger-timeout: "5m"
-          wait-timeout: "45m"
-          run-id: dummy
-          use-marker-step: true
-
-      - name: Write step summary
-        run: |
-          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-tests.outputs.run-id }}'
-          echo " - Triggered tests for '${{ matrix.source-image }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Enforce test conclusion
-        if: ${{ steps.run-tests.outputs.run-conclusion != 'success' }}
-        # The previous step doesn't always raise an error
-        run: |
-          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-tests.outputs.run-id }}'
-          echo "Testing of image '${{ matrix.source-image }}' failed at [${url}](${url})."
-          exit 1
+    uses: canonical/oci-factory/.github/workflows/Tests.yaml@main
+    with:
+      oci-image-name: "${{ matrix.source-image }}"
+      oci-image-path: "oci/${{ matrix.name }}"
+      # For continuous testing, treat every image as a standard image (non ROCK)
+      is-a-rock: false
+      test-from: "registry"
