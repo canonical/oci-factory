@@ -218,6 +218,7 @@ jobs:
       is-a-rock: ${{ matrix.dockerfile-build == '' && true || false }}
       test-from: "cache"
       cache-key: "${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}"
+    secrets: inherit
 
   upload:
     runs-on: ubuntu-22.04
