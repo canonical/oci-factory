@@ -105,7 +105,7 @@ body:
     attributes:
       label: Security enablement
       description: |
-        List of image dependencies and any additional information that is relevant for the security monitoring (/cc @metorino)
+        List of image dependencies and any additional information that is relevant for the security monitoring (/cc security-snapchat(at)lists.canonical.com)
       placeholder: "ex. List of Ubuntu source packages associate with the image's dependencies:..."
     validations:
       required: false
