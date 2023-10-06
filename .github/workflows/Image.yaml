@@ -409,7 +409,8 @@ jobs:
           IMAGE_NAME: ${{ matrix.name }}
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: |
-          jq <<< '${{ toJSON(matrix) }}' > build_metadata.json
+          jq --arg base "${{ steps.get-track.outputs.base }}" \
+            '. + {base: $base}' <<< '${{ toJSON(matrix) }}' > build_metadata.json
           ./src/uploads/upload_to_swift.sh \
             ${{ matrix.name }} \
             ${{ steps.get-track.outputs.track }} \

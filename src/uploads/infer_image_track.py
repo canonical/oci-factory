@@ -76,3 +76,4 @@ print(f"ROCK track: {track}")
 
 with open(os.environ["GITHUB_OUTPUT"], "a") as gh_out:
     print(f"track={track}", file=gh_out)
+    print(f"base=ubuntu:{base_release}", file=gh_out)
