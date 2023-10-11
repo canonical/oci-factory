@@ -1,0 +1,4 @@
+# Upstream CVEs
+
+# github.com/docker/docker - Encrypted overlay network may be unauthenticated
+CVE-2023-28840
