@@ -13,6 +13,10 @@ on:
       oci-image-name:
         description: "OCI image to build and test"
         required: true
+      b64-image-trigger:
+        description: "(Base64 enconded) Pass the image.yaml as an argument"
+        required: false
+        type: string
       upload:
         description: "Upload image to GHCR"
         required: true
@@ -75,6 +79,10 @@ jobs:
 
           echo "img-name=$(basename ${img_path})" >> "$GITHUB_OUTPUT"
           echo "img-path=${img_path}" >> "$GITHUB_OUTPUT"
+
+      - name: Use custom image trigger
+        if: ${{ inputs.b64-image-trigger != '' }}
+        run: echo ${{ inputs.b64-image-trigger }} | base64 -d > ${{ steps.validate-image.outputs.img-path }}/image.yaml
 
       - uses: actions/setup-python@v4
         with:
@@ -448,6 +456,10 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Use custom image trigger
+        if: ${{ inputs.b64-image-trigger != '' }}
+        run: echo ${{ inputs.b64-image-trigger }} | base64 -d > ${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml
+
       - uses: actions/cache/restore@v3
         with:
           path: ${{ env.REVISION_DATA_DIR }}
@@ -497,7 +509,7 @@ jobs:
           workflow-name: Release.yaml
           payload: '{ "oci-image-name": "${{ needs.prepare-build.outputs.oci-img-name }}", "image-trigger-cache-key": "${{ github.run_id }}-image-trigger"}'
           run-id: dummy
-          trigger-timeout: "3m"
+          trigger-timeout: "10m"
           use-marker-step: true
 
       - name: Write step summary
