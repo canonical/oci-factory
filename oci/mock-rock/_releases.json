@@ -1,32 +1,32 @@
 {
     "latest": {
         "candidate": {
-            "target": "126"
+            "target": "1.0-22.04_candidate"
         },
         "beta": {
-            "target": "126"
+            "target": "latest_candidate"
         },
         "edge": {
-            "target": "126"
+            "target": "latest_beta"
         }
     },
     "1.0-22.04": {
         "candidate": {
-            "target": "126"
+            "target": "127"
         },
         "beta": {
-            "target": "126"
+            "target": "127"
         },
         "edge": {
-            "target": "126"
+            "target": "127"
         }
     },
     "test": {
         "beta": {
-            "target": "126"
+            "target": "1.0-22.04_beta"
         },
         "edge": {
-            "target": "126"
+            "target": "test_beta"
         }
     }
 }
