@@ -145,7 +145,7 @@ jobs:
       - name: Run documentation
         # Using this actions cause others can have this problem:
         # https://github.com/convictional/trigger-workflow-and-wait/issues/61
-        uses: mathze/workflow-dispatch-action@v1.2.0
+        uses: mathze/workflow-dispatch-action@v1.2.1
         id: run-documentation
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
