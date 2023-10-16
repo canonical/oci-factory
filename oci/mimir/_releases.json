@@ -1,35 +1,35 @@
 {
-    "2.46.0-22.04": {
+    "2.6.0-22.04": {
         "stable": {
-            "target": "3"
+            "target": "1"
         },
         "candidate": {
-            "target": "2.46.0-22.04_stable"
+            "target": "2.6.0-22.04_stable"
         },
         "beta": {
-            "target": "2.46.0-22.04_candidate"
+            "target": "2.6.0-22.04_candidate"
         },
         "edge": {
-            "target": "2.46.0-22.04_beta"
+            "target": "2.6.0-22.04_beta"
         }
     },
-    "2.46-22.04": {
+    "2.6-22.04": {
         "stable": {
-            "target": "3"
+            "target": "1"
         },
         "candidate": {
-            "target": "2.46-22.04_stable"
+            "target": "2.6-22.04_stable"
         },
         "beta": {
-            "target": "2.46-22.04_candidate"
+            "target": "2.6-22.04_candidate"
         },
         "edge": {
-            "target": "2.46-22.04_beta"
+            "target": "2.6-22.04_beta"
         }
     },
     "2-22.04": {
         "stable": {
-            "target": "3"
+            "target": "1"
         },
         "candidate": {
             "target": "2-22.04_stable"

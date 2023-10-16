@@ -1,0 +1,6 @@
+# Upstream CVEs
+
+# github.com/docker/distribution - DoS from malicious API request
+CVE-2023-2253
+# github.com/docker/docker - Encrypted overlay network may be unauthenticated
+CVE-2023-28840

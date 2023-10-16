@@ -390,6 +390,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload to GHCR
+        id: upload-image
         env:
           GHCR_REPO: ghcr.io/${{ github.repository_owner }}/oci-factory
           GHCR_USERNAME: ${{ github.actor }}
@@ -402,6 +403,9 @@ jobs:
           tar -xf ${{ steps.rename-oci-archive.outputs.name }} -C $oci_images
 
           source="oci:${oci_images}"
+
+          digest="$(skopeo inspect $source | jq -r .Digest)"
+          echo "digest=$digest" >> $GITHUB_OUTPUT
 
           ./src/image/tag_and_publish.sh "${source}" \
             ${{ matrix.name }} \
@@ -417,7 +421,9 @@ jobs:
           IMAGE_NAME: ${{ matrix.name }}
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: |
-          jq <<< '${{ toJSON(matrix) }}' > build_metadata.json
+          jq --arg base "${{ steps.get-track.outputs.base }}" \
+            --arg digest "${{ steps.upload-image.outputs.digest }}" \
+            '. + {base: $base, digest: $digest}' <<< '${{ toJSON(matrix) }}' > build_metadata.json
           ./src/uploads/upload_to_swift.sh \
             ${{ matrix.name }} \
             ${{ steps.get-track.outputs.track }} \

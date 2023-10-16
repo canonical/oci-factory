@@ -1,0 +1,4 @@
+# Upstream CVEs
+
+# golang.org/x/net - avoid quadratic complexity in HPACK decoding
+CVE-2022-41723
