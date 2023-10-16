@@ -14,7 +14,7 @@ on:
         description: "OCI image to build and test"
         required: true
       b64-image-trigger:
-        description: "(Base64 enconded) Pass the image.yaml as an argument"
+        description: "(Base64 encoded) Pass the image.yaml as an argument"
         required: false
         type: string
       upload:
