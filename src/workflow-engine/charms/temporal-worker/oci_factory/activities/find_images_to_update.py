@@ -9,6 +9,7 @@ and select the images which are based said Ubuntu release.
 Those will be the images to be scheduled for an automatic update (aka rebuild).
 """
 
+import base64
 import glob
 import io
 import json
@@ -18,6 +19,8 @@ import requests
 import swiftclient
 import sys
 import tempfile
+import time
+import yaml
 import zipfile
 
 
@@ -39,6 +42,9 @@ swift_conn = swiftclient.client.Connection(
 SWIFT_CONTAINER = "oci-factory"
 _, swift_oci_factory_objs = swift_conn.get_container(SWIFT_CONTAINER)
 
+# Need the ROCKsBot GitHub token in order to dispatch workflows
+GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
+
 
 def find_released_revisions(releases_json: dict) -> dict:
     """Given the contents of a _release.json file,
@@ -55,13 +61,6 @@ def find_released_revisions(releases_json: dict) -> dict:
 
             if revision not in released_revisions:
                 released_revisions.append(revision)
-            # if revision not in released_revisions:
-            #     released_revisions[revision] = {track: {"risks": [risk]}}
-            # else:
-            #     if track not in released_revisions[revision]:
-            #         released_revisions[revision][track] = {"risks": [risk]}
-            #     else:
-            #         released_revisions[revision][track]["risks"].append(risk)
 
     return released_revisions
 
@@ -122,12 +121,17 @@ with tempfile.TemporaryDirectory() as temp_dir:
         uber_img_trigger = {"version": 1, "upload": []}
         # We'll also need to find which tags (channels) to release the new
         # rebuilds to
-        docker_tags_url = f"https://hub.docker.com/v2/repositories/%%%/{image}/tags"
+        # TODO: Get rid of this once we have a proper DB where to store all the
+        # image information.
+        # This is a bit nasty as these APIs return paginated results
+        # and don't offer enough querying parameters to filter the results.
+        ecr_tags_url = "https://api.us-east-1.gallery.ecr.aws/describeImageTags"
+        body = {"repositoryName": image, "maxResults": 1000}
         if image.startswith("mock-"):
-            docker_tags_url = docker_tags_url.replace("%%%", "rocksdev")
+            body["registryAliasName"] = "rocksdev"
         else:
-            docker_tags_url = docker_tags_url.replace("%%%", "ubuntu")
-        tags = json.loads(requests.get(docker_tags_url).content.decode())
+            body["registryAliasName"] = "ubuntu"
+        tags = json.loads(requests.post(ecr_tags_url, json=body).content.decode())
 
         # Each Swift object corresponds to an image revision (<=> build)
         for image_revision in img_objs:
@@ -157,35 +161,78 @@ with tempfile.TemporaryDirectory() as temp_dir:
                 continue
 
             logging.info(f"{image}: marking revision {revision} for a rebuild")
-            
+
             # If we go here, then we can start building the uber image trigger
             build_and_upload_data = {
                 "source": build_metadata["source"],
                 "commit": build_metadata["commit"],
-                "directory": build_metadata["directory"]
+                "directory": build_metadata["directory"],
             }
             release_to = {}
-            for tag in tags["results"]:
-                if tag["digest"] != revision_digest:
+            for tag in tags["imageTagDetails"]:
+                if tag["imageDetail"].get("imageDigest") != revision_digest:
                     continue
                 try:
-                    to_track, to_risk = tag["name"].rsplit("_", 1)
+                    to_track, to_risk = tag["imageTag"].rsplit("_", 1)
                 except ValueError as err:
                     if "not enough values to unpack" in str(err):
                         to_track = "latest"
-                        to_risk = tag["name"]
+                        to_risk = tag["imageTag"]
                     else:
-                        logging.exception(f"Unrecognized tag {tag['name']}")
+                        logging.exception(f"Unrecognized tag {tag['imageTag']}")
                         continue
-                
+
                 if to_track not in release_to:
-                    release_to[to_track] = {"risks": [to_risk]}
+                    release_to[str(to_track)] = {"risks": [to_risk]}
                 else:
                     release_to[to_track]["risks"].append(to_risk)
-            
+
             if release_to:
                 build_and_upload_data["release"] = release_to
-                
-            ## continue building the uber image trigger
-                
-                
+
+            uber_img_trigger["upload"].append(build_and_upload_data)
+
+        if not uber_img_trigger["upload"]:
+            # Nothing to rebuild here
+            continue
+
+        uber_img_trigger_yaml = yaml.safe_dump(
+            uber_img_trigger, default_style=None, default_flow_style=False
+        )
+        logging.info(
+            f"About to rebuild {image} with the trigger:\n{uber_img_trigger_yaml}"
+        )
+
+        uber_img_trigger_b64 = base64.b64encode(uber_img_trigger_yaml.encode())
+
+        # Let's trigger the rebuild
+        headers = {
+            "Accept": "application/vnd.github+json",
+            "Authorization": f"Bearer {GITHUB_TOKEN}",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+        inputs = {
+            "ref": "main",
+            "inputs": {
+                "oci-image-name": image,
+                "b64-image-trigger": uber_img_trigger_b64.decode(),
+                "upload": True,
+                "external_ref_id": f"workflow-engine-{image}-{int(time.time())}",
+            },
+        }
+        wf_dispatch_url = str(
+            "https://api.github.com/repos/"
+            "canonical/oci-factory/"
+            "actions/workflows/Image.yaml/dispatches"
+        )
+
+        # TODO: remove test condition
+        if image == "mock-rock":
+            dispatch = requests.post(wf_dispatch_url, headers=headers, json=inputs)
+            try:
+                dispatch.raise_for_status()
+            except Exception as err:
+                logging.exception(f"Failed to rebuild {image}: {str(err)}")
+                continue
+
+            logging.info(f"Dispatched image rebuild workflow for {image}")

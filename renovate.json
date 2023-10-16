@@ -1,0 +1,20 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "major": {
+        "enabled": false
+    },
+    "customManagers": [
+        {
+            "customType": "regex",
+            "fileMatch": [
+                "22.04",
+                "20.04"
+            ],
+            "matchStringsStrategy": "any",
+            "matchStrings": [
+                "(?<depName>.*?):(?<currentValue>.*?)@(?<currentDigest>sha256:[a-f0-9]+)\\s"
+            ],
+            "datasourceTemplate": "docker"
+        }
+    ]
+}
