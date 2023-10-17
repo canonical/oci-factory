@@ -1,4 +1,4 @@
-name: Auto-updates
+name: _Auto-updates
 # TODO: this should be replaced by a charmed Temporal worker listening to the Event Bus
 
 on:
