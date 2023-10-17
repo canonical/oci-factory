@@ -58,4 +58,4 @@ jobs:
           OS_PROJECT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
           OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
           GITHUB_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
-        run: poetry run python3 find_images_to_update.py ${{ matrix.base }}
+        run: poetry run python3 find_images_to_update.py `basename ${{ matrix.base }}`
