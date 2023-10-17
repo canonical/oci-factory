@@ -4,7 +4,7 @@ name: Auto-updates
 on:
   push:
     paths:
-      - ".github/base_digests"
+      - ".github/base_digests/*"
     branches:
       - main
 
