@@ -13,8 +13,8 @@
         {
             "customType": "regex",
             "fileMatch": [
-                ".github/base_digests/22.04",
-                ".github/base_digests/20.04"
+                "\\.github/base_digests/22.04$",
+                "\\.github/base_digests/20.04$"
             ],
             "matchStringsStrategy": "any",
             "matchStrings": [
