@@ -516,6 +516,7 @@ jobs:
           payload: '{ "oci-image-name": "${{ needs.prepare-build.outputs.oci-img-name }}", "image-trigger-cache-key": "${{ github.run_id }}-image-trigger"}'
           run-id: dummy
           trigger-timeout: "10m"
+          wait-timeout: "20m"
           use-marker-step: true
 
       - name: Write step summary

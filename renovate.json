@@ -3,12 +3,18 @@
     "major": {
         "enabled": false
     },
+    "ignorePaths": [
+        ".github/workflows/**",
+        "src/**",
+        "examples/**"
+    ],
+    "automerge": true,
     "customManagers": [
         {
             "customType": "regex",
             "fileMatch": [
-                "22.04",
-                "20.04"
+                ".github/base_digests/22.04",
+                ".github/base_digests/20.04"
             ],
             "matchStringsStrategy": "any",
             "matchStrings": [
