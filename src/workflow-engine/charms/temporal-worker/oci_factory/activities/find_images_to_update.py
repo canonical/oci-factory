@@ -172,15 +172,22 @@ with tempfile.TemporaryDirectory() as temp_dir:
             for tag in tags["imageTagDetails"]:
                 if tag["imageDetail"].get("imageDigest") != revision_digest:
                     continue
-                try:
-                    to_track, to_risk = tag["imageTag"].rsplit("_", 1)
-                except ValueError as err:
-                    if "not enough values to unpack" in str(err):
-                        to_track = "latest"
-                        to_risk = tag["imageTag"]
-                    else:
-                        logging.exception(f"Unrecognized tag {tag['imageTag']}")
-                        continue
+                
+                if tag["imageTag"] in ["edge", "beta", "candidate", "stable"]:
+                    to_track = "latest"
+                    to_risk = tag["imageTag"]
+                else:
+                    try:
+                        to_track, to_risk = tag["imageTag"].rsplit("_", 1)
+                    except ValueError as err:
+                        if "not enough values to unpack" in str(err):
+                            # These cases are driven by the <track> alias which
+                            # is created for tags like <track>_stable
+                            to_track = tag["imageTag"]
+                            to_risk = "stable"
+                        else:
+                            logging.exception(f"Unrecognized tag {tag['imageTag']}")
+                            continue
 
                 if to_track not in release_to:
                     release_to[str(to_track)] = {"risks": [to_risk]}
