@@ -1,2 +1,2 @@
 docker
-pydantic==1.9.0
+pydantic==1.10.13
