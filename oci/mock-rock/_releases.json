@@ -1,32 +1,32 @@
 {
     "latest": {
         "candidate": {
-            "target": "131"
+            "target": "132"
         },
         "beta": {
-            "target": "131"
+            "target": "132"
         },
         "edge": {
-            "target": "131"
+            "target": "132"
         }
     },
     "1.0-22.04": {
         "candidate": {
-            "target": "131"
+            "target": "132"
         },
         "beta": {
-            "target": "131"
+            "target": "132"
         },
         "edge": {
-            "target": "131"
+            "target": "132"
         }
     },
     "test": {
         "beta": {
-            "target": "131"
+            "target": "132"
         },
         "edge": {
-            "target": "131"
+            "target": "132"
         }
     }
 }
