@@ -22,6 +22,8 @@ jobs:
         with:
           json: true
           quotepath: false
+          files: |
+            .github/base_digests/*
 
       - id: set-matrix
         run: echo "matrix={\"base\":${{ steps.changed-files.outputs.all_changed_files }}}" >> "$GITHUB_OUTPUT"

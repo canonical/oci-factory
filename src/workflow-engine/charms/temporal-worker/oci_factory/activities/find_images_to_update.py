@@ -226,13 +226,11 @@ with tempfile.TemporaryDirectory() as temp_dir:
             "actions/workflows/Image.yaml/dispatches"
         )
 
-        # TODO: remove test condition
-        if image == "mock-rock":
-            dispatch = requests.post(wf_dispatch_url, headers=headers, json=inputs)
-            try:
-                dispatch.raise_for_status()
-            except Exception as err:
-                logging.exception(f"Failed to rebuild {image}: {str(err)}")
-                continue
+        dispatch = requests.post(wf_dispatch_url, headers=headers, json=inputs)
+        try:
+            dispatch.raise_for_status()
+        except Exception as err:
+            logging.exception(f"Failed to rebuild {image}: {str(err)}")
+            continue
 
-            logging.info(f"Dispatched image rebuild workflow for {image}")
+        logging.info(f"Dispatched image rebuild workflow for {image}")
