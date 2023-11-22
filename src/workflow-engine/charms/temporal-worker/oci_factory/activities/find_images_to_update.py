@@ -169,10 +169,17 @@ with tempfile.TemporaryDirectory() as temp_dir:
                 "directory": build_metadata["directory"],
             }
             release_to = {}
-            for tag in tags["imageTagDetails"]:
+            imageTagDetails = tags.get("imageTagDetails", {})
+            if not imageTagDetails:
+                logging.warning(
+                    f"{tags.get('message', 'Image tags not found in registry')}. Skip!"
+                )
+                continue
+            
+            for tag in imageTagDetails:
                 if tag["imageDetail"].get("imageDigest") != revision_digest:
                     continue
-                
+
                 if tag["imageTag"] in ["edge", "beta", "candidate", "stable"]:
                     to_track = "latest"
                     to_risk = tag["imageTag"]
