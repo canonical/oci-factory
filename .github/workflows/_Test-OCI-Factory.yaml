@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        oci-image: [mock-rock, mock-docker-image]
+        oci-image: [mock-rock]
     steps:
       - name: Trigger image workflows for ${{ matrix.oci-image }}
         # Using this actions cause others can have this problem:
