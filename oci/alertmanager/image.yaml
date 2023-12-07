@@ -1,19 +1,34 @@
 version: 1
-
 upload:
   - source: canonical/alertmanager-rock
-    commit: c0e06b43e246a3a35fd62619bdeead6433bd79a8
+    commit: 55604b23d585f4817681013700702caee3a4db0c
     directory: 0.25.0
     release:
       0.25.0-22.04:
-        end-of-life: "2024-08-16T00:00:00Z"
+        end-of-life: "2024-12-07T00:00:00Z"
         risks:
           - stable
       0.25-22.04:
-        end-of-life: "2024-08-16T00:00:00Z"
+        end-of-life: "2024-12-07T00:00:00Z"
         risks:
           - stable
       0-22.04:
-        end-of-life: "2024-08-16T00:00:00Z"
+        end-of-life: "2024-12-07T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/alertmanager-rock
+    commit: 55604b23d585f4817681013700702caee3a4db0c
+    directory: 0.26.0
+    release:
+      0.26.0-22.04:
+        end-of-life: "2024-12-07T00:00:00Z"
+        risks:
+          - stable
+      0.26-22.04:
+        end-of-life: "2024-12-07T00:00:00Z"
+        risks:
+          - stable
+      0-22.04:
+        end-of-life: "2024-12-07T00:00:00Z"
         risks:
           - stable
