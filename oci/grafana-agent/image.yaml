@@ -1,19 +1,82 @@
 version: 1
-
 upload:
   - source: canonical/grafana-agent-rock
-    commit: 70d899690cc5e02cfd8948d6e9b8e516620487cd
-    directory: 0.35.2
+    commit: 4ad9d86450a95546676b67bad9e47d0b15f0dd9c
+    directory: 0.38.0
     release:
-      0.35.2-22.04:
-        end-of-life: "2024-08-16T00:00:00Z"
+      0.38.0-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
         risks:
           - stable
-      0.35-22.04:
-        end-of-life: "2024-08-16T00:00:00Z"
+      0.38-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
         risks:
           - stable
       0-22.04:
-        end-of-life: "2024-08-16T00:00:00Z"
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/grafana-agent-rock
+    commit: 4ad9d86450a95546676b67bad9e47d0b15f0dd9c
+    directory: 0.38.1
+    release:
+      0.38.1-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+      0.38-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+      0-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/grafana-agent-rock
+    commit: 4ad9d86450a95546676b67bad9e47d0b15f0dd9c
+    directory: 0.35.2
+    release:
+      0.35.2-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+      0.35-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+      0-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/grafana-agent-rock
+    commit: 4ad9d86450a95546676b67bad9e47d0b15f0dd9c
+    directory: 0.35.4
+    release:
+      0.35.4-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+      0.35-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+      0-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/grafana-agent-rock
+    commit: 4ad9d86450a95546676b67bad9e47d0b15f0dd9c
+    directory: 0.37.4
+    release:
+      0.37.4-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+      0.37-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+      0-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
         risks:
           - stable
