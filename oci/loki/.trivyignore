@@ -4,3 +4,5 @@
 CVE-2023-2253
 # github.com/docker/docker - Encrypted overlay network may be unauthenticated
 CVE-2023-28840
+# go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp - opentelemetry: DoS vulnerability in otelhttp
+CVE-2023-45142
