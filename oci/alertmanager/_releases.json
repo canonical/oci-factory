@@ -1,72 +1,72 @@
 {
     "0.25.0-22.04": {
         "stable": {
-            "target": "3"
+            "target": "5"
         },
         "candidate": {
-            "target": "0.25.0-22.04_stable"
+            "target": "5"
         },
         "beta": {
-            "target": "0.25.0-22.04_candidate"
+            "target": "5"
         },
         "edge": {
-            "target": "0.25.0-22.04_beta"
+            "target": "5"
         }
     },
     "0.25-22.04": {
         "stable": {
-            "target": "3"
+            "target": "5"
         },
         "candidate": {
-            "target": "0.25-22.04_stable"
+            "target": "5"
         },
         "beta": {
-            "target": "0.25-22.04_candidate"
+            "target": "5"
         },
         "edge": {
-            "target": "0.25-22.04_beta"
+            "target": "5"
         }
     },
     "0-22.04": {
         "stable": {
-            "target": "4"
+            "target": "6"
         },
         "candidate": {
-            "target": "0-22.04_stable"
+            "target": "6"
         },
         "beta": {
-            "target": "0-22.04_candidate"
+            "target": "6"
         },
         "edge": {
-            "target": "0-22.04_beta"
+            "target": "6"
         }
     },
     "0.26.0-22.04": {
         "stable": {
-            "target": "4"
+            "target": "6"
         },
         "candidate": {
-            "target": "0.26.0-22.04_stable"
+            "target": "6"
         },
         "beta": {
-            "target": "0.26.0-22.04_candidate"
+            "target": "6"
         },
         "edge": {
-            "target": "0.26.0-22.04_beta"
+            "target": "6"
         }
     },
     "0.26-22.04": {
         "stable": {
-            "target": "4"
+            "target": "6"
         },
         "candidate": {
-            "target": "0.26-22.04_stable"
+            "target": "6"
         },
         "beta": {
-            "target": "0.26-22.04_candidate"
+            "target": "6"
         },
         "edge": {
-            "target": "0.26-22.04_beta"
+            "target": "6"
         }
     }
 }
