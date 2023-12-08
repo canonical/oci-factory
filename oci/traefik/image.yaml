@@ -1,19 +1,66 @@
 version: 1
-
 upload:
   - source: canonical/traefik-rock
-    commit: 113c6d47242e878beb02ee7f3e595723a532050f
-    directory: 2.10.4
+    commit: 90d33f540dcab33fd269551229af6cf6b6ce9061
+    directory: 2.10.6
     release:
-      2.10.4-22.04:
-        end-of-life: "2024-08-16T00:00:00Z"
+      2.10.6-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
         risks:
           - stable
       2.10-22.04:
-        end-of-life: "2024-08-16T00:00:00Z"
+        end-of-life: "2024-12-08T00:00:00Z"
         risks:
           - stable
       2-22.04:
-        end-of-life: "2024-08-16T00:00:00Z"
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/traefik-rock
+    commit: 90d33f540dcab33fd269551229af6cf6b6ce9061
+    directory: 2.10.7
+    release:
+      2.10.7-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+      2.10-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+      2-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/traefik-rock
+    commit: 90d33f540dcab33fd269551229af6cf6b6ce9061
+    directory: 2.10.4
+    release:
+      2.10.4-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+      2.10-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+      2-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/traefik-rock
+    commit: 90d33f540dcab33fd269551229af6cf6b6ce9061
+    directory: 2.10.5
+    release:
+      2.10.5-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+      2.10-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+      2-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
         risks:
           - stable
