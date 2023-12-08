@@ -1,7 +1,7 @@
 version: 1
 upload:
   - source: canonical/prometheus-pushgateway-rock
-    commit: 69c7f2f2d8aad0defeb038e26d57c4e5b02a9d7e
+    commit: cc26d33f7ef75a82b95bdf1853ae7e536c5775c3
     directory: 1.6.2
     release:
       1.6.2-22.04:
@@ -16,3 +16,15 @@ upload:
         end-of-life: "2024-12-08T00:00:00Z"
         risks:
           - stable
+  - source: canonical/prometheus-pushgateway-rock
+    commit: cc26d33f7ef75a82b95bdf1853ae7e536c5775c3
+    directory: 1.6.1
+    release:
+      1.6.1-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
+  - source: canonical/prometheus-pushgateway-rock
+    commit: cc26d33f7ef75a82b95bdf1853ae7e536c5775c3
+    directory: 1.6.0
+    release:
+      1.6.0-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
