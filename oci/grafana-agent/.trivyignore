@@ -1,0 +1,10 @@
+# Upstream CVEs
+
+# go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc - DoS vulnerability in otelgrpc due to unbound cardinality metrics
+CVE-2023-47108
+# go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux - opentelemetry: DoS vulnerability in otelhttp
+CVE-2023-45142
+# golang.org/x/net - golang: net/http, x/net/http2: rapid stream resets can cause excessive work (CVE-2023-44487)
+CVE-2023-39325
+# google.golang.org/grpc - gRPC-Go HTTP/2 Rapid Reset vulnerability
+GHSA-m425-mq94-257g
