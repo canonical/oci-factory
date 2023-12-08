@@ -2,3 +2,7 @@
 
 # github.com/docker/docker - Encrypted overlay network may be unauthenticated
 CVE-2023-28840
+# golang.org/x/net - golang: net/http, x/net/http2: rapid stream resets can cause excessive work (CVE-2023-44487)
+CVE-2023-39325
+# google.golang.org/grpc - gRPC-Go HTTP/2 Rapid Reset vulnerability
+GHSA-m425-mq94-257g
