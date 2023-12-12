@@ -24,11 +24,3 @@ upload:
         end-of-life: "2024-12-08T00:00:00Z"
         risks:
           - stable
-      2.10-22.04:
-        end-of-life: "2024-12-08T00:00:00Z"
-        risks:
-          - stable
-      2-22.04:
-        end-of-life: "2024-12-08T00:00:00Z"
-        risks:
-          - stable
