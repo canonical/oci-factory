@@ -1,72 +1,72 @@
 {
     "2.8.4-22.04": {
         "stable": {
-            "target": "2"
+            "target": "4"
         },
         "candidate": {
-            "target": "2.8.4-22.04_stable"
+            "target": "4"
         },
         "beta": {
-            "target": "2.8.4-22.04_candidate"
+            "target": "4"
         },
         "edge": {
-            "target": "2.8.4-22.04_beta"
+            "target": "4"
         }
     },
     "2.8-22.04": {
         "stable": {
-            "target": "2"
+            "target": "4"
         },
         "candidate": {
-            "target": "2.8-22.04_stable"
+            "target": "4"
         },
         "beta": {
-            "target": "2.8-22.04_candidate"
+            "target": "4"
         },
         "edge": {
-            "target": "2.8-22.04_beta"
+            "target": "4"
         }
     },
     "2-22.04": {
         "stable": {
-            "target": "3"
+            "target": "5"
         },
         "candidate": {
-            "target": "2-22.04_stable"
+            "target": "5"
         },
         "beta": {
-            "target": "2-22.04_candidate"
+            "target": "5"
         },
         "edge": {
-            "target": "2-22.04_beta"
+            "target": "5"
         }
     },
     "2.9.2-22.04": {
         "stable": {
-            "target": "3"
+            "target": "5"
         },
         "candidate": {
-            "target": "2.9.2-22.04_stable"
+            "target": "5"
         },
         "beta": {
-            "target": "2.9.2-22.04_candidate"
+            "target": "5"
         },
         "edge": {
-            "target": "2.9.2-22.04_beta"
+            "target": "5"
         }
     },
     "2.9-22.04": {
         "stable": {
-            "target": "3"
+            "target": "5"
         },
         "candidate": {
-            "target": "2.9-22.04_stable"
+            "target": "5"
         },
         "beta": {
-            "target": "2.9-22.04_candidate"
+            "target": "5"
         },
         "edge": {
-            "target": "2.9-22.04_beta"
+            "target": "5"
         }
     }
 }
