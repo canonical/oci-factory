@@ -60,13 +60,13 @@ else:
     )
 
     try:
-        base_release = float(rock_base.split(":")[-1])
+        base_release = float(rock_base.replace(":", "@").split("@")[-1])
     except ValueError:
         logging.warning(
             f"Could not infer ROCK's base release from {rock_base}. Trying with codename."
         )
         base_release = float(
-            get_release_from_codename(rock_base.split(":")[-1])
+            get_release_from_codename(rock_base.replace(":", "@").split("@")[-1])
         )
 
     version = rockcraft_yaml["version"]
