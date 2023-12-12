@@ -23,105 +23,62 @@ will be deployed.
 
 ### Prerequisites
 
-- `terraform` (>=v1.5.5)
-- this TF configuration is designed to use an internal OpenStack
-infrastructure, so before proceeding, make sure you:
-  - connect to the VPN,
-  - forward all the necessary remote endpoints to your `localhost``, with:
+The team already has an OpenStack environment for this. So make sure you have
+access to
+[it](https://canonical-rocks-team-docs.readthedocs-hosted.com/en/latest/openstack_at_canonical.html#ps6-bos03).
 
-      ```bash
-      ssh -L 5000:<keystoneUrl>:<keystonePort> -L 9696:<neutronUrl>:<neutronPort> -L 8774:novaApiUrl>:<novaApiPort> <username>@<internalOSServer>
-      ```
+### Deploy a new MicroK8s cluster
 
-    this is needed because of Bastion,
-- (optional) if you are managing an already existing deployment, **you need**
-to request and copy the corresponding `terraform.tfstate` file into this
-directory. NOTE: this file may contain sensitive information so please do not
-commit or share it.
+See the instructions
+[here](https://rt.admin.canonical.com/Ticket/Display.html?id=161278#txn-3692567)
+for deploying a brand new, self-managed, K8s cluster in an existing OpenStack
+environment.
 
-### Deploy
+NOTE: although the majority of this process is self-served, the infrastructure
+can only be maintained by IS, which means we must **always open a request if
+we need to alter the cluster (e.g. add/remove units)**.
 
-These Terraform configurations will take care of deploying the VMs and
-configuring them with MicroK8s. The `cluster.tf` file has the OpenStack and
-MicroK8s configurations, and it relies on `variables.tf` and `cloud-init.yml`.
-The former has the secret connection variables that need to be set before
-deploying the VMs, while the latter contains the Cloud-init recipes
-for configuring said nodes.
+#### Check the MicroK8s deployment
 
- 1. set all the required Terraform variables:
+Once deployed, you should be able to reproduce the following steps from [within
+the OpenStack environment where the K8s cluster was
+deployed](https://canonical-rocks-team-docs.readthedocs-hosted.com/en/latest/openstack_at_canonical.html#ps6-bos03):
 
-    ```bash
-    # Find the values in LP
-    export TF_VAR_openstack_username=<username>
-    export TF_VAR_openstack_password=<password>
-    export TF_VAR_openstack_tenant_name=<project/tenant_name>
-    export TF_VAR_openstack_region=<region>
+- check that there are VMs deployed and `ACTIVE` with `openstack server list`
+- confirm that the MicroK8s Juju deployment is healthy with `juju status
+microk8s`. You should see something like:
+
+    ```
+    Model                   Controller              Cloud/Region            Version  SLA          Timestamp
+    model-name              prodstack-controller    cloud/region            3.1.6    unsupported  08:18:04Z
+
+    App       Version  Status  Scale  Charm     Channel      Rev  Exposed  Message
+    microk8s  1.28.3   active      3  microk8s  1.28/stable  213  yes      node is ready
+
+    Unit         Workload  Agent  Machine  Public address   Ports                     Message
+    microk8s/3*  active    idle   3        1.1.1.1          80/tcp,443/tcp,16443/tcp  node is ready
+    microk8s/4   active    idle   4        1.1.1.2          80/tcp,443/tcp,16443/tcp  node is ready
+    microk8s/5   active    idle   5        1.1.1.3          80/tcp,443/tcp,16443/tcp  node is ready
+
+    Machine  State    Address           Inst id                               Series  AZ                   Message
+    3        started  1.1.1.1           59708835-f5aa-46b7-90a2-95221d8b13db  jammy   availability-zone-3  ACTIVE
+    4        started  1.1.1.2           855ffa20-6e15-4218-9e85-c494aa5fbbe8  jammy   availability-zone-1  ACTIVE
+    5        started  1.1.1.3           ef04939a-a312-4405-a9a3-8afcec7fc8c0  jammy   availability-zone-2  ACTIVE
     ```
 
- 2. prepare the working directory with `terraform init`
- 3. validate the configuration with `terraform validate`
- 4. deploy with `terraform apply`
- 5. save the resulting `terraform.tfstate` file to allow future management of
- the deployed infrastructure.
+- try running a command inside one of the worker nodes: `juju run --unit
+microk8s/3 -- microk8s kubectl get nodes`. You'll see something like:
 
-When performing any other Terraform command (e.g. `terraform destroy`), the
-first 3 steps above are also required if not yet set.
-
-### Access
-
-If successful, you can validate the deployment by accessing the cluster. To do
-that, you need the provisioned VMs' IPs:
-
-```bash
-terraform show -json | \
-    jq '.values.root_module.resources[] |
-        select(.type | contains("openstack_compute_instance_v2")) |
-        .values.network[].fixed_ip_v4'
-```
-
-If you just want the IP of the MicroK8s control plane, then:
-
-```bash
-terraform show -json | \
-    jq '.values.root_module.resources[] |
-        select(.name | contains("rocks-temporal-workers-controller")) |
-        .values.network[].fixed_ip_v4'
-```
-
-You can then SSH (via `ssh` or `openstack ssh`) into either one of the VMs,
-with the `ubuntu` user. The VMs have 2 authorized SSH keys:
-
- 1. a default `rocks-team` key, which is already in place and can be used from
-within the ROCKS environment in Scalingstack, and
- 2. a key that is dynamically generated by Terraform at deployment time, and
-that can be retrieved via
-
-    ```bash
-    terraform show -json | \
-        jq '.values.root_module.resources[] |
-            select(.type | contains("tls_private_key")) | 
-            .values.private_key_pem'
+    ```
+    NAME                                   STATUS   ROLES    AGE   VERSION
+    juju-2d57ab-prod-rocks-oci-factory-3   Ready    <none>   19h   v1.28.3
+    juju-2d57ab-prod-rocks-oci-factory-4   Ready    <none>   19h   v1.28.3
+    juju-2d57ab-prod-rocks-oci-factory-5   Ready    <none>   19h   v1.28.3
     ```
 
-Here's a list of useful operations that can be used to inspect the state of the
-cluster, once inside the VMs
+    Here are some other useful commands to help you assert that the cluster is
+    health: `juju run --unit microk8s/3 -- microk8s status` and `juju run
+    --unit microk8s/3 -- microk8s kubectl get po -A`.
 
-- `microk8s status`: to ensure `microk8s` is up and running;
-- `kubectl get no`: to ensure the `kubectl` alias is in place and that the
-cluster has been properly formed;
-- `cat /var/log/cloud-init*`: to inspect the Cloud-init script execution;
-- `kubectl get po -A`: to double check that all pods are running, and if not
-then `kubectl describe po -A` will dump their information and possibly the
-reason why they are failing.
-
-<!-- 
-# Deploy OCI Factory Temporal Worker charm for K8s
-
-This is leveraging the existing charm template from
-<https://github.com/canonical/temporal-worker-k8s-operator> and adding
-additional workflows and activities for the work we need done within the
-context of the OCI Factory.
-
-## Prerequisites
-
-The Microk8s infrastructure must already be in place. -->
+- the cluster nodes should also be accessible via SSH: `juju ssh microk8s/3` or
+`ssh ubuntu@<ip>`.
