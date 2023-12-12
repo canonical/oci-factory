@@ -1,86 +1,86 @@
 {
     "2.10.4-22.04": {
         "stable": {
-            "target": "7"
+            "target": "11"
         },
         "candidate": {
-            "target": "7"
+            "target": "11"
         },
         "beta": {
-            "target": "7"
+            "target": "11"
         },
         "edge": {
-            "target": "7"
+            "target": "11"
         }
     },
     "2.10-22.04": {
         "stable": {
-            "target": "8"
+            "target": "12"
         },
         "candidate": {
-            "target": "8"
+            "target": "12"
         },
         "beta": {
-            "target": "8"
+            "target": "12"
         },
         "edge": {
-            "target": "8"
+            "target": "12"
         }
     },
     "2-22.04": {
         "stable": {
-            "target": "8"
+            "target": "12"
         },
         "candidate": {
-            "target": "8"
+            "target": "12"
         },
         "beta": {
-            "target": "8"
+            "target": "12"
         },
         "edge": {
-            "target": "8"
+            "target": "12"
         }
     },
     "2.10.6-22.04": {
         "stable": {
-            "target": "9"
+            "target": "13"
         },
         "candidate": {
-            "target": "9"
+            "target": "13"
         },
         "beta": {
-            "target": "9"
+            "target": "13"
         },
         "edge": {
-            "target": "9"
+            "target": "13"
         }
     },
     "2.10.7-22.04": {
         "stable": {
-            "target": "10"
+            "target": "14"
         },
         "candidate": {
-            "target": "10"
+            "target": "14"
         },
         "beta": {
-            "target": "10"
+            "target": "14"
         },
         "edge": {
-            "target": "10"
+            "target": "14"
         }
     },
     "2.10.5-22.04": {
         "stable": {
-            "target": "8"
+            "target": "12"
         },
         "candidate": {
-            "target": "8"
+            "target": "12"
         },
         "beta": {
-            "target": "8"
+            "target": "12"
         },
         "edge": {
-            "target": "8"
+            "target": "12"
         }
     }
 }
