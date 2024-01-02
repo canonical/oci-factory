@@ -1,44 +1,86 @@
 {
     "2.10.4-22.04": {
         "stable": {
-            "target": "2"
+            "target": "11"
         },
         "candidate": {
-            "target": "2"
+            "target": "11"
         },
         "beta": {
-            "target": "2"
+            "target": "11"
         },
         "edge": {
-            "target": "2"
+            "target": "11"
         }
     },
     "2.10-22.04": {
         "stable": {
-            "target": "2"
+            "target": "12"
         },
         "candidate": {
-            "target": "2"
+            "target": "12"
         },
         "beta": {
-            "target": "2"
+            "target": "12"
         },
         "edge": {
-            "target": "2"
+            "target": "12"
         }
     },
     "2-22.04": {
         "stable": {
-            "target": "2"
+            "target": "12"
         },
         "candidate": {
-            "target": "2"
+            "target": "12"
         },
         "beta": {
-            "target": "2"
+            "target": "12"
         },
         "edge": {
-            "target": "2"
+            "target": "12"
+        }
+    },
+    "2.10.6-22.04": {
+        "stable": {
+            "target": "13"
+        },
+        "candidate": {
+            "target": "13"
+        },
+        "beta": {
+            "target": "13"
+        },
+        "edge": {
+            "target": "13"
+        }
+    },
+    "2.10.7-22.04": {
+        "stable": {
+            "target": "14"
+        },
+        "candidate": {
+            "target": "14"
+        },
+        "beta": {
+            "target": "14"
+        },
+        "edge": {
+            "target": "14"
+        }
+    },
+    "2.10.5-22.04": {
+        "stable": {
+            "target": "12"
+        },
+        "candidate": {
+            "target": "12"
+        },
+        "beta": {
+            "target": "12"
+        },
+        "edge": {
+            "target": "12"
         }
     }
 }
