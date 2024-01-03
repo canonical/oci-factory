@@ -1,19 +1,26 @@
 version: 1
-
 upload:
   - source: canonical/mimir-rock
-    commit: 5db27893504fc5a224ec0f503968db617016aa9b
-    directory: 2.6.0
+    commit: 4ec8c7bffeea0783599929ecfc608bc1240fd480
+    directory: 2.10.4
     release:
-      2.6.0-22.04:
-        end-of-life: "2024-08-16T00:00:00Z"
+      2.10.4-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
         risks:
           - stable
-      2.6-22.04:
-        end-of-life: "2024-08-16T00:00:00Z"
+      2.10-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
         risks:
           - stable
       2-22.04:
-        end-of-life: "2024-08-16T00:00:00Z"
+        end-of-life: "2024-12-08T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/mimir-rock
+    commit: 4ec8c7bffeea0783599929ecfc608bc1240fd480
+    directory: 2.10.0
+    release:
+      2.10.0-22.04:
+        end-of-life: "2024-12-08T00:00:00Z"
         risks:
           - stable

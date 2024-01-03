@@ -2,3 +2,9 @@
 
 # golang.org/x/net - avoid quadratic complexity in HPACK decoding
 CVE-2022-41723
+# golang.org/x/net - rapid stream resets can cause excessive work (CVE-2023-44487)
+CVE-2023-39325
+# google.golang.org/grpc - gRPC-Go HTTP/2 Rapid Reset vulnerability
+GHSA-m425-mq94-257g
+# go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp - opentelemetry: DoS vulnerability in otelhttp
+CVE-2023-45142
