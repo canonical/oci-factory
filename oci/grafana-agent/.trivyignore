@@ -8,3 +8,7 @@ CVE-2023-45142
 CVE-2023-39325
 # google.golang.org/grpc - gRPC-Go HTTP/2 Rapid Reset vulnerability
 GHSA-m425-mq94-257g
+# github.com/go-git/go-git/v5 - Maliciously crafted Git server replies can lead to path traversal and RCE on go-git clients
+CVE-2023-49569
+# github.com/go-git/go-git/v5 - Maliciously crafted Git server replies can cause DoS on go-git clients
+CVE-2023-49568
