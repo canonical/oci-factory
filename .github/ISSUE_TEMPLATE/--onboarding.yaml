@@ -48,7 +48,7 @@ body:
     id: type
     attributes:
       label: Image type
-      description: Is this a ROCK or a Dockerfile-based image?
+      description: description of the rock image
       options:
         - ROCK
         - Docker image
