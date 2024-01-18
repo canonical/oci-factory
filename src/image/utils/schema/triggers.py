@@ -12,16 +12,6 @@ class ImageTriggerValidationError(Exception):
     """Error validating image trigger file."""
 
 
-class ImageUploadDockerfileSchema(pydantic.BaseModel):
-    """Schema of the optional dockerfile-build section."""
-
-    version: str
-    platforms: List[str]
-
-    class Config:
-        extra = pydantic.Extra.forbid
-
-
 class ImageUploadReleaseSchema(pydantic.BaseModel):
     """Schema of the release option for uploads in the image.yaml trigger"""
 
@@ -40,9 +30,6 @@ class ImageUploadSchema(pydantic.BaseModel):
     source: str
     commit: str
     directory: str
-    dockerfile_build: Optional[ImageUploadDockerfileSchema] = pydantic.Field(
-        alias="dockerfile-build"
-    )
     release: Optional[Dict[str, ImageUploadReleaseSchema]]
 
     class Config:
