@@ -16,7 +16,7 @@ class TestingError(Exception):
 class Test(BaseModel):
     """Sets the ground for all tests"""
 
-    # Name of the ROCK, or path if provided in OCI formats
+    # Name of the rock, or path if provided in OCI formats
     image: str
     # Format of the provided image
     image_format: Literal["docker-daemon", "oci-archive", "fs"]

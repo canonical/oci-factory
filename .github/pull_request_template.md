@@ -15,4 +15,4 @@
 
 ---
 
-*Picture of a cool ROCK:*
+*Picture of a cool rock:*
