@@ -31,7 +31,7 @@ registry namespace.
 |---|---|
 | CI/CD | Continuous Integration and Continuous Deployment |
 | Maintainer | Canonical entity who owns and is responsible for an Ubuntu ROCK/Image. |
-| OCI image | Any OCI-complaint image, be it a ROCK or a Dockerfile-based image. |
+| OCI image | Currently limited to rock images only. |
 | Registry | An OCI container registry, as [defined](https://oras.land/#what-are-oci-registries) by the OCI specification. |
 | ROCKs | Canonical’s OCI images, built via Rockcraft. See the definition [here](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation.html#what-is-a-rock). |
 | Rockcraft | A craft tool to create ROCKs. Read more about it [here](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/index.html). |
@@ -92,11 +92,9 @@ within Canonical, potentially affecting their workflows.
 
 ### Verify eligibility
 
-This [Maintainer Agreement](#maintainer-agreement) is only eligible for individuals/teams whose proposed OCI images abide by the following rules:
+This [Maintainer Agreement](#maintainer-agreement) is only eligible for individuals/teams whose proposed OCI images abide by the following rule:
 
-- it is a ROCK, i.e. built by a Canonical-maintained version of Rockcraft. There are exceptions where a standard Dockerfile-based OCI image may be considered:
-  - Exception 1) it is a Dockerfile-based OCI image that already exists in the “ubuntu” namespace. In this case, the contributor commits to migrating said legacy image to a ROCK,
-  - Exception 2) it is a Dockerfile-based OCI image which is not designed to be a ROCK (eg. the “ubuntu/ubuntu” base image),
+- it is a rock, i.e. built by a Canonical-maintained version of Rockcraft.
 
 ### Acknowledge accountability
 
