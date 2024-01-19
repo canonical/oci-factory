@@ -93,7 +93,6 @@ An `oci` folder name **must match the OCI image's name in the registry** (i.e.
 the field “name” in the `rockcraft.yaml` file). Also, each `oci` folder will
 host the Maintainer files upon which the OCI Factory will rely to understand:
 
-- how to build, i.e. whether it is a rock or a Dockerfile-based image;
 - what image to build;
 - what metadata to rely on (like the developer’s contact information);
 - how to tag and release the OCI image;
@@ -147,10 +146,7 @@ Having said that this trigger's syntax is as follows:
 | upload | False | conlist[Dict[str, Any], min_items=1] | List of image builds. Equivalent to `rockcraft pack && rockcraft upload` |
 | upload[*].source | True | str | Git repository hosting the image's project. |
 | upload[*].commit | True | str | Specific reference in the source, where to run the build from. |
-| upload[*].directory | True | str | Path to the "rockcraft.yaml"/"Dockerfile". Where the build will run from. |
-| upload[*].dockerfile-build | False | Dict[str, Any] | In case this is not a ROCK but rather a Dockerfile-based image. |
-| upload[*].dockerfile-build.version | True | str | Same meaning as the `version` field in rockcraft.yaml. |
-| upload[*].dockerfile-build.platforms | True | conlist[str, min_items=1] | Same meaning as the "platforms" field in rockcraft.yaml. |
+| upload[*].directory | True | str | Path to the "rockcraft.yaml". Where the build will run from. |
 | upload[*].release | False | Dict[Dict[str, Any]] | Immediately release this (yet unknown) revision to the given channels. Same as using `--release <channels>` with `rockcraft upload`. |
 | upload[*].release.\<track\> | True | Dict[str, Any] | Track to release this revision to. Canonical track `<version>-<base>` MUST be explicit, always! |
 | upload[*].release.\<track\>.end-of-life | True* | str | Same as `release.<track>` above. |
