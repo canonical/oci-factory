@@ -63,7 +63,7 @@ else:
         base_release = float(rock_base.replace(":", "@").split("@")[-1])
     except ValueError:
         logging.warning(
-            f"Could not infer ROCK's base release from {rock_base}. Trying with codename."
+            f"Could not infer rock's base release from {rock_base}. Trying with codename."
         )
         base_release = float(
             get_release_from_codename(rock_base.replace(":", "@").split("@")[-1])
@@ -72,7 +72,7 @@ else:
     version = rockcraft_yaml["version"]
 
 track = f"{version}-{base_release}"
-print(f"ROCK track: {track}")
+print(f"rock track: {track}")
 
 with open(os.environ["GITHUB_OUTPUT"], "a") as gh_out:
     print(f"track={track}", file=gh_out)

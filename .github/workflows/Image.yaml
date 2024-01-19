@@ -164,7 +164,7 @@ jobs:
           fi
 
       # If this is a ROCK...
-      - name: Build ROCK ${{ matrix.name }}
+      - name: Build rock ${{ matrix.name }}
         if: matrix.dockerfile-build == ''
         id: rockcraft
         uses: canonical/craft-actions/rockcraft-pack@main
@@ -172,7 +172,7 @@ jobs:
           path: "${{ matrix.directory }}"
           verbosity: debug
 
-      - name: Rename ROCK OCI archive
+      - name: Rename rock OCI archive
         if: matrix.dockerfile-build == ''
         run: |
           mv ${{ steps.rockcraft.outputs.rock }} ${{ env.OCI_ARCHIVE_NAME }}

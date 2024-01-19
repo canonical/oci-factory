@@ -39,7 +39,7 @@ subsequent and lifecycle maintenance jobs for every published image.
 
 ### Who is it for?
 
-**Maintainers** of Ubuntu ROCKs and Ubuntu-based OCI images.
+**Maintainers** of Ubuntu Rocks and Ubuntu-based OCI images.
 
 ### How to qualify as a Maintainer?
 
@@ -93,7 +93,7 @@ An `oci` folder name **must match the OCI image's name in the registry** (i.e.
 the field “name” in the `rockcraft.yaml` file). Also, each `oci` folder will
 host the Maintainer files upon which the OCI Factory will rely to understand:
 
-- how to build, i.e. whether it is a ROCK or a Dockerfile-based image;
+- how to build, i.e. whether it is a rock or a Dockerfile-based image;
 - what image to build;
 - what metadata to rely on (like the developer’s contact information);
 - how to tag and release the OCI image;
