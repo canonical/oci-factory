@@ -3,7 +3,7 @@
 """
 This script will take an Ubuntu release as an input.
 
-With that, it will scan all the released ROCK channels in OCI Factory
+With that, it will scan all the released rock channels in OCI Factory
 and select the images which are based said Ubuntu release.
 
 Those will be the images to be scheduled for an automatic update (aka rebuild).

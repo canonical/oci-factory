@@ -1,6 +1,6 @@
 name: mock-rock
 summary: Hello World
-description: The most basic example of a ROCK.
+description: The most basic example of a rock.
 version: "1.0"
 base: bare
 build-base: ubuntu:22.04

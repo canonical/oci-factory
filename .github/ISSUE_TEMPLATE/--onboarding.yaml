@@ -31,7 +31,7 @@ body:
     attributes:
       label: Short description
       description: A short description of the image.
-      placeholder: ex. this is a Foo Ubuntu ROCK for doing X, Y and Z, based on the upstream project Foo
+      placeholder: ex. this is a Foo Ubuntu Rock for doing X, Y and Z, based on the upstream project Foo
     validations:
       required: true
 

@@ -39,7 +39,7 @@ subsequent and lifecycle maintenance jobs for every published image.
 
 ### Who is it for?
 
-**Maintainers** of Ubuntu ROCKs and Ubuntu-based OCI images.
+**Maintainers** of Ubuntu Rocks and Ubuntu-based OCI images.
 
 ### How to qualify as a Maintainer?
 

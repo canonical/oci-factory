@@ -52,7 +52,7 @@ except ValueError:
 version = rockcraft_yaml["version"]
 
 track = f"{version}-{base_release}"
-print(f"ROCK track: {track}")
+print(f"rock track: {track}")
 
 with open(os.environ["GITHUB_OUTPUT"], "a") as gh_out:
     print(f"track={track}", file=gh_out)
