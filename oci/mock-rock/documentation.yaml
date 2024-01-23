@@ -1,7 +1,7 @@
 version: 1
 
-application: Mock ROCK test
+application: Mock rock test
 is_chiselled: true
 description: |
-  This is a long description for a mock ROCK that is only used for **testing**
+  This is a long description for a mock rock that is only used for **testing**
   and **demonstration** purposes.
