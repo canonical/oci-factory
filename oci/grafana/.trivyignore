@@ -12,3 +12,5 @@ CVE-2023-39325
 GHSA-m425-mq94-257g
 # github.com/go-git/go-git/v5 - Maliciously crafted Git server replies can cause DoS on go-git clients
 CVE-2023-49568
+# github.com/go-git/go-git/v5 - Maliciously crafted Git server replies can lead to path traversal and RCE on go-git clients
+CVE-2023-49569
