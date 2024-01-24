@@ -149,23 +149,14 @@ jobs:
       - name: Validate image naming and base
         working-directory: ${{ matrix.directory }}
         run: |
-          if [ -z ${{ matrix.dockerfile-build }} ]
+          rock_name=`cat rockcraft.y*ml | yq -r .name`
+          if [[ "${{ matrix.path }}" != *"${rock_name}"* ]]
           then
-            rock_name=`cat rockcraft.y*ml | yq -r .name`
-            if [[ "${{ matrix.path }}" != *"${rock_name}"* ]]
-            then
-              echo "ERROR: the ROCK's name '${rock_name}' must match the OCI folder name!"
-              exit 1
-            fi
-          else
-            grep 'FROM' Dockerfile | tail -1 | grep ubuntu || \
-              (echo "ERROR: the image '${rock_name}' must be based on Ubuntu!" \
-                && exit 1)
+            echo "ERROR: the ROCK's name '${rock_name}' must match the OCI folder name!"
+            exit 1
           fi
 
-      # If this is a ROCK...
       - name: Build ROCK ${{ matrix.name }}
-        if: matrix.dockerfile-build == ''
         id: rockcraft
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
@@ -173,40 +164,8 @@ jobs:
           verbosity: debug
 
       - name: Rename ROCK OCI archive
-        if: matrix.dockerfile-build == ''
         run: |
           mv ${{ steps.rockcraft.outputs.rock }} ${{ env.OCI_ARCHIVE_NAME }}
-
-      # If this is a Dockerfile-based image...
-      - name: Set up QEMU
-        if: matrix.dockerfile-build != ''
-        uses: docker/setup-qemu-action@v2
-
-      - name: Set up Docker Buildx
-        if: matrix.dockerfile-build != ''
-        id: buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Form the platforms string
-        if: matrix.dockerfile-build != ''
-        id: buildx-platforms
-        run: |
-          sudo apt install -y jq
-          platforms=$(echo linux/$(echo '${{ toJSON(matrix.dockerfile-build.platforms) }}' | jq -r 'join(",linux/")'))
-          echo "platforms=${platforms}" >> "$GITHUB_OUTPUT"
-
-      - name: Build OCI image ${{ matrix.name }}
-        if: matrix.dockerfile-build != ''
-        uses: docker/build-push-action@v4
-        with:
-          context: "${{ matrix.directory }}"
-          outputs: "type=oci,dest=${{ env.OCI_ARCHIVE_NAME }}"
-          platforms: ${{ steps.buildx-platforms.outputs.platforms }}
-          push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          provenance: false
-          sbom: false
 
       - uses: actions/cache/save@v3
         with:
@@ -223,7 +182,6 @@ jobs:
     with:
       oci-image-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}"
       oci-image-path: "oci/${{ matrix.name }}"
-      is-a-rock: ${{ matrix.dockerfile-build == '' && true || false }}
       test-from: "cache"
       cache-key: "${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}"
     secrets: inherit
@@ -284,8 +242,6 @@ jobs:
 
       - name: Infer track name
         id: get-track
-        env:
-          DOCKERFILE_IMAGE_VERSION: ${{ matrix.dockerfile-build.version }}
         run: |
           ./src/uploads/infer_image_track.py --recipe-dirname source/${{ matrix.directory }}
 
