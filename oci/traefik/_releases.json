@@ -1,86 +1,86 @@
 {
     "2.10.4-22.04": {
         "stable": {
-            "target": "27"
+            "target": "31"
         },
         "candidate": {
-            "target": "27"
+            "target": "31"
         },
         "beta": {
-            "target": "27"
+            "target": "31"
         },
         "edge": {
-            "target": "27"
+            "target": "31"
         }
     },
     "2.10-22.04": {
         "stable": {
-            "target": "28"
+            "target": "32"
         },
         "candidate": {
-            "target": "28"
+            "target": "32"
         },
         "beta": {
-            "target": "28"
+            "target": "32"
         },
         "edge": {
-            "target": "28"
+            "target": "32"
         }
     },
     "2-22.04": {
         "stable": {
-            "target": "28"
+            "target": "32"
         },
         "candidate": {
-            "target": "28"
+            "target": "32"
         },
         "beta": {
-            "target": "28"
+            "target": "32"
         },
         "edge": {
-            "target": "28"
+            "target": "32"
         }
     },
     "2.10.6-22.04": {
         "stable": {
-            "target": "29"
+            "target": "33"
         },
         "candidate": {
-            "target": "29"
+            "target": "33"
         },
         "beta": {
-            "target": "29"
+            "target": "33"
         },
         "edge": {
-            "target": "29"
+            "target": "33"
         }
     },
     "2.10.7-22.04": {
         "stable": {
-            "target": "30"
+            "target": "34"
         },
         "candidate": {
-            "target": "30"
+            "target": "34"
         },
         "beta": {
-            "target": "30"
+            "target": "34"
         },
         "edge": {
-            "target": "30"
+            "target": "34"
         }
     },
     "2.10.5-22.04": {
         "stable": {
-            "target": "28"
+            "target": "32"
         },
         "candidate": {
-            "target": "28"
+            "target": "32"
         },
         "beta": {
-            "target": "28"
+            "target": "32"
         },
         "edge": {
-            "target": "28"
+            "target": "32"
         }
     }
 }
