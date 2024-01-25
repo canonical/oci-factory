@@ -8,77 +8,65 @@ Charm](https://charmhub.io/temporal-worker-k8s?channel=latest/edge).
 
 1. `juju` (>=3.0, >=3.1.5 recommended).
 2. `poetry` (>= 1.5.1)
-3. an existing MicroK8s cluster. If you don't have one already, you have 2
+3. an existing MicroK8s cluster and the Juju controller for it. If you don't have one already, you have 2
 options:
-    1. quickly set up a local one (ideal for testing):
-       - deploy a Multipass VM with enough memory (>=3G), cpu (>=2) and disk
-       (>=20G). You can use any other cloud instance or even an LXC instance if
-       you prefer,
-       - log in to the instance,
-       - install MicroK8s, exactly as instructed [here](
-       <https://juju.is/docs/juju/get-started-with-juju#heading--prepare-your-cloud>),
+    1. quickly set up a local one (ideal for testing), by following this
+    [tutorial](<https://juju.is/docs/juju/tutorial#heading--set-up-create-your-test-environment>),
+       - **NOTE:** if you are deploying the charm with Terraform from outside
+        the cluster, you might need to configure the Juju controller as follows:
 
-        or
-    2. use [Terraform to deploy the cluster on Scalingstack](../../README.md).
-4. a Juju controller for the K8s cloud
-    - if doing this for the first time, you'll need to add the K8s cloud to
-    Juju. If you're running `juju` from inside the MicroK8s cluster, then it should automatically detect the underlying Kubernetes cloud (check `juju
-    clouds`), otherwise you'll need to add it manually:
-      - from the MicroK8s cluster, get the Kubernetes configuration via
-      `kubectl config view --raw`, and copy it,
-      - on the `juju` machine, save the above configuration into a file (e.g.
-      `$HOME/.kube/microk8s-config`),
-          - if the config's server IP is private, change it to an IP
-          your `juju` machine can reach. For example, if you have MicroK8s
-          running in Multipass, take the K8s control plane machine IP from
-          `multipass list`. Similarly, for MicroK8s running on Scalingstack,
-          you can take the control plane's IP from `openstack server list`,
-      - add the Kubernetes cloud:
-      `KUBECONFIG=/path/to/config juju add-k8s my-microk8s-cloud --client`,
-    - if you don't yet have a controller for the MicroK8s cluster from above (
-    see `juju controllers`), then you must bootstrap it:
+         ```bash
+         juju bootstrap my-microk8s-cloud <controller-name> \
+             --config controller-service-type=loadbalancer \
+             --config controller-external-ips='[<nodeIP>,...]'
+         ```
 
-        ```bash
-        juju bootstrap my-microk8s-cloud <controller-name> \
-            --config controller-service-type=loadbalancer \
-            --config controller-external-ips='[<nodeIP>,...]'
-        ```
+         <a name="external-ip"></a>
 
-        <a name="external-ip"></a>
-
-        **NOTE:** the `--config` options are only required when deploying the
-        charm with Terraform from outside the cluster. This is because
-        Terraform will rely on the controller's `api-endpoints` which, by
-        default, are only set with a `ClusterIP` and are thus **not reachable**
-        from outside the cluster. By using these `--config` options, you can
-        tell Kubernetes to expose the controller on the VM's IP, which should
-        be reachable from your machine. References:
+         This is because
+         Terraform will rely on the controller's `api-endpoints` which, by
+         default, are only set with a `ClusterIP` and are thus
+         **not reachable** from outside the cluster. By using these
+         `--config` options, you can tell Kubernetes to expose the
+         controller on the VM's IP, which should
+         be reachable from your machine. References:
          - <https://bugs.launchpad.net/juju/+bug/1883006>
          - <https://juju.is/docs/juju/juju-bootstrap>
          - <https://discourse.charmhub.io/t/juju-add-k8s-in-openstack-no-route-to-controller/3625>
 
+       or
+    2. use [our production one](../../README.md). In this case, you can simply
+    SSH into the OpenStack environment and run `juju clouds`, to get something
+    like:
+
+        ```
+        Clouds available on the client:
+        Cloud      Regions  Default    Type  Credentials  Source    Description
+        localhost  1        localhost  lxd   0            built-in  LXD Container Hypervisor
+        microk8s   0                   k8s   0            built-in  A local Kubernetes context
+        ```
+
+        - the Juju controller for this microk8s cloud will be on a dedicated
+        VM, so just `ssh ubuntu@<rocks-ps6-juju-client-ip>` (see how this
+        instance is configured [here](../../README.md)).
+
 ## Deploying the charm with Terraform
 
-This is the preferred option.
+This is the preferred option (Terraform should already be installed, but if not,
+run `sudo snap install terraform --classic`).
 
 ### Additional prerequisites
 
-- `terraform` (>=v1.5.5)
-- this TF configuration is designed to use the MicroK8s cluster deployed
-[here](../../README.md). Before proceeding, make sure you:
-  - connect to the VPN,
-  - forward all the necessary remote endpoints to your `localhost``, with:
-
-      ```bash
-      ssh -L 5000:<keystoneUrl>:<keystonePort> -L ...<username>@<internalOSServer>
-      ```
-
-    this is needed because of Bastion,
-- (optional) if you are managing an already existing deployment, **you need**
+- **if** you are managing an already existing deployment, **you need**
 to request and copy the corresponding `terraform.tfstate` file into this
 directory. NOTE: this file may contain sensitive information so please do not
 commit or share it.
 
+### Deploy
+
+```bash
+
+```
 `terraform apply`
 
 TIP: create a `variables.tfvars` key-value file with your test input parameters
@@ -104,17 +92,18 @@ external IP your host can reach. See [how to configure the controller](#external
 
 ## Deploying the charm manually (testing)
 
-Ideally, the charm is deployed alongside the underlying MicroK8s infrastructure
-and thus described as IaC, with Terraform.
+Ideally, the charm is deployed with Terraform (see above).
 
 However, for debugging and/or quick testing purposes, you might need to use
 Juju directly to deploy this charm manually. This section describes that
 process.
 
-1. start by adding a new model
+1. the Juju controller and model should already exist. If not, set them (see
+above)
 
     ```bash
-    juju add-model oci-factory-apps
+    juju show-controller microk8s-rocks-ps6-controller
+    juju show-model microk8s-rocks-ps6-model
     ```
 
 2. deploy the upstream `temporal-worker-k8s` charm
@@ -126,9 +115,11 @@ process.
     **NOTE:** the application won't yet be functional (as reported by
     `juju status`) because it still needs to be configured with our workflows.
 
-3. generate a wheel file with our Temporal workflows
+3. clone this repo and generate a wheel file with our Temporal workflows
 
     ```bash
+    https_proxy="http://squid.internal:3128" && git clone https://github.com/canonical/oci-factory
+    cd oci-factory/src/workflow-engine/charms/temporal-worker/
     poetry build -f wheel
     # You should now have a new "dist" folder with the wheel file inside
     ```
