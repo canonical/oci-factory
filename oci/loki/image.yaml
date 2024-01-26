@@ -1,18 +1,18 @@
 version: 1
 upload:
   - source: canonical/loki-rock
-    commit: c1b42c10e7689f9674fc2b3f856562b696ac070f
-    directory: 2.9.3
+    commit: f10a5594b65d21604b9e3e1f16b7a93ab0999f20
+    directory: 2.9.4
     release:
-      2.9.3-22.04:
-        end-of-life: "2025-01-02T00:00:00Z"
+      2.9.4-22.04:
+        end-of-life: "2025-01-26T00:00:00Z"
         risks:
           - stable
       2.9-22.04:
-        end-of-life: "2025-01-02T00:00:00Z"
+        end-of-life: "2025-01-26T00:00:00Z"
         risks:
           - stable
       2-22.04:
-        end-of-life: "2025-01-02T00:00:00Z"
+        end-of-life: "2025-01-26T00:00:00Z"
         risks:
           - stable
