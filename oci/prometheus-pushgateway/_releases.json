@@ -29,7 +29,7 @@
     },
     "1-22.04": {
         "stable": {
-            "target": "1"
+            "target": "22"
         },
         "candidate": {
             "target": "1-22.04_stable"
@@ -67,6 +67,34 @@
         },
         "edge": {
             "target": "1.6.0-22.04_beta"
+        }
+    },
+    "1.7.0-22.04": {
+        "stable": {
+            "target": "22"
+        },
+        "candidate": {
+            "target": "1.7.0-22.04_stable"
+        },
+        "beta": {
+            "target": "1.7.0-22.04_candidate"
+        },
+        "edge": {
+            "target": "1.7.0-22.04_beta"
+        }
+    },
+    "1.7-22.04": {
+        "stable": {
+            "target": "22"
+        },
+        "candidate": {
+            "target": "1.7-22.04_stable"
+        },
+        "beta": {
+            "target": "1.7-22.04_candidate"
+        },
+        "edge": {
+            "target": "1.7-22.04_beta"
         }
     }
 }
