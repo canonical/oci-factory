@@ -29,16 +29,16 @@
     },
     "0-22.04": {
         "stable": {
-            "target": "37"
+            "target": "39"
         },
         "candidate": {
-            "target": "37"
+            "target": "0-22.04_stable"
         },
         "beta": {
-            "target": "37"
+            "target": "0-22.04_candidate"
         },
         "edge": {
-            "target": "37"
+            "target": "0-22.04_beta"
         }
     },
     "0.38.0-22.04": {
@@ -141,16 +141,30 @@
     },
     "0.39-22.04": {
         "stable": {
-            "target": "38"
+            "target": "39"
         },
         "candidate": {
-            "target": "38"
+            "target": "0.39-22.04_stable"
         },
         "beta": {
-            "target": "38"
+            "target": "0.39-22.04_candidate"
         },
         "edge": {
-            "target": "38"
+            "target": "0.39-22.04_beta"
+        }
+    },
+    "0.39.1-22.04": {
+        "stable": {
+            "target": "39"
+        },
+        "candidate": {
+            "target": "0.39.1-22.04_stable"
+        },
+        "beta": {
+            "target": "0.39.1-22.04_candidate"
+        },
+        "edge": {
+            "target": "0.39.1-22.04_beta"
         }
     }
 }
