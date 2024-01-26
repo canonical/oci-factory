@@ -14,3 +14,5 @@ GHSA-m425-mq94-257g
 CVE-2023-49568
 # github.com/go-git/go-git/v5 - Maliciously crafted Git server replies can lead to path traversal and RCE on go-git clients
 CVE-2023-49569
+# github.com/cloudflare/circl - CIRCL's Kyber: timing side-channel (kyberslash2)
+GHSA-9763-4f94-gfch
