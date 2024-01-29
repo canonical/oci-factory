@@ -84,6 +84,10 @@ multiple images;
    - that means one PR can only propose changes to
 [Maintainer files](#maintainer-files) within a single `oci` folder.
 
+Refer to the diagram below to understand the oci-factory workflow:
+![OCI Factory Workflow](https://github.com/canonical/oci-factory/assets/719022/fb6b568e-ca0b-4b56-964e-f25cb4d1cfe8)
+
+
 ## 🗃 **Maintainer files**
 
 As a Maintainer, you'll be associated with one or more `oci` folders within
