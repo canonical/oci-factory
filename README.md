@@ -85,7 +85,7 @@ multiple images;
 [Maintainer files](#maintainer-files) within a single `oci` folder.
 
 Refer to the diagram below to understand the oci-factory workflow:
-![OCI Factory Workflow](https://github.com/canonical/oci-factory/assets/719022/fb6b568e-ca0b-4b56-964e-f25cb4d1cfe8)
+![OCI Factory Workflow](assets/img/oci-factory-workflow.png)
 
 
 ## 🗃 **Maintainer files**
