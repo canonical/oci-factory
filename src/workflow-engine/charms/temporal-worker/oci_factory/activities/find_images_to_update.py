@@ -15,7 +15,10 @@ import io
 import json
 import logging
 import os
+from datetime import datetime
+
 import requests
+from image.utils.schema.triggers import ImageSchema
 import swiftclient
 import sys
 import tempfile
@@ -65,6 +68,17 @@ def find_released_revisions(releases_json: dict) -> dict:
     return released_revisions
 
 
+def get_image_eol(image_schema: ImageSchema) -> dict:
+    """Given an image schema, returns the eol for each version"""
+    eol_dict = {}
+
+    if image_schema.upload and image_schema.upload[0].release:
+        for version, value in image_schema.upload[0].release.items():
+            eol_dict[version] = value.end_of_life
+
+    return eol_dict
+
+
 # Get the new Ubuntu release from the CLI args
 ubuntu_release = str(sys.argv[1])
 logging.info(f"Ubuntu release: {ubuntu_release}")
@@ -94,6 +108,12 @@ with tempfile.TemporaryDirectory() as temp_dir:
         except FileNotFoundError:
             logging.info(f"{image} has not been released yet. Continuing...")
             continue
+
+        # retrieve the end-of-life values for image versions
+        with open(f"{oci_imgs_path}/{image}/image.yaml") as image_file:
+            image_trigger = yaml.safe_load(image_file)
+            image_schema = ImageSchema(**image_trigger)
+            revision_eols = get_image_eol(image_schema)
 
         # Get the released revision numbers so we can get their build data
         # from Swift
@@ -137,6 +157,10 @@ with tempfile.TemporaryDirectory() as temp_dir:
         for image_revision in img_objs:
             _, _, revision, _ = image_revision["name"].split("/")
             if int(revision) not in released_revisions:
+                continue
+
+            # check if eol is in the past
+            if revision_eols[revision] < datetime.now():
                 continue
 
             try:
