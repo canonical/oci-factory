@@ -1,0 +1,18 @@
+version: 1
+application: zookeeper
+is_chiselled: False
+description: |
+  Current Apache ZooKeeper Docker Image from Canonical, based on Ubuntu. 
+  Receives security updates and tracks the newest combination of Apache 
+  ZooKeeper and Ubuntu. **This repository is free to use and exempted from 
+  per-user rate limits.**
+  
+  # About Apache ZooKeeper
+  ZooKeeper is a centralized service for maintaining configuration information, 
+  naming, providing distributed synchronization, and providing group services. 
+  All of these kinds of services are used in some form or another by 
+  distributed applications. Read more on the Apache website. This image is 
+  shipped in support of the Apache Kafka image.
+
+
+  
