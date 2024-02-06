@@ -1,4 +1,6 @@
 # Who and how to notify about the build progress.
 notify:
-  mattermost-channels:  # These are channel IDs and not names.
-    - 5dom1psz9bbzfcff8kzdei7p5h  # data platform alerts
+  emails:
+    - data-platform@lists.launchpad.net
+  mattermost-channels:
+    - wxppdtg4obdg9csp9wxnqs1wqw  # alerts on DataPlatform OCI channel
