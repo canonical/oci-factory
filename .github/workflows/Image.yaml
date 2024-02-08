@@ -469,13 +469,26 @@ jobs:
           path: ${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml
           key: ${{ github.run_id }}-image-trigger
 
-      - name: Dispatch Releases workflow
-        uses: canonical/oci-factory/.github/workflows/Release.yaml@main
-        id: run-releases
-        with:
-          oci-image-name: "${{ needs.prepare-build.outputs.oci-img-name }}"
-          image-trigger-cache-key: "${{ github.run_id }}-image-trigger"
+  dispatch-releases-workflow:
+    name: Dispatch Releases workflow
+    needs: [dispatch-releases]
+    uses: canonical/oci-factory/.github/workflows/Release.yaml@main
+    with:
+      oci-image-name: "${{ needs.prepare-build.outputs.oci-img-name }}"
+      image-trigger-cache-key: "${{ github.run_id }}-image-trigger"
+    secrets: inherit
 
+  write-dispatch-releases-summary:
+    name: Write dispatch releases summary
+    needs: [dispatch-releases-workflow]
+    runs-on: ubuntu-22.04
+    if: ${{ needs.prepare-build.outputs.release-to != '' }}
+    concurrency:
+      group: ${{ needs.prepare-build.outputs.oci-img-path }}
+      cancel-in-progress: true
+    env:
+      REVISION_DATA_DIR: revision-data
+    steps:
       - name: Write step summary
         run: |
           url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-releases.outputs.run-id }}'

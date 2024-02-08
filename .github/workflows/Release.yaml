@@ -148,16 +148,19 @@ jobs:
 
 
   dispatch-documentation:
-    runs-on: ubuntu-22.04
     name: Dispatch documentation
     needs: [do-releases]
-    steps:
-      - name: Run documentation
-        uses: canonical/oci-factory/.github/workflows/Documentation.yaml@main
-        id: run-documentation
-        with:
-          oci-image-name: "${{ inputs.oci-image-name }}"
+    uses: canonical/oci-factory/.github/workflows/Documentation.yaml@main
+    with:
+      oci-image-name: "${{ inputs.oci-image-name }}"
+    secrets: inherit
 
+
+  write-documentation-dispatch-summary:
+    runs-on: ubuntu-22.04
+    name: Write documentation dispatch summary
+    needs: [dispatch-documentation]
+    steps:
       - name: Write step summary
         run: |
           url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-documentation.outputs.run-id }}'

@@ -11,19 +11,24 @@ on:
 
 jobs:
   test-workflows:
+    name: Trigger image workflows for ${{ matrix.oci-image }}
+    strategy:
+      matrix:
+        oci-image: [mock-rock]
+    uses: canonical/oci-factory/.github/workflows/Image.yaml@main
+    with:
+      oci-image-name: "${{ matrix.oci-image }}"
+      upload: true
+    secrets: inherit
+
+  enforce-conclusion:
     name: Test OCI Factory workflows
+    needs: [test-workflows]
     runs-on: ubuntu-22.04
     strategy:
       matrix:
         oci-image: [mock-rock]
     steps:
-      - name: Trigger image workflows for ${{ matrix.oci-image }}
-        uses: canonical/oci-factory/.github/workflows/Image.yaml@main
-        id: run-image
-        with:
-          oci-image-name: "${{ matrix.oci-image }}"
-          upload: true
-
       - name: Enforce conclusion
         if: ${{ steps.run-image.outputs.run-conclusion != 'success' }}
         # The previous step doesn't always raise an error
