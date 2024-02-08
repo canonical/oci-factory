@@ -1,0 +1,23 @@
+version: 1
+
+application: Python
+is_chiselled: true
+description: |
+  Python is an interpreted, interactive, object-oriented, open-source
+  programming language.
+
+debug:
+  text: |
+    ### Debugging
+
+    To debug the container:
+
+    ```bash
+    docker logs -f python-container
+    ```
+
+    To get an interactive python3 interpreter:
+
+    ```bash
+    docker exec -it python-container python3
+    ```

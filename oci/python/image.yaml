@@ -1,0 +1,6 @@
+version: 1
+
+upload:
+  - source: canonical/chiselled-python
+    commit: a9fb59b6066cbe479ee2c395e316094b96af22b3
+    directory: python3.8/
