@@ -27,6 +27,16 @@ on:
         required: false
         type: string
         default: "default-id"
+    workflow_call:
+      inputs:
+        oci-image-name:
+          description: "OCI image to build and test"
+          required: true
+        upload:
+          description: "Upload image to GHCR"
+          required: true
+          type: boolean
+          default: false
 
 env:
   VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"
@@ -460,20 +470,11 @@ jobs:
           key: ${{ github.run_id }}-image-trigger
 
       - name: Dispatch Releases workflow
-        # Using this action because others can have this problem:
-        # https://github.com/convictional/trigger-workflow-and-wait/issues/61
-        uses: mathze/workflow-dispatch-action@v1.2.0
+        uses: canonical/oci-factory/.github/workflows/Release.yaml@main
         id: run-releases
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.ref_name }}
-          fail-on-error: true
-          workflow-name: Release.yaml
-          payload: '{ "oci-image-name": "${{ needs.prepare-build.outputs.oci-img-name }}", "image-trigger-cache-key": "${{ github.run_id }}-image-trigger"}'
-          run-id: dummy
-          trigger-timeout: "10m"
-          wait-timeout: "20m"
-          use-marker-step: true
+          oci-image-name: "${{ needs.prepare-build.outputs.oci-img-name }}"
+          image-trigger-cache-key: "${{ github.run_id }}-image-trigger"
 
       - name: Write step summary
         run: |

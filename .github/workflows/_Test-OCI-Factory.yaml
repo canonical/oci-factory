@@ -18,20 +18,11 @@ jobs:
         oci-image: [mock-rock]
     steps:
       - name: Trigger image workflows for ${{ matrix.oci-image }}
-        # Using this actions cause others can have this problem:
-        # https://github.com/convictional/trigger-workflow-and-wait/issues/61
-        uses: mathze/workflow-dispatch-action@v1.2.0
+        uses: canonical/oci-factory/.github/workflows/Image.yaml@main
         id: run-image
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.ref_name }}
-          fail-on-error: true
-          workflow-name: Image.yaml
-          payload: '{ "oci-image-name": "${{ matrix.oci-image }}", "upload": true }'
-          trigger-timeout: "5m"
-          wait-timeout: "30m"
-          use-marker-step: true
-          run-id: dummy
+          oci-image-name: "${{ matrix.oci-image }}"
+          upload: true
 
       - name: Enforce conclusion
         if: ${{ steps.run-image.outputs.run-conclusion != 'success' }}

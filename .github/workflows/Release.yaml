@@ -16,6 +16,16 @@ on:
         required: false
         type: string
         default: "default-id"
+  workflow_call:
+    inputs:
+      oci-image-name:
+        description: 'OCI image to run releases for'
+        required: true
+        type: string
+      image-trigger-cache-key:
+        description: 'Cache key (to fetch image trigger from cache)'
+        required: false
+        type: string
            
 jobs:
   validate-push-release-request:
@@ -143,19 +153,10 @@ jobs:
     needs: [do-releases]
     steps:
       - name: Run documentation
-        # Using this actions cause others can have this problem:
-        # https://github.com/convictional/trigger-workflow-and-wait/issues/61
-        uses: mathze/workflow-dispatch-action@v1.2.0
+        uses: canonical/oci-factory/.github/workflows/Documentation.yaml@main
         id: run-documentation
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.ref_name }}
-          fail-on-error: true
-          workflow-name: Documentation.yaml
-          payload: '{ "oci-image-name": "${{ inputs.oci-image-name }}"}'
-          use-marker-step: true
-          trigger-timeout: '30m'
-          run-id: dummy
+          oci-image-name: "${{ inputs.oci-image-name }}"
 
       - name: Write step summary
         run: |

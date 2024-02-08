@@ -15,6 +15,12 @@ on:
         required: false
         type: string
         default: "default-id"
+  workflow_call:
+    inputs:
+      oci-image-name:
+        description: 'OCI image to generate the documentation for'
+        required: true
+        type: string
 
 jobs:
   validate-documentation-request:
