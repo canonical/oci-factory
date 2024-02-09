@@ -1,11 +1,14 @@
 terraform {
   required_providers {
     juju = {
-      version = "~> 0.8.0"
+      version = "~> 0.10.1"
       source  = "juju/juju"
     }
   }
 }
+
+variable "juju_username" {}
+variable "juju_password" {}
 
 # The "JUJU SETTINGS 1" relies on the Juju controller having had already been
 # configured/used in the local machine where you are running Terraform. I.e.:
@@ -29,13 +32,14 @@ terraform {
 # "JUJU SETTINGS 2"!
 
 #### JUJU SETTINGS 1 ####
-provider "juju" {}
+provider "juju" {
+  username = var.juju_username
+  password = var.juju_password
+}
 #### JUJU SETTINGS 1 - end ####
 
 #### JUJU SETTINGS 2 ####
 # variable "juju_controller_addresses" {}
-# variable "juju_username" {}
-# variable "juju_password" {}
 # variable "juju_ca_certificate_file" {}
 
 # provider "juju" {
@@ -46,29 +50,28 @@ provider "juju" {}
 # }
 #### JUJU SETTINGS 2 - end ####
 
-resource "juju_model" "oci-factory-model" {
-  name = "oci-factory-model"
+# resource "juju_model" "oci-factory-model" {
+#   name = "admin/microk8s-rocks-ps6-model"
 
-  cloud {
-    name = var.juju_cloud_name
-  }
-}
+#   cloud {
+#     name = var.juju_cloud_name
+#   }
+# }
 
 resource "juju_application" "temporal-worker-k8s" {
   name  = var.juju_application_name
-  model = juju_model.oci-factory-model.name
+  model = var.oci-factory-model
 
   charm {
     name    = var.juju_application_name
     channel = var.juju_application_channel
-    series  = "jammy"
+    base    = "ubuntu@22.04"
   }
 
   units = 2
 
   config = {
     # Authentication details
-    auth-enabled  = "true"
     auth-provider = "candid"
     # The candid authentication details are sensitive and individual,
     # and should only be set at deployment time
@@ -108,18 +111,25 @@ sed -i 's/<username-replace-me>/"${var.env_eventbus_consumer_username}"/' $env_f
 sed -i 's/<password-replace-me>/"${var.env_eventbus_consumer_password}"/' $env_file
 set -x
 
+# We need the full model name here!
+full_model_name="$(juju show-model \
+  | grep ' name:' \
+  | grep '${var.oci-factory-model}' \
+  | awk -F' ' '{print $NF}')"
+
 echo "Attaching the env-file to the Juju application..."
-juju attach-resource -m ${juju_model.oci-factory-model.name} ${self.name} \
+juju attach-resource -m $full_model_name ${self.name} \
     env-file=$env_file
 
 echo "Attaching the workflows-file to the Juju application..."
-juju attach-resource -m ${juju_model.oci-factory-model.name} ${self.name} \
+juju attach-resource -m $full_model_name ${self.name} \
     workflows-file=${var.config_temporal_workflows_file_path}
 
+set -x
 echo '
 #############################################################################
 You can now track the deployment status with:
-    "juju status -m ${juju_model.oci-factory-model.name} --watch 2s" 
+    "juju status --watch 2s" 
 #############################################################################
 '
 EOT
