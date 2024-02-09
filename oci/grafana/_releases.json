@@ -29,7 +29,7 @@
     },
     "10-22.04": {
         "stable": {
-            "target": "12"
+            "target": "39"
         },
         "candidate": {
             "target": "10-22.04_stable"
@@ -81,6 +81,76 @@
         },
         "edge": {
             "target": "10.2.3-22.04_beta"
+        }
+    },
+    "9.5.3-22.04": {
+        "stable": {
+            "target": "29"
+        },
+        "candidate": {
+            "target": "9.5.3-22.04_stable"
+        },
+        "beta": {
+            "target": "9.5.3-22.04_candidate"
+        },
+        "edge": {
+            "target": "9.5.3-22.04_beta"
+        }
+    },
+    "9.5-22.04": {
+        "stable": {
+            "target": "29"
+        },
+        "candidate": {
+            "target": "9.5-22.04_stable"
+        },
+        "beta": {
+            "target": "9.5-22.04_candidate"
+        },
+        "edge": {
+            "target": "9.5-22.04_beta"
+        }
+    },
+    "9-22.04": {
+        "stable": {
+            "target": "29"
+        },
+        "candidate": {
+            "target": "9-22.04_stable"
+        },
+        "beta": {
+            "target": "9-22.04_candidate"
+        },
+        "edge": {
+            "target": "9-22.04_beta"
+        }
+    },
+    "10.3.1-22.04": {
+        "stable": {
+            "target": "39"
+        },
+        "candidate": {
+            "target": "10.3.1-22.04_stable"
+        },
+        "beta": {
+            "target": "10.3.1-22.04_candidate"
+        },
+        "edge": {
+            "target": "10.3.1-22.04_beta"
+        }
+    },
+    "10.3-22.04": {
+        "stable": {
+            "target": "39"
+        },
+        "candidate": {
+            "target": "10.3-22.04_stable"
+        },
+        "beta": {
+            "target": "10.3-22.04_candidate"
+        },
+        "edge": {
+            "target": "10.3-22.04_beta"
         }
     }
 }

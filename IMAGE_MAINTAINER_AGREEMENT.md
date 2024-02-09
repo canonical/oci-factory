@@ -159,7 +159,7 @@ and stating:
       deb-security-manifest:
         plugin: nil
         after:
-          - # make this runs after all other parts that install overlay packages
+          - # make this run after all other parts that install overlay packages
         override-prime: |
           set -x
           mkdir -p $CRAFT_PRIME/usr/share/rocks/
