@@ -125,7 +125,7 @@ echo "Attaching the workflows-file to the Juju application..."
 juju attach-resource -m $full_model_name ${self.name} \
     workflows-file=${var.config_temporal_workflows_file_path}
 
-set -x
+set +x
 echo '
 #############################################################################
 You can now track the deployment status with:
