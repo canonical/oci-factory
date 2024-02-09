@@ -123,7 +123,7 @@ juju clouds
 # https://juju.is/docs/juju/manage-clouds#heading--add-a-kubernetes-cloud
 /snap/juju/current/bin/juju add-k8s microk8s-rocks-ps6
 juju clouds
-juju bootstrap microk8s-rocks-ps6 microk8s-rocks-ps6-controller
+juju bootstrap microk8s-rocks-ps6 microk8s-rocks-ps6-controller --config controller-service-type=loadbalancer
 juju controllers
 
 # Add the Juju model
@@ -131,4 +131,12 @@ juju add-model microk8s-rocks-ps6-model
 
 # NOTE: typically, we'll use Terraform to manage Juju charms, so install it too
 sudo snap install terraform --classic
+
+# We might also need poetry to build the wheel file for the charm, so...
+sudo apt update
+sudo apt install python3-virtualenv
+virtualenv venv
+. venv/bin/activate
+# Drop the https_proxy is not running on PS6
+https_proxy="http://squid.internal:3128" pip install poetry
 ```

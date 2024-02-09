@@ -4,6 +4,18 @@ This folder provides the Temporal Workflows and Activities for the existing
 [Temporal Worker
 Charm](https://charmhub.io/temporal-worker-k8s?channel=latest/edge).
 
+- [Charm: Temporal Worker for the OCI Factory](#charm-temporal-worker-for-the-oci-factory)
+  - [Prerequisites](#prerequisites)
+  - [Deploying the charm with Terraform](#deploying-the-charm-with-terraform)
+    - [Additional prerequisites](#additional-prerequisites)
+    - [Deploy](#deploy)
+  - [Deploying the charm manually (testing)](#deploying-the-charm-manually-testing)
+    - [From the PS6 dedicated instance (admins only)](#from-the-ps6-dedicated-instance-admins-only)
+    - [From your workstation](#from-your-workstation)
+      - [Note for future self](#note-for-future-self)
+    - [Troubleshooting](#troubleshooting)
+  - [Triggering a workflow](#triggering-a-workflow)
+
 ## Prerequisites
 
 1. `juju` (>=3.0, >=3.1.5 recommended).
@@ -47,8 +59,10 @@ options:
         ```
 
         - the Juju controller for this microk8s cloud will be on a dedicated
-        VM, so just `ssh ubuntu@<rocks-ps6-juju-client-ip>` (see how this
-        instance is configured [here](../../README.md)).
+        VM, so if you're an admin, just `ssh ubuntu@<rocks-ps6-juju-client-ip>`
+        (see how this instance is configured [here](../../README.md)). If you're
+        not an admin, read "[From your workstation](#from-your-workstation)" to
+        know how to register the existing controller in your workstation.
 
 ## Deploying the charm with Terraform
 
@@ -64,31 +78,57 @@ commit or share it.
 
 ### Deploy
 
+> TIP: create a `variables.tfvars` key-value file with your test input
+> parameters
+> defined so you don't always have to pass them to `terraform apply`, using
+> instead `terraform apply -var-file="variables.tfvars"`. Don't worry, this file
+> is ignored by Git (see `.gitignore`).
+
+Start by running:
+
 ```bash
-
+terraform init
 ```
-`terraform apply`
 
-TIP: create a `variables.tfvars` key-value file with your test input parameters
-defined so you don't always have to pass them to `terraform apply`, using
-instead `terraform apply -var-file="variables.tfvars"`. Don't worry, this file
-is ignored by Git (see `.gitignore`).
+In `charm.tf` you'll find two different settings for the Juju provider:
 
-### Troubleshooting
+**JUJU SETTINGS 1**: relies on the Juju controller having already been
+configured/used in the local machine where you are running Terraform (e.g. as
+shown below in the "[From your workstation](#from-your-workstation)" section).
+I.e.:
 
-> │ Error: dial tcp 10.152.183.75:17070: i/o timeout  
-> │  
-> │   with provider["registry.terraform.io/juju/juju"],  
-> │   on charm.tf line 32, in provider "juju":  
-> │   32: provider "juju" {}  
-> │  
-> │ Connection error, please check the controller_addresses property set on the
-provider
+  1. the following environment variables, that correspond to the configuration
+  fields indicated above, are present:
+     - JUJU_CONTROLLER_ADDRESSES
+     - JUJU_USERNAME
+     - JUJU_PASSWORD
+     - JUJU_CA_CERT
 
-If this happens, you're likely running Terraform from a host outside the
-MicroK8s cluster. In this case, you'll want to double-check your Juju
-controller's network configuration, making sure it is being exposed to an
-external IP your host can reach. See [how to configure the controller](#external-ip) above.
+     or
+
+  1. you have used this Juju controller locally before. This is the most straightforward solution. Remember, that it will use the configuration
+  used by the CLI at that moment. I.e. the fields are populated using the
+  output from running the command: `juju show-controller --show-password`
+  (which prints the contents of ~/.local/share/juju/)
+
+ **JUJU SETTINGS 2**: if you're running Terraform on a machine where you've
+never configured the Juju controller, then please comment "JUJU SETTINGS 1" and
+uncomment "JUJU SETTINGS 2" in `charm.tf`!
+
+Then, make sure your configs are good with a dry-run:
+
+```bash
+terraform plan -var-file="variables.tfvars"
+```
+
+If everything is good, proceed with the deployment:
+
+```bash
+terraform apply
+```
+
+**NOTE**: remember to update the `terraform.tfstate` in the same place where you
+first found it :)
 
 ## Deploying the charm manually (testing)
 
@@ -98,35 +138,50 @@ However, for debugging and/or quick testing purposes, you might need to use
 Juju directly to deploy this charm manually. This section describes that
 process.
 
+### From the [PS6 dedicated instance]((../../README.md)) (admins only)
+
 1. the Juju controller and model should already exist. If not, set them (see
 above)
 
     ```bash
     juju show-controller microk8s-rocks-ps6-controller
-    juju show-model microk8s-rocks-ps6-model
+    juju show-model admin/microk8s-rocks-ps6-model
     ```
 
 2. deploy the upstream `temporal-worker-k8s` charm
 
     ```bash
-    juju deploy temporal-worker-k8s --channel edge
+    juju deploy temporal-worker-k8s
     ```
 
     **NOTE:** the application won't yet be functional (as reported by
     `juju status`) because it still needs to be configured with our workflows.
 
-3. clone this repo and generate a wheel file with our Temporal workflows
+3. clone this repo
 
     ```bash
-    https_proxy="http://squid.internal:3128" && git clone https://github.com/canonical/oci-factory
+    # Only set the https_proxy when running inside the cloud environment
+    https_proxy="http://squid.internal:3128" git clone https://github.com/canonical/oci-factory
     cd oci-factory/src/workflow-engine/charms/temporal-worker/
+    ``````
+
+4. use the [existing Python env](../../README.md) and generate a wheel file
+with our Temporal workflows
+
+    ```bash
+    . ~/venv/bin/activate
+    # If the venv doesn't exist already, then run:
+    # $ virtualenv venv
+    # $ . venv/bin/activate
     poetry build -f wheel
     # You should now have a new "dist" folder with the wheel file inside
     ```
 
-4. copy the `config.yml.template` file to `config.yml` and edit it. These is
-the charm configuration file, containing the deployment settings
-1. configure the deployed charm
+5. copy the `config.yml.template` file to `config.yml` and edit it. This is
+the charm configuration file, containing the deployment settings. You'll need
+your own Candid agent for this.
+
+6. configure the deployed charm
 
     ```bash
     juju config temporal-worker-k8s --file config.yml
@@ -148,22 +203,22 @@ the charm configuration file, containing the deployment settings
        complain about
        `"Subject '<queueName>-value' not found. (HTTP status code 404...)"`.
 
-2. copy the `oci_factory/activities/consumer/.env.template` file to
-`oci_factory/activities/consumer/.env` and edit it. These are the
+7. copy the `oci_factory/.env.template` file to
+`oci_factory/.env` and edit it. These are the
 workflow-specific configurations for the `consumer` activities
-1. attach the environment file to the application
+8. attach the environment file to the application
 
     ```bash
-    juju attach-resource temporal-worker-k8s env-file=oci_factory/activities/consumer/.env
+    juju attach-resource temporal-worker-k8s env-file=oci_factory/.env
     ```
 
-2. attach the workflows wheel file to the charm application
+9. attach the workflow wheel file to the charm application
 
     ```bash
     juju attach-resource temporal-worker-k8s workflows-file=./dist/oci_factory_workflows-0.0.1-py3-none-any.whl
     ```
 
-3. check the application status and wait for it to be up and running
+10. check the application status and wait for it to be up and running
 
     ```bash
     juju status --watch 2s
@@ -175,7 +230,71 @@ to the Temporal server and ready to execute the workflows.
 See the [section below](#triggering-a-workflow) to learn how to manually
 trigger the execution of a workflow.
 
-#### Troubleshooting
+### From your workstation
+
+The Juju controller must already exist, so **ask an admin (superuser)** to add
+you as a new Juju user:
+
+```bash
+# make sure the desired controller is selected
+juju add-user <your-username>
+juju grant <your-username> write <existing-model-name>
+juju grant <your-username> admin <existing-application-name-if-already-deployed>
+```
+
+The `juju add-user` command above will provide a unique token that the admin
+must provide to you.
+
+On your workstation, **make sure you're connected to the VPN** and type:
+
+```bash
+juju register --replace --debug <token>
+# You'll need to pick a password for your user.
+# If you ever lose this password, ask you admin to reset it from the admin
+# instance, via the `juju change-user-password` command
+```
+
+And you're good to go (see `juju controllers` and `juju status`).
+
+*From here, you can repeat exactly the same steps as in the previous section.*
+
+#### Note for future self
+
+When running `juju register...`, if you see the following issue:
+
+```
+ERROR cannot connect to k8s api server; try running 'juju update-k8s --client <k8s cloud name>': starting proxy for api connection: connecting k8s proxy: Get "https://<ip>:<port>/api/v1/namespaces/<controller-name>/services/controller-service": dial tcp <ip>:<port>: connect: no route to host
+```
+
+then it is most likely because the controller wasn't bootstrapped with
+`--config controller-service-type=loadbalancer` (see the bootstrap instructions
+[here]((../../README.md))). If you **cannot** re-bootstrap the controller with
+the correct `service-type`, then you'll need to work around this error (which is
+actually a bug, being investigated [here](https://bugs.launchpad.net/juju/+bug/2052711)).
+
+The workaround is:
+
+1. Ask an admin for the controller's `proxy-config.config.api-host` value. This
+can be found within the admin instance's `.local/share/juju/controllers.yaml`
+file.
+
+1. Once you are given that value, open the same file
+(`.local/share/juju/controllers.yaml`) within your workstation and replace the
+`api-host` field with it.
+
+1. Then, from your workstation:
+
+    ```bash
+    juju controllers --refresh
+    # It should be ok now
+    juju controllers
+    # Make sure you are using that controller and model
+    juju switch microk8s-rocks-ps6-controller
+    juju switch microk8s-rocks-ps6-controller:admin/microk8s-rocks-ps6-model
+    ```
+
+
+### Troubleshooting
 
 If after configuring your application, its unit still shows up in error, here
 are a few things you can do to debug and fix it:
