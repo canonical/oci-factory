@@ -15,24 +15,8 @@ jobs:
     strategy:
       matrix:
         oci-image: [mock-rock]
-    uses: canonical/oci-factory/.github/workflows/Image.yaml@main
+    uses: ./.github/workflows/Image.yaml
     with:
       oci-image-name: "${{ matrix.oci-image }}"
       upload: true
     secrets: inherit
-
-  enforce-conclusion:
-    name: Test OCI Factory workflows
-    needs: [test-workflows]
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        oci-image: [mock-rock]
-    steps:
-      - name: Enforce conclusion
-        if: ${{ steps.run-image.outputs.run-conclusion != 'success' }}
-        # The previous step doesn't always raise an error
-        run: |
-          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-image.outputs.run-id }}'
-          echo "Image '${{ matrix.oci-image }}' workflow at [${url}](${url}) failed."
-          exit 1

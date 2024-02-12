@@ -188,7 +188,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
-    uses: canonical/oci-factory/.github/workflows/Tests.yaml@main
+    uses: ./.github/workflows/Tests.yaml
     with:
       oci-image-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}"
       oci-image-path: "oci/${{ matrix.name }}"
@@ -409,8 +409,8 @@ jobs:
   # We need this job because we want to make the releases all in one go,
   # so that we know which revisions to release, and so that we can update
   # and commit the _releases.json file in a single commit, outside a matrix job
-  dispatch-releases:
-    name: Dispatch releases
+  prepare-releases:
+    name: Prepare releases
     needs: [prepare-build, upload]
     runs-on: ubuntu-22.04
     if: ${{ needs.prepare-build.outputs.release-to != '' }}
@@ -469,38 +469,14 @@ jobs:
           path: ${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml
           key: ${{ github.run_id }}-image-trigger
 
-  dispatch-releases-workflow:
-    name: Dispatch Releases workflow
-    needs: [dispatch-releases]
+  release:
+    name: Release
+    needs: [prepare-releases]
     uses: canonical/oci-factory/.github/workflows/Release.yaml@main
     with:
       oci-image-name: "${{ needs.prepare-build.outputs.oci-img-name }}"
       image-trigger-cache-key: "${{ github.run_id }}-image-trigger"
     secrets: inherit
-
-  write-dispatch-releases-summary:
-    name: Write dispatch releases summary
-    needs: [dispatch-releases-workflow]
-    runs-on: ubuntu-22.04
-    if: ${{ needs.prepare-build.outputs.release-to != '' }}
-    concurrency:
-      group: ${{ needs.prepare-build.outputs.oci-img-path }}
-      cancel-in-progress: true
-    env:
-      REVISION_DATA_DIR: revision-data
-    steps:
-      - name: Write step summary
-        run: |
-          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-releases.outputs.run-id }}'
-          echo " - Triggered releases for '${{ needs.prepare-build.outputs.oci-img-name }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Enforce release conclusion
-        if: ${{ steps.run-releases.outputs.run-conclusion != 'success' }}
-        # The previous step doesn't always raise an error
-        run: |
-          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-releases.outputs.run-id }}'
-          echo "Failed to release '${{ needs.prepare-build.outputs.oci-img-name }}' at [${url}](${url})."
-          exit 1
 
   generate-provenance:
     name: Generate SLSA provenance
@@ -574,7 +550,7 @@ jobs:
   notify:
     runs-on: ubuntu-22.04
     name: Notify
-    needs: [prepare-build, run-build, upload, dispatch-releases, generate-provenance]
+    needs: [prepare-build, run-build, upload, prepare-releases, generate-provenance]
     if: ${{ always() && contains(needs.*.result, 'failure') && github.event_name != 'pull_request' }}
     steps:
       - uses: actions/checkout@v3
