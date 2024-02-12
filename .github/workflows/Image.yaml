@@ -472,7 +472,7 @@ jobs:
   release:
     name: Release
     needs: [prepare-releases]
-    uses: canonical/oci-factory/.github/workflows/Release.yaml@main
+    uses: ./.github/workflows/Release.yaml
     with:
       oci-image-name: "${{ needs.prepare-build.outputs.oci-img-name }}"
       image-trigger-cache-key: "${{ github.run_id }}-image-trigger"
