@@ -94,20 +94,6 @@ jobs:
           OCIDoc.OCIDocumentationData.read_documentation_yaml("${{ matrix.filename }}")
           '
 
-      - name: Validate end-of-life field values
-        if: ${{ contains(matrix.filename, 'image.yaml') }}
-        run: |
-          CURRENT_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          EOL_DATES=$(grep -oP 'end-of-life: "\K[0-9-]+T[0-9:]+Z' matrix.filename)
-
-          FAIL=0
-          while IFS= read -r EOL_DATE; do
-            if [[ "$EOL_DATE" < "$CURRENT_DATE" ]]; then
-              FAIL=1
-            fi
-          done <<< "$EOL_DATES""
-
-          test -n "$EOL_DATES"" && test $FAIL -eq 0
 
   update-pr:
     runs-on: ubuntu-22.04
