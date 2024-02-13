@@ -11,32 +11,12 @@ on:
 
 jobs:
   test-workflows:
-    name: Test OCI Factory workflows
-    runs-on: ubuntu-22.04
+    name: Trigger image workflows for ${{ matrix.oci-image }}
     strategy:
       matrix:
         oci-image: [mock-rock]
-    steps:
-      - name: Trigger image workflows for ${{ matrix.oci-image }}
-        # Using this actions cause others can have this problem:
-        # https://github.com/convictional/trigger-workflow-and-wait/issues/61
-        uses: mathze/workflow-dispatch-action@v1.2.0
-        id: run-image
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.ref_name }}
-          fail-on-error: true
-          workflow-name: Image.yaml
-          payload: '{ "oci-image-name": "${{ matrix.oci-image }}", "upload": true }'
-          trigger-timeout: "5m"
-          wait-timeout: "30m"
-          use-marker-step: true
-          run-id: dummy
-
-      - name: Enforce conclusion
-        if: ${{ steps.run-image.outputs.run-conclusion != 'success' }}
-        # The previous step doesn't always raise an error
-        run: |
-          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-image.outputs.run-id }}'
-          echo "Image '${{ matrix.oci-image }}' workflow at [${url}](${url}) failed."
-          exit 1
+    uses: ./.github/workflows/Image.yaml
+    with:
+      oci-image-name: "${{ matrix.oci-image }}"
+      upload: true
+    secrets: inherit
