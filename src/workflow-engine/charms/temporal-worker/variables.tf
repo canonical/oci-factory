@@ -19,7 +19,7 @@ variable "juju_application_name" {
 variable "juju_application_channel" {
   description = "Channel where to get the charm from"
   type        = string
-  default     = "edge"
+  default     = "stable"
 }
 
 ## env-file variables
