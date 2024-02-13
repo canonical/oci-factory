@@ -29,16 +29,16 @@
     },
     "1-22.04": {
         "stable": {
-            "target": "26"
+            "target": "30"
         },
         "candidate": {
-            "target": "26"
+            "target": "30"
         },
         "beta": {
-            "target": "26"
+            "target": "30"
         },
         "edge": {
-            "target": "26"
+            "target": "30"
         }
     },
     "1.6.1-22.04": {
@@ -71,30 +71,30 @@
     },
     "1.7.0-22.04": {
         "stable": {
-            "target": "26"
+            "target": "30"
         },
         "candidate": {
-            "target": "26"
+            "target": "30"
         },
         "beta": {
-            "target": "26"
+            "target": "30"
         },
         "edge": {
-            "target": "26"
+            "target": "30"
         }
     },
     "1.7-22.04": {
         "stable": {
-            "target": "26"
+            "target": "30"
         },
         "candidate": {
-            "target": "26"
+            "target": "30"
         },
         "beta": {
-            "target": "26"
+            "target": "30"
         },
         "edge": {
-            "target": "26"
+            "target": "30"
         }
     }
 }
