@@ -73,8 +73,11 @@ jobs:
         run: |
           set -ex
 
-          if [[ "${{ github.event_name }}" != "workflow_dispatch" ]]
-          then
+          case "${{ github.event_name }}" in
+          workflow_dispatch|workflow_call)
+            img_path="oci/${{ inputs.oci-image-name }}"
+            ;;
+          *)
             img_path="${{ steps.changed-files.outputs.all_changed_files }}"
             occurrences="${img_path//[^,]}"
             if [ ${#occurrences} -ne 0 ]
@@ -82,9 +85,8 @@ jobs:
               echo "ERR: can only build 1 image at a time, but trying to trigger ${img_path}"
               exit 1
             fi
-          else
-            img_path="oci/${{ inputs.oci-image-name }}"
-          fi
+            ;;
+          esac
           test -d "${img_path}"
 
           echo "img-name=$(basename ${img_path})" >> "$GITHUB_OUTPUT"
@@ -471,10 +473,10 @@ jobs:
 
   release:
     name: Release
-    needs: [prepare-releases]
+    needs: [prepare-build, prepare-releases]
     uses: ./.github/workflows/Release.yaml
     with:
-      oci-image-name: "${{ inputs.oci-image-name }}"
+      oci-image-name: "${{ needs.prepare-build.outputs.oci-img-name }}"
       image-trigger-cache-key: "${{ github.run_id }}-image-trigger"
     secrets: inherit
 
