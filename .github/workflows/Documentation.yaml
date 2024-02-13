@@ -51,11 +51,12 @@ jobs:
         run: |
           set -ex
 
-          case "${{ github.event_name }}" in
-          workflow_dispatch|workflow_call)
+          # check if this is coming from a workflow dispatch/call
+          # as checking github.event_name isn't reliable here
+          if [ "${{ inputs.oci-image-name }}" != "" ]
+          then
             img_path="oci/${{ inputs.oci-image-name }}"
-            ;;
-          *)
+          else
             img_path="${{ steps.changed-files.outputs.all_changed_files }}"
             occurrences="${img_path//[^,]}"
             if [ ${#occurrences} -ne 0 ]
@@ -63,8 +64,7 @@ jobs:
               echo "ERR: can only build documentation for 1 image at a time, but trying to document ${img_path}"
               exit 1
             fi
-            ;;
-          esac
+          fi
           test -d "${img_path}"
           echo "img-name=$(basename ${img_path})" >> "$GITHUB_OUTPUT"
           echo "img-path=${img_path}" >> "$GITHUB_OUTPUT"
