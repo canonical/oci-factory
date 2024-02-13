@@ -27,6 +27,16 @@ on:
         required: false
         type: string
         default: "default-id"
+    workflow_call:
+      inputs:
+        oci-image-name:
+          description: "OCI image to build and test"
+          required: true
+        upload:
+          description: "Upload image to GHCR"
+          required: true
+          type: boolean
+          default: false
 
 env:
   VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"
@@ -51,7 +61,7 @@ jobs:
       - name: Infer number of image triggers
         uses: tj-actions/changed-files@v35
         id: changed-files
-        if: github.event_name != 'workflow_dispatch'
+        if: github.event_name != 'workflow_dispatch' && github.event_name != 'workflow_call'
         with:
           separator: ","
           dir_names: "true"
@@ -63,8 +73,11 @@ jobs:
         run: |
           set -ex
 
-          if [[ "${{ github.event_name }}" != "workflow_dispatch" ]]
-          then
+          case "${{ github.event_name }}" in
+          workflow_dispatch|workflow_call)
+            img_path="oci/${{ inputs.oci-image-name }}"
+            ;;
+          *)
             img_path="${{ steps.changed-files.outputs.all_changed_files }}"
             occurrences="${img_path//[^,]}"
             if [ ${#occurrences} -ne 0 ]
@@ -72,9 +85,8 @@ jobs:
               echo "ERR: can only build 1 image at a time, but trying to trigger ${img_path}"
               exit 1
             fi
-          else
-            img_path="oci/${{ inputs.oci-image-name }}"
-          fi
+            ;;
+          esac
           test -d "${img_path}"
 
           echo "img-name=$(basename ${img_path})" >> "$GITHUB_OUTPUT"
@@ -178,7 +190,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
-    uses: canonical/oci-factory/.github/workflows/Tests.yaml@main
+    uses: ./.github/workflows/Tests.yaml
     with:
       oci-image-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}"
       oci-image-path: "oci/${{ matrix.name }}"
@@ -399,8 +411,8 @@ jobs:
   # We need this job because we want to make the releases all in one go,
   # so that we know which revisions to release, and so that we can update
   # and commit the _releases.json file in a single commit, outside a matrix job
-  dispatch-releases:
-    name: Dispatch releases
+  prepare-releases:
+    name: Prepare releases
     needs: [prepare-build, upload]
     runs-on: ubuntu-22.04
     if: ${{ needs.prepare-build.outputs.release-to != '' }}
@@ -459,34 +471,14 @@ jobs:
           path: ${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml
           key: ${{ github.run_id }}-image-trigger
 
-      - name: Dispatch Releases workflow
-        # Using this action because others can have this problem:
-        # https://github.com/convictional/trigger-workflow-and-wait/issues/61
-        uses: mathze/workflow-dispatch-action@v1.2.0
-        id: run-releases
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.ref_name }}
-          fail-on-error: true
-          workflow-name: Release.yaml
-          payload: '{ "oci-image-name": "${{ needs.prepare-build.outputs.oci-img-name }}", "image-trigger-cache-key": "${{ github.run_id }}-image-trigger"}'
-          run-id: dummy
-          trigger-timeout: "10m"
-          wait-timeout: "20m"
-          use-marker-step: true
-
-      - name: Write step summary
-        run: |
-          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-releases.outputs.run-id }}'
-          echo " - Triggered releases for '${{ needs.prepare-build.outputs.oci-img-name }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Enforce release conclusion
-        if: ${{ steps.run-releases.outputs.run-conclusion != 'success' }}
-        # The previous step doesn't always raise an error
-        run: |
-          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-releases.outputs.run-id }}'
-          echo "Failed to release '${{ needs.prepare-build.outputs.oci-img-name }}' at [${url}](${url})."
-          exit 1
+  release:
+    name: Release
+    needs: [prepare-build, prepare-releases]
+    uses: ./.github/workflows/Release.yaml
+    with:
+      oci-image-name: "${{ needs.prepare-build.outputs.oci-img-name }}"
+      image-trigger-cache-key: "${{ github.run_id }}-image-trigger"
+    secrets: inherit
 
   generate-provenance:
     name: Generate SLSA provenance
@@ -560,7 +552,7 @@ jobs:
   notify:
     runs-on: ubuntu-22.04
     name: Notify
-    needs: [prepare-build, run-build, upload, dispatch-releases, generate-provenance]
+    needs: [prepare-build, run-build, upload, prepare-releases, generate-provenance]
     if: ${{ always() && contains(needs.*.result, 'failure') && github.event_name != 'pull_request' }}
     steps:
       - uses: actions/checkout@v3
