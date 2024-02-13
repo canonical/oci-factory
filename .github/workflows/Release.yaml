@@ -147,8 +147,8 @@ jobs:
           files: oci/${{ inputs.oci-image-name }}/_releases.json
 
 
-  dispatch-documentation:
-    name: Dispatch documentation
+  update-documentation:
+    name: Update documentation
     needs: [do-releases]
     uses: ./.github/workflows/Documentation.yaml
     with:

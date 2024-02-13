@@ -61,7 +61,7 @@ jobs:
       - name: Infer number of image triggers
         uses: tj-actions/changed-files@v35
         id: changed-files
-        if: github.event_name != 'workflow_dispatch'
+        if: github.event_name != 'workflow_dispatch' && github.event_name != 'workflow_call'
         with:
           separator: ","
           dir_names: "true"
