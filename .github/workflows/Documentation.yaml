@@ -39,7 +39,7 @@ jobs:
       - name: Infer images to document
         uses: tj-actions/changed-files@v35
         id: changed-files
-        if: github.event_name != 'workflow_dispatch'
+        if: github.event_name != 'workflow_dispatch' && github.event_name != 'workflow_call'
         with:
           dir_names: "true"
           separator: ","
@@ -51,8 +51,11 @@ jobs:
         run: |
           set -ex
 
-          if [[ "${{ github.event_name }}" != "workflow_dispatch" ]]
-          then
+          case "${{ github.event_name }}" in
+          workflow_dispatch|workflow_call)
+            img_path="oci/${{ inputs.oci-image-name }}"
+            ;;
+          *)
             img_path="${{ steps.changed-files.outputs.all_changed_files }}"
             occurrences="${img_path//[^,]}"
             if [ ${#occurrences} -ne 0 ]
@@ -60,9 +63,8 @@ jobs:
               echo "ERR: can only build documentation for 1 image at a time, but trying to document ${img_path}"
               exit 1
             fi
-          else
-            img_path="oci/${{ inputs.oci-image-name }}"
-          fi
+            ;;
+          esac
           test -d "${img_path}"
           echo "img-name=$(basename ${img_path})" >> "$GITHUB_OUTPUT"
           echo "img-path=${img_path}" >> "$GITHUB_OUTPUT"
