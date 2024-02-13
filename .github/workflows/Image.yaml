@@ -474,7 +474,7 @@ jobs:
     needs: [prepare-releases]
     uses: ./.github/workflows/Release.yaml
     with:
-      oci-image-name: "${{ needs.prepare-build.outputs.oci-img-name }}"
+      oci-image-name: "${{ inputs.oci-image-name }}"
       image-trigger-cache-key: "${{ github.run_id }}-image-trigger"
     secrets: inherit
 
