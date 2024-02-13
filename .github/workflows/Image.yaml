@@ -27,16 +27,17 @@ on:
         required: false
         type: string
         default: "default-id"
-    workflow_call:
-      inputs:
-        oci-image-name:
-          description: "OCI image to build and test"
-          required: true
-        upload:
-          description: "Upload image to GHCR"
-          required: true
-          type: boolean
-          default: false
+  workflow_call:
+    inputs:
+      oci-image-name:
+        description: "OCI image to build and test"
+        type: string
+        required: true
+      upload:
+        description: "Upload image to GHCR"
+        required: true
+        type: boolean
+        default: false
 
 env:
   VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"
