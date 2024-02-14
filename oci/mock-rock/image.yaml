@@ -5,6 +5,7 @@ release:
     end-of-life: "2024-05-01T00:00:00Z"
     candidate: 1.0-22.04_candidate
   test:
+    end-of-life: "2026-05-01T00:00:00Z"
     beta: 1.0-22.04_beta
     
 upload:  
