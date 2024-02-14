@@ -106,7 +106,7 @@ I.e.:
 
      or
 
-  1. you have used this Juju controller locally before. This is the most straightforward solution. Remember, that it will use the configuration
+  2. you have used this Juju controller locally before. This is the most straightforward solution. Remember, that it will use the configuration
   used by the CLI at that moment. I.e. the fields are populated using the
   output from running the command: `juju show-controller --show-password`
   (which prints the contents of ~/.local/share/juju/)

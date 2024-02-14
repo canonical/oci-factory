@@ -94,7 +94,7 @@ pollute that environment. So let's create a dedicated VM,
 ```bash
 # From inside the PS6 environment, with the openstack credentials loaded
 openstack keypair list
-# Is there isn't a "rocks-ps6-keypair" entry, create one with:
+# If there isn't a "rocks-ps6-keypair" entry, create one with:
 #   openstack keypair create --private-key .ssh/rocks-ps6-key rocks-ps6-keypair
 
 openstack server create --flavor production-cpu2-ram4-disk20 \
