@@ -1,0 +1,11 @@
+version: 1
+
+upload:
+  - source: canonical/chiselled-python
+    commit: 3ce55f41e0e33ce1db3552fb18e8179c4a29941a
+    directory: python3.8/
+    release:
+      3.8-20.04:
+        end-of-life: "2025-01-26T00:00:00Z"
+        risks:
+          - edge

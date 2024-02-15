@@ -1,0 +1,32 @@
+version: 1
+
+application: Python
+is_chiselled: true
+description: |
+  Python is a high-level, general-purpose programming language. Its
+  design philosophy emphasizes code readability with the use of
+  significant indentation. Python is dynamically typed and
+  garbage-collected. It supports multiple programming paradigms,
+  including structured, object-oriented and functional programming.
+  Read more on [python.org](https://www.python.org/).
+
+  This image is a chiselled Ubuntu rock that contains only the Python
+  runtime and its standard libraries. It is production-ready and can
+  also be used as a base if additional application dependencies are
+  needed.
+
+debug:
+  text: |
+    ### Debugging
+
+    To debug the container:
+
+    ```bash
+    docker logs -f python-container
+    ```
+
+    To get an interactive python3 interpreter:
+
+    ```bash
+    docker exec -it python-container python3
+    ```
