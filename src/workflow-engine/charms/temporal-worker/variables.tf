@@ -1,5 +1,13 @@
 variable "juju_cloud_name" {
   description = "Name of the K8s Juju cloud, as listed by `juju clouds`"
+  type        = string
+  default     = "microk8s-rocks-ps6"
+}
+
+variable "oci-factory-model" {
+  description = "Name of the Juju model, as listed by `juju status`"
+  type        = string
+  default     = "microk8s-rocks-ps6-model"
 }
 
 variable "juju_application_name" {
@@ -11,7 +19,7 @@ variable "juju_application_name" {
 variable "juju_application_channel" {
   description = "Channel where to get the charm from"
   type        = string
-  default     = "edge"
+  default     = "stable"
 }
 
 ## env-file variables
