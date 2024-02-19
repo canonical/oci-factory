@@ -12,6 +12,7 @@ import re
 import subprocess
 from collections import defaultdict
 import yaml
+from src.image.utils.encoders import DateTimeEncoder
 from src.image.utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
 import src.shared.release_info as shared
 
@@ -201,11 +202,12 @@ for revision, tags in group_by_revision.items():
         github_tags.append(gh_release_info)
 
 print(
-    f"Updating {args.all_releases} file with:\n" f"{json.dumps(all_releases, indent=2)}"
+    f"Updating {args.all_releases} file with:\n"
+    f"{json.dumps(all_releases, indent=2, cls=DateTimeEncoder)}"
 )
 
 with open(args.all_releases, "w", encoding="UTF-8") as fd:
-    json.dump(all_releases, fd, indent=4)
+    json.dump(all_releases, fd, indent=4, cls=DateTimeEncoder)
 
 matrix = {"include": github_tags}
 
