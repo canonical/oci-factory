@@ -75,7 +75,7 @@ for track, risks in image_trigger.release.items():
         all_releases[track] = {}
 
     for risk, value in risks.dict(exclude_none=True).items():
-        if risk == "end-of-life":
+        if risk in ["end-of-life", "end_of_life"]:
             all_releases[track]["end-of-life"] = value
             continue
 
@@ -205,7 +205,7 @@ print(
 )
 
 with open(args.all_releases, "w", encoding="UTF-8") as fd:
-    json.dump(all_releases, fd, indent=4)    
+    json.dump(all_releases, fd, indent=4)
 
 matrix = {"include": github_tags}
 
