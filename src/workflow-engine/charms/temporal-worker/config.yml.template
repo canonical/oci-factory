@@ -2,7 +2,6 @@
 # already sets these parameters within the Juju application resource.
 temporal-worker-k8s:
   # Authentication details
-  auth-enabled: true
   auth-provider: "candid"
   # The candid authentication details are sensitive and individual, and should
   # only be set at deployment time

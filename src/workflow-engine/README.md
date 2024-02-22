@@ -82,3 +82,61 @@ microk8s/3 -- microk8s kubectl get nodes`. You'll see something like:
 
 - the cluster nodes should also be accessible via SSH: `juju ssh microk8s/3` or
 `ssh ubuntu@<ip>`.
+
+### Deploy a dedicated VM for the microk8s' Juju Controller
+
+In order to deploy Kubernetes charms to the above microk8s cluster, we'll need
+to bootstrap a Juju controller for that cloud.
+In theory, we could use PS6 Juju client for this, but it is better not to
+pollute that environment. So let's create a dedicated VM,
+`rocks-ps6-juju-client`:
+
+```bash
+# From inside the PS6 environment, with the openstack credentials loaded
+openstack keypair list
+# If there isn't a "rocks-ps6-keypair" entry, create one with:
+#   openstack keypair create --private-key .ssh/rocks-ps6-key rocks-ps6-keypair
+
+openstack server create --flavor production-cpu2-ram4-disk20 \
+    --image <take-an-ID-from-openstack image list> \
+    --key-name rocks-ps6-keypair \
+    --security-group <same-as-one-of-microk8s-instances> \
+    rocks-ps6-juju-client
+
+# Copy the microk8s KUBECONFIG file to the VM (we'll need it for Juju)
+scp .kube/config ubuntu@<rocks-ps6-juju-client-ip>:/home/ubuntu/.kube/config
+
+# SSH into the instance
+ssh ubuntu@<rocks-ps6-juju-client-ip>
+
+# Put the KUBECONFIG file in the right path and set up Juju
+mkdir .kube
+mv config .kube/
+sudo snap install juju
+mkdir -p ~/.local/share/juju
+
+# You should now see microk8s listed in the Juju clouds
+juju clouds
+
+# Bootstrap the Juju controller for the microk8s cloud
+# NOTE: we need to treat this as an external cloud, so follow this:
+# https://juju.is/docs/juju/manage-clouds#heading--add-a-kubernetes-cloud
+/snap/juju/current/bin/juju add-k8s microk8s-rocks-ps6
+juju clouds
+juju bootstrap microk8s-rocks-ps6 microk8s-rocks-ps6-controller --config controller-service-type=loadbalancer
+juju controllers
+
+# Add the Juju model
+juju add-model microk8s-rocks-ps6-model
+
+# NOTE: typically, we'll use Terraform to manage Juju charms, so install it too
+sudo snap install terraform --classic
+
+# We might also need poetry to build the wheel file for the charm, so...
+sudo apt update
+sudo apt install python3-virtualenv
+virtualenv venv
+. venv/bin/activate
+# Drop the https_proxy is not running on PS6
+https_proxy="http://squid.internal:3128" pip install poetry
+```
