@@ -15,6 +15,7 @@ import io
 import json
 import logging
 import os
+from datetime import datetime, timezone
 import requests
 import swiftclient
 import sys
@@ -175,7 +176,7 @@ with tempfile.TemporaryDirectory() as temp_dir:
                     f"{tags.get('message', 'Image tags not found in registry')}. Skip!"
                 )
                 continue
-            
+
             for tag in imageTagDetails:
                 if tag["imageDetail"].get("imageDigest") != revision_digest:
                     continue
@@ -205,6 +206,10 @@ with tempfile.TemporaryDirectory() as temp_dir:
                     release_to[to_track]["end-of-life"] = releases[to_track][
                         "end-of-life"
                     ]
+                    if release_to[to_track]["end-of-life"] < datetime.now(
+                        timezone.utc
+                    ).strftime("%Y-%m-%dT%H:%M:%SZ"):
+                        del release_to[to_track]
 
             if release_to:
                 build_and_upload_data["release"] = release_to

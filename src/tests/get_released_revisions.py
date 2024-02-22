@@ -11,11 +11,12 @@ Activity that runs from within a scheduled workflow.
 """
 
 import argparse
-import docker
 import json
 import logging
 import os
 import sys
+from datetime import datetime, timezone
+import docker
 
 SKOPEO_IMAGE = os.getenv("SKOPEO_IMAGE", "quay.io/skopeo/stable:v1.13")
 REGISTRY = "ghcr.io/canonical/oci-factory"
@@ -84,6 +85,11 @@ if __name__ == "__main__":
 
         released_revisions[img] = []
         for risks in releases.values():
+            if risks.get("end-of-life") and risks["end-of-life"] < datetime.now(
+                timezone.utc
+            ).strftime("%Y-%m-%dT%H:%M:%SZ"):
+                continue
+
             for targets in risks.values():
                 try:
                     if int(targets["target"]) in released_revisions[img]:
