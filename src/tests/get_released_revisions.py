@@ -84,10 +84,13 @@ if __name__ == "__main__":
             releases = json.load(rf)
 
         released_revisions[img] = []
-        for risks in releases.values():
+        for revision, risks in releases.items():
             if risks.get("end-of-life") and risks["end-of-life"] < datetime.now(
                 timezone.utc
             ).strftime("%Y-%m-%dT%H:%M:%SZ"):
+                logging.info(
+                    f"Skipping revision {revision} because it reached its end of life"
+                )
                 continue
 
             for targets in risks.values():

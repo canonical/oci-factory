@@ -201,15 +201,20 @@ with tempfile.TemporaryDirectory() as temp_dir:
                     release_to[str(to_track)] = {"risks": [to_risk]}
                 else:
                     release_to[to_track]["risks"].append(to_risk)
+
                 # add end-of-life field to each track
                 if releases[to_track].get("end-of-life"):
-                    release_to[to_track]["end-of-life"] = releases[to_track][
-                        "end-of-life"
-                    ]
                     if release_to[to_track]["end-of-life"] < datetime.now(
                         timezone.utc
                     ).strftime("%Y-%m-%dT%H:%M:%SZ"):
-                        del release_to[to_track]
+                        logging.info(
+                            f"Skipping revision {to_track} because it reached "
+                            "its end of life"
+                        )
+                        continue
+                    release_to[to_track]["end-of-life"] = releases[to_track][
+                        "end-of-life"
+                    ]
 
             if release_to:
                 build_and_upload_data["release"] = release_to
