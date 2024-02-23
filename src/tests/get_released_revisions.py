@@ -84,14 +84,19 @@ if __name__ == "__main__":
             releases = json.load(rf)
 
         released_revisions[img] = []
-        for revision, risks in releases.items():
+        for track, risks in releases.items():
             if risks.get("end-of-life") and risks["end-of-life"] < datetime.now(
                 timezone.utc
             ).strftime("%Y-%m-%dT%H:%M:%SZ"):
                 logging.info(
-                    f"Skipping revision {revision} because it reached its end of life"
+                    f"Skipping track {track} because it reached its end of life"
+                    f": {risks['end-of-life']}"
                 )
                 continue
+            elif not risks.get("end-of-life"):
+                logging.warning(
+                    f"Track {track} is missing its end-of-life field"
+                )
 
             for targets in risks.values():
                 try:
