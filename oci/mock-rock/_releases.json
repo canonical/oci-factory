@@ -8,18 +8,20 @@
         },
         "edge": {
             "target": "latest_beta"
-        }
+        },
+        "end-of-life": "2024-05-01T00:00:00Z"
     },
     "1.0-22.04": {
         "candidate": {
-            "target": "176"
+            "target": "182"
         },
         "beta": {
-            "target": "176"
+            "target": "182"
         },
         "edge": {
-            "target": "176"
-        }
+            "target": "182"
+        },
+        "end-of-life": "2024-05-01T00:00:00Z"
     },
     "test": {
         "beta": {
@@ -27,6 +29,7 @@
         },
         "edge": {
             "target": "test_beta"
-        }
+        },
+        "end-of-life": "2026-05-01T00:00:00Z"
     }
 }

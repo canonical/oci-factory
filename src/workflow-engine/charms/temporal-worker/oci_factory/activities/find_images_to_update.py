@@ -15,6 +15,7 @@ import io
 import json
 import logging
 import os
+from datetime import datetime, timezone
 import requests
 import swiftclient
 import sys
@@ -46,7 +47,7 @@ _, swift_oci_factory_objs = swift_conn.get_container(SWIFT_CONTAINER)
 GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
 
 
-def find_released_revisions(releases_json: dict) -> dict:
+def find_released_revisions(releases_json: dict) -> list:
     """Given the contents of a _release.json file,
     find the image revision number that are currently released"""
     released_revisions = []
@@ -175,7 +176,7 @@ with tempfile.TemporaryDirectory() as temp_dir:
                     f"{tags.get('message', 'Image tags not found in registry')}. Skip!"
                 )
                 continue
-            
+
             for tag in imageTagDetails:
                 if tag["imageDetail"].get("imageDigest") != revision_digest:
                     continue
@@ -200,6 +201,23 @@ with tempfile.TemporaryDirectory() as temp_dir:
                     release_to[str(to_track)] = {"risks": [to_risk]}
                 else:
                     release_to[to_track]["risks"].append(to_risk)
+
+                # add end-of-life field to each track
+                if releases[to_track].get("end-of-life"):
+                    if releases[to_track]["end-of-life"] < datetime.now(
+                        timezone.utc
+                    ).strftime("%Y-%m-%dT%H:%M:%SZ"):
+                        logging.info(
+                            f"Skipping track {to_track} because it reached its "
+                            f"end of life: {releases[to_track]['end-of-life']}"
+                        )
+                        continue
+                    release_to[to_track]["end-of-life"] = releases[to_track][
+                        "end-of-life"
+                    ]
+                else:
+                    logging.warning(f"Track {to_track} is missing its end-of-"
+                    "life field")
 
             if release_to:
                 build_and_upload_data["release"] = release_to
