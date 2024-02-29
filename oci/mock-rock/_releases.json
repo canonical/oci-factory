@@ -13,13 +13,13 @@
     },
     "1.0-22.04": {
         "candidate": {
-            "target": "186"
+            "target": "187"
         },
         "beta": {
-            "target": "186"
+            "target": "187"
         },
         "edge": {
-            "target": "186"
+            "target": "187"
         },
         "end-of-life": "2024-05-01T00:00:00Z"
     },
