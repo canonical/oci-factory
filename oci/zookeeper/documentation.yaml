@@ -18,6 +18,41 @@ description: |
   whereas from version 3.8.2 onward the images are now ROCKs. As such the
   entrypoint is now Pebble. Read more on the
   [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
-
-
-  
+ --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 2181:2181
+  access: Access your ZooKeeper server at `http://localhost:2181`.
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone.
+  - type: -p
+    value: '2181:2181'
+    description: Expose ZooKeeper server on `localhost:2181`.
+  - type: -v
+    value: "/path/to/config/file:/etc/zookeeper/zoo.cfg"
+    description: Local ZooKeeper configuration file.
+  - type: -v
+    value: "zookeeperData:/var/lib/zookeeper/data"
+    description: > 
+      "Persist data in a docker volume named `zookeeperData`. "
+      "Make sure that the mount point is consistent with the configuration property `dataDir`.
+  - type: -v
+    value: "zookeeperLogData:/var/lib/zookeeper/data-log"
+    description: > 
+      "Persist data in a docker volume named `zookeeperLogData`. "
+      "Make sure that the mount point is consistent with the configuration property `dataLogDir`.
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+    ```bash
+    docker logs -f <zookeeper-container>
+    ```
+    
+    To get an interactive shell:
+    ```bash
+    docker exec -it <zookeeper-container> /bin/bash
+    ```
