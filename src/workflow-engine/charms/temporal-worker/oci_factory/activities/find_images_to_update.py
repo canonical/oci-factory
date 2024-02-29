@@ -54,11 +54,8 @@ def find_released_revisions(releases_json: dict) -> list:
     for track, risks in releases_json.items():
         for risk, targets in risks.items():
             try:
-                if isinstance(targets, dict):
-                    revision = int(targets["target"])
-                else:
-                    continue
-            except ValueError:
+                revision = int(targets["target"])
+            except (ValueError, TypeError):
                 # this target is following another tag and thus is not
                 # a revision number
                 continue
