@@ -55,7 +55,7 @@ def find_released_revisions(releases_json: dict) -> list:
         for risk, targets in risks.items():
             try:
                 revision = int(targets["target"])
-            except ValueError:
+            except (ValueError, TypeError):
                 # this target is following another tag and thus is not
                 # a revision number
                 continue
