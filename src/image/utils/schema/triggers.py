@@ -19,16 +19,16 @@ class ImageReachedEol(Exception):
 class ImageUploadReleaseSchema(pydantic.BaseModel):
     """Schema of the release option for uploads in the image.yaml trigger"""
 
-    end_of_life: Optional[datetime] = pydantic.Field(alias="end-of-life")
+    end_of_life: datetime = pydantic.Field(alias="end-of-life")
     risks: List[Literal["edge", "beta", "candidate", "stable"]]
 
     class Config:
         extra = pydantic.Extra.forbid
 
     @pydantic.validator("end_of_life")
-    def ensure_still_supported(cls, v: Optional[datetime]) -> Optional[datetime]:
+    def ensure_still_supported(cls, v: datetime) -> datetime:
         """ensure that the end of life isn't reached."""
-        if v and v < datetime.now(timezone.utc):
+        if v < datetime.now(timezone.utc):
             raise ImageReachedEol("This track has reached its end of life")
         return v
 
@@ -48,7 +48,7 @@ class ImageUploadSchema(pydantic.BaseModel):
 class ChannelsSchema(pydantic.BaseModel):
     """Schema of the 'release' tracks within the image.yaml file."""
 
-    end_of_life: Optional[datetime] = pydantic.Field(alias="end-of-life")
+    end_of_life: datetime = pydantic.Field(alias="end-of-life")
     stable: Optional[str]
     candidate: Optional[str]
     beta: Optional[str]
@@ -67,9 +67,9 @@ class ChannelsSchema(pydantic.BaseModel):
         return values
 
     @pydantic.validator("end_of_life")
-    def ensure_still_supported(cls, v: Optional[datetime]) -> Optional[datetime]:
+    def ensure_still_supported(cls, v: datetime) -> datetime:
         """ensure that the end of life isn't reached."""
-        if v and v < datetime.now(timezone.utc):
+        if v < datetime.now(timezone.utc):
             raise ImageReachedEol("This track has reached its end of life")
         return v
 
