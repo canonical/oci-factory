@@ -18,7 +18,8 @@ description: |
   whereas from version 3.8.2 onward the images are now ROCKs. As such the
   entrypoint is now Pebble. Read more on the
   [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
- --- USAGE INFORMATION ---
+
+# --- USAGE INFORMATION ---
 docker:
   parameters:
     - -p 2181:2181
