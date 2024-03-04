@@ -1,0 +1,68 @@
+name: Build rock
+
+on:
+  workflow_call:
+    inputs:
+      oci-archive-name:
+        description: "Final filename of the rock's OCI archive"
+        type: string
+        required: true
+      oci-factory-path:
+        description: "Path, in the OCI Factory, to this rock"
+        type: string
+        required: true
+      rock-name:
+        description: "Name of the rock"
+        type: string
+        required: true
+      rock-repo:
+        description: "Public Git repo where to build the rock from"
+        type: string
+        required: true
+      rock-repo-commit:
+        description: "Git ref from where to build the rock from"
+        type: string
+        required: true
+      rockfile-directory:
+        description: "Directory, in 'rock-repo', where to find the rockcraft.yaml file"
+        type: string
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Clone GitHub image repository
+        uses: actions/checkout@v3
+        id: clone-image-repo
+        continue-on-error: true
+        with:
+          repository: ${{ inputs.rock-repo }}
+          fetch-depth: 0
+      - name: Clone generic image repository
+        if: ${{ steps.clone-image-repo.outcome == 'failure' }}
+        run: |
+          git clone ${{ inputs.rock-repo }} .
+      - run: git checkout ${{ inputs.rock-repo-commit }}
+      - name: Validate image naming and base
+        working-directory: ${{ inputs.rockfile-directory }}
+        run: |
+          rock_name=`cat rockcraft.y*ml | yq -r .name`
+          if [[ "${{ inputs.oci-factory-path }}" != *"${rock_name}"* ]]
+          then
+            echo "ERROR: the ROCK's name '${rock_name}' must match the OCI folder name!"
+            exit 1
+          fi
+      - name: Build ROCK ${{ inputs.rock-name }}
+        id: rockcraft
+        uses: canonical/craft-actions/rockcraft-pack@main
+        with:
+          path: "${{ inputs.rockfile-directory }}"
+          verbosity: debug
+      - name: Rename ROCK OCI archive
+        run: |
+          mv ${{ steps.rockcraft.outputs.rock }} ${{ inputs.oci-archive-name }}
+      - uses: actions/cache/save@v3
+        with:
+          path: ${{ inputs.oci-archive-name }}
+          key: ${{ github.run_id }}-${{ inputs.oci-archive-name }}
