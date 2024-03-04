@@ -1,10 +1,15 @@
-name: _Test OCI Factory
+name: _Test OCI Factory | mock-rock
 on:
-  push:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
     paths:
       - ".github/workflows/*"
       - "!.github/workflows/CLA-Check.yaml"
       - "!.github/workflows/PR-Validator.yaml"
+      - "!.github/workflows/_Auto-updates.yaml"
+      - "!.github/workflows/Continuous-Testing.yaml"
       - "oci/mock-*"
       - "examples/**"
       - "src/**"
@@ -12,12 +17,9 @@ on:
 
 jobs:
   test-workflows:
-    name: Trigger image workflows for ${{ matrix.oci-image }}
-    strategy:
-      matrix:
-        oci-image: [mock-rock]
+    name: Trigger internal tests for mock-rock
     uses: ./.github/workflows/Image.yaml
     with:
-      oci-image-name: "${{ matrix.oci-image }}"
+      oci-image-name: "mock-rock"
       upload: true
     secrets: inherit
