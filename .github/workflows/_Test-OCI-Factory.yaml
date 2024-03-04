@@ -8,6 +8,7 @@ on:
       - "oci/mock-*"
       - "examples/**"
       - "src/**"
+      - "!src/workflow-engine/**"
 
 jobs:
   test-workflows:
