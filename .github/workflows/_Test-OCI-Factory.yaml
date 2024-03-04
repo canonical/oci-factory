@@ -10,7 +10,6 @@ on:
       - "!.github/workflows/PR-Validator.yaml"
       - "!.github/workflows/_Auto-updates.yaml"
       - "!.github/workflows/Continuous-Testing.yaml"
-      - "oci/mock-*"
       - "examples/**"
       - "src/**"
       - "!src/workflow-engine/**"
