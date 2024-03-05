@@ -27,6 +27,10 @@ on:
         description: "Directory, in 'rock-repo', where to find the rockcraft.yaml file"
         type: string
         required: true
+    outputs:
+      rock-cache-key:
+        description: "The cache key where other jobs can restore the assembled rock from"
+        value: ${{ jobs.assemble-rock.outputs.rock-cache-key }}
 
 jobs:
   prepare-multi-arch-matrix:
@@ -90,6 +94,8 @@ jobs:
       matrix: ${{ fromJSON(needs.prepare-multi-arch-matrix.outputs.build-for) }}
     runs-on: ${{ matrix.runner }}
     name: 'Build ${{ inputs.rock-name }} | ${{ matrix.architecture }}'
+    outputs:
+      multi-arch-cache-key: ${{ steps.multi-arch-cache-key.outputs.value }}
     steps:
       - name: Clone GitHub image repository
         uses: actions/checkout@v3
@@ -103,7 +109,7 @@ jobs:
         run: |
           git clone ${{ inputs.rock-repo }} .
       - run: git checkout ${{ inputs.rock-repo-commit }}
-      - if: ${{ matrix.architecture != 'amd64' }}
+      - if: matrix.architecture != 'amd64'
         run: sudo snap install yq --channel=v4/stable
       - name: Validate image naming and base
         working-directory: ${{ inputs.rockfile-directory }}
@@ -121,35 +127,49 @@ jobs:
           path: "${{ inputs.rockfile-directory }}"
           verbosity: debug
       - name: Rename ROCK OCI archive
+        id: rock
         run: |
-          mv ${{ steps.rockcraft.outputs.rock }} ${{ inputs.oci-archive-name }}
+          mv ${{ steps.rockcraft.outputs.rock }} $(basename ${{ steps.rockcraft.outputs.rock }})
+          echo "filename=$(basename ${{ steps.rockcraft.outputs.rock }})" >> $GITHUB_OUTPUT
       - name: Upload ${{ inputs.rock-name }} for ${{ matrix.architecture }}
         uses: actions/upload-artifact@v3
-        env:
-          NAME: ${{ needs.prepare-multi-arch-matrix.outputs.is-multi-arch == 1 && format('{0}-{1}', inputs.oci-archive-name, matrix.architecture) || inputs.oci-archive-name }}
         with:
-          name: ${{ env.NAME }}
-          path: ${{ inputs.oci-archive-name }}
+          name: ${{ steps.rock.outputs.filename }}
+          path: ${{ steps.rock.outputs.filename }}
           if-no-files-found: error
+      - id: multi-arch-cache-key
+        run: echo "value=${{ github.run_id }}-multi-arch" >> $GITHUB_OUTPUT
+      - uses: actions/cache/save@v3
+        with:
+          path: ${{ steps.rock.outputs.filename }}
+          key: ${{ steps.multi-arch-cache-key.outputs.value }}
 
-  create-multi-arch-rock:
+  assemble-rock:
     needs: [prepare-multi-arch-matrix, build]
     runs-on: ubuntu-22.04
-    if: needs.prepare-multi-arch-matrix.outputs.is-multi-arch == 1
     env:
       DOWNLOAD_PATH: rocks
+    outputs:
+      rock-cache-key: ${{ steps.rock-cache-key.outputs.value }}
     steps:
-      - run: apt update && apt install buildah
+      - run: sudo apt update && sudo apt install buildah -y
       - uses: actions/download-artifact@v4
         with:
           path: ${{ env.DOWNLOAD_PATH }}
-          pattern: ${{ inputs.oci-archive-name }}-*
           merge-multiple: true
+      - uses: actions/cache/restore@v3
+        with:
+          path: ${{ inputs.rock-name }}*rock
+          key: ${{ needs.build.outputs.multi-arch-cache-key }}
+          fail-on-cache-miss: true
       - name: Merge single-arch rocks into multi-arch OCI archive
         run: |
+          set -xe
+          ls ./*
           buildah manifest create multi-arch-rock
-          for rock in `find ${{ env.DOWNLOAD_PATH }}`
+          for rock in `find *.rock`
           do
+            test -f $rock
             buildah manifest add multi-arch-rock oci-archive:$rock
           done
           buildah manifest push --all multi-arch-rock oci-archive:${{ inputs.oci-archive-name }}
@@ -159,3 +179,9 @@ jobs:
           name: ${{ inputs.oci-archive-name }}
           path: ${{ inputs.oci-archive-name }}
           if-no-files-found: error
+      - id: rock-cache-key
+        run: echo "value=${{ github.run_id }}-${{ inputs.oci-archive-name }}" >> $GITHUB_OUTPUT
+      - uses: actions/cache/save@v3
+        with:
+          path: ${{ inputs.oci-archive-name }}
+          key: ${{ steps.rock-cache-key.outputs.value }}

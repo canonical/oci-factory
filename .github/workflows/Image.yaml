@@ -160,7 +160,7 @@ jobs:
       oci-image-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}"
       oci-image-path: "oci/${{ matrix.name }}"
       test-from: "cache"
-      cache-key: "${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}"
+      cache-key: ${{ needs.run-build.outputs.rock-cache-key }}
     secrets: inherit
 
   upload:
@@ -214,7 +214,7 @@ jobs:
       - uses: actions/cache/restore@v3
         with:
           path: ${{ env.OCI_ARCHIVE_NAME }}
-          key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}
+          key: ${{ needs.run-build.outputs.rock-cache-key }}
           fail-on-cache-miss: true
 
       - name: Infer track name
