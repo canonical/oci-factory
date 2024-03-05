@@ -104,7 +104,7 @@ jobs:
           git clone ${{ inputs.rock-repo }} .
       - run: git checkout ${{ inputs.rock-repo-commit }}
       - if: ${{ matrix.architecture != 'amd64' }}
-        run: snap install yq --channel=v4/stable
+        run: sudo snap install yq --channel=v4/stable
       - name: Validate image naming and base
         working-directory: ${{ inputs.rockfile-directory }}
         run: |
