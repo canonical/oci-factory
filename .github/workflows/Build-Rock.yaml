@@ -97,8 +97,6 @@ jobs:
       matrix: ${{ fromJSON(needs.prepare-multi-arch-matrix.outputs.build-for) }}
     runs-on: ${{ matrix.runner }}
     name: 'Build ${{ inputs.rock-name }} | ${{ matrix.architecture }}'
-    outputs:
-      multi-arch-cache-key: ${{ steps.multi-arch-cache-key.outputs.value }}
     steps:
       - name: Clone GitHub image repository
         uses: actions/checkout@v4
@@ -135,19 +133,12 @@ jobs:
           mkdir ${{ env.ROCKS_CI_FOLDER }}
           cp ${{ steps.rockcraft.outputs.rock }} ${{ env.ROCKS_CI_FOLDER }}/$(basename ${{ steps.rockcraft.outputs.rock }})
           echo "filename=$(basename ${{ steps.rockcraft.outputs.rock }})" >> $GITHUB_OUTPUT
-
       - name: Upload ${{ inputs.rock-name }} for ${{ matrix.architecture }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.rock.outputs.filename }}
           path: ${{ steps.rockcraft.outputs.rock }}
           if-no-files-found: error
-      - id: multi-arch-cache-key
-        run: echo "value=${{ github.run_id }}-multi-arch" >> $GITHUB_OUTPUT
-      - uses: actions/cache/save@v4
-        with:
-          path: ${{ env.ROCKS_CI_FOLDER }}
-          key: ${{ steps.multi-arch-cache-key.outputs.value }}
 
   assemble-rock:
     needs: [prepare-multi-arch-matrix, build]
@@ -157,18 +148,13 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         id: download
-      - uses: actions/cache/restore@v4
-        with:
-          path: ${{ env.ROCKS_CI_FOLDER }}
-          key: ${{ needs.build.outputs.multi-arch-cache-key }}
-          fail-on-cache-miss: true
       - run: sudo apt update && sudo apt install buildah -y
       - name: Merge single-arch rocks into multi-arch OCI archive
         run: |
           set -xe
           ls ./*
           buildah manifest create multi-arch-rock
-          for rock in `find ${{ steps.download.outputs.download-path }} -name *.rock`
+          for rock in `find *.rock/*`
           do
             test -f $rock
             buildah manifest add multi-arch-rock oci-archive:$rock
