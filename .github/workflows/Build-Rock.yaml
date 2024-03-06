@@ -152,24 +152,23 @@ jobs:
   assemble-rock:
     needs: [prepare-multi-arch-matrix, build]
     runs-on: ubuntu-22.04
-    env:
-      DOWNLOAD_PATH: rocks
     outputs:
       rock-cache-key: ${{ steps.rock-cache-key.outputs.value }}
     steps:
       - uses: actions/download-artifact@v4
+        id: download
       - uses: actions/cache/restore@v4
         with:
           path: ${{ env.ROCKS_CI_FOLDER }}
           key: ${{ needs.build.outputs.multi-arch-cache-key }}
           fail-on-cache-miss: true
+      - run: sudo apt update && sudo apt install buildah -y
       - name: Merge single-arch rocks into multi-arch OCI archive
         run: |
-          sudo apt update && sudo apt install buildah -y
           set -xe
           ls ./*
           buildah manifest create multi-arch-rock
-          for rock in `find *.rock`
+          for rock in `find ${{ steps.download.outputs.download-path }} -name *.rock`
           do
             test -f $rock
             buildah manifest add multi-arch-rock oci-archive:$rock
