@@ -18,7 +18,7 @@ jobs:
       mattermost-channels: ${{ steps.get-contacts.outputs.mattermost-channels }}
       oci-img-name: ${{ steps.get-image-name.outputs.img-name }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Get image name
         id: get-image-name
@@ -47,7 +47,7 @@ jobs:
     if: ${{ github.event_name == 'release' }}
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Build release summary
         id: get-summary
@@ -79,7 +79,7 @@ jobs:
     needs: [get-contacts]
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Build package summary
         id: get-summary

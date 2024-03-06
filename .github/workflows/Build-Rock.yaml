@@ -40,7 +40,7 @@ jobs:
       is-multi-arch: ${{ steps.rock-platforms.outputs.is-multi-arch }}
     steps:
       - name: Clone GitHub image repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         id: clone-image-repo
         continue-on-error: true
         with:
@@ -51,7 +51,7 @@ jobs:
         run: |
           git clone ${{ inputs.rock-repo }} .
       - run: git checkout ${{ inputs.rock-repo-commit }}
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       - run: pip install pyyaml
@@ -98,7 +98,7 @@ jobs:
       multi-arch-cache-key: ${{ steps.multi-arch-cache-key.outputs.value }}
     steps:
       - name: Clone GitHub image repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         id: clone-image-repo
         continue-on-error: true
         with:
@@ -132,14 +132,14 @@ jobs:
           mv ${{ steps.rockcraft.outputs.rock }} $(basename ${{ steps.rockcraft.outputs.rock }})
           echo "filename=$(basename ${{ steps.rockcraft.outputs.rock }})" >> $GITHUB_OUTPUT
       - name: Upload ${{ inputs.rock-name }} for ${{ matrix.architecture }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.rock.outputs.filename }}
           path: ${{ steps.rock.outputs.filename }}
           if-no-files-found: error
       - id: multi-arch-cache-key
         run: echo "value=${{ github.run_id }}-multi-arch" >> $GITHUB_OUTPUT
-      - uses: actions/cache/save@v3
+      - uses: actions/cache/save@v4
         with:
           path: ${{ steps.rock.outputs.filename }}
           key: ${{ steps.multi-arch-cache-key.outputs.value }}
@@ -157,7 +157,7 @@ jobs:
         with:
           path: ${{ env.DOWNLOAD_PATH }}
           merge-multiple: true
-      - uses: actions/cache/restore@v3
+      - uses: actions/cache/restore@v4
         with:
           path: ${{ inputs.rock-name }}*rock
           key: ${{ needs.build.outputs.multi-arch-cache-key }}
@@ -174,14 +174,14 @@ jobs:
           done
           buildah manifest push --all multi-arch-rock oci-archive:${{ inputs.oci-archive-name }}
       - name: Upload multi-arch ${{ inputs.oci-archive-name }} OCI archive
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.oci-archive-name }}
           path: ${{ inputs.oci-archive-name }}
           if-no-files-found: error
       - id: rock-cache-key
         run: echo "value=${{ github.run_id }}-${{ inputs.oci-archive-name }}" >> $GITHUB_OUTPUT
-      - uses: actions/cache/save@v3
+      - uses: actions/cache/save@v4
         with:
           path: ${{ inputs.oci-archive-name }}
           key: ${{ steps.rock-cache-key.outputs.value }}

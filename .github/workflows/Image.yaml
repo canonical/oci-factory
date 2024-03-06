@@ -57,7 +57,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Infer number of image triggers
         uses: tj-actions/changed-files@v35
@@ -97,7 +97,7 @@ jobs:
         if: ${{ inputs.b64-image-trigger != '' }}
         run: echo ${{ inputs.b64-image-trigger }} | base64 -d > ${{ steps.validate-image.outputs.img-path }}/image.yaml
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
@@ -129,7 +129,7 @@ jobs:
 
           echo "revision-data-cache-key=${{ github.run_id }}-${{ env.DATA_DIR }}" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache/save@v3
+      - uses: actions/cache/save@v4
         with:
           path: ${{ steps.prepare-matrix.outputs.revision-data-dir }}
           key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
@@ -176,9 +176,9 @@ jobs:
     outputs:
       artefacts-hashes: ${{ steps.artefacts-hashes.outputs.hashes }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
@@ -196,7 +196,7 @@ jobs:
           pip install -r src/uploads/requirements.txt -r src/image/requirements.txt
 
       - name: Clone GitHub image repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         id: clone-image-repo
         continue-on-error: true
         with:
@@ -211,7 +211,7 @@ jobs:
 
       - run: cd source && git checkout ${{ matrix.commit }}
 
-      - uses: actions/cache/restore@v3
+      - uses: actions/cache/restore@v4
         with:
           path: ${{ env.OCI_ARCHIVE_NAME }}
           key: ${{ needs.run-build.outputs.rock-cache-key }}
@@ -233,7 +233,7 @@ jobs:
           echo "name=${name}" >> "$GITHUB_OUTPUT"
           echo "canonical-tag=${canonical_tag}" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache/save@v3
+      - uses: actions/cache/save@v4
         with:
           path: ${{ steps.rename-oci-archive.outputs.name }}
           key: ${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}
@@ -284,7 +284,7 @@ jobs:
           echo "sboms=${all_sboms_zip}" >> "$GITHUB_OUTPUT"
 
       - name: Fetch vulnerability artifacts for hashing
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: ${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
           key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
@@ -309,14 +309,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload SBOM
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.generate-sboms.outputs.sboms }}
           path: ${{ steps.generate-sboms.outputs.sboms }}
           if-no-files-found: error
 
       - name: Upload image
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.rename-oci-archive.outputs.name }}
           path: ${{ steps.rename-oci-archive.outputs.name }}
@@ -387,11 +387,11 @@ jobs:
     env:
       REVISION_DATA_DIR: revision-data
     steps:
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
 
@@ -399,7 +399,7 @@ jobs:
         if: ${{ inputs.b64-image-trigger != '' }}
         run: echo ${{ inputs.b64-image-trigger }} | base64 -d > ${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml
 
-      - uses: actions/cache/restore@v3
+      - uses: actions/cache/restore@v4
         with:
           path: ${{ env.REVISION_DATA_DIR }}
           key: ${{ needs.prepare-build.outputs.revision-data-cache-key }}
@@ -431,7 +431,7 @@ jobs:
               --revision-data-file "${{ env.REVISION_DATA_DIR }}/${revision_file}"
           done
 
-      - uses: actions/cache/save@v3
+      - uses: actions/cache/save@v4
         with:
           path: ${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml
           key: ${{ github.run_id }}-image-trigger
@@ -477,7 +477,7 @@ jobs:
       #     cosign sign-blob --key cosign.key --output-signature provenance.json.sig provenance.json
 
       # - name: Upload verification keys
-      #   uses: actions/upload-artifact@v3
+      #   uses: actions/upload-artifact@v4
       #   with:
       #     name: verify
       #     path: |
@@ -490,14 +490,14 @@ jobs:
       #   run: sha256sum * > SHA256SUMS || true
 
       # - name: Upload SHA256SUMS file
-      #   uses: actions/upload-artifact@v3
+      #   uses: actions/upload-artifact@v4
       #   with:
       #     name: SHA256SUMS
       #     path: SHA256SUMS
       #     if-no-files-found: error
 
       - name: Upload provenance file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: provenance
           path: provenance.json
@@ -520,9 +520,9 @@ jobs:
     needs: [prepare-build, run-build, upload, prepare-releases, generate-provenance]
     if: ${{ always() && contains(needs.*.result, 'failure') && github.event_name != 'pull_request' }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
           
