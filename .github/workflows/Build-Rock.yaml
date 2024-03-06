@@ -32,6 +32,9 @@ on:
         description: "The cache key where other jobs can restore the assembled rock from"
         value: ${{ jobs.assemble-rock.outputs.rock-cache-key }}
 
+env:
+  ROCKS_CI_FOLDER: ci-rocks
+
 jobs:
   prepare-multi-arch-matrix:
     runs-on: ubuntu-22.04
@@ -129,19 +132,21 @@ jobs:
       - name: Rename ROCK OCI archive
         id: rock
         run: |
-          mv ${{ steps.rockcraft.outputs.rock }} $(basename ${{ steps.rockcraft.outputs.rock }})
+          mkdir ${{ env.ROCKS_CI_FOLDER }}
+          cp ${{ steps.rockcraft.outputs.rock }} ${{ env.ROCKS_CI_FOLDER }}/$(basename ${{ steps.rockcraft.outputs.rock }})
           echo "filename=$(basename ${{ steps.rockcraft.outputs.rock }})" >> $GITHUB_OUTPUT
+
       - name: Upload ${{ inputs.rock-name }} for ${{ matrix.architecture }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.rock.outputs.filename }}
-          path: ${{ steps.rock.outputs.filename }}
+          path: ${{ steps.rockcraft.outputs.rock }}
           if-no-files-found: error
       - id: multi-arch-cache-key
         run: echo "value=${{ github.run_id }}-multi-arch" >> $GITHUB_OUTPUT
       - uses: actions/cache/save@v4
         with:
-          path: ${{ steps.rock.outputs.filename }}
+          path: ${{ env.ROCKS_CI_FOLDER }}
           key: ${{ steps.multi-arch-cache-key.outputs.value }}
 
   assemble-rock:
@@ -152,18 +157,15 @@ jobs:
     outputs:
       rock-cache-key: ${{ steps.rock-cache-key.outputs.value }}
     steps:
-      - run: sudo apt update && sudo apt install buildah -y
       - uses: actions/download-artifact@v4
-        with:
-          path: ${{ env.DOWNLOAD_PATH }}
-          merge-multiple: true
       - uses: actions/cache/restore@v4
         with:
-          path: ${{ inputs.rock-name }}*rock
+          path: ${{ env.ROCKS_CI_FOLDER }}
           key: ${{ needs.build.outputs.multi-arch-cache-key }}
           fail-on-cache-miss: true
       - name: Merge single-arch rocks into multi-arch OCI archive
         run: |
+          sudo apt update && sudo apt install buildah -y
           set -xe
           ls ./*
           buildah manifest create multi-arch-rock
