@@ -1,9 +1,7 @@
 name: _Test OCI Factory | mock-rock
 on:
   workflow_dispatch:
-  pull_request:
-    branches:
-      - main
+  push:
     paths:
       - ".github/workflows/*"
       - "!.github/workflows/CLA-Check.yaml"
