@@ -37,7 +37,7 @@ jobs:
       - name: ${{ inputs.external_ref_id }} #(2)
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
         
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Infer number of image triggers
         uses: tj-actions/changed-files@v35
@@ -70,16 +70,16 @@ jobs:
     env:
       IS_PROD: ${{ ! startsWith(inputs.oci-image-name, 'mock-') }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/cache/restore@v3
+      - uses: actions/cache/restore@v4
         if: ${{ inputs.image-trigger-cache-key != '' }}
         with:
           path: oci/${{ inputs.oci-image-name }}/image.yaml
           key: ${{ inputs.image-trigger-cache-key }}
           fail-on-cache-miss: true
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
@@ -164,7 +164,7 @@ jobs:
       fail-fast: true
       matrix: ${{ fromJSON(needs.do-releases.outputs.gh-releases-matrix) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
             fetch-depth: 0
             ref: ${{ matrix.canonical-tag }}
