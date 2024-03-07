@@ -34,7 +34,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Infer images to document
         uses: tj-actions/changed-files@v35
@@ -77,9 +77,9 @@ jobs:
     env:
       IS_PROD: ${{ ! startsWith(needs.validate-documentation-request.outputs.oci-img-name, 'mock-') }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
@@ -116,7 +116,7 @@ jobs:
             --doc-data-dir data
       
       - name: Upload documentation data YAML
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: '${{ needs.validate-documentation-request.outputs.oci-img-name }}.doc.yaml'
           path: "${{ steps.generate-documentation.outputs.image_doc_folder }}/*.y*ml"
@@ -145,9 +145,9 @@ jobs:
     needs: [validate-documentation-request, do-documentation]
     if: ${{ always() && contains(needs.*.result, 'failure') && github.event_name != 'workflow_dispatch' }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
           

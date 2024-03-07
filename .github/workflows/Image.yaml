@@ -1,5 +1,5 @@
 name: Image
-run-name: 'Image - ${{ inputs.oci-image-name }} - ${{ github.ref }}'
+run-name: 'Image - ${{ inputs.oci-image-name || github.triggering_actor }} - ${{ github.ref }}'
 
 on:
   push:
@@ -57,7 +57,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Infer number of image triggers
         uses: tj-actions/changed-files@v35
@@ -97,7 +97,7 @@ jobs:
         if: ${{ inputs.b64-image-trigger != '' }}
         run: echo ${{ inputs.b64-image-trigger }} | base64 -d > ${{ steps.validate-image.outputs.img-path }}/image.yaml
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
@@ -129,61 +129,25 @@ jobs:
 
           echo "revision-data-cache-key=${{ github.run_id }}-${{ env.DATA_DIR }}" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache/save@v3
+      - uses: actions/cache/save@v4
         with:
           path: ${{ steps.prepare-matrix.outputs.revision-data-dir }}
           key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
 
   run-build:
-    runs-on: ubuntu-22.04
     needs: [prepare-build]
-    name: Build
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
-    env:
-      OCI_ARCHIVE_NAME: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}
-    steps:
-      - name: Clone GitHub image repository
-        uses: actions/checkout@v3
-        id: clone-image-repo
-        continue-on-error: true
-        with:
-          repository: ${{ matrix.source }}
-          fetch-depth: 0
-
-      - name: Clone generic image repository
-        if: ${{ steps.clone-image-repo.outcome == 'failure' }}
-        run: |
-          git clone ${{ matrix.source }} .
-
-      - run: git checkout ${{ matrix.commit }}
-
-      - name: Validate image naming and base
-        working-directory: ${{ matrix.directory }}
-        run: |
-          rock_name=`cat rockcraft.y*ml | yq -r .name`
-          if [[ "${{ matrix.path }}" != *"${rock_name}"* ]]
-          then
-            echo "ERROR: the ROCK's name '${rock_name}' must match the OCI folder name!"
-            exit 1
-          fi
-
-      - name: Build ROCK ${{ matrix.name }}
-        id: rockcraft
-        uses: canonical/craft-actions/rockcraft-pack@main
-        with:
-          path: "${{ matrix.directory }}"
-          verbosity: debug
-
-      - name: Rename ROCK OCI archive
-        run: |
-          mv ${{ steps.rockcraft.outputs.rock }} ${{ env.OCI_ARCHIVE_NAME }}
-
-      - uses: actions/cache/save@v3
-        with:
-          path: ${{ env.OCI_ARCHIVE_NAME }}
-          key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}
+    uses: ./.github/workflows/Build-Rock.yaml
+    with:
+      oci-archive-name: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}
+      oci-factory-path: ${{ matrix.path }}
+      rock-name: ${{ matrix.name }}
+      rock-repo: ${{ matrix.source }}
+      rock-repo-commit: ${{ matrix.commit }}
+      rockfile-directory: ${{ matrix.directory }}
+    secrets: inherit
 
   test:
     needs: [prepare-build, run-build]
@@ -196,7 +160,7 @@ jobs:
       oci-image-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}"
       oci-image-path: "oci/${{ matrix.name }}"
       test-from: "cache"
-      cache-key: "${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}"
+      cache-key: ${{ needs.run-build.outputs.rock-cache-key }}
     secrets: inherit
 
   upload:
@@ -212,9 +176,9 @@ jobs:
     outputs:
       artefacts-hashes: ${{ steps.artefacts-hashes.outputs.hashes }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
@@ -232,7 +196,7 @@ jobs:
           pip install -r src/uploads/requirements.txt -r src/image/requirements.txt
 
       - name: Clone GitHub image repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         id: clone-image-repo
         continue-on-error: true
         with:
@@ -247,10 +211,10 @@ jobs:
 
       - run: cd source && git checkout ${{ matrix.commit }}
 
-      - uses: actions/cache/restore@v3
+      - uses: actions/cache/restore@v4
         with:
           path: ${{ env.OCI_ARCHIVE_NAME }}
-          key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}
+          key: ${{ needs.run-build.outputs.rock-cache-key }}
           fail-on-cache-miss: true
 
       - name: Infer track name
@@ -269,7 +233,7 @@ jobs:
           echo "name=${name}" >> "$GITHUB_OUTPUT"
           echo "canonical-tag=${canonical_tag}" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache/save@v3
+      - uses: actions/cache/save@v4
         with:
           path: ${{ steps.rename-oci-archive.outputs.name }}
           key: ${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}
@@ -320,7 +284,7 @@ jobs:
           echo "sboms=${all_sboms_zip}" >> "$GITHUB_OUTPUT"
 
       - name: Fetch vulnerability artifacts for hashing
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: ${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
           key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
@@ -345,14 +309,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload SBOM
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.generate-sboms.outputs.sboms }}
           path: ${{ steps.generate-sboms.outputs.sboms }}
           if-no-files-found: error
 
       - name: Upload image
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.rename-oci-archive.outputs.name }}
           path: ${{ steps.rename-oci-archive.outputs.name }}
@@ -423,11 +387,11 @@ jobs:
     env:
       REVISION_DATA_DIR: revision-data
     steps:
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
 
@@ -435,7 +399,7 @@ jobs:
         if: ${{ inputs.b64-image-trigger != '' }}
         run: echo ${{ inputs.b64-image-trigger }} | base64 -d > ${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml
 
-      - uses: actions/cache/restore@v3
+      - uses: actions/cache/restore@v4
         with:
           path: ${{ env.REVISION_DATA_DIR }}
           key: ${{ needs.prepare-build.outputs.revision-data-cache-key }}
@@ -467,7 +431,7 @@ jobs:
               --revision-data-file "${{ env.REVISION_DATA_DIR }}/${revision_file}"
           done
 
-      - uses: actions/cache/save@v3
+      - uses: actions/cache/save@v4
         with:
           path: ${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml
           key: ${{ github.run_id }}-image-trigger
@@ -513,7 +477,7 @@ jobs:
       #     cosign sign-blob --key cosign.key --output-signature provenance.json.sig provenance.json
 
       # - name: Upload verification keys
-      #   uses: actions/upload-artifact@v3
+      #   uses: actions/upload-artifact@v4
       #   with:
       #     name: verify
       #     path: |
@@ -526,14 +490,14 @@ jobs:
       #   run: sha256sum * > SHA256SUMS || true
 
       # - name: Upload SHA256SUMS file
-      #   uses: actions/upload-artifact@v3
+      #   uses: actions/upload-artifact@v4
       #   with:
       #     name: SHA256SUMS
       #     path: SHA256SUMS
       #     if-no-files-found: error
 
       - name: Upload provenance file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: provenance
           path: provenance.json
@@ -556,9 +520,9 @@ jobs:
     needs: [prepare-build, run-build, upload, prepare-releases, generate-provenance]
     if: ${{ always() && contains(needs.*.result, 'failure') && github.event_name != 'pull_request' }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
           
