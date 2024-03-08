@@ -9,6 +9,7 @@ on:
       - "!.github/workflows/_Auto-updates.yaml"
       - "!.github/workflows/Continuous-Testing.yaml"
       - "examples/**"
+      - "oci/mock*"
       - "src/**"
       - "!src/workflow-engine/**"
 
