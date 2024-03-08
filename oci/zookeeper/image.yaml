@@ -2,7 +2,7 @@ version: 1
     
 upload:  
   - source: "canonical/zookeeper-rock"
-    commit: 1a5e053705c24c0126ab1f4965d57e2bdd3f1c32
+    commit: 01d8701ca4a684740952ccd375f46c98cc58ac3d
     directory: .
     release:
       3.8.2-22.04:
