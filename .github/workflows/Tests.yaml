@@ -75,7 +75,7 @@ jobs:
       - name: ${{ inputs.external_ref_id }} #(2)
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
         
-      - uses: actions/cache/restore@v3
+      - uses: actions/cache/restore@v4
         if: ${{ inputs.test-from == 'cache' }}
         with:
           path: ${{ inputs.oci-image-name }}
@@ -100,7 +100,7 @@ jobs:
             copy docker://${{ inputs.oci-image-name }} \
             oci:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
 
-      - uses: actions/cache/save@v3
+      - uses: actions/cache/save@v4
         with:
           path: ${{ env.TEST_IMAGE_NAME}}
           key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
@@ -115,7 +115,7 @@ jobs:
     name: Test OCI compliance
     needs: [fetch-oci-image]
     steps:
-      - uses: actions/cache/restore@v3
+      - uses: actions/cache/restore@v4
         with:
           path: ${{ env.TEST_IMAGE_NAME}}
           key: ${{ needs.fetch-oci-image.outputs.test-cache-key }}
@@ -143,7 +143,7 @@ jobs:
     name: Black-box and portability tests
     needs: [fetch-oci-image]
     steps:
-      - uses: actions/cache/restore@v3
+      - uses: actions/cache/restore@v4
         with:
           path: ${{ env.TEST_IMAGE_NAME}}
           key: ${{ needs.fetch-oci-image.outputs.test-cache-key }}
@@ -174,9 +174,9 @@ jobs:
     # TODO: remove once https://chat.charmhub.io/charmhub/pl/o5wxpb65ffbfzy7bcmi8kzftzy is fixed
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/cache/restore@v3
+      - uses: actions/cache/restore@v4
         with:
           path: ${{ env.TEST_IMAGE_NAME}}
           key: ${{ needs.fetch-oci-image.outputs.test-cache-key }}
@@ -218,9 +218,9 @@ jobs:
     name: Malware scan
     needs: [fetch-oci-image]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/cache/restore@v3
+      - uses: actions/cache/restore@v4
         with:
           path: ${{ env.TEST_IMAGE_NAME}}
           key: ${{ github.run_id }}-${{ inputs.oci-image-name }}-${{ env.TEST_IMAGE_NAME }}
@@ -238,7 +238,7 @@ jobs:
             --image ${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
             --rootless raw
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 

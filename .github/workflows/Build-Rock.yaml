@@ -1,0 +1,174 @@
+name: Build rock
+
+on:
+  workflow_call:
+    inputs:
+      oci-archive-name:
+        description: "Final filename of the rock's OCI archive"
+        type: string
+        required: true
+      oci-factory-path:
+        description: "Path, in the OCI Factory, to this rock"
+        type: string
+        required: true
+      rock-name:
+        description: "Name of the rock"
+        type: string
+        required: true
+      rock-repo:
+        description: "Public Git repo where to build the rock from"
+        type: string
+        required: true
+      rock-repo-commit:
+        description: "Git ref from where to build the rock from"
+        type: string
+        required: true
+      rockfile-directory:
+        description: "Directory, in 'rock-repo', where to find the rockcraft.yaml file"
+        type: string
+        required: true
+    outputs:
+      rock-cache-key:
+        description: "The cache key where other jobs can restore the assembled rock from"
+        value: ${{ jobs.assemble-rock.outputs.rock-cache-key }}
+
+env:
+  ROCKS_CI_FOLDER: ci-rocks
+
+jobs:
+  prepare-multi-arch-matrix:
+    runs-on: ubuntu-22.04
+    outputs:
+      build-for: ${{ steps.rock-platforms.outputs.build-for }}
+      is-multi-arch: ${{ steps.rock-platforms.outputs.is-multi-arch }}
+    steps:
+      - name: Clone GitHub image repository
+        uses: actions/checkout@v4
+        id: clone-image-repo
+        continue-on-error: true
+        with:
+          repository: ${{ inputs.rock-repo }}
+          fetch-depth: 0
+      - name: Clone generic image repository
+        if: ${{ steps.clone-image-repo.outcome == 'failure' }}
+        run: |
+          git clone ${{ inputs.rock-repo }} .
+      - run: git checkout ${{ inputs.rock-repo-commit }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: pip install pyyaml
+      - name: Get rock archs
+        uses: jannekem/run-python-script-action@v1
+        id: rock-platforms
+        with:
+          script: |
+            import yaml
+            import os
+            with open("${{ inputs.rockfile-directory }}/rockcraft.yaml") as rf:
+              rockcraft_yaml = yaml.safe_load(rf)
+
+            platforms = rockcraft_yaml["platforms"]
+
+            target_archs = ["amd64"]
+            for platf, values in platforms.items():
+                if isinstance(values, dict) and "build-for" in values:
+                    target_archs += list(values["build-for"])
+                target_archs.append(platf)
+            
+            matrix = {"include": []}
+            for supported_arch, runner in {"amd64": "ubuntu-22.04", "arm64": "Ubuntu_ARM64_4C_16G_01"}.items():
+              if supported_arch in target_archs:
+                matrix["include"].append(
+                  {"architecture": supported_arch, "runner": runner}
+                )
+            
+            with open(os.environ["GITHUB_OUTPUT"], "a") as gh_out:
+              print(f"build-for={matrix}", file=gh_out)
+              is_multi_arch = 0
+              if len(matrix["include"]) > 1:
+                is_multi_arch = 1
+              print(f"is-multi-arch={is_multi_arch}", file=gh_out)
+
+  build:
+    needs: [prepare-multi-arch-matrix]
+    strategy:
+      fail-fast: true
+      matrix: ${{ fromJSON(needs.prepare-multi-arch-matrix.outputs.build-for) }}
+    runs-on: ${{ matrix.runner }}
+    name: 'Build ${{ inputs.rock-name }} | ${{ matrix.architecture }}'
+    steps:
+      - name: Clone GitHub image repository
+        uses: actions/checkout@v4
+        id: clone-image-repo
+        continue-on-error: true
+        with:
+          repository: ${{ inputs.rock-repo }}
+          fetch-depth: 0
+      - name: Clone generic image repository
+        if: ${{ steps.clone-image-repo.outcome == 'failure' }}
+        run: |
+          git clone ${{ inputs.rock-repo }} .
+      - run: git checkout ${{ inputs.rock-repo-commit }}
+      - if: matrix.architecture != 'amd64'
+        run: sudo snap install yq --channel=v4/stable
+      - name: Validate image naming and base
+        working-directory: ${{ inputs.rockfile-directory }}
+        run: |
+          rock_name=`cat rockcraft.y*ml | yq -r .name`
+          if [[ "${{ inputs.oci-factory-path }}" != *"${rock_name}"* ]]
+          then
+            echo "ERROR: the ROCK's name '${rock_name}' must match the OCI folder name!"
+            exit 1
+          fi
+      - name: Build ROCK ${{ inputs.rock-name }}
+        id: rockcraft
+        uses: canonical/craft-actions/rockcraft-pack@main
+        with:
+          path: "${{ inputs.rockfile-directory }}"
+          verbosity: debug
+      - name: Rename ROCK OCI archive
+        id: rock
+        run: |
+          mkdir ${{ env.ROCKS_CI_FOLDER }}
+          cp ${{ steps.rockcraft.outputs.rock }} ${{ env.ROCKS_CI_FOLDER }}/$(basename ${{ steps.rockcraft.outputs.rock }})
+          echo "filename=$(basename ${{ steps.rockcraft.outputs.rock }})" >> $GITHUB_OUTPUT
+      - name: Upload ${{ inputs.rock-name }} for ${{ matrix.architecture }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.rock.outputs.filename }}
+          path: ${{ steps.rockcraft.outputs.rock }}
+          if-no-files-found: error
+
+  assemble-rock:
+    needs: [prepare-multi-arch-matrix, build]
+    runs-on: ubuntu-22.04
+    outputs:
+      rock-cache-key: ${{ steps.rock-cache-key.outputs.value }}
+    steps:
+      - uses: actions/download-artifact@v4
+        id: download
+      - run: sudo apt update && sudo apt install buildah -y
+      - name: Merge single-arch rocks into multi-arch OCI archive
+        run: |
+          set -xe
+          ls ./*
+          buildah manifest create multi-arch-rock
+          for rock in `find *.rock/*`
+          do
+            test -f $rock
+            buildah manifest add multi-arch-rock oci-archive:$rock
+          done
+          buildah manifest push --all multi-arch-rock oci-archive:${{ inputs.oci-archive-name }}
+      - name: Upload multi-arch ${{ inputs.oci-archive-name }} OCI archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.oci-archive-name }}
+          path: ${{ inputs.oci-archive-name }}
+          if-no-files-found: error
+      - id: rock-cache-key
+        run: echo "value=${{ github.run_id }}-${{ inputs.oci-archive-name }}" >> $GITHUB_OUTPUT
+      - uses: actions/cache/save@v4
+        with:
+          path: ${{ inputs.oci-archive-name }}
+          key: ${{ steps.rock-cache-key.outputs.value }}
