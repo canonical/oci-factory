@@ -162,7 +162,7 @@ jobs:
       oci-image-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}"
       oci-image-path: "oci/${{ matrix.name }}"
       test-from: "cache"
-      cache-key: ${{ needs.run-build.outputs.rock-cache-key }}
+      cache-key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}        
     secrets: inherit
 
   upload:

@@ -27,10 +27,6 @@ on:
         description: "Directory, in 'rock-repo', where to find the rockcraft.yaml file"
         type: string
         required: true
-    outputs:
-      rock-cache-key:
-        description: "The cache key where other jobs can restore the assembled rock from"
-        value: ${{ jobs.assemble-rock.outputs.rock-cache-key }}
 
 env:
   ROCKS_CI_FOLDER: ci-rocks
@@ -40,7 +36,6 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       build-for: ${{ steps.rock-platforms.outputs.build-for }}
-      is-multi-arch: ${{ steps.rock-platforms.outputs.is-multi-arch }}
     steps:
       - name: Clone GitHub image repository
         uses: actions/checkout@v4
@@ -85,10 +80,6 @@ jobs:
             
             with open(os.environ["GITHUB_OUTPUT"], "a") as gh_out:
               print(f"build-for={matrix}", file=gh_out)
-              is_multi_arch = 0
-              if len(matrix["include"]) > 1:
-                is_multi_arch = 1
-              print(f"is-multi-arch={is_multi_arch}", file=gh_out)
 
   build:
     needs: [prepare-multi-arch-matrix]
@@ -143,8 +134,6 @@ jobs:
   assemble-rock:
     needs: [prepare-multi-arch-matrix, build]
     runs-on: ubuntu-22.04
-    outputs:
-      rock-cache-key: ${{ steps.rock-cache-key.outputs.value }}
     steps:
       - uses: actions/download-artifact@v4
         id: download
@@ -166,9 +155,7 @@ jobs:
           name: ${{ inputs.oci-archive-name }}
           path: ${{ inputs.oci-archive-name }}
           if-no-files-found: error
-      - id: rock-cache-key
-        run: echo "value=${{ github.run_id }}-${{ inputs.oci-archive-name }}" >> $GITHUB_OUTPUT
       - uses: actions/cache/save@v4
         with:
           path: ${{ inputs.oci-archive-name }}
-          key: ${{ steps.rock-cache-key.outputs.value }}
+          key: ${{ github.run_id }}-${{ inputs.oci-archive-name }}
