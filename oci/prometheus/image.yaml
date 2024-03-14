@@ -8,14 +8,6 @@ upload:
         end-of-life: "2025-03-14T00:00:00Z"
         risks:
           - stable
-      2.50-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
-      2-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
   - source: canonical/prometheus-rock
     commit: d756e7218861f4ed96db7fea54f8ff9571526232
     directory: 2.50.1
@@ -77,10 +69,6 @@ upload:
         risks:
           - stable
       2.49-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
-      2-22.04:
         end-of-life: "2025-03-14T00:00:00Z"
         risks:
           - stable
