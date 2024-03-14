@@ -1,18 +1,86 @@
 version: 1
 upload:
   - source: canonical/prometheus-rock
-    commit: 70c0ca78898df2849ffd7f039a19cf1b6dddcba9
-    directory: 2.49.1
+    commit: d756e7218861f4ed96db7fea54f8ff9571526232
+    directory: 2.50.0
     release:
-      2.49.1-22.04:
-        end-of-life: "2025-01-16T00:00:00Z"
+      2.50.0-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
         risks:
           - stable
-      2.49-22.04:
-        end-of-life: "2025-01-16T00:00:00Z"
+      2.50-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
         risks:
           - stable
       2-22.04:
-        end-of-life: "2025-01-16T00:00:00Z"
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/prometheus-rock
+    commit: d756e7218861f4ed96db7fea54f8ff9571526232
+    directory: 2.50.1
+    release:
+      2.50.1-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+      2.50-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+      2-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/prometheus-rock
+    commit: d756e7218861f4ed96db7fea54f8ff9571526232
+    directory: 2.46.0
+    release:
+      2.46.0-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+      2.46-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/prometheus-rock
+    commit: d756e7218861f4ed96db7fea54f8ff9571526232
+    directory: 2.47.2
+    release:
+      2.47.2-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+      2.47-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/prometheus-rock
+    commit: d756e7218861f4ed96db7fea54f8ff9571526232
+    directory: 2.48.0
+    release:
+      2.48.0-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+      2.48-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/prometheus-rock
+    commit: d756e7218861f4ed96db7fea54f8ff9571526232
+    directory: 2.49.1
+    release:
+      2.49.1-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+      2.49-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+      2-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
         risks:
           - stable
