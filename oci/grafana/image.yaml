@@ -12,10 +12,6 @@ upload:
         end-of-life: "2025-03-14T00:00:00Z"
         risks:
           - stable
-      10-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
   - source: canonical/grafana-rock
     commit: 6cb177db664656d19267fb2a36f7dbfb334273a4
     directory: 10.4.0
@@ -69,14 +65,6 @@ upload:
     directory: 10.3.1
     release:
       10.3.1-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
-      10.3-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
-      10-22.04:
         end-of-life: "2025-03-14T00:00:00Z"
         risks:
           - stable
