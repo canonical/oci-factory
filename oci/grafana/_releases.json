@@ -1,7 +1,7 @@
 {
     "10.0.3-22.04": {
         "stable": {
-            "target": "42"
+            "target": "49"
         },
         "candidate": {
             "target": "10.0.3-22.04_stable"
@@ -16,7 +16,7 @@
     },
     "10.0-22.04": {
         "stable": {
-            "target": "42"
+            "target": "49"
         },
         "candidate": {
             "target": "10.0-22.04_stable"
@@ -31,7 +31,7 @@
     },
     "10-22.04": {
         "stable": {
-            "target": "41"
+            "target": "48"
         },
         "candidate": {
             "target": "10-22.04_stable"
@@ -46,7 +46,7 @@
     },
     "10.2.0-22.04": {
         "stable": {
-            "target": "43"
+            "target": "50"
         },
         "candidate": {
             "target": "10.2.0-22.04_stable"
@@ -61,7 +61,7 @@
     },
     "10.2-22.04": {
         "stable": {
-            "target": "44"
+            "target": "51"
         },
         "candidate": {
             "target": "10.2-22.04_stable"
@@ -76,7 +76,7 @@
     },
     "10.2.3-22.04": {
         "stable": {
-            "target": "44"
+            "target": "51"
         },
         "candidate": {
             "target": "10.2.3-22.04_stable"
@@ -91,7 +91,7 @@
     },
     "9.5.3-22.04": {
         "stable": {
-            "target": "46"
+            "target": "53"
         },
         "candidate": {
             "target": "9.5.3-22.04_stable"
@@ -106,7 +106,7 @@
     },
     "9.5-22.04": {
         "stable": {
-            "target": "46"
+            "target": "53"
         },
         "candidate": {
             "target": "9.5-22.04_stable"
@@ -121,7 +121,7 @@
     },
     "9-22.04": {
         "stable": {
-            "target": "46"
+            "target": "53"
         },
         "candidate": {
             "target": "9-22.04_stable"
@@ -136,7 +136,7 @@
     },
     "10.3.1-22.04": {
         "stable": {
-            "target": "45"
+            "target": "52"
         },
         "candidate": {
             "target": "10.3.1-22.04_stable"
@@ -151,7 +151,7 @@
     },
     "10.3-22.04": {
         "stable": {
-            "target": "40"
+            "target": "47"
         },
         "candidate": {
             "target": "10.3-22.04_stable"
@@ -167,7 +167,7 @@
     "10.3.3-22.04": {
         "end-of-life": "2025-03-14T00:00:00Z",
         "stable": {
-            "target": "40"
+            "target": "47"
         },
         "candidate": {
             "target": "10.3.3-22.04_stable"
@@ -182,7 +182,7 @@
     "10.4.0-22.04": {
         "end-of-life": "2025-03-14T00:00:00Z",
         "stable": {
-            "target": "41"
+            "target": "48"
         },
         "candidate": {
             "target": "10.4.0-22.04_stable"
@@ -197,7 +197,7 @@
     "10.4-22.04": {
         "end-of-life": "2025-03-14T00:00:00Z",
         "stable": {
-            "target": "41"
+            "target": "48"
         },
         "candidate": {
             "target": "10.4-22.04_stable"
