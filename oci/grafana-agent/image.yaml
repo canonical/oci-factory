@@ -12,10 +12,6 @@ upload:
         end-of-life: "2025-03-14T00:00:00Z"
         risks:
           - stable
-      0-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
   - source: canonical/grafana-agent-rock
     commit: 4ebc9442a0d82655e77c1caa79318d76d72440dc
     directory: 0.40.2
@@ -101,10 +97,6 @@ upload:
         risks:
           - stable
       0.39-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
-      0-22.04:
         end-of-life: "2025-03-14T00:00:00Z"
         risks:
           - stable
