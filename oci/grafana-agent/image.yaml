@@ -1,7 +1,7 @@
 version: 1
 upload:
   - source: canonical/grafana-agent-rock
-    commit: 4ebc9442a0d82655e77c1caa79318d76d72440dc
+    commit: c17f2b40d42b3136adf71a37ecda72d0937e0ffd
     directory: 0.39.2
     release:
       0.39.2-22.04:
@@ -13,7 +13,7 @@ upload:
         risks:
           - stable
   - source: canonical/grafana-agent-rock
-    commit: 4ebc9442a0d82655e77c1caa79318d76d72440dc
+    commit: c17f2b40d42b3136adf71a37ecda72d0937e0ffd
     directory: 0.40.2
     release:
       0.40.2-22.04:
@@ -29,7 +29,7 @@ upload:
         risks:
           - stable
   - source: canonical/grafana-agent-rock
-    commit: 4ebc9442a0d82655e77c1caa79318d76d72440dc
+    commit: c17f2b40d42b3136adf71a37ecda72d0937e0ffd
     directory: 0.35.2
     release:
       0.35.2-22.04:
@@ -37,7 +37,7 @@ upload:
         risks:
           - stable
   - source: canonical/grafana-agent-rock
-    commit: 4ebc9442a0d82655e77c1caa79318d76d72440dc
+    commit: c17f2b40d42b3136adf71a37ecda72d0937e0ffd
     directory: 0.35.4
     release:
       0.35.4-22.04:
@@ -49,7 +49,7 @@ upload:
         risks:
           - stable
   - source: canonical/grafana-agent-rock
-    commit: 4ebc9442a0d82655e77c1caa79318d76d72440dc
+    commit: c17f2b40d42b3136adf71a37ecda72d0937e0ffd
     directory: 0.37.4
     release:
       0.37.4-22.04:
@@ -61,7 +61,7 @@ upload:
         risks:
           - stable
   - source: canonical/grafana-agent-rock
-    commit: 4ebc9442a0d82655e77c1caa79318d76d72440dc
+    commit: c17f2b40d42b3136adf71a37ecda72d0937e0ffd
     directory: 0.38.0
     release:
       0.38.0-22.04:
@@ -69,7 +69,7 @@ upload:
         risks:
           - stable
   - source: canonical/grafana-agent-rock
-    commit: 4ebc9442a0d82655e77c1caa79318d76d72440dc
+    commit: c17f2b40d42b3136adf71a37ecda72d0937e0ffd
     directory: 0.38.1
     release:
       0.38.1-22.04:
@@ -81,7 +81,7 @@ upload:
         risks:
           - stable
   - source: canonical/grafana-agent-rock
-    commit: 4ebc9442a0d82655e77c1caa79318d76d72440dc
+    commit: c17f2b40d42b3136adf71a37ecda72d0937e0ffd
     directory: 0.39.0
     release:
       0.39.0-22.04:
@@ -89,7 +89,7 @@ upload:
         risks:
           - stable
   - source: canonical/grafana-agent-rock
-    commit: 4ebc9442a0d82655e77c1caa79318d76d72440dc
+    commit: c17f2b40d42b3136adf71a37ecda72d0937e0ffd
     directory: 0.39.1
     release:
       0.39.1-22.04:
