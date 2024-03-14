@@ -121,13 +121,13 @@ jobs:
       - name: Rename ROCK OCI archive
         id: rock
         run: |
-          mkdir ${{ env.ROCKS_CI_FOLDER }}
-          cp ${{ steps.rockcraft.outputs.rock }} ${{ env.ROCKS_CI_FOLDER }}/$(basename ${{ steps.rockcraft.outputs.rock }})
+          # mkdir ${{ env.ROCKS_CI_FOLDER }}
+          # cp ${{ steps.rockcraft.outputs.rock }} ${{ env.ROCKS_CI_FOLDER }}/$(basename ${{ steps.rockcraft.outputs.rock }})
           echo "filename=$(basename ${{ steps.rockcraft.outputs.rock }})" >> $GITHUB_OUTPUT
       - name: Upload ${{ inputs.rock-name }} for ${{ matrix.architecture }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.rock.outputs.filename }}
+          name: ${{ inputs.oci-archive-name }}-${{ steps.rock.outputs.filename }}
           path: ${{ steps.rockcraft.outputs.rock }}
           if-no-files-found: error
 
@@ -141,9 +141,9 @@ jobs:
       - name: Merge single-arch rocks into multi-arch OCI archive
         run: |
           set -xe
-          ls ./*
+          ls ./${{ inputs.oci-archive-name }}*
           buildah manifest create multi-arch-rock
-          for rock in `find *.rock/*`
+          for rock in `find ${{ inputs.oci-archive-name }}*.rock/*`
           do
             test -f $rock
             buildah manifest add multi-arch-rock oci-archive:$rock
