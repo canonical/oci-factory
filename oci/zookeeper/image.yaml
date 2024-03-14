@@ -5,7 +5,7 @@ upload:
     commit: 1781da1dacbacf647319731ff25ba4ad00082140
     directory: .
     release:
-      3.8.2-22.04:
+      3.8-22.04:
         end-of-life: "2024-05-01T00:00:00Z"
         risks:
           - edge
