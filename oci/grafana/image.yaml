@@ -1,18 +1,98 @@
 version: 1
 upload:
   - source: canonical/grafana-rock
-    commit: d83119eaeb2ce953bb3d9f3edffbd5011b956230
-    directory: 10.3.1
+    commit: 6cb177db664656d19267fb2a36f7dbfb334273a4
+    directory: 10.3.3
     release:
-      10.3.1-22.04:
-        end-of-life: "2025-01-26T00:00:00Z"
+      10.3.3-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
         risks:
           - stable
       10.3-22.04:
-        end-of-life: "2025-01-26T00:00:00Z"
+        end-of-life: "2025-03-14T00:00:00Z"
         risks:
           - stable
       10-22.04:
-        end-of-life: "2025-01-26T00:00:00Z"
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/grafana-rock
+    commit: 6cb177db664656d19267fb2a36f7dbfb334273a4
+    directory: 10.4.0
+    release:
+      10.4.0-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+      10.4-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+      10-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/grafana-rock
+    commit: 6cb177db664656d19267fb2a36f7dbfb334273a4
+    directory: 10.0.3
+    release:
+      10.0.3-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+      10.0-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/grafana-rock
+    commit: 6cb177db664656d19267fb2a36f7dbfb334273a4
+    directory: 10.2.0
+    release:
+      10.2.0-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/grafana-rock
+    commit: 6cb177db664656d19267fb2a36f7dbfb334273a4
+    directory: 10.2.3
+    release:
+      10.2.3-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+      10.2-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/grafana-rock
+    commit: 6cb177db664656d19267fb2a36f7dbfb334273a4
+    directory: 10.3.1
+    release:
+      10.3.1-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+      10.3-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+      10-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/grafana-rock
+    commit: 6cb177db664656d19267fb2a36f7dbfb334273a4
+    directory: 9.5.3
+    release:
+      9.5.3-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+      9.5-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
+        risks:
+          - stable
+      9-22.04:
+        end-of-life: "2025-03-14T00:00:00Z"
         risks:
           - stable
