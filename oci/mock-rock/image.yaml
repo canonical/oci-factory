@@ -2,20 +2,36 @@ version: 1
 
 release:
   latest:
-    end-of-life: "2024-05-01T00:00:00Z"
+    end-of-life: "2025-05-01T00:00:00Z"
     candidate: 1.0-22.04_candidate
   test:
     end-of-life: "2026-05-01T00:00:00Z"
     beta: 1.0-22.04_beta
-    
-upload:  
+
+upload:
   - source: "canonical/oci-factory"
-    commit: 30e73ac0dc4705c12baacbcba74106c8eda2cf9a
-    directory: examples/mock-rock
+    commit: 7f080b50ba656538aee3819889090c173f06debd
+    directory: examples/mock-rock/1.0
     release:
       1.0-22.04:
-        end-of-life: "2024-05-01T00:00:00Z"
-        risks: 
+        end-of-life: "2025-05-01T00:00:00Z"
+        risks:
+          - candidate
+          - edge
+          - beta
+  - source: "canonical/oci-factory"
+    commit: 7f080b50ba656538aee3819889090c173f06debd
+    directory: examples/mock-rock/1.1
+    release:
+      1.1-22.04:
+        end-of-life: "2025-05-01T00:00:00Z"
+        risks:
+          - candidate
+          - edge
+          - beta
+      1-22.04:
+        end-of-life: "2025-05-01T00:00:00Z"
+        risks:
           - candidate
           - edge
           - beta
