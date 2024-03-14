@@ -9,7 +9,3 @@ upload:
         end-of-life: "2024-05-01T00:00:00Z"
         risks:
           - edge
-      3:
-        end-of-life: "2024-05-01T00:00:00Z"
-        risks:
-          - edge
