@@ -1,0 +1,22 @@
+version: 1
+
+application: ASP.NET
+is_chiselled: true
+description: |
+  .NET is a free, cross-platform, open source developer platform for building
+  many different types of applications. This image contains the ASP.NET,
+  but does not include bash, the .NET SDK nor a package manager.
+  Read more on [dotnet](https://dotnet.microsoft.com/en-us/).
+
+docker:
+  parameters:
+    - -p <port>:8080
+  access: Access your ASP.NET web application at `http://localhost:<port>`.
+
+debug:
+  text: |
+    ### Debugging
+    To debug the container:
+    ```bash
+    docker logs -f dotnet-aspnet-container
+    ```

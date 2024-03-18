@@ -1,0 +1,11 @@
+version: 1
+
+upload:
+  - source: canonical/dotnet-containers
+    commit: d7c7a14778c6a322a7212130d894061e73bcd0aa
+    directory: dotnet-aspnet/8.0/
+    release:
+      8.0-24.04:
+        end-of-life: "2026-04-01T00:00:00Z"
+        risks:
+          - edge
