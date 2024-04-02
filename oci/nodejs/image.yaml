@@ -2,7 +2,7 @@ version: 1
 
 upload:
   - source: canonical/chiselled-nodejs
-    commit: f203c8cab9443847ee729d511af739babcd8cf03
+    commit: 9d6a0889ff193521812baa5c3e85c79fad560288
     directory: node20/
     release:
       20-24.04:
