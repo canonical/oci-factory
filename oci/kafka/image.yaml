@@ -1,0 +1,11 @@
+version: 1
+    
+upload:  
+  - source: "canonical/kafka-rock"
+    commit: edc4505e547f3c6342940276b486936bcf924e9a
+    directory: .
+    release:
+      3.6-22.04:
+        end-of-life: "2024-05-01T00:00:00Z"
+        risks:
+          - edge

@@ -1,0 +1,88 @@
+version: 1
+application: kafka
+is_chiselled: False
+description: |
+  Current Apache Kafka Docker Image from Canonical, based on Ubuntu. 
+  Receives security updates and tracks the newest combination of Apache 
+  Kafka and Ubuntu. **This repository is free to use and exempted from 
+  per-user rate limits.**
+  
+  # About Apache Kafka
+  Apache Kafka is an open-source distributed event streaming platform for
+  high-performance data pipelines, streaming analytics and integrations.
+  Read more on the [Apache Kafka website](https://kafka.apache.org/).
+  This image requires the
+  [Apache Zookeeper image](https://hub.docker.com/r/ubuntu/zookeeper)
+  to run properly.
+  
+  Please note that the images tagged up to 3.1 are Dockerfile-base images,
+  whereas from version 3.6.1 onward the images are now ROCKs. As such the
+  entrypoint is now Pebble. Read more on the
+  [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
+
+  # Quickstart
+  To deploy a single-broker dockerized version of Kafka, you need to first 
+  deploy the ZooKeeper service and make sure that the ZooKeeper service is 
+  reachable by Kafka. 
+  
+  First, create a network 
+  
+  ```bash 
+  docker network create -d bridge kafka-network
+  ```
+  
+  Deploy the ZooKeeper service
+  
+  ```bash 
+  docker run --detach \
+    --network kafka-network --name zookeeper \
+    ubuntu/zookeeper:3.8-22.04_edge
+  ```
+  
+  Finally, deploy the Kafka service
+  
+  ```
+  docker run --detach \
+    --name kafka --network kafka-network -p 9092:9092 \
+    kafka:3.6-22.04_edge
+  ```
+
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 9092:9092
+  access: Access your Apache Kafka server at `http://localhost:9092`.
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone.
+  - type: -e
+    value: 'ZOOKEEPER_HOST=<zookeeper>'
+    description: Hostname for the related Zookeeper instance.
+  - type: -e
+    value: 'ZOOKEEPER_PORT=2181'
+    description: Port for the related Zookeeper instance.
+  - type: -p
+    value: '9092:9092'
+    description: Expose Apache Kafka server on `localhost:2181`.
+  - type: -v
+    value: "/path/to/config/file:/etc/kafka/server.properties"
+    description: Local Kafka configuration file.
+  - type: -v
+    value: "kafkaData:/var/lib/kafka"
+    description: > 
+      "Persist data in a docker volume named `kafkaData`. "
+      "Make sure that the mount point is consistent with the configuration property `logs.dirs`.
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+    ```bash
+    docker logs -f <kafka-container>
+    ```
+    
+    To get an interactive shell:
+    ```bash
+    docker exec -it <kafka-container> /bin/bash
+    ```
