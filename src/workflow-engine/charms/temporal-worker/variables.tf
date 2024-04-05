@@ -111,7 +111,7 @@ variable "config_temporal_queue" {
 variable "config_temporal_proxy" {
   description = "HTTP/HTTPS proxy URL"
   type        = string
-  default     = ""
+  default     = "http://squid.internal:3128"
 }
 
 variable "config_temporal_workflows_file_path" {
