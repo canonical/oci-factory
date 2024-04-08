@@ -35,3 +35,11 @@ upload:
           - candidate
           - edge
           - beta
+  - source: "canonical/oci-factory"
+    commit: 486799e24328410678c3534381a5473a46b07d06
+    directory: examples/mock-rock/1.2
+    release:
+      1.2-22.04:
+        end-of-life: "2025-05-01T00:00:00Z"
+        risks:
+          - beta
