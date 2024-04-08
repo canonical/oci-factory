@@ -36,6 +36,7 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       build-for: ${{ steps.rock-platforms.outputs.build-for }}
+      build-with-lpci: ${{ steps.rock-platforms.outputs.build-with-lpci }}
     steps:
       - name: Clone GitHub image repository
         uses: actions/checkout@v4
@@ -49,6 +50,16 @@ jobs:
         run: |
           git clone ${{ inputs.rock-repo }} .
       - run: git checkout ${{ inputs.rock-repo-commit }}
+      - run: sudo snap install yq --channel=v4/stable
+      - name: Validate image naming and base
+        working-directory: ${{ inputs.rockfile-directory }}
+        run: |
+          rock_name=`cat rockcraft.y*ml | yq -r .name`
+          if [[ "${{ inputs.oci-factory-path }}" != *"${rock_name}"* ]]
+          then
+            echo "ERROR: the ROCK's name '${rock_name}' must match the OCI folder name!"
+            exit 1
+          fi
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
@@ -60,26 +71,41 @@ jobs:
           script: |
             import yaml
             import os
+
+            BUILD_WITH_LPCI = 0
+
             with open("${{ inputs.rockfile-directory }}/rockcraft.yaml") as rf:
               rockcraft_yaml = yaml.safe_load(rf)
 
             platforms = rockcraft_yaml["platforms"]
 
-            target_archs = ["amd64"]
+            target_archs = []
             for platf, values in platforms.items():
                 if isinstance(values, dict) and "build-for" in values:
                     target_archs += list(values["build-for"])
+                    continue
                 target_archs.append(platf)
-            
+
+            print(f"Target architectures: {set(target_archs)}")
+
             matrix = {"include": []}
-            for supported_arch, runner in {"amd64": "ubuntu-22.04", "arm64": "Ubuntu_ARM64_4C_16G_01"}.items():
-              if supported_arch in target_archs:
-                matrix["include"].append(
-                  {"architecture": supported_arch, "runner": runner}
-                )
+            gh_supported_archs = {"amd64": "ubuntu-22.04", "arm64": "Ubuntu_ARM64_4C_16G_01"}
+            if set(target_archs) - set(gh_supported_archs.keys()):
+              # Then there are other target archs, so we need to build in LP
+              matrix["include"].append(
+                {"architecture": "-".join(set(target_archs)), "runner": gh_supported_archs["amd64"]}
+              )
+              BUILD_WITH_LPCI = 1
+            else:
+              for runner_arch, runner_name in gh_supported_archs.items():
+                if runner_arch in target_archs:
+                  matrix["include"].append(
+                    {"architecture": runner_arch, "runner": runner_name}
+                  )
             
             with open(os.environ["GITHUB_OUTPUT"], "a") as gh_out:
               print(f"build-for={matrix}", file=gh_out)
+              print(f"build-with-lpci={BUILD_WITH_LPCI}", file=gh_out)
 
   build:
     needs: [prepare-multi-arch-matrix]
@@ -101,34 +127,52 @@ jobs:
         run: |
           git clone ${{ inputs.rock-repo }} .
       - run: git checkout ${{ inputs.rock-repo-commit }}
-      - if: matrix.architecture != 'amd64'
-        run: sudo snap install yq --channel=v4/stable
-      - name: Validate image naming and base
-        working-directory: ${{ inputs.rockfile-directory }}
-        run: |
-          rock_name=`cat rockcraft.y*ml | yq -r .name`
-          if [[ "${{ inputs.oci-factory-path }}" != *"${rock_name}"* ]]
-          then
-            echo "ERROR: the ROCK's name '${rock_name}' must match the OCI folder name!"
-            exit 1
-          fi
-      - name: Build ROCK ${{ inputs.rock-name }}
+      - name: Build rock ${{ inputs.rock-name }}
         id: rockcraft
+        if: needs.prepare-multi-arch-matrix.outputs.build-with-lpci == 0
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
           path: "${{ inputs.rockfile-directory }}"
           verbosity: debug
+      - uses: actions/setup-python@v5
+        if: needs.prepare-multi-arch-matrix.outputs.build-with-lpci == 1
+        with:
+          python-version: '3.x'
+      - uses: nick-fields/retry@v3.0.0
+        name: Build multi-arch ${{ inputs.rock-name }} in Launchpad
+        if: needs.prepare-multi-arch-matrix.outputs.build-with-lpci == 1
+        with:
+          timeout_minutes: 180
+          max_attempts: 4
+          polling_interval_seconds: 5
+          retry_wait_seconds: 30
+          command: |
+            set -ex
+            cd ${{ inputs.rockfile-directory }}
+            git clone --depth 1 --branch v1.1.2 https://github.com/canonical/rocks-toolbox
+            ./rocks-toolbox/rockcraft_lpci_build/requirements.sh
+            pip3 install -r ./rocks-toolbox/rockcraft_lpci_build/requirements.txt
+
+            python3 ./rocks-toolbox/rockcraft_lpci_build/rockcraft_lpci_build.py \
+              --lp-credentials-b64 "${{ secrets.LP_CREDENTIALS_B64 }}" \
+              --launchpad-accept-public-upload
       - name: Rename ROCK OCI archive
         id: rock
         run: |
-          # mkdir ${{ env.ROCKS_CI_FOLDER }}
-          # cp ${{ steps.rockcraft.outputs.rock }} ${{ env.ROCKS_CI_FOLDER }}/$(basename ${{ steps.rockcraft.outputs.rock }})
-          echo "filename=$(basename ${{ steps.rockcraft.outputs.rock }})" >> $GITHUB_OUTPUT
+          mkdir ${{ env.ROCKS_CI_FOLDER }}
+          if [ ${{ needs.prepare-multi-arch-matrix.outputs.build-with-lpci }} -eq 0 ]
+          then
+            cp ${{ steps.rockcraft.outputs.rock }} ${{ env.ROCKS_CI_FOLDER }}/$(basename ${{ steps.rockcraft.outputs.rock }})
+            echo "filename=$(basename ${{ steps.rockcraft.outputs.rock }})" >> $GITHUB_OUTPUT
+          else
+            cp ${{ inputs.rockfile-directory }}/*.rock ${{ env.ROCKS_CI_FOLDER }}
+            echo "filename=${{ inputs.rock-name }}_${{ matrix.architecture }}" >> $GITHUB_OUTPUT
+          fi
       - name: Upload ${{ inputs.rock-name }} for ${{ matrix.architecture }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.oci-archive-name }}-${{ steps.rock.outputs.filename }}
-          path: ${{ steps.rockcraft.outputs.rock }}
+          path: ${{ env.ROCKS_CI_FOLDER }}
           if-no-files-found: error
 
   assemble-rock:
@@ -143,7 +187,7 @@ jobs:
           set -xe
           ls ./${{ inputs.oci-archive-name }}*
           buildah manifest create multi-arch-rock
-          for rock in `find ${{ inputs.oci-archive-name }}*.rock/*`
+          for rock in `find ${{ inputs.oci-archive-name }}*/*.rock`
           do
             test -f $rock
             buildah manifest add multi-arch-rock oci-archive:$rock
