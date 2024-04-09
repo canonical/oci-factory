@@ -151,10 +151,10 @@ jobs:
             cd ${{ inputs.rockfile-directory }}
             rocks_toolbox="$(mktemp -d)"
             git clone --depth 1 --branch v1.1.2 https://github.com/canonical/rocks-toolbox $rocks_toolbox
-            ${rocks_toolbox}/rocks-toolbox/rockcraft_lpci_build/requirements.sh
-            pip3 install -r ${rocks_toolbox}/rocks-toolbox/rockcraft_lpci_build/requirements.txt
+            ${rocks_toolbox}/rockcraft_lpci_build/requirements.sh
+            pip3 install -r ${rocks_toolbox}/rockcraft_lpci_build/requirements.txt
 
-            python3 ${rocks_toolbox}/rocks-toolbox/rockcraft_lpci_build/rockcraft_lpci_build.py \
+            python3 ${rocks_toolbox}/rockcraft_lpci_build/rockcraft_lpci_build.py \
               --lp-credentials-b64 "${{ secrets.LP_CREDENTIALS_B64 }}" \
               --launchpad-accept-public-upload
       - name: Rename ROCK OCI archive
