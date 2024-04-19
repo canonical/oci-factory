@@ -9,15 +9,15 @@ description: >
 # --- USAGE INFORMATION ---
 docker:
   parameters:
-    - -p 9876:9876
-  access: Access your Karma instance at `http://localhost:9876`.
+    - -p 8080:8080
+  access: Access your Karma instance at `http://localhost:8080`.
 parameters:
   - type: -e
     value: 'TZ=UTC'
     description: Timezone.
   - type: -p
-    value: '9876:9876'
-    description: Expose Karma on `localhost:9876`.
+    value: '8080:8080'
+    description: Expose Karma on `localhost:8080`.
 debug:
   text: |
     ### Debugging
