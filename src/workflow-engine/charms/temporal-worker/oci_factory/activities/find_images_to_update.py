@@ -24,6 +24,8 @@ import time
 import yaml
 import zipfile
 
+import src.shared.custom_yaml
+
 
 logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 # Make sure we can connect to Swift

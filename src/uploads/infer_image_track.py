@@ -6,6 +6,8 @@ import logging
 import subprocess
 import yaml
 
+import src.shared.custom_yaml
+
 logging.basicConfig()
 
 

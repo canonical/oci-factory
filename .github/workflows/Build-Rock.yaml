@@ -72,6 +72,8 @@ jobs:
             import yaml
             import os
 
+            import src.shared.custom_yaml
+
             BUILD_WITH_LPCI = 0
 
             with open("${{ inputs.rockfile-directory }}/rockcraft.yaml") as rf:

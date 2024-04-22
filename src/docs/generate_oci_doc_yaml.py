@@ -18,6 +18,7 @@ import boto3
 import pydantic
 import yaml
 
+import src.shared.custom_yaml
 import src.shared.release_info as shared
 from src.docs.schema.triggers import DocSchema
 

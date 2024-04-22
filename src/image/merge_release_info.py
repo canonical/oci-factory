@@ -19,6 +19,7 @@ import argparse
 import json
 import yaml
 
+import src.shared.custom_yaml
 from utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
 from utils.schema.revision_data import RevisionDataSchema
 
