@@ -1,0 +1,14 @@
+version: 1
+upload:
+  - source: canonical/karma-rock
+    commit: b1fa957d973657883b6b40a41db1326a4b420278
+    directory: "0.120"
+    release:
+      0.120-22.04:
+        end-of-life: "2025-04-19T00:00:00Z"
+        risks:
+          - stable
+      0-22.04:
+        end-of-life: "2025-04-19T00:00:00Z"
+        risks:
+          - stable
