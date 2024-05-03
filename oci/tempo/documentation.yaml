@@ -44,7 +44,7 @@ debug:
     To debug the container:
 
     ```bash
-    docker exec -it tempo-container /bin/pebble logs -f tempo
+    docker exec -it tempo-container pebble logs -f tempo
     ```
 
     To get an interactive shell:
