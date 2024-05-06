@@ -72,7 +72,19 @@ jobs:
             import yaml
             import os
 
-            import src.shared.custom_yaml
+            def string_constructor(loader, node):
+              return loader.construct_scalar(node)
+            
+            yaml.add_constructor(
+                "tag:yaml.org,2002:int",
+                string_constructor,
+                Loader=yaml.SafeLoader
+            )
+            yaml.add_constructor(
+                "tag:yaml.org,2002:float",
+                string_constructor,
+                Loader=yaml.SafeLoader
+            )
 
             BUILD_WITH_LPCI = 0
 

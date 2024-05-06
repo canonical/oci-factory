@@ -7,7 +7,7 @@ import os
 import pydantic
 import yaml
 
-import src.shared.custom_yaml
+from utils import custom_yaml
 from utils.schema.triggers import ImageSchema
 
 

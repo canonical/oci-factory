@@ -4,9 +4,16 @@ import argparse
 import os
 import logging
 import subprocess
+import sys
 import yaml
 
-import src.shared.custom_yaml
+sys.path.append(
+    os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "image")
+    )
+)
+
+from image.utils import custom_yaml
 
 logging.basicConfig()
 
