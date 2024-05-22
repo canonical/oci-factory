@@ -57,7 +57,7 @@ jobs:
           rock_name=`cat rockcraft.y*ml | yq -r .name`
           if [[ "${{ inputs.oci-factory-path }}" != *"${rock_name}"* ]]
           then
-            echo "ERROR: the ROCK's name '${rock_name}' must match the OCI folder name!"
+            echo "ERROR: the rock's name '${rock_name}' must match the OCI folder name!"
             exit 1
           fi
       - uses: actions/setup-python@v5
@@ -157,7 +157,7 @@ jobs:
             python3 ${rocks_toolbox}/rockcraft_lpci_build/rockcraft_lpci_build.py \
               --lp-credentials-b64 "${{ secrets.LP_CREDENTIALS_B64 }}" \
               --launchpad-accept-public-upload
-      - name: Rename ROCK OCI archive
+      - name: Rename rock OCI archive
         id: rock
         run: |
           mkdir ${{ env.ROCKS_CI_FOLDER }}

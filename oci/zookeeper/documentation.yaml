@@ -15,7 +15,7 @@ description: |
   shipped in support of the Apache Kafka image.
   
   Please note that the images tagged up to 3.1 are Dockerfile-base images,
-  whereas from version 3.8.2 onward the images are now ROCKs. As such the
+  whereas from version 3.8.2 onward the images are now rocks. As such the
   entrypoint is now Pebble. Read more on the
   [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
 
