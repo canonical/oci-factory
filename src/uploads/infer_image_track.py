@@ -13,7 +13,7 @@ sys.path.append(
     )
 )
 
-from image.utils import custom_yaml
+from utils import custom_yaml
 
 logging.basicConfig()
 
