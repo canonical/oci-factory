@@ -18,6 +18,13 @@ import boto3
 import pydantic
 import yaml
 
+sys.path.append(
+    os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..")
+    )
+)
+
+from image.utils import custom_yaml
 import src.shared.release_info as shared
 from src.docs.schema.triggers import DocSchema
 
