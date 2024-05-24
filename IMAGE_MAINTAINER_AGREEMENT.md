@@ -30,7 +30,7 @@ registry namespace.
 |  |  |
 |---|---|
 | CI/CD | Continuous Integration and Continuous Deployment |
-| Maintainer | Canonical entity who owns and is responsible for an Ubuntu ROCK/Image. |
+| Maintainer | Canonical entity who owns and is responsible for an Ubuntu Rock/Image. |
 | OCI image | Currently limited to rock images only. |
 | Registry | An OCI container registry, as [defined](https://oras.land/#what-are-oci-registries) by the OCI specification. |
 | Rocks | Canonical’s OCI images, built via Rockcraft. See the definition [here](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation.html#what-is-a-rock). |

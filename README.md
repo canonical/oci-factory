@@ -2,7 +2,7 @@
 
 # Welcome to the OCI Factory! 👋
 
-*Behind every great ROCK is a great quarry...*
+*Behind every great rock is a great quarry...*
 </div>
 
 ## 🍿 **Before you get started**
