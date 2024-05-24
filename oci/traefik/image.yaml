@@ -1,54 +1,58 @@
 version: 1
 upload:
   - source: canonical/traefik-rock
-    commit: ea0e9420276193c05513d24efbc9a8eb39575b5e
-    directory: 2.11.0
-    release:
-      2.11.0-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
-      2.11-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
-      2-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
-  - source: canonical/traefik-rock
-    commit: ea0e9420276193c05513d24efbc9a8eb39575b5e
+    commit: dc5923ca6663a50b9546cb40cf2fa5f69f45d732
     directory: 2.10.4
     release:
       2.10.4-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
+        end-of-life: "2025-05-24T00:00:00Z"
         risks:
           - stable
   - source: canonical/traefik-rock
-    commit: ea0e9420276193c05513d24efbc9a8eb39575b5e
+    commit: dc5923ca6663a50b9546cb40cf2fa5f69f45d732
     directory: 2.10.5
     release:
       2.10.5-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
+        end-of-life: "2025-05-24T00:00:00Z"
         risks:
           - stable
   - source: canonical/traefik-rock
-    commit: ea0e9420276193c05513d24efbc9a8eb39575b5e
+    commit: dc5923ca6663a50b9546cb40cf2fa5f69f45d732
     directory: 2.10.6
     release:
       2.10.6-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
+        end-of-life: "2025-05-24T00:00:00Z"
         risks:
           - stable
   - source: canonical/traefik-rock
-    commit: ea0e9420276193c05513d24efbc9a8eb39575b5e
+    commit: dc5923ca6663a50b9546cb40cf2fa5f69f45d732
     directory: 2.10.7
     release:
       2.10.7-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
+        end-of-life: "2025-05-24T00:00:00Z"
         risks:
           - stable
-      2.10-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
+  - source: canonical/traefik-rock
+    commit: dc5923ca6663a50b9546cb40cf2fa5f69f45d732
+    directory: 2.11.0
+    release:
+      2.11.0-22.04:
+        end-of-life: "2025-05-24T00:00:00Z"
+        risks:
+          - stable
+  - source: canonical/traefik-rock
+    commit: dc5923ca6663a50b9546cb40cf2fa5f69f45d732
+    directory: 3.0.0
+    release:
+      3.0.0-22.04:
+        end-of-life: "2025-05-24T00:00:00Z"
+        risks:
+          - stable
+      3.0-22.04:
+        end-of-life: "2025-05-24T00:00:00Z"
+        risks:
+          - stable
+      3-22.04:
+        end-of-life: "2025-05-24T00:00:00Z"
         risks:
           - stable
