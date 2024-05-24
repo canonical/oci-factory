@@ -14,7 +14,6 @@ from collections import defaultdict
 import yaml
 from src.image.utils.encoders import DateTimeEncoder
 from src.image.utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
-from src.image.utils import custom_yaml
 import src.shared.release_info as shared
 
 parser = argparse.ArgumentParser()
@@ -68,7 +67,7 @@ tag_mapping_from_all_releases = shared.get_tag_mapping_from_all_releases(all_rel
 
 print(f"Parsing image trigger {args.image_trigger}")
 with open(args.image_trigger, encoding="UTF-8") as trigger:
-    image_trigger = ImageSchema(**yaml.safe_load(trigger))
+    image_trigger = ImageSchema(**yaml.load(trigger, Loader=yaml.BaseLoader))
 
 tag_mapping_from_trigger = {}
 for track, risks in image_trigger.release.items():

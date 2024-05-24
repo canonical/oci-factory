@@ -7,13 +7,6 @@ import subprocess
 import sys
 import yaml
 
-sys.path.append(
-    os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..")
-    )
-)
-
-from image.utils import custom_yaml
 
 logging.basicConfig()
 
@@ -40,7 +33,7 @@ args = parser.parse_args()
 with open(
     f"{args.recipe_dirname.rstrip('/')}/rockcraft.yaml", encoding="UTF-8"
 ) as rockcraft_file:
-    rockcraft_yaml = yaml.safe_load(rockcraft_file)
+    rockcraft_yaml = yaml.load(rockcraft_file, Loader=yaml.BaseLoader)
 
 rock_base = (
     rockcraft_yaml["base"]

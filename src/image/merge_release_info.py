@@ -19,7 +19,6 @@ import argparse
 import json
 import yaml
 
-from utils import custom_yaml
 from utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
 from utils.schema.revision_data import RevisionDataSchema
 
@@ -58,7 +57,7 @@ if __name__ == "__main__":
 
     print(f"Getting existing image trigger from {args.image_trigger}")
     with open(args.image_trigger, encoding="UTF-8") as trigger:
-        image_trigger = yaml.safe_load(trigger)
+        image_trigger = yaml.load(trigger, Loader=yaml.BaseLoader)
 
     _ = ImageSchema(**image_trigger)
 

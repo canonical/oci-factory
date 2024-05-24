@@ -7,7 +7,6 @@ import os
 import pydantic
 import yaml
 
-from utils import custom_yaml
 from utils.schema.triggers import ImageSchema
 
 
@@ -45,7 +44,7 @@ if __name__ == "__main__":
 
     print(f"Generating build matrix for {image_trigger_file}")
     with open(image_trigger_file, encoding="UTF-8") as bf:
-        image_trigger = yaml.safe_load(bf)
+        image_trigger = yaml.load(bf, Loader=yaml.BaseLoader)
         try:
             validate_image_trigger(image_trigger)
         except pydantic.error_wrappers.ValidationError as err:
