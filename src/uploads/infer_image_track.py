@@ -4,7 +4,6 @@ import argparse
 import os
 import logging
 import subprocess
-import sys
 import yaml
 
 
