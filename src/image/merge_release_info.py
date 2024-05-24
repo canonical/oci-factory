@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     print(f"Getting existing image trigger from {args.image_trigger}")
     with open(args.image_trigger, encoding="UTF-8") as trigger:
-        image_trigger = yaml.safe_load(trigger)
+        image_trigger = yaml.load(trigger, Loader=yaml.BaseLoader)
 
     _ = ImageSchema(**image_trigger)
 

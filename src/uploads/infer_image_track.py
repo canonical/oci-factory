@@ -6,6 +6,7 @@ import logging
 import subprocess
 import yaml
 
+
 logging.basicConfig()
 
 
@@ -31,7 +32,7 @@ args = parser.parse_args()
 with open(
     f"{args.recipe_dirname.rstrip('/')}/rockcraft.yaml", encoding="UTF-8"
 ) as rockcraft_file:
-    rockcraft_yaml = yaml.safe_load(rockcraft_file)
+    rockcraft_yaml = yaml.load(rockcraft_file, Loader=yaml.BaseLoader)
 
 rock_base = (
     rockcraft_yaml["base"]
@@ -43,7 +44,7 @@ try:
     base_release = float(rock_base.replace(":", "@").split("@")[-1])
 except ValueError:
     logging.warning(
-        f"Could not infer rock's base release from {rock_base}. Trying with codename."
+        f"Could not infer ROCK's base release from {rock_base}. Trying with codename."
     )
     base_release = float(
         get_release_from_codename(rock_base.replace(":", "@").split("@")[-1])
