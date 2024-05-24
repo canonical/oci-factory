@@ -67,7 +67,7 @@ tag_mapping_from_all_releases = shared.get_tag_mapping_from_all_releases(all_rel
 
 print(f"Parsing image trigger {args.image_trigger}")
 with open(args.image_trigger, encoding="UTF-8") as trigger:
-    image_trigger = ImageSchema(**yaml.safe_load(trigger))
+    image_trigger = ImageSchema(**yaml.load(trigger, Loader=yaml.BaseLoader))
 
 tag_mapping_from_trigger = {}
 for track, risks in image_trigger.release.items():

@@ -273,9 +273,9 @@ class OCIDocumentationData:
         logging.info("Opening file %s", doc_file)
         with open(doc_file, "r", encoding="UTF-8") as file:
             try:
-                base_doc_data = DocSchema(**yaml.safe_load(file) or {}).dict(
-                    exclude_none=True
-                )
+                base_doc_data = DocSchema(
+                    **yaml.load(file, Loader=yaml.BaseLoader) or {}
+                ).dict(exclude_none=True)
             except (yaml.YAMLError, pydantic.ValidationError) as exc:
                 msg = f"Error loading the {doc_file} file"
                 raise Exception(msg) from exc
