@@ -64,6 +64,9 @@ options:
         not an admin, read "[From your workstation](#from-your-workstation)" to
         know how to register the existing controller in your workstation.
 
+4. If the worker is deployed in a Canonical infrastructure, you also need to ensure that
+the proper squid proxy and firewall configurations are set to allow traffics between the cluster and the temporal staging, the grafana, karapace, kafka, and google-oidc-related servers are permitted.
+
 ## Deploying the charm with Terraform
 
 This is the preferred option (Terraform should already be installed, but if not,
@@ -218,7 +221,12 @@ workflow-specific configurations for the `consumer` activities
     juju attach-resource temporal-worker-k8s workflows-file=./dist/oci_factory_workflows-0.0.1-py3-none-any.whl
     ```
 
-10. check the application status and wait for it to be up and running
+10. Configure `no-proxy` for `.canonical.com` hosts
+    ```bash
+    juju config temporal-worker-k8s no-proxy=".canonical.com"
+    ```
+
+11. check the application status and wait for it to be up and running
 
     ```bash
     juju status --watch 2s
