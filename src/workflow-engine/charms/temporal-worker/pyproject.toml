@@ -11,7 +11,6 @@ packages = [
     { include = "**/ca.crt", from = "." }
 ]
 include = ["**/*.avsc"]
-exclude = ["**/find_images_to_update.py"]
 
 [tool.poetry.dependencies]
 python = "^3.8"

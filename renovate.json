@@ -8,7 +8,7 @@
         "src/**",
         "examples/**"
     ],
-    "automerge": true,
+    "automerge": false,
     "customManagers": [
         {
             "customType": "regex",

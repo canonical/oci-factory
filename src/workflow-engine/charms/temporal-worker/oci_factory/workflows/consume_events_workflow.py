@@ -4,11 +4,15 @@ from temporalio import workflow
 from temporalio.common import RetryPolicy
 from temporalio.exceptions import ActivityError
 
-from pathlib import Path
+import logging
+import os
 import sys
+from pathlib import Path
 
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
+# `TWC_LOG_LEVEL` is the mapped value of `log-level` in the charm config
+logging.basicConfig(level=os.environ.get("TWC_LOG_LEVEL", "info").upper())
 
 with workflow.unsafe.imports_passed_through():
     import oci_factory.activities.activity_consume_events as consume_events
