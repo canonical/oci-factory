@@ -1,34 +1,18 @@
 version: 1
 upload:
   - source: canonical/prometheus-pushgateway-rock
-    commit: 54c7975fbf0768960ead8ce632c3881bb84b979d
-    directory: 1.6.0
+    commit: 41d33061394038dd5e439549fbad71b3e61fcad1
+    directory: 1.8.0
     release:
-      1.6.0-22.04:
-        end-of-life: "2025-05-24T00:00:00Z"
+      1.8.0-22.04:
+        end-of-life: "2025-05-28T00:00:00Z"
         risks:
           - stable
-  - source: canonical/prometheus-pushgateway-rock
-    commit: 54c7975fbf0768960ead8ce632c3881bb84b979d
-    directory: 1.6.1
-    release:
-      1.6.1-22.04:
-        end-of-life: "2025-05-24T00:00:00Z"
+      1.8-22.04:
+        end-of-life: "2025-05-28T00:00:00Z"
         risks:
           - stable
-  - source: canonical/prometheus-pushgateway-rock
-    commit: 54c7975fbf0768960ead8ce632c3881bb84b979d
-    directory: 1.6.2
-    release:
-      1.6.2-22.04:
-        end-of-life: "2025-05-24T00:00:00Z"
-        risks:
-          - stable
-  - source: canonical/prometheus-pushgateway-rock
-    commit: 54c7975fbf0768960ead8ce632c3881bb84b979d
-    directory: 1.7.0
-    release:
-      1.7.0-22.04:
-        end-of-life: "2025-05-24T00:00:00Z"
+      1-22.04:
+        end-of-life: "2025-05-28T00:00:00Z"
         risks:
           - stable
