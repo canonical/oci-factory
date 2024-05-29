@@ -31,18 +31,18 @@
     },
     "0-22.04": {
         "stable": {
-            "target": "75"
+            "target": "76"
         },
         "candidate": {
-            "target": "75"
+            "target": "0-22.04_stable"
         },
         "beta": {
-            "target": "75"
+            "target": "0-22.04_candidate"
         },
         "edge": {
-            "target": "75"
+            "target": "0-22.04_beta"
         },
-        "end-of-life": "2025-03-14T00:00:00Z"
+        "end-of-life": "2025-05-28T00:00:00Z"
     },
     "0.38.0-22.04": {
         "stable": {
@@ -210,18 +210,63 @@
         }
     },
     "0.40-22.04": {
-        "end-of-life": "2025-03-14T00:00:00Z",
+        "end-of-life": "2025-05-28T00:00:00Z",
         "stable": {
-            "target": "75"
+            "target": "76"
         },
         "candidate": {
-            "target": "75"
+            "target": "0.40-22.04_stable"
         },
         "beta": {
-            "target": "75"
+            "target": "0.40-22.04_candidate"
         },
         "edge": {
-            "target": "75"
+            "target": "0.40-22.04_beta"
+        }
+    },
+    "0.40.5-22.04": {
+        "end-of-life": "2025-05-28T00:00:00Z",
+        "stable": {
+            "target": "76"
+        },
+        "candidate": {
+            "target": "0.40.5-22.04_stable"
+        },
+        "beta": {
+            "target": "0.40.5-22.04_candidate"
+        },
+        "edge": {
+            "target": "0.40.5-22.04_beta"
+        }
+    },
+    "0.40.4-22.04": {
+        "end-of-life": "2025-05-28T00:00:00Z",
+        "stable": {
+            "target": "77"
+        },
+        "candidate": {
+            "target": "0.40.4-22.04_stable"
+        },
+        "beta": {
+            "target": "0.40.4-22.04_candidate"
+        },
+        "edge": {
+            "target": "0.40.4-22.04_beta"
+        }
+    },
+    "0.40.3-22.04": {
+        "end-of-life": "2025-05-28T00:00:00Z",
+        "stable": {
+            "target": "78"
+        },
+        "candidate": {
+            "target": "0.40.3-22.04_stable"
+        },
+        "beta": {
+            "target": "0.40.3-22.04_candidate"
+        },
+        "edge": {
+            "target": "0.40.3-22.04_beta"
         }
     }
 }
