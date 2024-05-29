@@ -31,18 +31,18 @@
     },
     "2-22.04": {
         "stable": {
-            "target": "67"
+            "target": "68"
         },
         "candidate": {
-            "target": "67"
+            "target": "2-22.04_stable"
         },
         "beta": {
-            "target": "67"
+            "target": "2-22.04_candidate"
         },
         "edge": {
-            "target": "67"
+            "target": "2-22.04_beta"
         },
-        "end-of-life": "2025-03-14T00:00:00Z"
+        "end-of-life": "2025-05-28T00:00:00Z"
     },
     "2.9.2-22.04": {
         "stable": {
@@ -61,18 +61,18 @@
     },
     "2.9-22.04": {
         "stable": {
-            "target": "67"
+            "target": "68"
         },
         "candidate": {
-            "target": "67"
+            "target": "2.9-22.04_stable"
         },
         "beta": {
-            "target": "67"
+            "target": "2.9-22.04_candidate"
         },
         "edge": {
-            "target": "67"
+            "target": "2.9-22.04_beta"
         },
-        "end-of-life": "2025-03-14T00:00:00Z"
+        "end-of-life": "2025-05-28T00:00:00Z"
     },
     "2.9.3-22.04": {
         "stable": {
@@ -117,6 +117,66 @@
         },
         "edge": {
             "target": "67"
+        }
+    },
+    "2.9.6-22.04": {
+        "end-of-life": "2025-05-28T00:00:00Z",
+        "stable": {
+            "target": "68"
+        },
+        "candidate": {
+            "target": "2.9.6-22.04_stable"
+        },
+        "beta": {
+            "target": "2.9.6-22.04_candidate"
+        },
+        "edge": {
+            "target": "2.9.6-22.04_beta"
+        }
+    },
+    "3.0.0-22.04": {
+        "end-of-life": "2025-05-28T00:00:00Z",
+        "stable": {
+            "target": "69"
+        },
+        "candidate": {
+            "target": "3.0.0-22.04_stable"
+        },
+        "beta": {
+            "target": "3.0.0-22.04_candidate"
+        },
+        "edge": {
+            "target": "3.0.0-22.04_beta"
+        }
+    },
+    "3.0-22.04": {
+        "end-of-life": "2025-05-28T00:00:00Z",
+        "stable": {
+            "target": "69"
+        },
+        "candidate": {
+            "target": "3.0-22.04_stable"
+        },
+        "beta": {
+            "target": "3.0-22.04_candidate"
+        },
+        "edge": {
+            "target": "3.0-22.04_beta"
+        }
+    },
+    "3-22.04": {
+        "end-of-life": "2025-05-28T00:00:00Z",
+        "stable": {
+            "target": "69"
+        },
+        "candidate": {
+            "target": "3-22.04_stable"
+        },
+        "beta": {
+            "target": "3-22.04_candidate"
+        },
+        "edge": {
+            "target": "3-22.04_beta"
         }
     }
 }
