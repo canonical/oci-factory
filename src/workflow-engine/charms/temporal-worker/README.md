@@ -12,7 +12,7 @@ Charm](https://charmhub.io/temporal-worker-k8s?channel=latest/edge).
   - [Deploying the charm manually (testing)](#deploying-the-charm-manually-testing)
     - [From the PS6 dedicated instance (admins only)](#from-the-ps6-dedicated-instance-admins-only)
     - [From your workstation](#from-your-workstation)
-      - [Note for future self](#note-for-future-self)
+    - [Note for future self](#note-for-future-self)
     - [Troubleshooting](#troubleshooting)
   - [Triggering a workflow](#triggering-a-workflow)
 
@@ -65,7 +65,9 @@ options:
         know how to register the existing controller in your workstation.
 
 4. If the worker is deployed in a Canonical infrastructure, you also need to ensure that
-the proper squid proxy and firewall configurations are set to allow traffics between the cluster and the temporal staging, the grafana, karapace, kafka, and google-oidc-related servers are permitted.
+the proper squid proxy and firewall configurations are set to allow traffics between the
+cluster and the Temporal staging, the Grafana, Karapace, Kafka, Github, AWS ECR and
+Google-OIDC-related servers are permitted.
 
 ## Deploying the charm with Terraform
 
@@ -144,7 +146,7 @@ process.
 ### From the [PS6 dedicated instance]((../../README.md)) (admins only)
 
 1. the Juju controller and model should already exist. If not, set them (see
-above)
+[Prerequisites](#prerequisites) 3)
 
     ```bash
     juju show-controller microk8s-rocks-ps6-controller
@@ -182,7 +184,7 @@ with our Temporal workflows
 
 5. copy the `config.yml.template` file to `config.yml` and edit it. This is
 the charm configuration file, containing the deployment settings. You'll need
-your own Candid agent for this.
+your own OIDC credentials for this.
 
 6. configure the deployed charm
 
@@ -195,9 +197,9 @@ your own Candid agent for this.
 
         ```bash
         juju config temporal-worker-k8s \
-            candid-private-key="foo" \
-            candid-public-key="bar" \
-            candid-username="baz" \
+            oidc-auth-uri="https://accounts.google.com/o/oauth2/auth" \
+            oidc-token-uri="https://oauth2.googleapis.com/token" \
+            oidc-auth-cert-url="https://www.googleapis.com/oauth2/v1/certs" \
             queue="test.rocks.team"
         ```
 
@@ -244,7 +246,8 @@ The Juju controller must already exist, so **ask an admin (superuser)** to add
 you as a new Juju user:
 
 ```bash
-# make sure the desired controller is selected
+# Do this operation with "admin" rights on the cluster
+# and make sure the desired controller is selected
 juju add-user <your-username>
 juju grant <your-username> write <existing-model-name>
 juju grant <your-username> admin <existing-application-name-if-already-deployed>
@@ -256,6 +259,7 @@ must provide to you.
 On your workstation, **make sure you're connected to the VPN** and type:
 
 ```bash
+# On your local workstation
 juju register --replace --debug <token>
 # You'll need to pick a password for your user.
 # If you ever lose this password, ask you admin to reset it from the admin
@@ -264,9 +268,10 @@ juju register --replace --debug <token>
 
 And you're good to go (see `juju controllers` and `juju status`).
 
-*From here, you can repeat exactly the same steps as in the previous section.*
+*From here, you can repeat exactly the same steps as in the
+[previous section](#from-the-ps6-dedicated-instance-admins-only) as if you are connected to the PS6 bastion.*
 
-#### Note for future self
+### Note for future self
 
 When running `juju register...`, if you see the following issue:
 
@@ -313,6 +318,8 @@ will restart the unit,
 - `juju debug-log` will print the `juju` logs, including your unit's, where you
 can possibly find any application-specific exception that might be preventing
 your unit from starting.
+- ``juju run --unit <unit in `juju status` from cluster bastion> -- microk8s kubectl -n microk8s-rocks-ps6-model logs <unit in `juju status` from juju client> -c temporal-worker``
+from the PS6 bastion to obtain the runtime log of the worker container.
 
 If the errors are application-related, then upon fixing them, don't forget to
 rebuild the wheel file and re-attach it to the Juju application.
@@ -329,12 +336,12 @@ SDKs are better suited for automation, in cases where your workflows are being
 triggered by other programs.
 
 In this case, and for testing purposes, we recommend using `tctl` (installed
-from [here](https://github.com/canonical/temporal-k8s/tree/main/tctl-snap)).
+from [here](https://snapcraft.io/tctl)).
 
 If this is the first time using `tctl`, you'll need to login:
 
 ```bash
-tctl login
+tctl.stg login
 # Follow the URL, login, and the tctl will capture the necessary cookies
 ```
 
@@ -343,9 +350,12 @@ For non-interactive login, you might need to experiment with [these instructions
 Then you can execute a workflow with the following command:
 
 ```bash
-tctl -n <namespace> workflow execute \
-    --task-queue <temporal-queue-name> \
-    --type <workflow-name> \
+tctl.stg --address=temporal.staging.commercial-systems.canonical.com:443 \
+    --tls-server-name=temporal.staging.commercial-systems.canonical.com \
+    -n rocks \
+    workflow execute \
+    --task-queue tests.oci-factory \
+    --type ConsumeEventsWorkflow \
     --input '"<strArg1>"' \
     --input '"<strArg2>"'
 ```
