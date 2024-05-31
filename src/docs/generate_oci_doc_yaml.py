@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 from typing import Any, Dict, List
+from dateutil import parser
 
 import boto3
 import pydantic
@@ -74,7 +75,6 @@ def cli_args() -> argparse.ArgumentParser:
 
 
 class OCIDocumentationData:
-
     """
     The OCIDocumentationData class provides functionality
     to generate documentation data files in YAML format
@@ -223,11 +223,11 @@ class OCIDocumentationData:
 
     def build_releases_data(
         self,
-        all_tracks: List[str],
+        all_tracks: Dict[str, str],
         all_ecr_tags: Dict[str, Any],
     ) -> List[Dict]:
         """Build the releases info data structure"""
-        logging.info(f"All available tracks:\n{all_tracks}")
+        logging.info(f"All available tracks:\n{list(all_tracks.keys())}")
 
         ecr_tag_details = all_ecr_tags["imageTagDetails"]
         ecr_tag_names = []
@@ -262,6 +262,12 @@ class OCIDocumentationData:
             release_data["tags"] = digest_tags.remove(channel_tag) or digest_tags
             # Get architecture list
             release_data["architectures"] = self.get_arches(channel_tag)
+            # Set the support date
+            if all_tracks.get(track_base):
+                eol = parser.parse(all_tracks[track_base])
+                release_data["support"] = {
+                    "until": eol.strftime("%m/%Y")
+                }
 
             releases.append(release_data)
 
@@ -296,6 +302,34 @@ class OCIDocumentationData:
             logging.info("Create the doc data YAML file '%s'", file_path)
             yaml.dump(content, fp, sort_keys=False)
 
+    @staticmethod
+    def get_all_tracks(
+        all_revision_tags: list, releases_file: str = ""
+    ) -> Dict[str, str]:
+        """
+        Given a list of all the existing revision tags for a rock, get the
+        corresponding track names and their end-of-life dates.
+
+        It returns a Dict {"track": "eol", ...}.
+
+        :param all_revision_tags: all existing revision tags for a rock
+        :param release_file: the path to the _releases.json file for that rock
+        """
+        _releases = {}
+        if releases_file:
+            try:
+                with open(releases_file) as rf:
+                    _releases = json.load(rf)
+            except FileNotFoundError:
+                logging.warning(f"Unable to load _releases.json and EOL dates")
+                pass
+
+        all_tracks = {}
+        for track in set(map(lambda t: t.rsplit("_", 1)[0], all_revision_tags)):
+            all_tracks[track] = _releases.get(track, {}).get("end-of-life")
+
+        return all_tracks
+
     def main(self, doc_data_dir: str) -> None:
         """Main function for generating the documentation data YAML file"""
 
@@ -307,8 +341,10 @@ class OCIDocumentationData:
         # Get a list of all revision tags, eg. ["1.0-22.04_1", "1.1-23.04_42", ...]
         all_revision_tags = shared.get_all_revision_tags(self.all_revision_tags)
 
-        # Extract a unique set of tracks from that list
-        all_tracks = set(map(lambda t: t.rsplit("_", 1)[0], all_revision_tags))
+        # Extract a unique set of tracks, and their EOL, from that list
+        all_tracks = self.get_all_tracks(
+            all_revision_tags, releases_file=f"{self.image_path}/_releases.json"
+        )
 
         # Get all the published OCI tags from ECR
         all_ecr_tags = self.ecr_client.describe_image_tags(
