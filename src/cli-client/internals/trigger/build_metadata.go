@@ -38,12 +38,12 @@ func InferBuildMetadata() BuildMetadata {
 	if len(remotes) < 1 || len(remotes[0].Config().URLs) < 1 {
 		logger.Panicf("No valid remote exists for this repo")
 	}
-	remoteUrl := remotes[0].Config().URLs[0]
-	logger.Debugf("Remote URL: %s", remoteUrl)
+	remoteURL := remotes[0].Config().URLs[0]
+	logger.Debugf("Remote URL: %s", remoteURL)
 
 	// use regex to match the repo location
 	regex := regexp.MustCompile("github.com[:/](canonical/.*).git")
-	matches := regex.FindStringSubmatch(remoteUrl)
+	matches := regex.FindStringSubmatch(remoteURL)
 	source := matches[1]
 	logger.Debugf("Source: %s", source)
 

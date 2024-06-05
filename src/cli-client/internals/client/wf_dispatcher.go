@@ -11,7 +11,7 @@ import (
 	"github.com/canonical/oci-factory/cli-client/internals/logger"
 )
 
-const workflowDispatchUrl = "https://api.github.com/repos/canonical/oci-factory/actions/workflows/Image.yaml/dispatches"
+const workflowDispatchURL = "https://api.github.com/repos/canonical/oci-factory/actions/workflows/Image.yaml/dispatches"
 
 type Inputs struct {
 	OciImageName    string `json:"oci-image-name"`
@@ -25,6 +25,21 @@ type Payload struct {
 	Inputs Inputs `json:"inputs"`
 }
 
+func NewGithubAuthHeaderMap(accessToken string) map[string]string {
+	return map[string]string{
+		"Accept":               "application/vnd.github+json",
+		"Authorization":        fmt.Sprintf("Bearer %s", accessToken),
+		"X-GitHub-Api-Version": "2022-11-28",
+	}
+}
+
+func SetHeaderWithMap(request *http.Request, headerMap map[string]string) {
+	for key, value := range headerMap {
+		request.Header.Set(key, value)
+	}
+}
+
+// Don't forget to keep the ExternalRefID to track the workflow
 func NewPayload(imageName string, uberImageTrigger string) Payload {
 	payload := Payload{
 		Ref: "main",
@@ -32,7 +47,7 @@ func NewPayload(imageName string, uberImageTrigger string) Payload {
 			OciImageName:    imageName,
 			B64ImageTrigger: uberImageTrigger,
 			Upload:          true,
-			ExternalRefID:   fmt.Sprintf("workflow-engine-%s-%d", imageName, time.Now().Unix()),
+			ExternalRefID:   fmt.Sprintf("cli-client-%s-%d", imageName, time.Now().Unix()),
 		},
 	}
 	return payload
@@ -45,13 +60,12 @@ func DispatchWorkflow(payload Payload, accessToken string) {
 		logger.Panicf("Unable to marshall payload: %s", err)
 	}
 
-	request, err := http.NewRequest("POST", workflowDispatchUrl, bytes.NewBuffer(payloadJSON))
+	request, err := http.NewRequest("POST", workflowDispatchURL, bytes.NewBuffer(payloadJSON))
 	if err != nil {
 		logger.Panicf("Unable to create request: %v", err)
 	}
-	request.Header.Set("Accept", "application/vnd.github+json")
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
-	request.Header.Set("X-GitHub-Api-Version", "2022-11-28")
+	header := NewGithubAuthHeaderMap(accessToken)
+	SetHeaderWithMap(request, header)
 
 	client := &http.Client{}
 	response, err := client.Do(request)
@@ -60,7 +74,7 @@ func DispatchWorkflow(payload Payload, accessToken string) {
 	}
 	defer response.Body.Close()
 
-	if response.StatusCode != 200 {
+	if response.StatusCode != http.StatusOK {
 		logger.Noticef("Request failed: %s", response.Status)
 		responseBody, err := io.ReadAll(response.Body)
 		if err != nil {

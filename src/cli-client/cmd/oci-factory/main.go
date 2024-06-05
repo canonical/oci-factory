@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/canonical/oci-factory/cli-client/internals/client"
 	"github.com/canonical/oci-factory/cli-client/internals/logger"
 	"github.com/canonical/oci-factory/cli-client/internals/trigger"
 )
@@ -58,6 +59,10 @@ func main() {
 	imageTrigger := trigger.NewUploadImageTrigger(buildMetadata, uploadTrack)
 	uploadTrigger := trigger.NewUploadTrigger([]trigger.UploadImageTrigger{imageTrigger})
 	logger.Noticef("Trigger:\n%s", uploadTrigger.ToYamlString())
+
+	logger.Noticef("Getting run ID for workflow workflow-engine-python-1717508367")
+	runID, _ := client.GetWorkflowRunID("workflow-engine-python-1717508367", "SOME SECRETS")
+	logger.Noticef("%d\n", runID)
 
 	// payload := client.NewPayload("python3.8", "")
 	// client.DispatchWorkflow(payload, "AAAAAAAA")
