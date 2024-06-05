@@ -1,6 +1,7 @@
 package trigger
 
 import (
+	"os"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -16,6 +17,13 @@ type BuildMetadata struct {
 }
 
 func InferBuildMetadata() BuildMetadata {
+	_, err := os.Stat("rockcraft.yaml")
+	if os.IsNotExist(err) {
+		logger.Panicf("No rockcraft.yaml found in current working directory")
+	}
+	if err != nil {
+		logger.Panicf("OS error: %v", err)
+	}
 	repo, err := git.PlainOpenWithOptions(".",
 		&git.PlainOpenOptions{DetectDotGit: true, EnableDotGitCommonDir: false})
 	if err != nil {
