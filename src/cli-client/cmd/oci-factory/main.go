@@ -1,12 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
 	"github.com/canonical/oci-factory/cli-client/internals/client"
 	"github.com/canonical/oci-factory/cli-client/internals/logger"
 	"github.com/canonical/oci-factory/cli-client/internals/trigger"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 func main() {
@@ -60,10 +62,21 @@ func main() {
 	uploadTrigger := trigger.NewUploadTrigger([]trigger.UploadImageTrigger{imageTrigger})
 	logger.Noticef("Trigger:\n%s", uploadTrigger.ToYamlString())
 
+	payload := client.NewPayload("python3.8", uploadTrigger.ToYamlString())
+	payloadJson, _ := json.Marshal(payload)
+	logger.Noticef("\n%s\n", string(payloadJson))
+
 	logger.Noticef("Getting run ID for workflow workflow-engine-python-1717508367")
-	runID, _ := client.GetWorkflowRunID("workflow-engine-python-1717508367", "SOME SECRETS")
+	fmt.Print("GitHub personal access token: ")
+	accessTokenBytes, err := terminal.ReadPassword(0)
+	if err != nil {
+		logger.Panicf("Error handling token: %v", err)
+	}
+	// Put new logs into the new line
+	fmt.Println()
+	accessToken := string(accessTokenBytes)
+	runID, _ := client.GetWorkflowRunID("workflow-engine-python-1717508367", accessToken)
 	logger.Noticef("%d\n", runID)
 
-	// payload := client.NewPayload("python3.8", "")
 	// client.DispatchWorkflow(payload, "AAAAAAAA")
 }

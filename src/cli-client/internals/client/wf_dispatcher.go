@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -41,11 +42,12 @@ func SetHeaderWithMap(request *http.Request, headerMap map[string]string) {
 
 // Don't forget to keep the ExternalRefID to track the workflow
 func NewPayload(imageName string, uberImageTrigger string) Payload {
+	uberImageTriggerB64 := base64.StdEncoding.EncodeToString([]byte(uberImageTrigger))
 	payload := Payload{
 		Ref: "main",
 		Inputs: Inputs{
 			OciImageName:    imageName,
-			B64ImageTrigger: uberImageTrigger,
+			B64ImageTrigger: uberImageTriggerB64,
 			Upload:          true,
 			ExternalRefID:   fmt.Sprintf("cli-client-%s-%d", imageName, time.Now().Unix()),
 		},
