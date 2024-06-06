@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/canonical/oci-factory/cli-client/internals/logger"
 )
 
@@ -14,8 +16,9 @@ const workflowRunsURL = "https://api.github.com/repos/canonical/oci-factory/acti
 const workflowSingleRunURL = "https://api.github.com/repos/canonical/oci-factory/actions/runs/"
 const getWorkflowRunIdMaxTry = 60
 
+// TODO switch to 5 minute for production
 // const getWorkflowRunTimeWindow = 5 * time.Minute
-const getWorkflowRunTimeWindow = 1024 * time.Hour
+const getWorkflowRunTimeWindow = 24 * 4 * time.Hour
 
 type WorkflowRunsScheme struct {
 	TotalCount   int                       `json:"total_count"`
@@ -63,13 +66,13 @@ type WorkflowSingleStepScheme struct {
 }
 
 // Is there a better way to avoid passing token for every call?
-func GetWorkflowRunID(externalRefID string, accessToken string) (int, error) {
+func GetWorkflowRunID(externalRefID string) (int, error) {
 
 	// Get the current time in UTC and subtract the deltaTime
 	timeWindow := time.Now().UTC().Add(-getWorkflowRunTimeWindow).Format("2006-01-02T15:04")
 	timeWindowFilter := "?created=%3E" + timeWindow
 
-	header := NewGithubAuthHeaderMap(accessToken)
+	header := NewGithubAuthHeaderMap()
 	request, err := http.NewRequest("GET", workflowRunsURL+timeWindowFilter, nil)
 	if err != nil {
 		logger.Panicf("Unable to create request: %v", err)
@@ -102,6 +105,7 @@ func GetWorkflowRunID(externalRefID string, accessToken string) (int, error) {
 		logger.Panicf("Unable to unmarshal json: %v", err)
 	}
 
+	s := spinner.New(spinner.CharSets[9], 500*time.Millisecond)
 	for numTries := 1; numTries < getWorkflowRunIdMaxTry+1; numTries++ {
 		for _, workFlowSingleRun := range workflowRuns.WorkflowRuns {
 			jobsURL := workFlowSingleRun.JobsURL
@@ -140,7 +144,14 @@ func GetWorkflowRunID(externalRefID string, accessToken string) (int, error) {
 			for _, job := range workflowJobs.Jobs {
 				if job.Name == "Prepare build" {
 					for _, step := range job.Steps {
+						// TODO remove for production
+						// test
+						if numTries < 2 {
+							step.Name += "1"
+						}
+						// test end
 						if step.Name == externalRefID {
+							s.Stop()
 							return workFlowSingleRun.Id, nil
 						}
 					}
@@ -148,15 +159,19 @@ func GetWorkflowRunID(externalRefID string, accessToken string) (int, error) {
 
 			}
 		}
+		s.Prefix = fmt.Sprintf("Waiting for task %s to show up (retry %d/%d) ",
+			externalRefID, numTries, getWorkflowRunIdMaxTry)
+		s.Start()
 		time.Sleep(5 * time.Second)
-		logger.Noticef("Retrying getting workflow run ID for %s (%d/%d)\n", externalRefID, numTries, getWorkflowRunIdMaxTry)
+		logger.Debugf("Retrying getting workflow run ID for %s (%d/%d)\n",
+			externalRefID, numTries, getWorkflowRunIdMaxTry)
 	}
 
 	return -1, fmt.Errorf("get workflow run ID failed after max tryouts")
 }
 
-func GetWorkflowRunStatus(runId int, accessToken string) (string, string) {
-	header := NewGithubAuthHeaderMap(accessToken)
+func GetWorkflowRunStatus(runId int) (string, string) {
+	header := NewGithubAuthHeaderMap()
 	request, err := http.NewRequest("GET", workflowSingleRunURL+fmt.Sprint(runId), nil)
 	if err != nil {
 		logger.Panicf("Unable to create request: %v", err)
@@ -190,4 +205,38 @@ func GetWorkflowRunStatus(runId int, accessToken string) (string, string) {
 	}
 
 	return workflowSingleRun.Status, workflowSingleRun.Conclusion
+}
+
+func WorkflowPolling(workflowExtRefId string) {
+	runId, _ := GetWorkflowRunID(workflowExtRefId)
+	logger.Debugf("%d\n", runId)
+
+	fmt.Printf("Task %s started. Details available at %s%d.\n", workflowExtRefId,
+		"https://github.com/canonical/oci-factory/actions/runs/", runId)
+
+	s := spinner.New(spinner.CharSets[9], 500*time.Millisecond)
+	// TODO remove for production
+	count := 0
+	for {
+		status, conclusion := GetWorkflowRunStatus(runId)
+		// TODO remove for production
+		// test spinner
+		if count < 1 {
+			status = StatusQueued
+		} else if count < 2 {
+			status = StatusInProgress
+		}
+		count += 1
+		// test end
+		if status == StatusCompleted {
+			s.Stop()
+			fmt.Printf("Task %s finished with status %s\n", workflowExtRefId, conclusion)
+			break
+		} else {
+			s.Prefix = fmt.Sprintf("Task %s is currently %s ",
+				workflowExtRefId, strings.ReplaceAll(status, "_", " "))
+			s.Start()
+			time.Sleep(5 * time.Second)
+		}
+	}
 }

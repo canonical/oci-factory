@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/canonical/oci-factory/cli-client/internals/logger"
+	"github.com/canonical/oci-factory/cli-client/internals/token"
 )
 
 const workflowDispatchURL = "https://api.github.com/repos/canonical/oci-factory/actions/workflows/Image.yaml/dispatches"
@@ -26,7 +27,8 @@ type Payload struct {
 	Inputs Inputs `json:"inputs"`
 }
 
-func NewGithubAuthHeaderMap(accessToken string) map[string]string {
+func NewGithubAuthHeaderMap() map[string]string {
+	accessToken := token.GetAccessToken()
 	return map[string]string{
 		"Accept":               "application/vnd.github+json",
 		"Authorization":        fmt.Sprintf("Bearer %s", accessToken),
@@ -56,7 +58,7 @@ func NewPayload(imageName string, uberImageTrigger string) Payload {
 }
 
 // Dispatch GitHub workflow with http request
-func DispatchWorkflow(payload Payload, accessToken string) {
+func DispatchWorkflow(payload Payload) {
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
 		logger.Panicf("Unable to marshall payload: %s", err)
@@ -66,7 +68,7 @@ func DispatchWorkflow(payload Payload, accessToken string) {
 	if err != nil {
 		logger.Panicf("Unable to create request: %v", err)
 	}
-	header := NewGithubAuthHeaderMap(accessToken)
+	header := NewGithubAuthHeaderMap()
 	SetHeaderWithMap(request, header)
 
 	client := &http.Client{}
