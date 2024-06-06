@@ -11,6 +11,7 @@ import (
 )
 
 const workflowRunsURL = "https://api.github.com/repos/canonical/oci-factory/actions/workflows/Image.yaml/runs"
+const workflowSingleRunURL = "https://api.github.com/repos/canonical/oci-factory/actions/runs/"
 const getWorkflowRunIdMaxTry = 60
 
 // const getWorkflowRunTimeWindow = 5 * time.Minute
@@ -21,9 +22,31 @@ type WorkflowRunsScheme struct {
 	WorkflowRuns []WorkflowSingleRunScheme `json:"workflow_runs"`
 }
 
+const (
+	StatusCompleted  string = "completed"
+	StatusInProgress string = "in_progress"
+	StatusQueued     string = "queued"
+	StatusRequested  string = "requested"
+	StatusWaiting    string = "waiting"
+	StatusPending    string = "pending"
+)
+
+const (
+	ConclusionActionRequired string = "action_required"
+	ConclusionCancelled      string = "cancelled"
+	ConclusionFailure        string = "failure"
+	ConclusionNeutral        string = "neutral"
+	ConclusionSkipped        string = "skipped"
+	ConclusionStale          string = "stale"
+	ConclusionSuccess        string = "success"
+	ConclusionTimedOut       string = "timed_out"
+)
+
 type WorkflowSingleRunScheme struct {
-	Id      int    `json:"id"`
-	JobsURL string `json:"jobs_url"`
+	Id         int    `json:"id"`
+	JobsURL    string `json:"jobs_url"`
+	Status     string `json:"status"`
+	Conclusion string `json:"conclusion"`
 }
 
 type WorkflowJobsScheme struct {
@@ -130,4 +153,41 @@ func GetWorkflowRunID(externalRefID string, accessToken string) (int, error) {
 	}
 
 	return -1, fmt.Errorf("get workflow run ID failed after max tryouts")
+}
+
+func GetWorkflowRunStatus(runId int, accessToken string) (string, string) {
+	header := NewGithubAuthHeaderMap(accessToken)
+	request, err := http.NewRequest("GET", workflowSingleRunURL+fmt.Sprint(runId), nil)
+	if err != nil {
+		logger.Panicf("Unable to create request: %v", err)
+	}
+	SetHeaderWithMap(request, header)
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		logger.Panicf("Unable to send request: %v", err)
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		logger.Noticef("Request failed: %s", response.Status)
+		responseBody, err := io.ReadAll(response.Body)
+		if err != nil {
+			logger.Panicf("Unable to read response body: %v", err)
+		}
+		logger.Panicf("Response: %s", string(responseBody))
+	}
+
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		logger.Panicf("Unable to read response body: %v", err)
+	}
+
+	var workflowSingleRun WorkflowSingleRunScheme
+	err = json.Unmarshal(responseBody, &workflowSingleRun)
+	if err != nil {
+		logger.Panicf("Unable to unmarshal json: %v", err)
+	}
+
+	return workflowSingleRun.Status, workflowSingleRun.Conclusion
 }
