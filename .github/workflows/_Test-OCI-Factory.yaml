@@ -12,6 +12,7 @@ on:
       - "oci/mock*"
       - "src/**"
       - "!src/workflow-engine/**"
+      - "!src/cli-client/**"
 
 jobs:
   test-workflows:
