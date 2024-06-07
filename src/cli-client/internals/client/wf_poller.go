@@ -57,8 +57,10 @@ type WorkflowJobsScheme struct {
 }
 
 type WorkflowSingleJobScheme struct {
-	Name  string                     `json:"name"`
-	Steps []WorkflowSingleStepScheme `json:"steps"`
+	Name       string                     `json:"name"`
+	Steps      []WorkflowSingleStepScheme `json:"steps"`
+	Status     string                     `json:"status"`
+	Conclusion string                     `json:"conclusion"`
 }
 
 type WorkflowSingleStepScheme struct {
@@ -146,9 +148,9 @@ func GetWorkflowRunID(externalRefID string) (int, error) {
 					for _, step := range job.Steps {
 						// TODO remove for production
 						// test
-						if numTries < 2 {
-							step.Name += "1"
-						}
+						// if numTries < 2 {
+						// 	step.Name += "1"
+						// }
 						// test end
 						if step.Name == externalRefID {
 							s.Stop()
@@ -156,7 +158,6 @@ func GetWorkflowRunID(externalRefID string) (int, error) {
 						}
 					}
 				}
-
 			}
 		}
 		s.Prefix = fmt.Sprintf("Waiting for task %s to show up (retry %d/%d) ",
@@ -207,6 +208,55 @@ func GetWorkflowRunStatus(runId int) (string, string) {
 	return workflowSingleRun.Status, workflowSingleRun.Conclusion
 }
 
+func GetWorkflowJobsProgress(runId int) (int, int, string) {
+	header := NewGithubAuthHeaderMap()
+	jobsURL := workflowSingleRunURL + fmt.Sprint(runId) + "/jobs"
+	request, err := http.NewRequest("GET", jobsURL, nil)
+	if err != nil {
+		logger.Panicf("Unable to create request: %v", err)
+	}
+	SetHeaderWithMap(request, header)
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		logger.Panicf("Unable to send request: %v", err)
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		logger.Noticef("Request failed: %s", response.Status)
+		responseBody, err := io.ReadAll(response.Body)
+		if err != nil {
+			logger.Panicf("Unable to read response body: %v", err)
+		}
+		logger.Panicf("Response: %s", string(responseBody))
+	}
+
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		logger.Panicf("Unable to read response body: %v", err)
+	}
+
+	var workflowJobs WorkflowJobsScheme
+	err = json.Unmarshal(responseBody, &workflowJobs)
+	if err != nil {
+		logger.Panicf("Unable to unmarshal json: %v", err)
+	}
+
+	numJobs := len(workflowJobs.Jobs)
+	iInProgress := 0
+	for i, job := range workflowJobs.Jobs[iInProgress:] {
+		if job.Status == StatusInProgress || job.Status == StatusQueued {
+			iInProgress += i
+			return iInProgress + 1, numJobs, job.Name
+		} else if job.Status == StatusCompleted && i+iInProgress == numJobs-1 {
+			// All finished
+			return numJobs + 1, numJobs, ""
+		}
+	}
+	return -1, -1, ""
+}
+
 func WorkflowPolling(workflowExtRefId string) {
 	runId, _ := GetWorkflowRunID(workflowExtRefId)
 	logger.Debugf("%d\n", runId)
@@ -216,25 +266,27 @@ func WorkflowPolling(workflowExtRefId string) {
 
 	s := spinner.New(spinner.CharSets[9], 500*time.Millisecond)
 	// TODO remove for production
-	count := 0
+	// count := 0
 	for {
 		status, conclusion := GetWorkflowRunStatus(runId)
 		// TODO remove for production
 		// test spinner
-		if count < 1 {
-			status = StatusQueued
-		} else if count < 2 {
-			status = StatusInProgress
-		}
-		count += 1
+		// if count < 1 {
+		// 	status = StatusQueued
+		// } else if count < 2 {
+		// 	status = StatusInProgress
+		// }
+		// count += 1
 		// test end
 		if status == StatusCompleted {
 			s.Stop()
 			fmt.Printf("Task %s finished with status %s\n", workflowExtRefId, conclusion)
 			break
 		} else {
-			s.Prefix = fmt.Sprintf("Task %s is currently %s ",
-				workflowExtRefId, strings.ReplaceAll(status, "_", " "))
+			currJob, totalJobs, jobName := GetWorkflowJobsProgress(runId)
+			s.Prefix = fmt.Sprintf("Task %s is currently %s: %s (%d/%d) ",
+				workflowExtRefId, strings.ReplaceAll(status, "_", " "),
+				strings.Split(jobName, " (")[0], currJob, totalJobs)
 			s.Start()
 			time.Sleep(5 * time.Second)
 		}
