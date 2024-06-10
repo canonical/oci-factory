@@ -24,6 +24,7 @@ type UploadImageTrigger struct {
 }
 
 type UploadTrigger struct {
+	Version             int                  `yaml:"version"`
 	UploadImageTriggers []UploadImageTrigger `yaml:"upload"`
 }
 
@@ -62,6 +63,7 @@ func NewUploadImageTrigger(buildMetadata BuildMetadata, tracks UploadReleaseTrac
 
 func NewUploadTrigger(imageTriggers []UploadImageTrigger) UploadTrigger {
 	trigger := UploadTrigger{
+		Version:             1,
 		UploadImageTriggers: imageTriggers,
 	}
 	return trigger
