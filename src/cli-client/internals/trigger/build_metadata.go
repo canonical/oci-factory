@@ -1,6 +1,7 @@
 package trigger
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"regexp"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/canonical/oci-factory/cli-client/internals/logger"
 	git "github.com/go-git/go-git/v5"
+	"gopkg.in/yaml.v3"
 )
 
 type BuildMetadata struct {
@@ -71,4 +73,27 @@ func InferBuildMetadata() BuildMetadata {
 	}
 
 	return buildMetadata
+}
+
+type RockcraftYaml struct {
+	Name string `yaml:"name"`
+}
+
+func (y *RockcraftYaml) getImageName() string {
+	yamlFile, err := os.ReadFile("rockcraft.yaml")
+	if err != nil {
+		fmt.Errorf("Unable to read rockcraft.yaml in current working directory\n")
+	}
+	err = yaml.Unmarshal(yamlFile, y)
+	if err != nil {
+		logger.Panicf("Unable to marshall trigger: %s", err)
+	}
+
+	logger.Debugf("Image name: %s", y.Name)
+	return y.Name
+}
+
+func GetRockcraftImageName() string {
+	var y RockcraftYaml
+	return y.getImageName()
 }
