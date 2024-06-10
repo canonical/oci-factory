@@ -65,6 +65,8 @@ func DispatchWorkflow(payload Payload) {
 	}
 
 	request, err := http.NewRequest("POST", workflowDispatchURL, bytes.NewBuffer(payloadJSON))
+	logger.Debugf("%s", payloadJSON)
+	logger.Debugf("%s", request.Body)
 	if err != nil {
 		logger.Panicf("Unable to create request: %v", err)
 	}
@@ -78,7 +80,8 @@ func DispatchWorkflow(payload Payload) {
 	}
 	defer response.Body.Close()
 
-	if response.StatusCode != http.StatusOK {
+	// workflow dispatch event API returns no content
+	if response.StatusCode != http.StatusNoContent {
 		logger.Noticef("Request failed: %s", response.Status)
 		responseBody, err := io.ReadAll(response.Body)
 		if err != nil {
