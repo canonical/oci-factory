@@ -221,10 +221,12 @@ if __name__ == "__main__":
                             f"Track {to_track} is missing its end-of-" "life field"
                         )
 
+                # filter out the tracks with releases out of EOL
+                release_to = {k : v for k, v in release_to.items() if "end-of-life" in v}
+
                 if release_to:
                     build_and_upload_data["release"] = release_to
-
-                uber_img_trigger["upload"].append(build_and_upload_data)
+                    uber_img_trigger["upload"].append(build_and_upload_data)
 
             if not uber_img_trigger["upload"]:
                 # Nothing to rebuild here
