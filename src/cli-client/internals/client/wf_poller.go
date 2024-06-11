@@ -102,7 +102,7 @@ func GetWorkflowRunID(externalRefID string) (int, error) {
 			logger.Panicf("Unable to read response body: %v", err)
 		}
 
-		logger.Debugf("Workflow run response: %s", string(responseBody))
+		// logger.Debugf("Workflow run response: %s", string(responseBody))
 		var workflowRuns WorkflowRunsScheme
 		err = json.Unmarshal(responseBody, &workflowRuns)
 		if err != nil {
@@ -137,7 +137,7 @@ func GetWorkflowRunID(externalRefID string) (int, error) {
 				logger.Panicf("Unable to read response body: %v", err)
 			}
 
-			logger.Debugf("Workflow jobs response: %s", string(responseBody))
+			// logger.Debugf("Workflow jobs response: %s", string(responseBody))
 			var workflowJobs WorkflowJobsScheme
 			err = json.Unmarshal(responseBody, &workflowJobs)
 			if err != nil {
