@@ -171,6 +171,23 @@ and stating:
 - **if** the Ubuntu Rock is based on other upstream source code, it **must** also include a security manifest. Currently, there is no convention for what this security manifest should look like. You **must** reach out to the Security team and discuss this on a case per case basis. As an example, the (now deprecated) [ubuntu/cortex](https://hub.docker.com/r/ubuntu/cortex) image [produces](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/utils/tree/golang-manifest-builder.py) this custom security
 [manifest](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/cortex/tree/oci/Dockerfile.ubuntu?h=1.7-21.04#n58).
 
+### Disable security monitoring
+
+To disable security monitoring for an Ubuntu Rock, the Maintainer must:
+- contact the Security Team (either directly, or via security-snapchat@lists.canonical.com) with the subject being "Disable security monitoring", and stating:
+  - the Ubuntu Rock name;
+  - the URL for the corresponding repository in Docker Hub;
+  - the contact information of the recipients who are getting current notifications;
+
+To disable security monitoring for **specific tags** of an Ubuntu Rock, the Maintainer must:
+- populate the table under the "Deprecated channels & tags" section in the Rock description.
+
+In this table, the values under `Track` are used as a filter. As an example, the (now deprecated) [ubuntu/cortex](https://hub.docker.com/r/ubuntu/cortex) includes a deprecated track of ~~`1.10-21.10`~~. Tags with this track in their name such as:
+- `1.10-21.10_edge`
+- `1.10-21.10_beta`
+
+are omitted from security monitoring updates.
+
 ### Acknowledge the delay to address issues
 
 The infrastructure provided by the ROCKS team will progressively become more autonomous when it comes to addressing the “need to update an Ubuntu Rock”. Nonetheless, and mainly in the event of a security patch (e.g. USN), the Maintainer **must** be able to address and update if needed, the affected Ubuntu Rocks in less than 24h. The build and publish process are designed to allow for a quick response delay to Maintainer-driven build requests (builds are triggered as soon as the build request is accepted). This very short timeline is designed to target a 24h average response time to critical CVEs from CVE fix available to the patched image availability.
