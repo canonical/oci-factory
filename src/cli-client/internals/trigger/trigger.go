@@ -42,15 +42,6 @@ func NewUploadReleaseTrack(track string, risks []string, eol string) UploadRelea
 	return newTrack
 }
 
-func (u *UploadReleaseTrack) AddTrack(track string, risks []string, eol string) {
-	(*u)[track] = UploadRelease{
-		EndOfLife: eol,
-		UploadReleaseRisks: UploadReleaseRisks{
-			Risks: risks,
-		},
-	}
-}
-
 func NewUploadImageTrigger(buildMetadata BuildMetadata, tracks UploadReleaseTrack) UploadImageTrigger {
 	UploadImageTrigger := UploadImageTrigger{
 		Source:    buildMetadata.Source,
