@@ -8,6 +8,8 @@ import (
 	"golang.org/x/term"
 )
 
+const TokenVarName = "GITHUB_TOKEN"
+
 var _accessToken = ""
 
 func readAccessToken() string {
@@ -32,4 +34,18 @@ func GetAccessToken() string {
 		_accessToken = readAccessToken()
 	}
 	return _accessToken
+}
+
+func RestoreTokenEnv(saveToken string) {
+	if len(saveToken) == 0 {
+		os.Unsetenv(TokenVarName)
+	} else {
+		os.Setenv(TokenVarName, saveToken)
+	}
+}
+
+func UpdateEnvToken(token string) string {
+	saveToken := os.Getenv(TokenVarName)
+	os.Setenv(TokenVarName, token)
+	return saveToken
 }
