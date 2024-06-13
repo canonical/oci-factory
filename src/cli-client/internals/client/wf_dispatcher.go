@@ -1,11 +1,9 @@
 package client
 
 import (
-	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"time"
 
@@ -57,36 +55,17 @@ func NewPayload(imageName string, uberImageTrigger string) Payload {
 	return payload
 }
 
-// Dispatch GitHub workflow with http request
-func DispatchWorkflow(payload Payload) {
+// Split the impl with different URL for testing
+func DispatchWorkflowImpl_(payload Payload, url string) {
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
 		logger.Panicf("Unable to marshall payload: %s", err)
 	}
 
-	request, err := http.NewRequest("POST", workflowDispatchURL, bytes.NewBuffer(payloadJSON))
-	logger.Debugf("%s", payloadJSON)
-	logger.Debugf("%s", request.Body)
-	if err != nil {
-		logger.Panicf("Unable to create request: %v", err)
-	}
-	header := NewGithubAuthHeaderMap()
-	SetHeaderWithMap(request, header)
+	SendRequest(http.MethodPost, url, payloadJSON, http.StatusNoContent)
+}
 
-	client := &http.Client{}
-	response, err := client.Do(request)
-	if err != nil {
-		logger.Panicf("Unable to send request: %v", err)
-	}
-	defer response.Body.Close()
-
-	// workflow dispatch event API returns no content
-	if response.StatusCode != http.StatusNoContent {
-		logger.Noticef("Request failed: %s", response.Status)
-		responseBody, err := io.ReadAll(response.Body)
-		if err != nil {
-			logger.Panicf("Unable to read response body: %v", err)
-		}
-		logger.Panicf("Response: %s", string(responseBody))
-	}
+// Dispatch GitHub workflow with http request
+func DispatchWorkflow(payload Payload) {
+	DispatchWorkflowImpl_(payload, workflowDispatchURL)
 }
