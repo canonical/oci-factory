@@ -21,9 +21,9 @@ type BuildMetadata struct {
 func InferBuildMetadata() BuildMetadata {
 	_, err := os.Stat("rockcraft.yaml")
 	if os.IsNotExist(err) {
-		logger.Panicf("No rockcraft.yaml found in current working directory")
-	}
-	if err != nil {
+		fmt.Print("No rockcraft.yaml found in current working directory")
+		os.Exit(1)
+	} else if err != nil {
 		logger.Panicf("OS error: %v", err)
 	}
 	repo, err := git.PlainOpenWithOptions(".",
