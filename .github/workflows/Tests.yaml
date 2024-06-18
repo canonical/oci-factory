@@ -60,10 +60,10 @@ on:
 env:
   TEST_IMAGE_NAME: 'test-img'
   TEST_IMAGE_TAG: 'test'
-  SKOPEO_IMAGE: 'quay.io/skopeo/stable:v1.13'
+  SKOPEO_IMAGE: 'quay.io/skopeo/stable:v1.15.1'
   UMOCI_VERSION: 'v0.4.7'
   UMOCI_BINARY: 'umoci.amd64'
-  DIVE_IMAGE: 'wagoodman/dive:v0.10'
+  DIVE_IMAGE: 'wagoodman/dive:v0.12'
 
 jobs:
   fetch-oci-image:
@@ -204,7 +204,7 @@ jobs:
   test-vulnerabilities:
     name: Vulnerability scan
     needs: [fetch-oci-image]
-    uses: canonical/oci-factory/.github/workflows/Vulnerability-Scan.yaml@main
+    uses: ./.github/workflows/Vulnerability-Scan.yaml
     with:
       oci-image-name: "${{ inputs.oci-image-name }}"
       oci-image-path: "${{ inputs.oci-image-path }}"
