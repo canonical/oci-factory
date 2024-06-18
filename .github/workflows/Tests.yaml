@@ -63,7 +63,7 @@ env:
   SKOPEO_IMAGE: 'quay.io/skopeo/stable:v1.15.1'
   UMOCI_VERSION: 'v0.4.7'
   UMOCI_BINARY: 'umoci.amd64'
-  DIVE_IMAGE: 'wagoodman/dive:v0.10'
+  DIVE_IMAGE: 'wagoodman/dive:v0.12'
 
 jobs:
   fetch-oci-image:
