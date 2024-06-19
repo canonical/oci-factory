@@ -57,6 +57,7 @@ if __name__ == "__main__":
     for img_number, _ in enumerate(builds):
         builds[img_number]["name"] = args.oci_path.rstrip("/").split("/")[-1]
         builds[img_number]["path"] = args.oci_path
+        builds[img_number]["dir_identifier"] = builds[img_number]["directory"].rstrip("/").replace("/", "_")
         # make sure every build of this image has a unique identifier
         # within the execution of the workflow - use revision number
         builds[img_number]["revision"] = img_number + int(args.next_revision)
