@@ -1,3 +1,4 @@
+GitPython
 PyYAML
 pydantic==1.9.0
 python-swiftclient
