@@ -105,6 +105,11 @@ jobs:
 
       - run: pip install -r src/image/requirements.txt
 
+      - name: Validate unique trigger upload entry
+        run: |
+          ./src/image/validate_unique_trigger_upload_entry.py \
+            --image-trigger ${{ steps.validate-image.outputs.img-path }}/image.yaml
+
       - name: Get next revision number
         id: get-next-revision
         env:
