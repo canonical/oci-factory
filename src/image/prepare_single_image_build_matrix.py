@@ -37,6 +37,12 @@ if __name__ == "__main__":
         help="Next revision number",
         required=True,
     )
+    parser.add_argument(
+        "--infer-image-track",
+        help="Infer the track corresponding to the releases",
+        action="store_true",
+        default=False,
+    )
 
     args = parser.parse_args()
 
@@ -61,6 +67,23 @@ if __name__ == "__main__":
         # make sure every build of this image has a unique identifier
         # within the execution of the workflow - use revision number
         builds[img_number]["revision"] = img_number + int(args.next_revision)
+
+        if args.infer_image_track:
+            import sys
+            sys.path.append("src/")
+            from git import Repo
+            from tempfile import TemporaryDirectory as tempdir
+            from uploads.infer_image_track import get_base_and_track
+            with tempdir() as d:
+                url = f"https://github.com/{builds[img_number]['source']}.git"
+                repo = Repo.clone_from(url, d)
+                repo.git.checkout(builds[img_number]["commit"])
+                # get the base image from the rockcraft.yaml file
+                with open(f"{d}/{builds[img_number]['directory']}/rockcraft.yaml", encoding="UTF-8") as rockcraft_file:
+                    rockcraft_yaml = yaml.load(rockcraft_file, Loader=yaml.BaseLoader)
+
+            _, track = get_base_and_track(rockcraft_yaml)
+            builds[img_number]["track"] = track
 
         with open(
             f"{args.revision_data_dir}/{builds[img_number]['revision']}",

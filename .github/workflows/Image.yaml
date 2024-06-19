@@ -206,12 +206,13 @@ jobs:
           ./src/image/prepare_single_image_build_matrix.py \
             --oci-path ${{ needs.prepare-build.outputs.oci-img-path }} \
             --revision-data-dir ${{ env.DATA_DIR }} \
-            --next-revision ${{ steps.get-next-revision.outputs.revision }}
+            --next-revision ${{ steps.get-next-revision.outputs.revision }} \
+            --infer-image-track
 
           for revision_file in `ls ${{ env.DATA_DIR }}`; do
             ./src/uploads/upload_dummy_to_swift.sh \
               ${{ needs.prepare-build.outputs.oci-img-name }} \
-              $(jq -r '.release | keys[0]' < ${{ env.DATA_DIR }}/$revision_file) \
+              $(jq -r '.track' < ${{ env.DATA_DIR }}/$revision_file) \
               $revision_file
           done
 
