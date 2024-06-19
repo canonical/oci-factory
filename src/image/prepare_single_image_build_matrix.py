@@ -64,9 +64,14 @@ if __name__ == "__main__":
         with open(
             f"{args.revision_data_dir}/{builds[img_number]['revision']}",
             "w",
+            encoding="UTF-8"
         ) as data_file:
             json.dump(builds[img_number], data_file)
 
+        # Add dir_identifier to assemble the cache key and artefact path
+        # No need to write it to rev data file since it's only used in matrix
+        builds[img_number]["dir_identifier"] = builds[img_number]["directory"].rstrip("/").replace("/", "_")
+        
         # set an output as a marker for later knowing if we need to release
         if "release" in builds[img_number]:
             release_to = "true"
