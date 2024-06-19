@@ -53,7 +53,6 @@ jobs:
       release-to: ${{ steps.prepare-matrix.outputs.release-to }}
       oci-img-path: ${{ steps.validate-image.outputs.img-path }}
       oci-img-name: ${{ steps.validate-image.outputs.img-name }}
-      revision-data-cache-key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
     steps:
       - name: ${{ inputs.external_ref_id }} #(2)
         if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -110,18 +109,6 @@ jobs:
           ./src/image/validate_unique_trigger_upload_entry.py \
             --image-trigger ${{ steps.validate-image.outputs.img-path }}/image.yaml
 
-      - name: Get next revision number
-        id: get-next-revision
-        env:
-          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
-          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
-          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
-          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
-          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
-          IMAGE_NAME: ${{ steps.validate-image.outputs.img-name }}
-          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
-        run: ./src/image/define_image_revision.sh
-
       - name: Validate and prepare builds matrix
         id: prepare-matrix
         env:
@@ -132,14 +119,9 @@ jobs:
           ./src/image/prepare_single_image_build_matrix.py \
             --oci-path ${{ steps.validate-image.outputs.img-path }} \
             --revision-data-dir ${{ env.DATA_DIR }} \
-            --next-revision ${{ steps.get-next-revision.outputs.revision }}
+            --next-revision 0
 
           echo "revision-data-cache-key=${{ github.run_id }}-${{ env.DATA_DIR }}" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/cache/save@v4
-        with:
-          path: ${{ steps.prepare-matrix.outputs.revision-data-dir }}
-          key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
 
   run-build:
     needs: [prepare-build]
@@ -148,7 +130,7 @@ jobs:
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     uses: ./.github/workflows/Build-Rock.yaml
     with:
-      oci-archive-name: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}
+      oci-archive-name: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
       oci-factory-path: ${{ matrix.path }}
       rock-name: ${{ matrix.name }}
       rock-repo: ${{ matrix.source }}
@@ -164,22 +146,92 @@ jobs:
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     uses: ./.github/workflows/Tests.yaml
     with:
-      oci-image-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}"
+      oci-image-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}"
       oci-image-path: "oci/${{ matrix.name }}"
       test-from: "cache"
-      cache-key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}        
+      cache-key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}        
     secrets: inherit
+
+  
+  prepare-upload:
+    runs-on: ubuntu-22.04
+    needs: [prepare-build, run-build, test]
+    name: Prepare upload
+    outputs:
+      build-matrix: ${{ steps.prepare-matrix.outputs.build-matrix }}
+      revision-data-cache-key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use custom image trigger
+        if: ${{ inputs.b64-image-trigger != '' }}
+        run: echo ${{ inputs.b64-image-trigger }} | base64 -d > ${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - run: |
+          ./src/uploads/requirements.sh
+          pip install -r src/image/requirements.txt -r src/uploads/requirements.txt
+
+      - name: Get next revision number
+        id: get-next-revision
+        env:
+          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
+          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
+          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+          IMAGE_NAME: ${{ needs.prepare-build.outputs.oci-img-name }}
+          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
+        run: ./src/image/define_image_revision.sh
+
+      # This is a critical section, have to be executed in sequence outside of matrix
+      - name: Prepare builds matrix with revision and preempt swift slots
+        id: prepare-matrix
+        env:
+          DATA_DIR: "revision-data"
+          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
+          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
+          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+          IMAGE_NAME: ${{ needs.prepare-build.outputs.oci-img-name }}
+          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
+        run: |
+          set -ex
+          mkdir ${{ env.DATA_DIR }}
+
+          ./src/image/prepare_single_image_build_matrix.py \
+            --oci-path ${{ needs.prepare-build.outputs.oci-img-path }} \
+            --revision-data-dir ${{ env.DATA_DIR }} \
+            --next-revision ${{ steps.get-next-revision.outputs.revision }}
+
+          for revision_file in `ls ${{ env.DATA_DIR }}`; do
+            ./src/uploads/upload_dummy_to_swift.sh \
+              ${{ needs.prepare-build.outputs.oci-img-name }} \
+              $(jq -r '.release | keys[0]' < ${{ env.DATA_DIR }}/$revision_file) \
+              $revision_file
+          done
+
+          echo "revision-data-cache-key=${{ github.run_id }}-${{ env.DATA_DIR }}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache/save@v4
+        with:
+          path: ${{ steps.prepare-matrix.outputs.revision-data-dir }}
+          key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
 
   upload:
     runs-on: ubuntu-22.04
-    needs: [prepare-build, run-build, test]
+    needs: [prepare-build, prepare-upload]
     name: Upload
     if: ${{ inputs.upload || (github.ref_name == 'main' && github.event_name == 'push') }}
     strategy:
       fail-fast: true
-      matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
+      matrix: ${{ fromJSON(needs.prepare-upload.outputs.build-matrix) }}
     env:
-      OCI_ARCHIVE_NAME: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}
+      OCI_ARCHIVE_NAME: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
     outputs:
       artefacts-hashes: ${{ steps.artefacts-hashes.outputs.hashes }}
     steps:
@@ -221,7 +273,7 @@ jobs:
       - uses: actions/cache/restore@v4
         with:
           path: ${{ env.OCI_ARCHIVE_NAME }}
-          key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}
+          key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
           fail-on-cache-miss: true
 
       - name: Infer track name
@@ -385,7 +437,7 @@ jobs:
   # and commit the _releases.json file in a single commit, outside a matrix job
   prepare-releases:
     name: Prepare releases
-    needs: [prepare-build, upload]
+    needs: [prepare-build, prepare-upload, upload]
     runs-on: ubuntu-22.04
     if: ${{ needs.prepare-build.outputs.release-to != '' }}
     concurrency:
@@ -409,7 +461,7 @@ jobs:
       - uses: actions/cache/restore@v4
         with:
           path: ${{ env.REVISION_DATA_DIR }}
-          key: ${{ needs.prepare-build.outputs.revision-data-cache-key }}
+          key: ${{ needs.prepare-upload.outputs.revision-data-cache-key }}
           fail-on-cache-miss: true
 
       - run: pip install -r src/image/requirements.txt
