@@ -121,8 +121,6 @@ jobs:
             --revision-data-dir ${{ env.DATA_DIR }} \
             --next-revision 0
 
-          echo "revision-data-cache-key=${{ github.run_id }}-${{ env.DATA_DIR }}" >> "$GITHUB_OUTPUT"
-
   run-build:
     needs: [prepare-build]
     strategy:
@@ -175,6 +173,7 @@ jobs:
           ./src/uploads/requirements.sh
           pip install -r src/image/requirements.txt -r src/uploads/requirements.txt
 
+      # Here starts the critical section, have to be executed in sequence outside of matrix.
       - name: Get next revision number
         id: get-next-revision
         env:
@@ -187,9 +186,24 @@ jobs:
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: ./src/image/define_image_revision.sh
 
-      # This is a critical section, have to be executed in sequence outside of matrix
-      - name: Prepare builds matrix with revision and preempt swift slots
+      - name: Prepare builds matrix for upload
         id: prepare-matrix
+        env:
+          DATA_DIR: "revision-data"
+        run: |
+          set -ex
+
+          mkdir ${{ env.DATA_DIR }}
+
+          ./src/image/prepare_single_image_build_matrix.py \
+            --oci-path ${{ needs.prepare-build.outputs.oci-img-path }} \
+            --revision-data-dir ${{ env.DATA_DIR }} \
+            --next-revision ${{ steps.get-next-revision.outputs.revision }} \
+            --infer-image-track
+
+          echo "revision-data-cache-key=${{ github.run_id }}-${{ env.DATA_DIR }}" >> "$GITHUB_OUTPUT"
+
+      - name: Preempt Swift slot
         env:
           DATA_DIR: "revision-data"
           OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
@@ -200,23 +214,26 @@ jobs:
           IMAGE_NAME: ${{ needs.prepare-build.outputs.oci-img-name }}
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: |
-          set -ex
-          mkdir ${{ env.DATA_DIR }}
-
-          ./src/image/prepare_single_image_build_matrix.py \
-            --oci-path ${{ needs.prepare-build.outputs.oci-img-path }} \
-            --revision-data-dir ${{ env.DATA_DIR }} \
-            --next-revision ${{ steps.get-next-revision.outputs.revision }} \
-            --infer-image-track
-
           for revision_file in `ls ${{ env.DATA_DIR }}`; do
             ./src/uploads/upload_dummy_to_swift.sh \
-              ${{ needs.prepare-build.outputs.oci-img-name }} \
+              ${{ env.IMAGE_NAME }} \
               $(jq -r '.track' < ${{ env.DATA_DIR }}/$revision_file) \
               $revision_file
           done
 
-          echo "revision-data-cache-key=${{ github.run_id }}-${{ env.DATA_DIR }}" >> "$GITHUB_OUTPUT"
+      # Here leaves the critical section.
+      # The revision files have to be sanitised before merging,
+      # since the `track` field should not be present.
+      - name: Sanitise revision files
+        env:
+          DATA_DIR: "revision-data"
+        run: |
+          set -ex
+          for revision_file in `ls ${{ env.DATA_DIR }}`
+          do
+            jq 'del(.track)' ${{ env.DATA_DIR }}/$revision_file > ${{ env.DATA_DIR }}/$revision_file.tmp
+            mv ${{ env.DATA_DIR }}/$revision_file.tmp ${{ env.DATA_DIR }}/$revision_file
+          done
 
       - uses: actions/cache/save@v4
         with:
@@ -464,17 +481,6 @@ jobs:
           path: ${{ env.REVISION_DATA_DIR }}
           key: ${{ needs.prepare-upload.outputs.revision-data-cache-key }}
           fail-on-cache-miss: true
-
-      # The revision files have to be sanitised before merging,
-      # since the `track` and `dir_identifier` fields should not be present
-      - name: Sanitise revision files
-        run: |
-          set -ex
-          for revision_file in `ls ${{ env.REVISION_DATA_DIR }}`
-          do
-            jq 'del(.track)' ${{ env.REVISION_DATA_DIR }}/$revision_file > ${{ env.REVISION_DATA_DIR }}/$revision_file.tmp
-            mv ${{ env.REVISION_DATA_DIR }}/$revision_file.tmp ${{ env.REVISION_DATA_DIR }}/$revision_file
-          done
 
       - run: pip install -r src/image/requirements.txt
 
