@@ -215,7 +215,7 @@ jobs:
             --next-revision ${{ steps.get-next-revision.outputs.revision }} \
             --infer-image-track
 
-          echo "revision-data-cache-key=${{ github.run_id }}-${{ env.DATA_DIR }}" >> "$GITHUB_OUTPUT"
+          echo "revision-data-cache-key=${{ github.run_id }}-${{ env.DATA_DIR }}-$(date +%s)" >> "$GITHUB_OUTPUT"
 
       - name: Preempt Swift slot
         env:
