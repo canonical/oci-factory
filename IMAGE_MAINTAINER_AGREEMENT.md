@@ -180,7 +180,7 @@ To disable security monitoring for an Ubuntu Rock, the Maintainer must:
   - the contact information of the recipients who are getting current notifications;
 
 To disable security monitoring for **specific tags** of an Ubuntu Rock, the Maintainer must:
-- populate the table under the "Deprecated channels & tags" section in the Rock description.
+- populate the table under the "Deprecated channels & tags" section in the rock description.
 
 In this table, the values under `Track` are used as a filter. As an example, the (now deprecated) [ubuntu/cortex](https://hub.docker.com/r/ubuntu/cortex) includes a deprecated track of ~~`1.10-21.10`~~. Tags with this track in their name such as:
 - `1.10-21.10_edge`
