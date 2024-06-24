@@ -14,18 +14,6 @@ import (
 	"github.com/canonical/oci-factory/cli-client/internals/token"
 )
 
-func testHeaderEntriesEqual(header1 map[string][]string, header2 map[string]string) bool {
-	for key, value := range header2 {
-		fmt.Println(key, header1[key])
-		fmt.Println(key, header2[key])
-		fmt.Println(key, header1[key][0])
-		if header1[key][0] != value {
-			return false
-		}
-	}
-	return true
-}
-
 func TestSetHeaderWithMap(t *testing.T) {
 	mockUrl := "https://mock.url"
 	mockJson := []byte(`{"mock":"json"}`)
@@ -58,9 +46,14 @@ func TestDispatchWorkflow(t *testing.T) {
 			t.Fatalf("unexpected request method, want POST, got %s", r.Method)
 		}
 		// Verify the request header
-		// TODO received header is missing X-GitHub-Api-Version
-		if !testHeaderEntriesEqual(r.Header, header) {
-			t.Fatalf("unexpected request header, want %v, got %v", header, r.Header)
+		if r.Header.Get("Accept") != "application/vnd.github+json" {
+			t.Fatalf("unexpected request header Accept, want %v, got %v", header, r.Header)
+		}
+		if r.Header.Get("Authorization") != "Bearer "+token.GetAccessToken() {
+			t.Fatalf("unexpected request header Authorization, want %v, got %v", header, r.Header)
+		}
+		if r.Header.Get("X-GitHub-Api-Version") != "2022-11-28" {
+			t.Fatalf("unexpected request header X-GitHub-Api-Version, want %v, got %v", header, r.Header)
 		}
 		// header setting is tested above and transferring is tested in the http library
 		body, _ := io.ReadAll(r.Body)

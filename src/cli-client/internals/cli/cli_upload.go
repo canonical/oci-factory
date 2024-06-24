@@ -84,7 +84,7 @@ func triggerUploadReleases(releases []UploadRelease) {
 	buildMetadata := trigger.InferBuildMetadata()
 	var uploadReleaseTrack = make(trigger.UploadReleaseTrack)
 	for _, release := range releases {
-		eol, err := ValidateAndFormatDate(release.EndOfLife)
+		eol, err := validateAndFormatDate(release.EndOfLife)
 		if err != nil {
 			logger.Panicf("EOL with wrong data formats: %v", err)
 		}

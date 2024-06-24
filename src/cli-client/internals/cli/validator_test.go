@@ -3,27 +3,32 @@ package cli_test
 import (
 	"testing"
 
+	. "gopkg.in/check.v1"
+
 	"github.com/canonical/oci-factory/cli-client/internals/cli"
 )
 
-func TestValidateAndFormatDateLegalInput(t *testing.T) {
-	inputs := []string{"2006-07-08", "2008-09-10", "2024-05-01"}
+func Test(t *testing.T) { TestingT(t) }
 
-	for _, datetime := range inputs {
-		_, err := cli.ValidateAndFormatDate(datetime)
-		if err != nil {
-			t.Fatalf("Failed parsing legal time format yyyy-mm-dd, %v", err)
+type ValidatorSuite struct{}
+
+func (vs *ValidatorSuite) TestValidateAndFormatDateInput(c *C) {
+	for _, date := range []struct {
+		in  string
+		err bool
+	}{
+		{"2006-07-08", false},
+		{"2008-09-10", false},
+		{"2024-05-01", false},
+		{"2001-02-29", true},
+		{"2024-05-32", true},
+		{"01-01-2023", true},
+	} {
+		_, err := cli.ValidateAndFormatDate(date.in)
+		if date.err {
+			c.Assert(err, Equals, date.err)
+			break
 		}
-	}
-}
-
-func TestValidateAndFormatDateBadInput(t *testing.T) {
-	inputs := []string{"2001-02-29", "2024-05-32", "01-01-2023"}
-
-	for _, datetime := range inputs {
-		_, err := cli.ValidateAndFormatDate(datetime)
-		if err == nil {
-			t.Fatalf("Parsing illegal date input [%s] didn't raise error", datetime)
-		}
+		c.Assert(err, IsNil)
 	}
 }

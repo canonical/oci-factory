@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func ValidateAndFormatDate(dateStr string) (string, error) {
+func validateAndFormatDate(dateStr string) (string, error) {
 	// Parse the date string to check its validity
 	parsedDate, err := time.Parse("2006-01-02", dateStr)
 	if err != nil {
