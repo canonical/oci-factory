@@ -1,6 +1,7 @@
 package trigger_test
 
 import (
+	"bytes"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -36,9 +37,13 @@ func TestGetBuildMetadataCustomDirectory(t *testing.T) {
 	tempDir := t.TempDir()
 	repoPath := filepath.Join(tempDir, "tester-path")
 	cmd = exec.Command("git", "clone", "https://github.com/canonical/oci-factory.git", repoPath)
+	var errBuf bytes.Buffer
+	cmd.Stderr = &errBuf
 	if err := cmd.Run(); err != nil {
+		t.Logf("stderr: %s", errBuf.String())
 		t.Fatal(err)
 	}
+
 	err := os.Chdir(filepath.Join(repoPath, "examples", "mock-rock", "1.0"))
 	if err != nil {
 		t.Fatal(err)

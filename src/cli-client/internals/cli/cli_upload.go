@@ -2,6 +2,8 @@ package cli
 
 import (
 	"fmt"
+	"os"
+	"regexp"
 	"strings"
 
 	"github.com/canonical/oci-factory/cli-client/internals/client"
@@ -19,6 +21,8 @@ type CmdUpload struct {
 	UploadRelease []string `long:"release" description:"Release images to container registries.\nSyntax: --release tracks=<release track>,risks=<risk1>[,<risk2>...],eol=yyyy-mm-dd"`
 }
 
+var releaseKeys = []string{"tracks", "risks", "eol"}
+
 func init() {
 	parser.Command.AddCommand("upload", "Trigger the build and release for the image in the current working directory",
 		"long description", &CmdUpload{})
@@ -27,6 +31,7 @@ func init() {
 func (c *CmdUpload) Execute(args []string) error {
 	releases, err := parseUploadReleases(c.UploadRelease)
 	if err != nil {
+		parser.WriteHelp(os.Stdout)
 		return err
 	}
 	triggerUploadReleases(releases)
@@ -38,19 +43,21 @@ func (c *CmdUpload) Execute(args []string) error {
 // Multiple release arguments can be passed, separated by spaces.
 func parseUploadReleases(args []string) ([]UploadRelease, error) {
 	var release UploadRelease
-	var releases = make([]UploadRelease, 0)
+	releases := make([]UploadRelease, 0)
+	regex := regexp.MustCompile("(((tracks=[^,]+)|(risks=[^,]+,*[^,]+)|(eol=[^,]+)),?){3}")
 
 	for _, argStr := range args {
-		parts := strings.Split(argStr, ",")
+		matches := regex.FindStringSubmatch(argStr)
+		if matches == nil || len(matches) != 6 {
+			return nil, fmt.Errorf("invalid argument: %s", argStr)
+		}
 
-		var risks []string
-		for _, part := range parts {
-			keyValue := strings.Split(part, "=")
-			if len(keyValue) == 1 && len(risks) > 0 {
-				// This is part of the risks list (e.g., "stable" in "risks=beta,stable")
-				risks = append(risks, keyValue[0])
-				continue
+		for _, part := range matches[3:] {
+			if part == "" {
+				return nil, fmt.Errorf("invalid argument: %s", argStr)
 			}
+
+			keyValue := strings.Split(part, "=")
 			if len(keyValue) != 2 {
 				return nil, fmt.Errorf("invalid key-value pair: %s", part)
 			}
@@ -61,14 +68,18 @@ func parseUploadReleases(args []string) ([]UploadRelease, error) {
 			case "tracks":
 				release.Track = value
 			case "risks":
-				risks = append(risks, strings.Split(value, ",")...)
+				release.Risks = strings.Split(value, ",")
 			case "eol":
 				release.EndOfLife = value
 			default:
-				return nil, fmt.Errorf("unknown key: %s", key)
+				return nil, fmt.Errorf("invalid key: %s", key)
 			}
 		}
-		release.Risks = risks
+
+		if release.Track == "" || len(release.Risks) == 0 || release.EndOfLife == "" {
+			return nil, fmt.Errorf("missing required fields in argument: %s", argStr)
+		}
+
 		releases = append(releases, release)
 	}
 	return releases, nil
