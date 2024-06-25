@@ -16,39 +16,39 @@ func TestParseUploadReleases(t *testing.T) {
 		err    bool
 	}{
 		{
-			"tracks=1.0.0,risks=high,low,eol=2023-01-01",
+			"track=1.0.0,risks=high,low,eol=2023-01-01",
 			[]cli.UploadRelease{
 				{
 					Track:     "1.0.0",
 					Risks:     []string{"high", "low"},
-					EndOfLife: "2023-01-01",
+					EndOfLife: "2023-01-01T00:00:00Z",
 				},
 			},
 			"",
 			false,
 		},
 		{
-			"risks=high,eol=2023-01-01,tracks=1.0.0",
+			"risks=high,eol=2023-01-01,track=1.0.0",
 			[]cli.UploadRelease{
 				{
 					Track:     "1.0.0",
 					Risks:     []string{"high"},
-					EndOfLife: "2023-01-01",
+					EndOfLife: "2023-01-01T00:00:00Z",
 				},
 			},
 			"",
 			false,
 		},
 		{
-			"tracks=1.0.0,risks=high,low",
+			"track=1.0.0,risks=high,low",
 			[]cli.UploadRelease{
 				{},
 			},
-			"missing required fields in argument: tracks=1.0.0,risks=high,low",
+			"missing required fields in argument: track=1.0.0,risks=high,low",
 			true,
 		},
 		{
-			"tracks=1.0.0,risks=high,low,eol=2023-01-01,extra=field",
+			"track=1.0.0,risks=high,low,eol=2023-01-01,extra=field",
 			[]cli.UploadRelease{
 				{},
 			},
@@ -56,7 +56,7 @@ func TestParseUploadReleases(t *testing.T) {
 			true,
 		},
 		{
-			"tracks=1.0.0,risks=high,low,eol=2023-01-01,",
+			"track=1.0.0,risks=high,low,eol=2023-01-01,",
 			[]cli.UploadRelease{
 				{},
 			},

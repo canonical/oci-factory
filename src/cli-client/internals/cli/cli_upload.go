@@ -17,10 +17,8 @@ type UploadRelease struct {
 }
 
 type CmdUpload struct {
-	UploadRelease []string `long:"release" description:"Release images to container registries.\nSyntax: --release tracks=<release track>,risks=<risk1>[,<risk2>...],eol=yyyy-mm-dd"`
+	UploadRelease []string `long:"release" description:"Release images to container registries.\nSyntax: --release track=<release track>,risks=<risk1>[,<risk2>...],eol=yyyy-mm-dd"`
 }
-
-var releaseKeys = []string{"tracks", "risks", "eol"}
 
 func init() {
 	parser.Command.AddCommand("upload", "Trigger the build and release for the image in the current working directory",
@@ -39,11 +37,11 @@ func (c *CmdUpload) Execute(args []string) error {
 }
 
 // parseUploadReleases parses the release arguments and returns a list of UploadRelease structs.
-// The release arguments are expected to be in the format "tracks=<track>,risks=<risk1>[,<risk2>...],eol=yyyy-mm-dd".
+// The release arguments are expected to be in the format "track=<track>,risks=<risk1>[,<risk2>...],eol=yyyy-mm-dd".
 // Multiple release arguments can be passed, separated by spaces.
 func parseUploadReleases(args []string) ([]UploadRelease, error) {
 	releases := make([]UploadRelease, 0)
-	regex := regexp.MustCompile("(((tracks=[^,]+)|(risks=[^,]+,*[^,]+)|(eol=[^,]+)),?){3}")
+	regex := regexp.MustCompile("(((track=[^,]+)|(risks=[^,]+,*[^,]+)|(eol=[^,]+)),?){3}")
 
 	for _, argStr := range args {
 		var release UploadRelease
@@ -65,7 +63,7 @@ func parseUploadReleases(args []string) ([]UploadRelease, error) {
 			value := keyValue[1]
 
 			switch key {
-			case "tracks":
+			case "track":
 				release.Track = value
 			case "risks":
 				release.Risks = strings.Split(value, ",")
