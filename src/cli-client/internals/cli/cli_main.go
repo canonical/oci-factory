@@ -3,6 +3,7 @@ package cli
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -16,8 +17,8 @@ type CmdRelease struct {
 
 var opts struct {
 	// TODO: Leave `release` here for now. Should be moved into a `cmd_release.go` in phase 2.
-	CmdRelease CmdRelease `command:"release" description:"Release (re-tag) the image into the container registries"`
-	Confirm    bool       `short:"y" description:"Confirm the upload/release action by default"`
+	CmdRelease       CmdRelease `command:"release" description:"Release (re-tag) the image into the container registries"`
+	SkipConfirmation bool       `short:"y" description:"Skip the confirmation to upload/release an image"`
 }
 
 var parser = flags.NewParser(&opts, flags.Default)
@@ -30,26 +31,29 @@ func CliMain() {
 	parser.Parse()
 }
 
-func blockForConfirm(s string, tries int) {
+func blockForConfirm(s string) {
+	// check if is a tty
+	fi, err := os.Stdin.Stat()
+	if err != nil || fi.Mode()&os.ModeNamedPipe == 0 {
+		fmt.Fprintln(os.Stderr, "Non-interactive terminal detected. Must run with -y option.")
+	}
+
 	r := bufio.NewReader(os.Stdin)
+	fmt.Printf("%s [y/N]: ", s)
+	res, err := r.ReadString('\n')
+	if err == io.ErrUnexpectedEOF || err == io.EOF {
+		fmt.Println("Cancelled")
+		os.Exit(1)
+	} else if err != nil {
+		logger.Panicf("failed to read from stdin: %v", err)
+	}
 
-	for ; tries > 0; tries-- {
-		fmt.Printf("%s [y/N]: ", s)
+	res = strings.ToLower(strings.TrimSpace(res))
 
-		res, err := r.ReadString('\n')
-		if err != nil {
-			logger.Panicf("%v", err)
-		}
-
-		res = strings.TrimSpace(res)
-
-		if res == "y" || res == "yes" {
-			return
-		} else if res == "n" || res == "no" || res == "" {
-			fmt.Println("Cancelled")
-			os.Exit(1)
-		} else {
-			continue
-		}
+	if res == "y" || res == "yes" {
+		return
+	} else if res == "n" || res == "no" || res == "" {
+		fmt.Println("Cancelled")
+		os.Exit(1)
 	}
 }

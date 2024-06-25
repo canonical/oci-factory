@@ -75,25 +75,19 @@ func InferBuildMetadata() BuildMetadata {
 	return buildMetadata
 }
 
-type RockcraftYaml struct {
-	Name string `yaml:"name"`
-}
-
-func (y *RockcraftYaml) getImageName() string {
+func GetRockcraftImageName() string {
 	yamlFile, err := os.ReadFile("rockcraft.yaml")
 	if err != nil {
 		fmt.Errorf("Unable to read rockcraft.yaml in current working directory\n")
 	}
-	err = yaml.Unmarshal(yamlFile, y)
+	y := struct {
+		Name string `yaml:"name"`
+	}{}
+	err = yaml.Unmarshal(yamlFile, &y)
 	if err != nil {
-		logger.Panicf("Unable to marshall trigger: %s", err)
+		logger.Panicf("Unable to marshal trigger: %s", err)
 	}
 
 	logger.Debugf("Image name: %s", y.Name)
 	return y.Name
-}
-
-func GetRockcraftImageName() string {
-	var y RockcraftYaml
-	return y.getImageName()
 }

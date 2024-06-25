@@ -59,7 +59,7 @@ func NewPayload(imageName string, uberImageTrigger string) Payload {
 func DispatchWorkflowImpl_(payload Payload, url string) {
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
-		logger.Panicf("Unable to marshall payload: %s", err)
+		logger.Panicf("Unable to marshal payload: %s", err)
 	}
 
 	SendRequest(http.MethodPost, url, payloadJSON, http.StatusNoContent)

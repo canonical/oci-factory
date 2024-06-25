@@ -63,7 +63,7 @@ func NewUploadTrigger(imageTriggers []UploadImageTrigger) UploadTrigger {
 func (u *UploadTrigger) ToYamlString() string {
 	yamlData, err := yaml.Marshal(u)
 	if err != nil {
-		logger.Panicf("Unable to marshall trigger: %s", err)
+		logger.Panicf("Unable to marshal trigger: %s", err)
 	}
 	return string(yamlData)
 }

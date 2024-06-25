@@ -13,9 +13,12 @@ import (
 
 const workflowRunsURL = "https://api.github.com/repos/canonical/oci-factory/actions/workflows/Image.yaml/runs"
 const workflowSingleRunURL = "https://api.github.com/repos/canonical/oci-factory/actions/runs/"
-const getWorkflowRunIdMaxTry = 60
+const workflowSingleRunWebURL = "https://github.com/canonical/oci-factory/actions/runs/"
 
+const getWorkflowRunIdMaxTry = 60
 const getWorkflowRunTimeWindow = 5 * time.Minute
+const spinnerRate = 500 * time.Millisecond
+const pollingInterval = 5 * time.Second
 
 type WorkflowRunsScheme struct {
 	TotalCount   int                       `json:"total_count"`
@@ -71,7 +74,7 @@ func GetWorkflowRunID(externalRefID string) (int, error) {
 	timeWindow := time.Now().UTC().Add(-getWorkflowRunTimeWindow).Format("2006-01-02T15:04")
 	timeWindowFilter := "?created=%3E" + timeWindow
 
-	s := spinner.New(spinner.CharSets[9], 500*time.Millisecond)
+	s := spinner.New(spinner.CharSets[9], spinnerRate)
 	for numTries := 1; numTries < getWorkflowRunIdMaxTry+1; numTries++ {
 		responseBody := SendRequest(http.MethodGet, workflowRunsURL+timeWindowFilter, nil, http.StatusOK)
 
@@ -108,7 +111,7 @@ func GetWorkflowRunID(externalRefID string) (int, error) {
 		s.Prefix = fmt.Sprintf("Waiting for task %s to show up (retry %d/%d) ",
 			externalRefID, numTries, getWorkflowRunIdMaxTry)
 		s.Start()
-		time.Sleep(5 * time.Second)
+		time.Sleep(pollingInterval)
 		logger.Debugf("Retrying getting workflow run ID for %s (%d/%d)\n",
 			externalRefID, numTries, getWorkflowRunIdMaxTry)
 	}
@@ -168,9 +171,9 @@ func WorkflowPolling(workflowExtRefId string) {
 	logger.Debugf("%d\n", runId)
 
 	fmt.Printf("Task %s started. Details available at %s%d.\n", workflowExtRefId,
-		"https://github.com/canonical/oci-factory/actions/runs/", runId)
+		workflowSingleRunWebURL, runId)
 
-	s := spinner.New(spinner.CharSets[9], 500*time.Millisecond)
+	s := spinner.New(spinner.CharSets[9], spinnerRate)
 	for {
 		status, conclusion := GetWorkflowRunStatus(runId)
 		if status == StatusCompleted {
@@ -183,7 +186,7 @@ func WorkflowPolling(workflowExtRefId string) {
 				workflowExtRefId, strings.ReplaceAll(status, "_", " "),
 				strings.Split(jobName, " (")[0], currJob, totalJobs)
 			s.Start()
-			time.Sleep(5 * time.Second)
+			time.Sleep(pollingInterval)
 		}
 	}
 }

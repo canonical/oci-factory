@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/canonical/oci-factory/cli-client/internals/client"
-	"github.com/canonical/oci-factory/cli-client/internals/logger"
 	"github.com/canonical/oci-factory/cli-client/internals/trigger"
 )
 
@@ -31,6 +30,7 @@ func init() {
 func (c *CmdUpload) Execute(args []string) error {
 	releases, err := parseUploadReleases(c.UploadRelease)
 	if err != nil {
+		fmt.Println("Error parsing release arguments:", err)
 		parser.WriteHelp(os.Stdout)
 		return err
 	}
@@ -42,11 +42,11 @@ func (c *CmdUpload) Execute(args []string) error {
 // The release arguments are expected to be in the format "tracks=<track>,risks=<risk1>[,<risk2>...],eol=yyyy-mm-dd".
 // Multiple release arguments can be passed, separated by spaces.
 func parseUploadReleases(args []string) ([]UploadRelease, error) {
-	var release UploadRelease
 	releases := make([]UploadRelease, 0)
 	regex := regexp.MustCompile("(((tracks=[^,]+)|(risks=[^,]+,*[^,]+)|(eol=[^,]+)),?){3}")
 
 	for _, argStr := range args {
+		var release UploadRelease
 		matches := regex.FindStringSubmatch(argStr)
 		if matches == nil || len(matches) != 6 {
 			return nil, fmt.Errorf("invalid argument: %s", argStr)
@@ -70,7 +70,11 @@ func parseUploadReleases(args []string) ([]UploadRelease, error) {
 			case "risks":
 				release.Risks = strings.Split(value, ",")
 			case "eol":
-				release.EndOfLife = value
+				eol, err := validateAndFormatDate(value)
+				if err != nil {
+					return nil, fmt.Errorf("EOL with wrong data formats: %v", err)
+				}
+				release.EndOfLife = eol
 			default:
 				return nil, fmt.Errorf("invalid key: %s", key)
 			}
@@ -82,25 +86,19 @@ func parseUploadReleases(args []string) ([]UploadRelease, error) {
 
 		releases = append(releases, release)
 	}
+	if len(releases) == 0 {
+		return nil, fmt.Errorf("no release track specified, no build will be triggered")
+	}
 	return releases, nil
 }
 
 func triggerUploadReleases(releases []UploadRelease) {
 	// really builds
-	if len(releases) == 0 {
-		fmt.Println("No release track specified, no build will be triggered.")
-		return
-	}
-
 	buildMetadata := trigger.InferBuildMetadata()
 	var uploadReleaseTrack = make(trigger.UploadReleaseTrack)
 	for _, release := range releases {
-		eol, err := validateAndFormatDate(release.EndOfLife)
-		if err != nil {
-			logger.Panicf("EOL with wrong data formats: %v", err)
-		}
 		uploadReleaseTrack[release.Track] = trigger.UploadRelease{
-			EndOfLife: eol,
+			EndOfLife: release.EndOfLife,
 			UploadReleaseRisks: trigger.UploadReleaseRisks{
 				Risks: release.Risks,
 			},
@@ -112,8 +110,8 @@ func triggerUploadReleases(releases []UploadRelease) {
 	payload := client.NewPayload(imageName, uploadTrigger.ToYamlString())
 	fmt.Printf("The %s image will be built and released with following triggers:\n", imageName)
 	fmt.Println(uploadTrigger.ToYamlString())
-	if !opts.Confirm {
-		blockForConfirm("Do you want to continue?", 2)
+	if !opts.SkipConfirmation {
+		blockForConfirm("Do you want to continue?")
 	}
 	externalRefID := payload.Inputs.ExternalRefID
 	client.DispatchWorkflow(payload)

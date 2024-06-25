@@ -19,11 +19,12 @@ var risks = []string{"candidate", "stable"}
 
 func TestNewUploadReleaseTrack(t *testing.T) {
 	result := trigger.NewUploadReleaseTrack(track, risks, eol)
-	expectedYaml := "1.0-22.04:\n"
-	expectedYaml += "    end-of-life: \"2025-05-01T00:00:00Z\"\n"
-	expectedYaml += "    risks:\n"
-	expectedYaml += "        - candidate\n"
-	expectedYaml += "        - stable\n"
+	expectedYaml := `1.0-22.04:
+    end-of-life: "2025-05-01T00:00:00Z"
+    risks:
+        - candidate
+        - stable
+`
 	resultBytes, err := yaml.Marshal(result)
 	if err != nil {
 		t.Fatal(err)
@@ -37,15 +38,16 @@ func TestNewUploadReleaseTrack(t *testing.T) {
 
 func TestNewUploadImageTrigger(t *testing.T) {
 	result := trigger.NewUploadImageTrigger(buildMetadata, trigger.NewUploadReleaseTrack(track, risks, eol))
-	expectedYaml := "source: canonical/oci-factory\n"
-	expectedYaml += "commit: f0250895d1758cdab6619122a4fd67dbbde3004a\n"
-	expectedYaml += "directory: examples/mock-rock/1.0/\n"
-	expectedYaml += "release:\n"
-	expectedYaml += "    1.0-22.04:\n"
-	expectedYaml += "        end-of-life: \"2025-05-01T00:00:00Z\"\n"
-	expectedYaml += "        risks:\n"
-	expectedYaml += "            - candidate\n"
-	expectedYaml += "            - stable\n"
+	expectedYaml := `source: canonical/oci-factory
+commit: f0250895d1758cdab6619122a4fd67dbbde3004a
+directory: examples/mock-rock/1.0/
+release:
+    1.0-22.04:
+        end-of-life: "2025-05-01T00:00:00Z"
+        risks:
+            - candidate
+            - stable
+`
 	resultBytes, err := yaml.Marshal(result)
 	if err != nil {
 		t.Fatal(err)
@@ -63,16 +65,18 @@ func TestNewUploadTrigger(t *testing.T) {
 	},
 	)
 	resultYaml := result.ToYamlString()
-	expectedYaml := "version: 1\nupload:\n"
-	expectedYaml += "    - source: canonical/oci-factory\n"
-	expectedYaml += "      commit: f0250895d1758cdab6619122a4fd67dbbde3004a\n"
-	expectedYaml += "      directory: examples/mock-rock/1.0/\n"
-	expectedYaml += "      release:\n"
-	expectedYaml += "        1.0-22.04:\n"
-	expectedYaml += "            end-of-life: \"2025-05-01T00:00:00Z\"\n"
-	expectedYaml += "            risks:\n"
-	expectedYaml += "                - candidate\n"
-	expectedYaml += "                - stable\n"
+	expectedYaml := `version: 1
+upload:
+    - source: canonical/oci-factory
+      commit: f0250895d1758cdab6619122a4fd67dbbde3004a
+      directory: examples/mock-rock/1.0/
+      release:
+        1.0-22.04:
+            end-of-life: "2025-05-01T00:00:00Z"
+            risks:
+                - candidate
+                - stable
+`
 
 	if resultYaml != expectedYaml {
 		t.Fatalf("result != expected value\n result: %s\nexpected: %s", resultYaml, expectedYaml)
