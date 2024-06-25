@@ -11,7 +11,7 @@ import (
 	"github.com/canonical/oci-factory/cli-client/internals/token"
 )
 
-const workflowDispatchURL = "https://api.github.com/repos/canonical/oci-factory/actions/workflows/Image.yaml/dispatches"
+var workflowDispatchURL = "https://api.github.com/repos/canonical/oci-factory/actions/workflows/Image.yaml/dispatches"
 
 type Inputs struct {
 	OciImageName    string `json:"oci-image-name"`
@@ -55,17 +55,12 @@ func NewPayload(imageName string, uberImageTrigger string) Payload {
 	return payload
 }
 
-// Split the impl with different URL for testing
-func DispatchWorkflowImpl_(payload Payload, url string) {
+// Dispatch GitHub workflow with http request
+func DispatchWorkflow(payload Payload) {
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
 		logger.Panicf("Unable to marshal payload: %s", err)
 	}
 
-	SendRequest(http.MethodPost, url, payloadJSON, http.StatusNoContent)
-}
-
-// Dispatch GitHub workflow with http request
-func DispatchWorkflow(payload Payload) {
-	DispatchWorkflowImpl_(payload, workflowDispatchURL)
+	SendRequest(http.MethodPost, workflowDispatchURL, payloadJSON, http.StatusNoContent)
 }

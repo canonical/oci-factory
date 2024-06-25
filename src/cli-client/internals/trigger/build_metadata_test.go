@@ -6,57 +6,56 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"testing"
+
+	. "gopkg.in/check.v1"
 
 	"github.com/canonical/oci-factory/cli-client/internals/trigger"
 )
 
-func TestGetRockcraftYamlName(t *testing.T) {
-	tempDir := t.TempDir()
-	f := filepath.Join(tempDir, "rockcraft.yaml")
-	err := os.WriteFile(f, []byte("name: cli-client-tester"), 0644)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = os.Chdir(tempDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	result := trigger.GetRockcraftImageName()
-	expected := "cli-client-tester"
-	if result != expected {
-		t.Fatalf("result != expected value")
-	}
+type BuildMetadataSuite struct {
+	dir string
 }
 
-func TestGetBuildMetadataCustomDirectory(t *testing.T) {
+var _ = Suite(&BuildMetadataSuite{})
+
+func (s *BuildMetadataSuite) SetUpTest(c *C) {
+	s.dir = c.MkDir()
+}
+
+func (s *BuildMetadataSuite) TestGetRockcraftYamlName(c *C) {
+	f := filepath.Join(s.dir, "rockcraft.yaml")
+	err := os.WriteFile(f, []byte("name: cli-client-tester"), 0644)
+	c.Assert(err, IsNil)
+	err = os.Chdir(s.dir)
+	c.Assert(err, IsNil)
+	result := trigger.GetRockcraftImageName()
+	expected := "cli-client-tester"
+	c.Assert(result, Equals, expected)
+}
+
+func (s *BuildMetadataSuite) TestGetBuildMetadataCustomDirector(c *C) {
 	cmd := exec.Command("git", "--version")
 	if err := cmd.Run(); err != nil {
-		t.Fatal(err)
+		c.Fatal("git not installed")
 	}
-	tempDir := t.TempDir()
-	repoPath := filepath.Join(tempDir, "tester-path")
+	repoPath := filepath.Join(s.dir, "tester-path")
 	cmd = exec.Command("git", "clone", "https://github.com/canonical/oci-factory.git", repoPath)
 	var errBuf bytes.Buffer
 	cmd.Stderr = &errBuf
 	if err := cmd.Run(); err != nil {
-		t.Logf("stderr: %s", errBuf.String())
-		t.Fatal(err)
+		c.Logf("stderr: %s", errBuf.String())
+		c.Fatal(err)
 	}
 
 	err := os.Chdir(filepath.Join(repoPath, "examples", "mock-rock", "1.0"))
-	if err != nil {
-		t.Fatal(err)
-	}
+	c.Assert(err, IsNil)
 
 	result := trigger.InferBuildMetadata()
 
 	prefix := filepath.Join("examples", "mock-rock", "1.0") + "/"
 	head, err := exec.Command("git", "rev-parse", "HEAD").Output()
 	headStr := strings.TrimSpace(string(head))
-	if err != nil {
-		t.Fatal(err)
-	}
+	c.Assert(err, IsNil)
 	source := "canonical/oci-factory"
 	expected := trigger.BuildMetadata{
 		Source:    source,
@@ -64,7 +63,5 @@ func TestGetBuildMetadataCustomDirectory(t *testing.T) {
 		Commit:    headStr,
 	}
 
-	if result != expected {
-		t.Fatalf("result != expected value\n result: %+v\nexpected: %+v", result, expected)
-	}
+	c.Assert(result, DeepEquals, expected)
 }

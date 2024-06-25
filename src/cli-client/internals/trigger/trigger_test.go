@@ -3,12 +3,20 @@ package trigger_test
 import (
 	"testing"
 
+	. "gopkg.in/check.v1"
+
 	"github.com/canonical/oci-factory/cli-client/internals/trigger"
 	"gopkg.in/yaml.v3"
 )
 
 const track = "1.0-22.04"
 const eol = "2025-05-01T00:00:00Z"
+
+type TriggerSuite struct{}
+
+func Test(t *testing.T) { TestingT(t) }
+
+var _ = Suite(&TriggerSuite{})
 
 var buildMetadata = trigger.BuildMetadata{
 	Source:    "canonical/oci-factory",
@@ -17,7 +25,7 @@ var buildMetadata = trigger.BuildMetadata{
 }
 var risks = []string{"candidate", "stable"}
 
-func TestNewUploadReleaseTrack(t *testing.T) {
+func (s *TriggerSuite) TestNewUploadReleaseTrack(c *C) {
 	result := trigger.NewUploadReleaseTrack(track, risks, eol)
 	expectedYaml := `1.0-22.04:
     end-of-life: "2025-05-01T00:00:00Z"
@@ -26,17 +34,13 @@ func TestNewUploadReleaseTrack(t *testing.T) {
         - stable
 `
 	resultBytes, err := yaml.Marshal(result)
-	if err != nil {
-		t.Fatal(err)
-	}
+	c.Assert(err, IsNil)
 	resultYaml := string(resultBytes)
 
-	if resultYaml != expectedYaml {
-		t.Fatalf("result != expected value\n result: %s\nexpected: %s", resultYaml, expectedYaml)
-	}
+	c.Assert(resultYaml, Equals, expectedYaml)
 }
 
-func TestNewUploadImageTrigger(t *testing.T) {
+func (s *TriggerSuite) TestNewUploadImageTrigger(c *C) {
 	result := trigger.NewUploadImageTrigger(buildMetadata, trigger.NewUploadReleaseTrack(track, risks, eol))
 	expectedYaml := `source: canonical/oci-factory
 commit: f0250895d1758cdab6619122a4fd67dbbde3004a
@@ -49,17 +53,13 @@ release:
             - stable
 `
 	resultBytes, err := yaml.Marshal(result)
-	if err != nil {
-		t.Fatal(err)
-	}
+	c.Assert(err, IsNil)
 	resultYaml := string(resultBytes)
 
-	if resultYaml != expectedYaml {
-		t.Fatalf("result != expected value\n result: %s\nexpected: %s", resultYaml, expectedYaml)
-	}
+	c.Assert(resultYaml, Equals, expectedYaml)
 }
 
-func TestNewUploadTrigger(t *testing.T) {
+func (s *TriggerSuite) TestNewUploadTrigger(c *C) {
 	result := trigger.NewUploadTrigger([]trigger.UploadImageTrigger{
 		trigger.NewUploadImageTrigger(buildMetadata, trigger.NewUploadReleaseTrack(track, risks, eol)),
 	},
@@ -77,8 +77,5 @@ upload:
                 - candidate
                 - stable
 `
-
-	if resultYaml != expectedYaml {
-		t.Fatalf("result != expected value\n result: %s\nexpected: %s", resultYaml, expectedYaml)
-	}
+	c.Assert(resultYaml, Equals, expectedYaml)
 }

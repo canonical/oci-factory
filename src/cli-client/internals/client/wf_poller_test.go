@@ -1,12 +1,18 @@
 package client_test
 
 import (
-	"testing"
+	. "gopkg.in/check.v1"
 
 	"github.com/canonical/oci-factory/cli-client/internals/client"
 )
 
-func TestGetWorkflowRunStatusFromResp(t *testing.T) {
+type PollerSuite struct{}
+
+// `func Test(t *testing.T) { TestingT(t) }` defined in client_test.go
+
+var _ = Suite(&PollerSuite{})
+
+func (s *PollerSuite) TestGetWorkflowRunStatusFromResp(c *C) {
 	mockResponseBody := []byte(`{"status":"completed","conclusion":"success"}`)
 	expectedStatus := "completed"
 	expectedConclusion := "success"
@@ -14,15 +20,11 @@ func TestGetWorkflowRunStatusFromResp(t *testing.T) {
 	status, conclusion := client.GetWorkflowRunStatusFromResp(mockResponseBody)
 
 	// Verify the response
-	if status != expectedStatus {
-		t.Errorf("unexpected status, want %s, got %s", expectedStatus, status)
-	}
-	if conclusion != expectedConclusion {
-		t.Errorf("unexpected conclusion, want %s, got %s", expectedConclusion, conclusion)
-	}
+	c.Assert(status, Equals, expectedStatus)
+	c.Assert(conclusion, Equals, expectedConclusion)
 }
 
-func TestGetWorkflowJobsProgressFromResp(t *testing.T) {
+func (s *PollerSuite) TestGetWorkflowJobsProgressFromResp(c *C) {
 	mockResponseBody := []byte(`{"jobs":[{"name":"Job 1","status":"completed"},{"name":"Job 2","status":"in_progress"},{"name":"Job 3","status":"queued"}]}`)
 	expectedCurrJob := 2
 	expectedTotalJobs := 3
@@ -31,13 +33,7 @@ func TestGetWorkflowJobsProgressFromResp(t *testing.T) {
 	currJob, totalJobs, jobName := client.GetWorkflowJobsProgressFromResp(mockResponseBody)
 
 	// Verify the response
-	if currJob != expectedCurrJob {
-		t.Errorf("unexpected current job, want %d, got %d", expectedCurrJob, currJob)
-	}
-	if totalJobs != expectedTotalJobs {
-		t.Errorf("unexpected total jobs, want %d, got %d", expectedTotalJobs, totalJobs)
-	}
-	if jobName != expectedJobName {
-		t.Errorf("unexpected job name, want %s, got %s", expectedJobName, jobName)
-	}
+	c.Assert(currJob, Equals, expectedCurrJob)
+	c.Assert(totalJobs, Equals, expectedTotalJobs)
+	c.Assert(jobName, Equals, expectedJobName)
 }

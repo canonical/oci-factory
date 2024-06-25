@@ -69,7 +69,7 @@ type WorkflowSingleStepScheme struct {
 
 // TODO how to implement test for nested http requests locally?
 // Maybe an end-to-end test with a mock server?
-func GetWorkflowRunID(externalRefID string) (int, error) {
+func getWorkflowRunID(externalRefID string) (int, error) {
 	// Get the current time in UTC and subtract the deltaTime
 	timeWindow := time.Now().UTC().Add(-getWorkflowRunTimeWindow).Format("2006-01-02T15:04")
 	timeWindowFilter := "?created=%3E" + timeWindow
@@ -120,7 +120,7 @@ func GetWorkflowRunID(externalRefID string) (int, error) {
 }
 
 // Split out the response handling for testing
-func GetWorkflowRunStatusFromResp(responseBody []byte) (string, string) {
+func getWorkflowRunStatusFromResp(responseBody []byte) (string, string) {
 	var workflowSingleRun WorkflowSingleRunScheme
 	err := json.Unmarshal(responseBody, &workflowSingleRun)
 	if err != nil {
@@ -131,13 +131,13 @@ func GetWorkflowRunStatusFromResp(responseBody []byte) (string, string) {
 }
 
 // Gets the status and conclusion of a workflow run
-func GetWorkflowRunStatus(runId int) (string, string) {
+func getWorkflowRunStatus(runId int) (string, string) {
 	responseBody := SendRequest(http.MethodGet, workflowSingleRunURL+fmt.Sprint(runId), nil, http.StatusOK)
-	return GetWorkflowRunStatusFromResp(responseBody)
+	return getWorkflowRunStatusFromResp(responseBody)
 }
 
 // Split out the response handling for testing
-func GetWorkflowJobsProgressFromResp(responseBody []byte) (int, int, string) {
+func getWorkflowJobsProgressFromResp(responseBody []byte) (int, int, string) {
 	var workflowJobs WorkflowJobsScheme
 	err := json.Unmarshal(responseBody, &workflowJobs)
 	if err != nil {
@@ -159,15 +159,15 @@ func GetWorkflowJobsProgressFromResp(responseBody []byte) (int, int, string) {
 }
 
 // Gets the progress of a workflow run
-func GetWorkflowJobsProgress(runId int) (int, int, string) {
+func getWorkflowJobsProgress(runId int) (int, int, string) {
 	jobsURL := workflowSingleRunURL + fmt.Sprint(runId) + "/jobs"
 	responseBody := SendRequest(http.MethodGet, jobsURL, nil, http.StatusOK)
-	return GetWorkflowJobsProgressFromResp(responseBody)
+	return getWorkflowJobsProgressFromResp(responseBody)
 }
 
 // TODO how to implement test for calls into GetWorkflowRunID?
 func WorkflowPolling(workflowExtRefId string) {
-	runId, _ := GetWorkflowRunID(workflowExtRefId)
+	runId, _ := getWorkflowRunID(workflowExtRefId)
 	logger.Debugf("%d\n", runId)
 
 	fmt.Printf("Task %s started. Details available at %s%d.\n", workflowExtRefId,
@@ -175,13 +175,13 @@ func WorkflowPolling(workflowExtRefId string) {
 
 	s := spinner.New(spinner.CharSets[9], spinnerRate)
 	for {
-		status, conclusion := GetWorkflowRunStatus(runId)
+		status, conclusion := getWorkflowRunStatus(runId)
 		if status == StatusCompleted {
 			s.Stop()
 			fmt.Printf("Task %s finished with status %s\n", workflowExtRefId, conclusion)
 			break
 		} else {
-			currJob, totalJobs, jobName := GetWorkflowJobsProgress(runId)
+			currJob, totalJobs, jobName := getWorkflowJobsProgress(runId)
 			s.Prefix = fmt.Sprintf("Task %s is currently %s: %s (%d/%d) ",
 				workflowExtRefId, strings.ReplaceAll(status, "_", " "),
 				strings.Split(jobName, " (")[0], currJob, totalJobs)

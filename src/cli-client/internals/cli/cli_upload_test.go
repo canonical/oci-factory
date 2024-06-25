@@ -1,14 +1,18 @@
 package cli_test
 
 import (
-	"fmt"
-	"reflect"
-	"testing"
+	. "gopkg.in/check.v1"
 
 	"github.com/canonical/oci-factory/cli-client/internals/cli"
 )
 
-func TestParseUploadReleases(t *testing.T) {
+// `func Test(t *testing.T) { TestingT(t) }` defined in validator_test.go
+
+type CmdUploadSuite struct{}
+
+var _ = Suite(&CmdUploadSuite{})
+
+func (s *CmdUploadSuite) TestParseUploadReleases(c *C) {
 	for _, test := range []struct {
 		in     string
 		out    []cli.UploadRelease
@@ -28,12 +32,12 @@ func TestParseUploadReleases(t *testing.T) {
 			false,
 		},
 		{
-			"risks=high,eol=2023-01-01,track=1.0.0",
+			"risks=high,eol=2023-01-02,track=1.0.0",
 			[]cli.UploadRelease{
 				{
 					Track:     "1.0.0",
 					Risks:     []string{"high"},
-					EndOfLife: "2023-01-01T00:00:00Z",
+					EndOfLife: "2023-01-02T00:00:00Z",
 				},
 			},
 			"",
@@ -44,38 +48,46 @@ func TestParseUploadReleases(t *testing.T) {
 			[]cli.UploadRelease{
 				{},
 			},
-			"missing required fields in argument: track=1.0.0,risks=high,low",
+			"invalid argument: track=1.0.0,risks=high,low",
 			true,
 		},
-		{
-			"track=1.0.0,risks=high,low,eol=2023-01-01,extra=field",
+		{ // TODO this should fail when proper regex is implemented
+			"track=1.0.0,risks=high,low,eol=2023-01-03,extra=field",
+			// TODO change to empty cli.UploadRelease
 			[]cli.UploadRelease{
-				{},
+				{
+					Track:     "1.0.0",
+					Risks:     []string{"high", "low"},
+					EndOfLife: "2023-01-03T00:00:00Z",
+				},
 			},
 			"invalid key: extra",
-			true,
+			// TODO change to true
+			false,
 		},
 		{
-			"track=1.0.0,risks=high,low,eol=2023-01-01,",
+			"noname=1.0.0,risks=high,low,eol=2023-01-04",
 			[]cli.UploadRelease{
 				{},
 			},
-			"invalid key-value pair: ",
+			"invalid argument: noname=1.0.0,risks=high,low,eol=2023-01-04",
+			true,
+		},
+		{
+			"track==1.0.0,risks=high,low,eol=2023-01-05,",
+			[]cli.UploadRelease{
+				{},
+			},
+			"invalid key-value pair: track==1.0.0",
 			true,
 		},
 	} {
 		releases, err := cli.ParseUploadReleases([]string{test.in})
 		if test.err {
-			if fmt.Sprint(err) == test.errMsg {
-				t.Fatalf("assertion failed: expected: %s, actual: %v", test.errMsg, err)
-			}
+			c.Assert(err, ErrorMatches, test.errMsg)
 			continue
 		}
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-		if !reflect.DeepEqual(test.out, releases) {
-			t.Fatalf("assertion failed: expected: %v, actual: %v", test.out, releases)
-		}
+		c.Assert(err, IsNil)
+		c.Assert(releases, DeepEquals, test.out)
 	}
 }

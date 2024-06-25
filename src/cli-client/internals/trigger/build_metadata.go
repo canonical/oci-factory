@@ -78,7 +78,7 @@ func InferBuildMetadata() BuildMetadata {
 func GetRockcraftImageName() string {
 	yamlFile, err := os.ReadFile("rockcraft.yaml")
 	if err != nil {
-		fmt.Errorf("Unable to read rockcraft.yaml in current working directory\n")
+		fmt.Fprint(os.Stderr, "Unable to read rockcraft.yaml in current working directory\n")
 	}
 	y := struct {
 		Name string `yaml:"name"`

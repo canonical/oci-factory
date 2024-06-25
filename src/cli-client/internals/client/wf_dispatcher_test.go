@@ -8,13 +8,20 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"testing"
+
+	. "gopkg.in/check.v1"
 
 	"github.com/canonical/oci-factory/cli-client/internals/client"
 	"github.com/canonical/oci-factory/cli-client/internals/token"
 )
 
-func TestSetHeaderWithMap(t *testing.T) {
+type DispatcherSuite struct{}
+
+// `func Test(t *testing.T) { TestingT(t) }` defined in client_test.go
+
+var _ = Suite(&DispatcherSuite{})
+
+func (s *DispatcherSuite) TestSetHeaderWithMap(c *C) {
 	mockUrl := "https://mock.url"
 	mockJson := []byte(`{"mock":"json"}`)
 	os.Setenv("GITHUB_TOKEN", "ghp_AAAAAAAA")
@@ -26,12 +33,10 @@ func TestSetHeaderWithMap(t *testing.T) {
 	request2.Header.Set("Authorization", "Bearer "+token.GetAccessToken())
 	request2.Header.Set("X-GitHub-Api-Version", "2022-11-28")
 
-	if fmt.Sprintf("%+v", request1) != fmt.Sprintf("%+v", request2) {
-		t.Fatalf("request 1 not equals to request 2\nrequest1: %+v\nrequest2: %+v", request1, request2)
-	}
+	c.Assert(fmt.Sprintf("%+v", request1), Equals, fmt.Sprintf("%+v", request2))
 }
 
-func TestDispatchWorkflow(t *testing.T) {
+func (s *DispatcherSuite) TestDispatchWorkflow(c *C) {
 	mockJson := []byte(`{"mock":"json"}`)
 	saveToken := token.UpdateEnvToken("ghp_AAAAAAAA")
 	header := client.NewGithubAuthHeaderMap()
@@ -42,24 +47,13 @@ func TestDispatchWorkflow(t *testing.T) {
 	// Create a mock server
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Verify the request method, URL, and payload
-		if r.Method != http.MethodPost {
-			t.Fatalf("unexpected request method, want POST, got %s", r.Method)
-		}
-		// Verify the request header
-		if r.Header.Get("Accept") != "application/vnd.github+json" {
-			t.Fatalf("unexpected request header Accept, want %v, got %v", header, r.Header)
-		}
-		if r.Header.Get("Authorization") != "Bearer "+token.GetAccessToken() {
-			t.Fatalf("unexpected request header Authorization, want %v, got %v", header, r.Header)
-		}
-		if r.Header.Get("X-GitHub-Api-Version") != "2022-11-28" {
-			t.Fatalf("unexpected request header X-GitHub-Api-Version, want %v, got %v", header, r.Header)
-		}
+		c.Assert(r.Method, Equals, http.MethodPost)
+		c.Assert(r.Header.Get("Accept"), Equals, "application/vnd.github+json")
+		c.Assert(r.Header.Get("Authorization"), Equals, "Bearer "+token.GetAccessToken())
+		c.Assert(r.Header.Get("X-GitHub-Api-Version"), Equals, "2022-11-28")
 		// header setting is tested above and transferring is tested in the http library
 		body, _ := io.ReadAll(r.Body)
-		if !bytes.Equal(body, expectedPayloadJSON) {
-			t.Fatalf("unexpected request payload, want %s, got %s", string(expectedPayloadJSON), string(body))
-		}
+		c.Assert(body, DeepEquals, expectedPayloadJSON)
 		// Set the no content response status code and body
 		w.WriteHeader(http.StatusNoContent)
 		w.Write([]byte(``))
@@ -70,6 +64,8 @@ func TestDispatchWorkflow(t *testing.T) {
 	client.SetHeaderWithMap(request, header)
 
 	// Call the DispatchWorkflow function
-	client.DispatchWorkflowImpl_(expectedPayload, mockServer.URL)
+	originalURL := client.SetWorkflowDispatchURL(mockServer.URL)
+	client.DispatchWorkflow(expectedPayload)
 	token.RestoreTokenEnv(saveToken)
+	client.SetWorkflowDispatchURL(originalURL)
 }

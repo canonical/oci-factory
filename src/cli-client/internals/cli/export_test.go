@@ -1,4 +1,6 @@
 package cli
 
-var ValidateAndFormatDate = validateAndFormatDate
-var ParseUploadReleases = parseUploadReleases
+var (
+	ValidateAndFormatDate = validateAndFormatDate
+	ParseUploadReleases   = parseUploadReleases
+)
