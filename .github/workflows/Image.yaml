@@ -155,6 +155,14 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [prepare-build, run-build, test]
     name: Prepare upload
+    env:
+      OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+      OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
+      OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+      OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
+      OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+      IMAGE_NAME: ${{ needs.prepare-build.outputs.oci-img-name }}
+      SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
     outputs:
       build-matrix: ${{ steps.prepare-matrix.outputs.build-matrix }}
       revision-data-cache-key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
@@ -175,14 +183,6 @@ jobs:
 
       - name: Upload the lockfile for the image
         id: swift-lock
-        env:
-          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
-          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
-          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
-          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
-          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
-          IMAGE_NAME: ${{ needs.prepare-build.outputs.oci-img-name }}
-          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: |
           ./src/uploads/swift_lockfile_lock.sh \
             ${{ needs.prepare-build.outputs.oci-img-name }}
@@ -190,14 +190,6 @@ jobs:
       # Here starts the critical section, have to be executed in sequence outside of matrix.
       - name: Get next revision number
         id: get-next-revision
-        env:
-          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
-          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
-          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
-          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
-          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
-          IMAGE_NAME: ${{ needs.prepare-build.outputs.oci-img-name }}
-          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: ./src/image/define_image_revision.sh
 
       - name: Prepare builds matrix for upload
@@ -220,13 +212,6 @@ jobs:
       - name: Preempt Swift slot
         env:
           DATA_DIR: "revision-data"
-          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
-          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
-          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
-          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
-          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
-          IMAGE_NAME: ${{ needs.prepare-build.outputs.oci-img-name }}
-          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: |
           for revision_file in `ls ${{ env.DATA_DIR }}`; do
             ./src/uploads/preempt_swift_slots.sh \
@@ -244,14 +229,6 @@ jobs:
         # multiple workflows trying to upload the same image at the same time.
         # Therefore we should not remove the lockfile if the swift lock failed.
         if: ${{ always() && steps.swift-lock.outcome != 'failure' }}
-        env:
-          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
-          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
-          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
-          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
-          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
-          IMAGE_NAME: ${{ needs.prepare-build.outputs.oci-img-name }}
-          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: |
           ./src/uploads/swift_lockfile_unlock.sh \
             ${{ needs.prepare-build.outputs.oci-img-name }}
