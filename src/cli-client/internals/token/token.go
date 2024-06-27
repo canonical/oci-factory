@@ -13,7 +13,7 @@ const TokenVarName = "GITHUB_TOKEN"
 var _accessToken = ""
 
 func readAccessToken() string {
-	envAccessToken := os.Getenv("GITHUB_TOKEN")
+	envAccessToken := os.Getenv(TokenVarName)
 	if len(envAccessToken) == 0 {
 		fmt.Print("GitHub personal access token: ")
 		accessTokenBytes, err := term.ReadPassword(0)
@@ -36,16 +36,14 @@ func GetAccessToken() string {
 	return _accessToken
 }
 
-func RestoreTokenEnv(saveToken string) {
-	if len(saveToken) == 0 {
-		os.Unsetenv(TokenVarName)
-	} else {
-		os.Setenv(TokenVarName, saveToken)
-	}
-}
-
-func UpdateEnvToken(token string) string {
+func SetEnvToken(token string) (restore func()) {
 	saveToken := os.Getenv(TokenVarName)
 	os.Setenv(TokenVarName, token)
-	return saveToken
+	return func() {
+		if len(saveToken) == 0 {
+			os.Unsetenv(TokenVarName)
+		} else {
+			os.Setenv(TokenVarName, saveToken)
+		}
+	}
 }

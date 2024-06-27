@@ -6,8 +6,8 @@ var (
 	GetWorkflowJobsProgressFromResp = getWorkflowJobsProgressFromResp
 )
 
-func SetWorkflowDispatchURL(url string) string {
-	ret := workflowDispatchURL
+func SetWorkflowDispatchURL(url string) (restore func()) {
+	orig := workflowDispatchURL
 	workflowDispatchURL = url
-	return ret
+	return func() { workflowDispatchURL = orig }
 }

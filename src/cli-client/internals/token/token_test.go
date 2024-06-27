@@ -9,7 +9,8 @@ import (
 
 func TestReadAccessTokenEnv(t *testing.T) {
 	expectedToken := "ghp_test123ToKeN"
-	saveToken := token.UpdateEnvToken(expectedToken)
+	originalToken := os.Getenv(token.TokenVarName)
+	restoreEnvToken := token.SetEnvToken(expectedToken)
 	err := os.Setenv(token.TokenVarName, expectedToken)
 	if err != nil {
 		t.Fatalf("Unable to set env variable: %v", err)
@@ -18,8 +19,8 @@ func TestReadAccessTokenEnv(t *testing.T) {
 	if resultToken != expectedToken {
 		t.Fatalf("")
 	}
-	token.RestoreTokenEnv(saveToken)
-	if os.Getenv(token.TokenVarName) != saveToken {
+	restoreEnvToken()
+	if os.Getenv(token.TokenVarName) != originalToken {
 		t.Fatalf("Unable to restore saved env variable")
 	}
 }

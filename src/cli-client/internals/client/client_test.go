@@ -4,7 +4,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	. "gopkg.in/check.v1"
@@ -35,11 +34,10 @@ func (s *ClientSuite) TestSendRequest(c *C) {
 	}))
 	defer mockServer.Close()
 
-	saveToken := os.Getenv(token.TokenVarName)
-	os.Setenv(token.TokenVarName, "ghp_AAAAAAAA")
+	restoreEnvToken := token.SetEnvToken("ghp_AAAAAAAA")
+	defer restoreEnvToken()
 	// Call the SendRequest function
 	response := client.SendRequest(http.MethodPost, mockServer.URL, mockPayload, expectedStatusCode)
-	token.RestoreTokenEnv(saveToken)
 
 	// Verify the response
 	expectedResponse := []byte(`{"mock":"response"}`)

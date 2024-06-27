@@ -24,7 +24,7 @@ var _ = Suite(&DispatcherSuite{})
 func (s *DispatcherSuite) TestSetHeaderWithMap(c *C) {
 	mockUrl := "https://mock.url"
 	mockJson := []byte(`{"mock":"json"}`)
-	os.Setenv("GITHUB_TOKEN", "ghp_AAAAAAAA")
+	os.Setenv(token.TokenVarName, "ghp_AAAAAAAA")
 	header := client.NewGithubAuthHeaderMap()
 	request1, _ := http.NewRequest("POST", mockUrl, bytes.NewBuffer(mockJson))
 	client.SetHeaderWithMap(request1, header)
@@ -38,7 +38,8 @@ func (s *DispatcherSuite) TestSetHeaderWithMap(c *C) {
 
 func (s *DispatcherSuite) TestDispatchWorkflow(c *C) {
 	mockJson := []byte(`{"mock":"json"}`)
-	saveToken := token.UpdateEnvToken("ghp_AAAAAAAA")
+	restoreEnvToken := token.SetEnvToken("ghp_AAAAAAAA")
+	defer restoreEnvToken()
 	header := client.NewGithubAuthHeaderMap()
 
 	expectedPayload := client.NewPayload("image-name", "image-trigger")
@@ -64,8 +65,7 @@ func (s *DispatcherSuite) TestDispatchWorkflow(c *C) {
 	client.SetHeaderWithMap(request, header)
 
 	// Call the DispatchWorkflow function
-	originalURL := client.SetWorkflowDispatchURL(mockServer.URL)
+	storeWorkflowDispatchURL := client.SetWorkflowDispatchURL(mockServer.URL)
+	defer storeWorkflowDispatchURL()
 	client.DispatchWorkflow(expectedPayload)
-	token.RestoreTokenEnv(saveToken)
-	client.SetWorkflowDispatchURL(originalURL)
 }
