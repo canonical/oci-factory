@@ -35,7 +35,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--next-revision",
         help="Next revision number",
-        required=True,
+        default=1,
     )
     parser.add_argument(
         "--infer-image-track",
@@ -63,9 +63,6 @@ if __name__ == "__main__":
     for img_number, _ in enumerate(builds):
         builds[img_number]["name"] = args.oci_path.rstrip("/").split("/")[-1]
         builds[img_number]["path"] = args.oci_path
-        builds[img_number]["dir_identifier"] = builds[img_number]["directory"].rstrip("/").replace("/", "_")
-        # make sure every build of this image has a unique identifier
-        # within the execution of the workflow - use revision number
         builds[img_number]["revision"] = img_number + int(args.next_revision)
 
         if args.infer_image_track:
@@ -82,8 +79,9 @@ if __name__ == "__main__":
                 with open(f"{d}/{builds[img_number]['directory']}/rockcraft.yaml", encoding="UTF-8") as rockcraft_file:
                     rockcraft_yaml = yaml.load(rockcraft_file, Loader=yaml.BaseLoader)
 
-            _, track = get_base_and_track(rockcraft_yaml)
+            base_release, track = get_base_and_track(rockcraft_yaml)
             builds[img_number]["track"] = track
+            builds[img_number]["base"] = f"ubuntu:{base_release}"
 
         with open(
             f"{args.revision_data_dir}/{builds[img_number]['revision']}",

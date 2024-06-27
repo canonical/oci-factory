@@ -119,7 +119,6 @@ jobs:
           ./src/image/prepare_single_image_build_matrix.py \
             --oci-path ${{ steps.validate-image.outputs.img-path }} \
             --revision-data-dir ${{ env.DATA_DIR }} \
-            --next-revision 0
 
   run-build:
     needs: [prepare-build]
@@ -242,7 +241,7 @@ jobs:
           set -ex
           for revision_file in `ls ${{ env.DATA_DIR }}`
           do
-            jq 'del(.track, .dir_identifier)' ${{ env.DATA_DIR }}/$revision_file > ${{ env.DATA_DIR }}/$revision_file.tmp
+            jq 'del(.track, .base)' ${{ env.DATA_DIR }}/$revision_file > ${{ env.DATA_DIR }}/$revision_file.tmp
             mv ${{ env.DATA_DIR }}/$revision_file.tmp ${{ env.DATA_DIR }}/$revision_file
           done
 
@@ -283,38 +282,17 @@ jobs:
           ./src/uploads/requirements.sh
           pip install -r src/uploads/requirements.txt -r src/image/requirements.txt
 
-      - name: Clone GitHub image repository
-        uses: actions/checkout@v4
-        id: clone-image-repo
-        continue-on-error: true
-        with:
-          repository: ${{ matrix.source }}
-          fetch-depth: 0
-          path: source
-
-      - name: Clone generic image repository
-        if: ${{ steps.clone-image-repo.outcome == 'failure' }}
-        run: |
-          git clone ${{ matrix.source }} source
-
-      - run: cd source && git checkout ${{ matrix.commit }}
-
       - uses: actions/cache/restore@v4
         with:
           path: ${{ env.OCI_ARCHIVE_NAME }}
           key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
           fail-on-cache-miss: true
 
-      - name: Infer track name
-        id: get-track
-        run: |
-          ./src/uploads/infer_image_track.py --recipe-dirname source/${{ matrix.directory }}
-
       - name: Name output artefact
         id: rename-oci-archive
         run: |
           # Rename the OCI archive tarball
-          canonical_tag="${{ steps.get-track.outputs.track }}_${{ matrix.revision }}"
+          canonical_tag="${{ matrix.track }}_${{ matrix.revision }}"
           name="${{ matrix.name }}_${canonical_tag}"
           mv ${{ env.OCI_ARCHIVE_NAME }} $name
 
@@ -442,12 +420,12 @@ jobs:
           IMAGE_NAME: ${{ matrix.name }}
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: |
-          jq --arg base "${{ steps.get-track.outputs.base }}" \
+          jq --arg base "${{ matrix.base }}" \
             --arg digest "${{ steps.upload-image.outputs.digest }}" \
             '. + {base: $base, digest: $digest}' <<< '${{ toJSON(matrix) }}' > build_metadata.json
           ./src/uploads/upload_to_swift.sh \
             ${{ matrix.name }} \
-            ${{ steps.get-track.outputs.track }} \
+            ${{ matrix.track }} \
             ${{ matrix.revision }} \
             build_metadata.json \
             ${{ steps.generate-sboms.outputs.sboms }} \
