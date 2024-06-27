@@ -213,7 +213,7 @@ jobs:
           DATA_DIR: "revision-data"
         run: |
           for revision_file in `ls ${{ env.DATA_DIR }}`; do
-            ./src/uploads/preempt_swift_slots.sh \
+            ./src/uploads/preempt_swift_slot.sh \
               ${{ env.IMAGE_NAME }} \
               $(jq -r '.track' < ${{ env.DATA_DIR }}/$revision_file) \
               $revision_file
