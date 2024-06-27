@@ -26,7 +26,7 @@ while [ $TIMEOUT -gt 0 ]; do
     swift list $SWIFT_CONTAINER_NAME -p $IMAGE_NAME | grep "lockfile.lock" && sleep $SLEEP_TIME || break
     TIMEOUT=$(( $TIMEOUT - $SLEEP_TIME ))
     if [ $TIMEOUT -eq 0 ]; then
-        echo "Timeout reached while waiting for lockfile.lock to be removed from the swift container"
+        echo "Timeout reached while waiting to write lockfile into the Swift container for ${IMAGE_NAME}."
         exit 1
     fi
 done

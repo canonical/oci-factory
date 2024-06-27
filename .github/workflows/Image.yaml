@@ -229,7 +229,7 @@ jobs:
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: |
           for revision_file in `ls ${{ env.DATA_DIR }}`; do
-            ./src/uploads/upload_dummy_to_swift.sh \
+            ./src/uploads/preempt_swift_slots.sh \
               ${{ env.IMAGE_NAME }} \
               $(jq -r '.track' < ${{ env.DATA_DIR }}/$revision_file) \
               $revision_file
