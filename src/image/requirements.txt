@@ -1,7 +1,6 @@
 GitPython
 PyYAML
 pydantic==1.9.0
+pytest
 python-swiftclient
 python-keystoneclient
-
-pytest
