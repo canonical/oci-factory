@@ -212,12 +212,7 @@ jobs:
         env:
           DATA_DIR: "revision-data"
         run: |
-          for revision_file in `ls ${{ env.DATA_DIR }}`; do
-            ./src/uploads/preempt_swift_slot.sh \
-              ${{ env.IMAGE_NAME }} \
-              $(jq -r '.track' < ${{ env.DATA_DIR }}/$revision_file) \
-              $revision_file
-          done
+          ./src/uploads/preempt_swift_slots.sh ${{ env.DATA_DIR }}
 
       # Here leaves the critical section.
       # The lock will be removed even the steps above failed,
