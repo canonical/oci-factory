@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/canonical/oci-factory/cli-client/internals/client"
@@ -19,6 +20,8 @@ type UploadRelease struct {
 type CmdUpload struct {
 	UploadRelease []string `long:"release" description:"Release images to container registries.\nSyntax: --release track=<release track>,risks=<risk1>[,<risk2>...],eol=yyyy-mm-dd"`
 }
+
+var riskOptions = []string{"stable", "candidate", "beta", "edge"}
 
 func init() {
 	parser.Command.AddCommand("upload", "Trigger the build and release for the image in the current working directory",
@@ -36,50 +39,83 @@ func (c *CmdUpload) Execute(args []string) error {
 	return nil
 }
 
+func checkMissingFields(release UploadRelease) []string {
+	var missing []string
+	if release.Track == "" {
+		missing = append(missing, "track")
+	}
+	if len(release.Risks) == 0 {
+		missing = append(missing, "risks")
+	}
+	if release.EndOfLife == "" {
+		missing = append(missing, "eol")
+	}
+	return missing
+}
+
 // parseUploadReleases parses the release arguments and returns a list of UploadRelease structs.
 // The release arguments are expected to be in the format "track=<track>,risks=<risk1>[,<risk2>...],eol=yyyy-mm-dd".
 // Multiple release arguments can be passed, separated by spaces.
 func parseUploadReleases(args []string) ([]UploadRelease, error) {
 	releases := make([]UploadRelease, 0)
-	regex := regexp.MustCompile("(((track=[^,]+)|(risks=[^,]+,*[^,]+)|(eol=[^,]+)),?){3}")
+	regex := regexp.MustCompile(`(\w+)=(([^,=]*?,)*)`)
 
-	for _, argStr := range args {
+	for _, origArgStr := range args {
+		// Append a "," to the end of the string to enable a simpler regex matching key-value pairs
+		argStr := origArgStr + ","
 		var release UploadRelease
-		matches := regex.FindStringSubmatch(argStr)
-		if matches == nil || len(matches) != 6 {
-			return nil, fmt.Errorf("invalid argument: %s", argStr)
+		matches := regex.FindAllStringSubmatch(argStr, -1)
+		if matches == nil {
+			return nil, fmt.Errorf("invalid argument: %s", origArgStr)
 		}
 
-		for _, part := range matches[3:] {
-			if part == "" {
-				return nil, fmt.Errorf("invalid argument: %s", argStr)
+		for _, part := range matches {
+			if part == nil || len(part) < 3 {
+				return nil, fmt.Errorf("invalid argument: %s", origArgStr)
 			}
-
-			keyValue := strings.Split(part, "=")
-			if len(keyValue) != 2 {
-				return nil, fmt.Errorf("invalid key-value pair: %s", part)
-			}
-			key := keyValue[0]
-			value := keyValue[1]
+			key := part[1]
+			valueString := strings.TrimRight(part[2], ",")
+			values := strings.Split(valueString, ",")
 
 			switch key {
 			case "track":
-				release.Track = value
+				if len(values) != 1 || values[0] == "" {
+					return nil, fmt.Errorf("invalid track value: %s", valueString)
+				}
+				if release.Track != "" {
+					return nil, fmt.Errorf("duplicated value for track")
+				}
+				release.Track = values[0]
 			case "risks":
-				release.Risks = strings.Split(value, ",")
+				for _, risk := range values {
+					if !slices.Contains(riskOptions, risk) {
+						return nil, fmt.Errorf("invalid risk value: %s", risk)
+					}
+				}
+				if len(release.Risks) > 0 {
+					return nil, fmt.Errorf("duplicated value for risks")
+				}
+				release.Risks = values
 			case "eol":
-				eol, err := validateAndFormatDate(value)
+				if len(values) != 1 || values[0] == "" {
+					return nil, fmt.Errorf("invalid eol value: %s", valueString)
+				}
+				eol, err := validateAndFormatDate(values[0])
 				if err != nil {
 					return nil, fmt.Errorf("EOL with wrong data formats: %v", err)
 				}
+				if release.EndOfLife != "" {
+					return nil, fmt.Errorf("duplicated value for eol")
+				}
 				release.EndOfLife = eol
 			default:
-				return nil, fmt.Errorf("invalid key: %s", key)
+				return nil, fmt.Errorf("invalid key-value pair: %s=%s", key, valueString)
 			}
 		}
 
-		if release.Track == "" || len(release.Risks) == 0 || release.EndOfLife == "" {
-			return nil, fmt.Errorf("missing required fields in argument: %s", argStr)
+		// Check if all required fields are present
+		if missing := checkMissingFields(release); missing != nil {
+			return nil, fmt.Errorf("missing fields: %s", strings.Join(missing, ", "))
 		}
 
 		releases = append(releases, release)
