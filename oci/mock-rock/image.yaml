@@ -36,7 +36,7 @@ upload:
           - edge
           - beta
   - source: "canonical/oci-factory"
-    commit: 486799e24328410678c3534381a5473a46b07d06
+    commit: 92e27a65e9c43bb7e9ffe0fe84f3536551a9b701
     directory: examples/mock-rock/1.2
     release:
       1.2-22.04:

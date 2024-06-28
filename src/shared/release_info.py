@@ -71,13 +71,14 @@ def get_revision_to_track(all_revisions_tags: list) -> dict:
     revision_track = {}
     for track_revision in all_revisions_tags:
         track, revision = track_revision.rsplit("_", 1)
+        revision = int(revision)
         if revision in revision_track:
             msg = (
                 "Each revision can only have 1 canonical tag, "
                 f"but revision {revision} is associated with tracks "
-                f"{track} and {revision_track['revision']}!"
+                f"{track} and {revision_track[revision]}!"
             )
             raise BadChannel(msg)
 
-        revision_track[int(revision)] = track
+        revision_track[revision] = track
     return revision_track
