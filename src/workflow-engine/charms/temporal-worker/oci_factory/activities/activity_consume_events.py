@@ -3,10 +3,20 @@ from temporalio import activity
 
 from oci_factory.activities.consumer.config import Config
 from oci_factory.activities.consumer.schema import SchemaClient
+from oci_factory.notification.mattermost_notifier import (
+    send_message,
+    update_message_cond_success,
+)
 
 import logging
 import os
 import subprocess
+
+MM_MESSAGE_TITLE = (
+    "[OCI Factory Temporal Workflow]: Image Rebuild for New Ubuntu Release"
+)
+MM_MESSAGE_BODY = "**Release:** {}\n**Status:** {}"
+
 
 # `TWC_LOG_LEVEL` is the mapped value of `log-level` in the charm config
 logging.basicConfig(level=os.environ.get("TWC_LOG_LEVEL", "info").upper())
@@ -52,6 +62,9 @@ async def consume(topic: str, consumer_group: str) -> dict:
             consumer.close()
 
     logging.info("Release: {}".format(value["release"]))
+    message_id = send_message(
+        MM_MESSAGE_TITLE, MM_MESSAGE_BODY.format(value["release"], "Triggered")
+    )
 
     # TODO: This part of code should be refactored once Renovate is dropped
     # Details see ROCKS-1197
@@ -61,6 +74,11 @@ async def consume(topic: str, consumer_group: str) -> dict:
     proc = subprocess.Popen(
         ["python3", script_full_path, "{}".format(value.get("release"))]
     )
-    proc.wait()
+    ret_code = proc.wait()
+
+    status = "Success" if ret_code == 0 else "Failed"
+    update_message_cond_success(
+        message_id, ret_code == 0, MM_MESSAGE_BODY.format(value["release"], status)
+    )
 
     return value
