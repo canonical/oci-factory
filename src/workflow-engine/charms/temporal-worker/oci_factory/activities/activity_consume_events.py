@@ -3,6 +3,7 @@ from temporalio import activity
 
 from oci_factory.activities.consumer.config import Config
 from oci_factory.activities.consumer.schema import SchemaClient
+from oci_factory.notification.mattermost_notifier import send_message
 
 import logging
 import os
@@ -52,6 +53,7 @@ async def consume(topic: str, consumer_group: str) -> dict:
             consumer.close()
 
     logging.info("Release: {}".format(value["release"]))
+    send_message("OCI Factory Temporal Workflow]: Triggering image rebuild for Ubuntu {} new release".format(value["release"]))
 
     # TODO: This part of code should be refactored once Renovate is dropped
     # Details see ROCKS-1197
