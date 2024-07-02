@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 	"slices"
 	"strings"
@@ -31,9 +30,7 @@ func init() {
 func (c *CmdUpload) Execute(args []string) error {
 	releases, err := parseUploadReleases(c.UploadRelease)
 	if err != nil {
-		fmt.Println("Error parsing release arguments:", err)
-		parser.WriteHelp(os.Stdout)
-		return err
+		return fmt.Errorf("error parsing release arguments: %v", err)
 	}
 	triggerUploadReleases(releases)
 	return nil
