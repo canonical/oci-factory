@@ -52,7 +52,7 @@ func blockForConfirm(s string) {
 
 	if res == "y" || res == "yes" {
 		return
-	} else if res == "n" || res == "no" || res == "" {
+	} else {
 		fmt.Println("Cancelled")
 		os.Exit(1)
 	}

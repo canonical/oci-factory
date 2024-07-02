@@ -18,7 +18,8 @@ func readAccessToken() string {
 		fmt.Print("GitHub personal access token: ")
 		accessTokenBytes, err := term.ReadPassword(0)
 		if err != nil {
-			logger.Panicf("Error handling token: %v", err)
+			// Not printing the err to prevent token from getting dumped
+			logger.Panicf("Error handling token")
 		}
 		// Put new logs into the new line
 		fmt.Println()
