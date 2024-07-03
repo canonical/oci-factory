@@ -15,6 +15,11 @@ type CmdRelease struct {
 	Revision int `long:"revision" description:"The revision number of the image release"`
 }
 
+const longDescription = `The OCI Factory CLI client is a tool that builds, tests, and releases
+the OCI images owned by Canonical using the Github workflow in 
+the OCI Factory repository.
+`
+
 var opts struct {
 	// TODO: Leave `release` here for now. Should be moved into a `cmd_release.go` in phase 2.
 	// CmdRelease       CmdRelease `command:"release" description:"Release (re-tag) the image into the container registries"`
@@ -25,6 +30,8 @@ var parser = flags.NewParser(&opts, flags.Default)
 
 func CliMain() {
 	if len(os.Args) == 1 || os.Args[1] == "help" {
+		// TODO: Add subcommand `help` if more complex help messages are needed
+		fmt.Println(longDescription)
 		parser.WriteHelp(os.Stdout)
 		os.Exit(0)
 	}
