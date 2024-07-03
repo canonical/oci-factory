@@ -51,8 +51,8 @@ def send_message(title: str, message: str) -> str:
 
 
 # Update the message conditionally based on the success of the operation
-def update_message_cond_success(
-    message_id: str, condition: bool, message: Optional[str] = None
+def update_status_and_message(
+    message_id: str, success: bool, message: Optional[str] = None
 ) -> None:
     post_res = requests.get(
         f"{posts_url}/{message_id}",
@@ -65,10 +65,9 @@ def update_message_cond_success(
     post_res.raise_for_status()
     props = post_res.json()["props"]
 
-    if condition:
-        props["attachments"][0]["color"] = COLORS["success"]
-    else:
-        props["attachments"][0]["color"] = COLORS["failure"]
+    props["attachments"][0]["color"] = (
+        COLORS["success"] if success else COLORS["failure"]
+    )
 
     if message:
         props["attachments"][0]["text"] = message
@@ -91,10 +90,10 @@ if __name__ == "__main__":
     title = "[OCI Factory Temporal Worker] Image Rebuild on New Ubuntu Release"
     id = send_message(title, message)
     time.sleep(5)
-    update_message_cond_success(
+    update_status_and_message(
         id, 0, message="**Release**: 100.04\n**Status**: Failed"
     )
     time.sleep(5)
-    update_message_cond_success(
+    update_status_and_message(
         id, 1, message="**Release**: 100.04\n**Status**: Success"
     )

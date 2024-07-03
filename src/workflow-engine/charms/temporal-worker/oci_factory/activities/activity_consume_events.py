@@ -5,7 +5,7 @@ from oci_factory.activities.consumer.config import Config
 from oci_factory.activities.consumer.schema import SchemaClient
 from oci_factory.notification.mattermost_notifier import (
     send_message,
-    update_message_cond_success,
+    update_status_and_message,
 )
 
 import logging
@@ -74,11 +74,11 @@ async def consume(topic: str, consumer_group: str) -> dict:
     proc = subprocess.Popen(
         ["python3", script_full_path, "{}".format(value.get("release"))]
     )
-    ret_code = proc.wait()
+    success = proc.wait() == 0
 
-    status = "Success" if ret_code == 0 else "Failed"
-    update_message_cond_success(
-        message_id, ret_code == 0, MM_MESSAGE_BODY.format(value["release"], status)
+    status = "Success" if success == 0 else "Failed"
+    update_status_and_message(
+        message_id, success == 0, MM_MESSAGE_BODY.format(value["release"], status)
     )
 
     return value
