@@ -17,8 +17,8 @@ type CmdRelease struct {
 
 var opts struct {
 	// TODO: Leave `release` here for now. Should be moved into a `cmd_release.go` in phase 2.
-	CmdRelease       CmdRelease `command:"release" description:"Release (re-tag) the image into the container registries"`
-	SkipConfirmation bool       `short:"y" description:"Skip the confirmation to upload/release an image"`
+	// CmdRelease       CmdRelease `command:"release" description:"Release (re-tag) the image into the container registries"`
+	SkipConfirmation bool `short:"y" description:"Skip the confirmation to upload/release an image"`
 }
 
 var parser = flags.NewParser(&opts, flags.Default)
