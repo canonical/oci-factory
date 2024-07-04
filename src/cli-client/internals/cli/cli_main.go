@@ -31,7 +31,7 @@ var parser = flags.NewParser(&opts, flags.Default)
 func CliMain() {
 	if len(os.Args) == 1 || os.Args[1] == "help" {
 		// TODO: Add subcommand `help` if more complex help messages are needed
-		fmt.Println(longDescription)
+		fmt.Print(longDescription + "\n")
 		parser.WriteHelp(os.Stdout)
 		os.Exit(0)
 	}
