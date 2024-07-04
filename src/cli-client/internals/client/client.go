@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/canonical/oci-factory/cli-client/internals/logger"
+	"github.com/canonical/oci-factory/src/cli-client/internals/logger"
 )
 
 const NumRetries = 2

@@ -9,7 +9,7 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"github.com/canonical/oci-factory/cli-client/internals/trigger"
+	"github.com/canonical/oci-factory/src/cli-client/internals/trigger"
 )
 
 type BuildMetadataSuite struct {

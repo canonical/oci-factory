@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/canonical/oci-factory/cli-client/internals/logger"
+	"github.com/canonical/oci-factory/src/cli-client/internals/logger"
 	"golang.org/x/term"
 )
 

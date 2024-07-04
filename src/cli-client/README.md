@@ -22,7 +22,7 @@ terminal, it is possible to assign the token to the environmental variable `expo
 ```bash
 git clone https://github.com/canonical/oci-factory.git
 cd oci-factory/src/cli-client
-go install github.com/canonical/oci-factory/cli-client/cmd/oci-factory
+go install github.com/canonical/oci-factory/src/cli-client/cmd/oci-factory
 ```
 
 # Triggering workflows

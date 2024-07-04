@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/canonical/go-flags"
-	"github.com/canonical/oci-factory/cli-client/internals/logger"
+	"github.com/canonical/oci-factory/src/cli-client/internals/logger"
 )
 
 type CmdRelease struct {

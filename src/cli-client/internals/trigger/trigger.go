@@ -1,7 +1,7 @@
 package trigger
 
 import (
-	"github.com/canonical/oci-factory/cli-client/internals/logger"
+	"github.com/canonical/oci-factory/src/cli-client/internals/logger"
 	"gopkg.in/yaml.v3"
 )
 

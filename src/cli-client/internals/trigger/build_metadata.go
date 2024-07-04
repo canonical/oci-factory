@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/canonical/oci-factory/cli-client/internals/logger"
+	"github.com/canonical/oci-factory/src/cli-client/internals/logger"
 	git "github.com/go-git/go-git/v5"
 	"gopkg.in/yaml.v3"
 )
