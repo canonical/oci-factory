@@ -162,6 +162,7 @@ jobs:
       OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
       IMAGE_NAME: ${{ needs.prepare-build.outputs.oci-img-name }}
       SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
+      DATA_DIR: "revision-data"
     outputs:
       build-matrix: ${{ steps.prepare-matrix.outputs.build-matrix }}
       revision-data-cache-key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
@@ -193,8 +194,6 @@ jobs:
 
       - name: Prepare builds matrix for upload
         id: prepare-matrix
-        env:
-          DATA_DIR: "revision-data"
         run: |
           set -ex
 
@@ -209,18 +208,15 @@ jobs:
           echo "revision-data-cache-key=${{ github.run_id }}-${{ env.DATA_DIR }}-$(date +%s)" >> "$GITHUB_OUTPUT"
 
       - name: Preempt Swift slot
-        env:
-          DATA_DIR: "revision-data"
         run: |
           ./src/uploads/preempt_swift_slots.sh ${{ env.DATA_DIR }}
 
       # Here leaves the critical section.
-      # The lock will be removed even the steps above failed,
+      # The lock will be removed even if the steps above fail,
       # or the workflow is cancelled.
       - name: Remove the lockfile for the image
-        # Runs if the previous steps failed, or the workflow is cancelled.
-        # However, failing to lock the swift container can mean there are
-        # multiple workflows trying to upload the same image at the same time.
+        # Failing to lock the swift container can mean there are multiple
+        # workflows trying to upload the same image at the same time.
         # Therefore we should not remove the lockfile if the swift lock failed.
         if: ${{ always() && steps.swift-lock.outcome != 'failure' }}
         run: |
@@ -230,8 +226,6 @@ jobs:
       # The revision files have to be sanitised before merging,
       # since the `track` field should not be present.
       - name: Sanitise revision files
-        env:
-          DATA_DIR: "revision-data"
         run: |
           set -ex
           for revision_file in `ls ${{ env.DATA_DIR }}`

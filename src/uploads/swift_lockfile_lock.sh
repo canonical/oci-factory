@@ -18,10 +18,13 @@ touch "${staging_area}/${IMAGE_NAME}/lockfile.lock"
 
 pushd "${staging_area}"
 
-# check if the ${IMAGE_NAME}/lockfile.lock exists in the swift container
+# Check if the ${IMAGE_NAME}/lockfile.lock exists in the swift container
 # if it does, wait until the timeout is reached and emit an error
 # if it does not, upload the lockfile.lock to the swift container
-# and exit
+# and exit.
+# There's still the unlikely corner case where 2 concurrent jobs 
+# are waiting for the lockfile to get removed, and they may exit 
+# the while loop at the same time, getting into a race condition.
 while [ $TIMEOUT -gt 0 ]; do
     swift list $SWIFT_CONTAINER_NAME -p $IMAGE_NAME | grep "lockfile.lock" && sleep $SLEEP_TIME || break
     TIMEOUT=$(( $TIMEOUT - $SLEEP_TIME ))
