@@ -198,12 +198,6 @@ if __name__ == "__main__":
                                 logging.exception(f"Unrecognized tag {tag['imageTag']}")
                                 continue
 
-                    if to_track not in release_to:
-                        release_to[str(to_track)] = {"risks": [to_risk]}
-                    else:
-                        release_to[to_track]["risks"].append(to_risk)
-
-                    # add end-of-life field to each track
                     if releases[to_track].get("end-of-life"):
                         if releases[to_track]["end-of-life"] < datetime.now(
                             timezone.utc
@@ -213,14 +207,18 @@ if __name__ == "__main__":
                                 f"end of life: {releases[to_track]['end-of-life']}"
                             )
                             continue
-                        release_to[to_track]["end-of-life"] = releases[to_track][
-                            "end-of-life"
-                        ]
+                        else:
+                            if to_track not in release_to:
+                                release_to[str(to_track)] = {"risks": [to_risk]}
+                            else:
+                                release_to[to_track]["risks"].append(to_risk)
+                            release_to[to_track]["end-of-life"] = releases[to_track][
+                                "end-of-life"
+                            ]
                     else:
                         logging.warning(
                             f"Track {to_track} is missing its end-of-" "life field"
                         )
-
                 if release_to:
                     build_and_upload_data["release"] = release_to
 
