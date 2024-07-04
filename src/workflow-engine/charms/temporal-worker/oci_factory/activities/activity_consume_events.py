@@ -15,7 +15,7 @@ import subprocess
 MM_MESSAGE_TITLE = (
     "[OCI Factory Temporal Workflow]: Image Rebuild for New Ubuntu Release"
 )
-MM_MESSAGE_BODY = "**Release:** {}\n**Status:** {}"
+MM_MESSAGE_BODY = "**Workflow ID:** {}\n**Workflow Run ID:** {}\n**Activity ID:** {}\n**Release:** {}\n**Status:** {}"
 
 
 # `TWC_LOG_LEVEL` is the mapped value of `log-level` in the charm config
@@ -33,6 +33,9 @@ async def consume(topic: str, consumer_group: str) -> dict:
         f"Consuming messages from topic {topic} "
         f"with consumer group {consumer_group}"
     )
+
+    activity_info = activity.info()
+    activity_info_formatter = (activity_info.workflow_id, activity_info.workflow_run_id, activity_info.activity_id)
 
     with Config() as config:
         consumer_config = config.get_consumer_config(consumer_group)
@@ -63,7 +66,7 @@ async def consume(topic: str, consumer_group: str) -> dict:
 
     logging.info("Release: {}".format(value["release"]))
     message_id = send_message(
-        MM_MESSAGE_TITLE, MM_MESSAGE_BODY.format(value["release"], "Triggered")
+        MM_MESSAGE_TITLE, MM_MESSAGE_BODY.format(*activity_info_formatter, value["release"], "Triggered")
     )
 
     # TODO: This part of code should be refactored once Renovate is dropped
@@ -76,9 +79,9 @@ async def consume(topic: str, consumer_group: str) -> dict:
     )
     success = proc.wait() == 0
 
-    status = "Success" if success == 0 else "Failed"
+    status = "Success" if success else "Failed"
     update_status_and_message(
-        message_id, success == 0, MM_MESSAGE_BODY.format(value["release"], status)
+        message_id, success, MM_MESSAGE_BODY.format(*activity_info_formatter, value["release"], status)
     )
 
     return value
