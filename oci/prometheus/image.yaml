@@ -5,11 +5,11 @@ upload:
     directory: 2.37.0
     release:
       2.37.0-22.04:
-        end-of-life: "2025-04-02T00:00:00Z"
+        end-of-life: "2024-10-04T00:00:00Z"
         risks:
           - stable
       2.37-22.04:
-        end-of-life: "2025-04-02T00:00:00Z"
+        end-of-life: "2024-10-04T00:00:00Z"
         risks:
           - stable
   - source: canonical/prometheus-rock
@@ -17,10 +17,10 @@ upload:
     directory: 2.45.0
     release:
       2.45.0-22.04:
-        end-of-life: "2026-11-01T00:00:00Z"
+        end-of-life: "2024-10-04T00:00:00Z"
         risks:
           - stable
       2.45-22.04:
-        end-of-life: "2026-11-01T00:00:00Z"
+        end-of-life: "2024-10-04T00:00:00Z"
         risks:
           - stable
