@@ -3,7 +3,6 @@ import logging
 import os
 import requests
 import sys
-import time
 from typing import Optional
 
 
@@ -92,13 +91,3 @@ def update_status_and_message(
         PATCH_URL.format(message_id), headers=HEADERS, data=data, timeout=10
     )
     res.raise_for_status()
-
-
-if __name__ == "__main__":
-    message = "**Release**: 100.04\n**Status**: Triggered"
-    title = "[OCI Factory Temporal Worker] Image Rebuild on New Ubuntu Release"
-    id = send_message(title, message)
-    time.sleep(5)
-    update_status_and_message(id, 0, message="**Release**: 100.04\n**Status**: Failed")
-    time.sleep(5)
-    update_status_and_message(id, 1, message="**Release**: 100.04\n**Status**: Success")
