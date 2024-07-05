@@ -91,4 +91,4 @@ async def consume(topic: str, consumer_group: str) -> dict:
         message_id, success, MM_MESSAGE_BODY.format(value["release"], status, *activity_info_formatter)
     )
 
-    return {"eventbus_message": value, "find_images_to_update.py": proc.stdout.read().decode("utf-8")}
+    return {"eventbus_message": value, "find_images_to_update.py": proc.stderr.read().decode("utf-8")}
