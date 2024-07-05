@@ -103,7 +103,7 @@ i.e. you can ask the OCI Factory to build one version of the image, upload and
 release it to GHCR, Docker Hub, and ECR with different tracks, risks and EOL with
 a single command, but **not** multiple versions of the same image.
 
-Further documentation regarding the CLI Client can be found in [src/cli-client/README.md]()
+Further documentation regarding the CLI Client can be found [here](src/cli-client/README.md).
 
 Refer to the diagram below to understand the oci-factory workflow:
 ![OCI Factory Workflow](assets/img/oci-factory-workflow.png)
