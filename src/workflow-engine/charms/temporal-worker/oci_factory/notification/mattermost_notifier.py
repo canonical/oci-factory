@@ -37,6 +37,12 @@ HEADERS = {
 
 
 def send_message(title: str, message: str) -> str:
+    """Send a message to a Mattermost channel,
+    returning the message ID. Default status is unknown.
+
+    :param title: the message title
+    :param message: the message body
+    """
     payload = {
         "channel_id": MATTERMOST_CHANNEL_ID,
         "props": {
@@ -57,10 +63,15 @@ def send_message(title: str, message: str) -> str:
     return res.json()["id"]
 
 
-# Update the message conditionally based on the success of the operation
 def update_status_and_message(
     message_id: str, success: bool, message: Optional[str] = None
 ) -> None:
+    """Update the status and the message of a post on Mattermost.
+
+    :param message_id: the ID of the post to be updated
+    :param success: the new status of the post
+    :param message: the new message body
+    """
     post_res = requests.get(
         f"{POST_URL}/{message_id}",
         headers=HEADERS,
