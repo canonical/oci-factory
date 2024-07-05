@@ -1,10 +1,10 @@
 import json
 import logging
 import os
-import requests
 import sys
 from typing import Optional
 
+import requests
 
 logging.basicConfig(level=os.environ.get("TWC_LOG_LEVEL", "info").upper())
 

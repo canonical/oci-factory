@@ -1,3 +1,7 @@
+import logging
+import os
+import subprocess
+
 from confluent_kafka import Consumer, KafkaException
 from temporalio import activity
 
@@ -8,18 +12,13 @@ from oci_factory.notification.mattermost_notifier import (
     update_status_and_message,
 )
 
-import logging
-import os
-import subprocess
-
-
 TWC_HOST = os.environ.get("TWC_HOST")
 TWC_NAMESPACE = os.environ.get("TWC_NAMESPACE")
 FILE_NAME = os.path.basename(__file__)
-TEMPORAL_WEB_UI = f"https://web.{TWC_HOST}/namespaces/{TWC_NAMESPACE}/workflows/{{}}/{{}}/history"
-MM_MESSAGE_TITLE = (
-    f"[OCI Factory Temporal Workflow]: {FILE_NAME}: Rebuild rocks"
+TEMPORAL_WEB_UI = (
+    f"https://web.{TWC_HOST}/namespaces/{TWC_NAMESPACE}/workflows/{{}}/{{}}/history"
 )
+MM_MESSAGE_TITLE = f"[OCI Factory Temporal Workflow]: {FILE_NAME}: Rebuild rocks"
 MM_MESSAGE_BODY = "**Release:** {}\n**Status:** {}\n"
 MM_MESSAGE_BODY += f"[More details]({TEMPORAL_WEB_UI})"
 
@@ -72,7 +71,8 @@ async def consume(topic: str, consumer_group: str) -> dict:
 
     logging.info("Release: {}".format(value["release"]))
     message_id = send_message(
-        MM_MESSAGE_TITLE, MM_MESSAGE_BODY.format(value["release"], "Triggered", *activity_info_formatter)
+        MM_MESSAGE_TITLE,
+        MM_MESSAGE_BODY.format(value["release"], "Triggered", *activity_info_formatter),
     )
 
     # TODO: This part of code should be refactored once Renovate is dropped
@@ -88,7 +88,12 @@ async def consume(topic: str, consumer_group: str) -> dict:
 
     status = "Success" if success else "Failed"
     update_status_and_message(
-        message_id, success, MM_MESSAGE_BODY.format(value["release"], status, *activity_info_formatter)
+        message_id,
+        success,
+        MM_MESSAGE_BODY.format(value["release"], status, *activity_info_formatter),
     )
 
-    return {"eventbus_message": value, "find_images_to_update.py": proc.stderr.read().decode("utf-8")}
+    return {
+        "eventbus_message": value,
+        "find_images_to_update.py": proc.stderr.read().decode("utf-8"),
+    }
