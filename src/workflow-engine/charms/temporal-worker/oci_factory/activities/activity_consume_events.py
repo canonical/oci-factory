@@ -12,10 +12,16 @@ import logging
 import os
 import subprocess
 
+
+TWC_HOST = os.environ.get("TWC_HOST")
+TWC_NAMESPACE = os.environ.get("TWC_NAMESPACE")
+FILE_NAME = os.path.basename(__file__)
+TEMPORAL_WEB_UI = f"https://web.{TWC_HOST}/namespaces/{TWC_NAMESPACE}/workflows/{{}}/{{}}/history"
 MM_MESSAGE_TITLE = (
-    "[OCI Factory Temporal Workflow]: Image Rebuild for New Ubuntu Release"
+    f"[OCI Factory Temporal Workflow]: {FILE_NAME}: Rebuild rocks"
 )
-MM_MESSAGE_BODY = "**Workflow ID:** {}\n**Workflow Run ID:** {}\n**Activity ID:** {}\n**Release:** {}\n**Status:** {}"
+MM_MESSAGE_BODY = "**Release:** {}\n**Status:** {}\n"
+MM_MESSAGE_BODY += f"[More details]({TEMPORAL_WEB_UI})"
 
 
 # `TWC_LOG_LEVEL` is the mapped value of `log-level` in the charm config
@@ -35,7 +41,7 @@ async def consume(topic: str, consumer_group: str) -> dict:
     )
 
     activity_info = activity.info()
-    activity_info_formatter = (activity_info.workflow_id, activity_info.workflow_run_id, activity_info.activity_id)
+    activity_info_formatter = (activity_info.workflow_id, activity_info.workflow_run_id)
 
     with Config() as config:
         consumer_config = config.get_consumer_config(consumer_group)
@@ -65,8 +71,9 @@ async def consume(topic: str, consumer_group: str) -> dict:
             consumer.close()
 
     logging.info("Release: {}".format(value["release"]))
+    print("Release: {}".format(value["release"]))
     message_id = send_message(
-        MM_MESSAGE_TITLE, MM_MESSAGE_BODY.format(*activity_info_formatter, value["release"], "Triggered")
+        MM_MESSAGE_TITLE, MM_MESSAGE_BODY.format(value["release"], "Triggered", *activity_info_formatter)
     )
 
     # TODO: This part of code should be refactored once Renovate is dropped
@@ -81,7 +88,7 @@ async def consume(topic: str, consumer_group: str) -> dict:
 
     status = "Success" if success else "Failed"
     update_status_and_message(
-        message_id, success, MM_MESSAGE_BODY.format(*activity_info_formatter, value["release"], status)
+        message_id, success, MM_MESSAGE_BODY.format(value["release"], status, *activity_info_formatter)
     )
 
     return value
