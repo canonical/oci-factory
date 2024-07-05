@@ -82,7 +82,7 @@ async def consume(topic: str, consumer_group: str) -> dict:
 
     proc = subprocess.Popen(
         ["python3", script_full_path, "{}".format(value.get("release"))],
-        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
     success = proc.wait() == 0
 
