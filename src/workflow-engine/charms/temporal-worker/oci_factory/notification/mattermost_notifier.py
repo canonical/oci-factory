@@ -51,10 +51,6 @@ def send_message(title: str, message: str) -> str:
         },
     }
 
-    token = os.environ.get("MATTERMOST_TOKEN", None)
-    if token is None:
-        logging.warning("Unable to notify on Mattermost, MATTERMOST_TOKEN is not set!")
-
     data = json.dumps(payload).encode("utf-8")
     res = requests.post(POST_URL, headers=HEADERS, data=data, timeout=10)
     res.raise_for_status()
@@ -81,10 +77,6 @@ def update_status_and_message(
         props["attachments"][0]["text"] = message
 
     payload = {"id": message_id, "props": props}
-
-    token = os.environ.get("MATTERMOST_TOKEN", None)
-    if token is None:
-        logging.warning("Unable to notify on Mattermost, MATTERMOST_TOKEN is not set!")
 
     data = json.dumps(payload).encode("utf-8")
     res = requests.put(
