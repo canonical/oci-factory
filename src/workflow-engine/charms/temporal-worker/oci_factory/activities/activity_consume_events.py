@@ -71,7 +71,6 @@ async def consume(topic: str, consumer_group: str) -> dict:
             consumer.close()
 
     logging.info("Release: {}".format(value["release"]))
-    print("Release: {}".format(value["release"]))
     message_id = send_message(
         MM_MESSAGE_TITLE, MM_MESSAGE_BODY.format(value["release"], "Triggered", *activity_info_formatter)
     )
@@ -82,7 +81,8 @@ async def consume(topic: str, consumer_group: str) -> dict:
     script_full_path = os.path.join(curr_file_path, "find_images_to_update.py")
 
     proc = subprocess.Popen(
-        ["python3", script_full_path, "{}".format(value.get("release"))]
+        ["python3", script_full_path, "{}".format(value.get("release"))],
+        stdout=subprocess.PIPE,
     )
     success = proc.wait() == 0
 
@@ -91,4 +91,4 @@ async def consume(topic: str, consumer_group: str) -> dict:
         message_id, success, MM_MESSAGE_BODY.format(value["release"], status, *activity_info_formatter)
     )
 
-    return value
+    return {"eventbus_message": value, "find_images_to_update.py": proc.stdout.read().decode("utf-8")}
