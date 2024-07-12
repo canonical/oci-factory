@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/canonical/oci-factory/src/cli-client/internals/logger"
@@ -45,6 +46,12 @@ func SendRequest(requestType, url string, payload []byte, expectedStatusCode int
 			logger.Noticef("Retrying request %d/%d", i+1, NumRetries)
 			time.Sleep(RetryInterval)
 			continue
+		}
+
+		if resp.StatusCode == 401 {
+			logger.Noticef("Request failed: %s", resp.Status)
+			logger.Noticef("Please check if your Github token is correct")
+			os.Exit(1)
 		}
 
 		logger.Noticef("Request failed: %s", resp.Status)
