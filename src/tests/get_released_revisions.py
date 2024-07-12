@@ -98,7 +98,9 @@ if __name__ == "__main__":
                     f"Track {track} is missing its end-of-life field"
                 )
 
-            for targets in risks.values():
+            for key, targets in risks.items():
+                if key == "end-of-life":
+                    continue
                 try:
                     if int(targets["target"]) in released_revisions[img]:
                         continue
