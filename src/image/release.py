@@ -76,6 +76,11 @@ for track, risks in image_trigger.release.items():
         all_releases[track] = {}
 
     for risk, value in risks.dict(exclude_none=True).items():
+        if risk == "deprecated" and value:
+            break  # don't build deprecated tracks
+        elif risk == "depreacted":
+            continue
+
         if risk in ["end-of-life", "end_of_life"]:
             all_releases[track]["end-of-life"] = value
             continue
