@@ -18,6 +18,6 @@ jobs:
         with:
           go-version: 1.22
       - name: Test
+        working-directory: src/cli-client
         run: |
-          cd src/cli-client
           go test ./...
