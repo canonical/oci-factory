@@ -13,15 +13,9 @@ parts:
   oci-factory:
     plugin: go
     build-snaps: [go/latest/stable]
-    source: https://github.com/canonical/oci-factory
-    source-type: git
-    source-subdir: src/cli-client/cmd/oci-factory
+    source: .
     stage-packages:
       - git
-    # TODO remove this override-pull when the branch is merged
-    override-pull: |
-      snapcraftctl pull
-      git checkout ROCKS-1216-cli-client
 
 apps:
   oci-factory:
