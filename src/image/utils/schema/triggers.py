@@ -1,8 +1,9 @@
+import logging
 import pydantic
 
+from collections.abc import Mapping
 from datetime import datetime, timezone
-from typing import Dict, List, Literal, Optional
-
+from typing import Any, Dict, List, Literal, Optional
 
 LATEST_SCHEMA_VERSION = 1
 KNOWN_RISKS_ORDERED = ["stable", "candidate", "beta", "edge"]
@@ -23,14 +24,18 @@ class ImageUploadReleaseSchema(pydantic.BaseModel):
     risks: List[Literal["edge", "beta", "candidate", "stable"]]
 
     class Config:
-        extra = pydantic.Extra.forbid
+        extra = pydantic.Extra.allow
 
-    @pydantic.validator("end_of_life")
-    def ensure_still_supported(cls, v: datetime) -> datetime:
-        """ensure that the end of life isn't reached."""
-        if v < datetime.now(timezone.utc):
-            raise ImageReachedEol("This track has reached its end of life")
-        return v
+    @pydantic.root_validator(pre=True)
+    def add_deprecated_field(cls, values: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Determine if the track is deprecated based on end-of-life."""
+        end_of_life = datetime.fromisoformat(values["end-of-life"])
+        if end_of_life < datetime.now(timezone.utc):
+            logging.warning("This track has reached its end of life")
+            values["deprecated"] = True
+        else:
+            values["deprecated"] = False
+        return values
 
 
 class ImageUploadSchema(pydantic.BaseModel):
@@ -42,7 +47,7 @@ class ImageUploadSchema(pydantic.BaseModel):
     release: Optional[Dict[str, ImageUploadReleaseSchema]]
 
     class Config:
-        extra = pydantic.Extra.forbid
+        extra = pydantic.Extra.allow
 
 
 class ChannelsSchema(pydantic.BaseModel):
@@ -55,7 +60,7 @@ class ChannelsSchema(pydantic.BaseModel):
     edge: Optional[str]
 
     class Config:
-        extra = pydantic.Extra.forbid
+        extra = pydantic.Extra.allow
 
     @pydantic.validator("stable", "candidate", "beta", "edge", pre=True)
     def _check_risks(cls, values: List) -> str:
@@ -66,12 +71,16 @@ class ChannelsSchema(pydantic.BaseModel):
 
         return values
 
-    @pydantic.validator("end_of_life")
-    def ensure_still_supported(cls, v: datetime) -> datetime:
-        """ensure that the end of life isn't reached."""
-        if v < datetime.now(timezone.utc):
-            raise ImageReachedEol("This track has reached its end of life")
-        return v
+    @pydantic.root_validator(pre=True)
+    def add_deprecated_field(cls, values: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Determine if the track is deprecated based on end-of-life."""
+        end_of_life = datetime.fromisoformat(values["end-of-life"])
+        if end_of_life < datetime.now(timezone.utc):
+            logging.warning("This track has reached its end of life")
+            values["deprecated"] = True
+        else:
+            values["deprecated"] = False
+        return values
 
 
 class ImageSchema(pydantic.BaseModel):
@@ -82,4 +91,4 @@ class ImageSchema(pydantic.BaseModel):
     release: Optional[Dict[str, ChannelsSchema]]
 
     class Config:
-        extra = pydantic.Extra.forbid
+        extra = pydantic.Extra.allow
