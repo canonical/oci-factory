@@ -70,7 +70,8 @@ Pull Requests 🚀.
 
 ### As a **Maintainer** ⛏ 🪨
 
-There are two ways to use the OCI Factory to build the images.
+Maintainers can request new image builds and releases by either creating
+Pull Requests (PRs) or via the OCI Factory CLI Client.
 
 #### 1. With Pull Requests
 
@@ -93,11 +94,13 @@ multiple images;
 Maintainers can use the OCI Factory's CLI Client to interact with the OCI
 Factory. The CLI Client is a Go module at [src/cli-client](src/cli-client).
 
-Here's what you should do and know before you use the CLI Client to trigger
-the first build of your image:
+Here's what you should do and know before you use the CLI Client:
 
-1. you are onboard as a Maintainer, and have received your token to the CLI
-Client;
+1. you **must** already be an onboarded Maintainer and have had significant
+interactions with the OCI Factory (via PRs). Why is that? To use this client
+you'll be granted write permissions to the repository, and thus you'll have
+escalated rights when compared to a regular Maintainer - with great power
+comes great maintainability,
 2. each use of the CLI Client **must** only target one version of an OCI image,
 i.e. you can ask the OCI Factory to build one version of the image, upload and
 release it to GHCR, Docker Hub, and ECR with different tracks, risks and EOL with

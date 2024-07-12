@@ -18,10 +18,35 @@ The user will be asked to input the GitHub Personal Access Token upon triggering
 terminal, it is possible to assign the token to the environmental variable `export GITHUB_TOKEN=<your token>`, and pass
 `-y` to confirm the triggering by default.
 
-### Installation
+### Install using Snap
+
 ```bash
-git clone https://github.com/canonical/oci-factory.git
-cd oci-factory/src/cli-client
+sudo snap install oci-factory
+```
+
+### Install using Go
+
+#### Dependencies
+
+```bash
+# install git
+sudo apt update && sudo apt install -y git
+```
+
+Golang-go can be installed either with APT or Snap:
+
+```bash
+# install golang-go with apt
+sudo apt update && sudo apt install -y golang-go
+```
+
+```bash
+# install golang-go with snap
+sudo snap install go --classic
+```
+
+Now install the CLI client
+```bash
 go install github.com/canonical/oci-factory/src/cli-client/cmd/oci-factory
 ```
 
