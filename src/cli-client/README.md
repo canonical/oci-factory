@@ -45,7 +45,7 @@ sudo apt update && sudo apt install -y golang-go
 sudo snap install go --classic
 ```
 
-Now install the CLI client
+#### Install the CLI client
 ```bash
 go install github.com/canonical/oci-factory/src/cli-client/cmd/oci-factory
 ```
