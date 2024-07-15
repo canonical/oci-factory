@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -167,7 +168,11 @@ func getWorkflowJobsProgress(runId int) (int, int, string) {
 
 // TODO how to implement test for calls into GetWorkflowRunID?
 func WorkflowPolling(workflowExtRefId string) {
-	runId, _ := getWorkflowRunID(workflowExtRefId)
+	runId, err := getWorkflowRunID(workflowExtRefId)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to get workflow run ID: %v", err)
+		os.Exit(1)
+	}
 	logger.Debugf("%d\n", runId)
 
 	fmt.Printf("Task %s started. Details available at %s%d.\n", workflowExtRefId,
