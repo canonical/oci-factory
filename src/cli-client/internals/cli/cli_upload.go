@@ -24,8 +24,10 @@ type CmdUpload struct {
 var riskOptions = []string{"stable", "candidate", "beta", "edge"}
 
 func init() {
-	parser.Command.AddCommand("upload", "Trigger the build and release for the image in the current working directory",
-		"long description", &CmdUpload{})
+	parser.Command.AddCommand("upload", "Trigger the build and release for a rock",
+		`Trigger the build of a rock with the rockcraft.yaml in the current working
+		directory and the release with --release`,
+		&CmdUpload{})
 }
 
 func (c *CmdUpload) Execute(args []string) error {
