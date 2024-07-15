@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"slices"
 	"strings"
@@ -142,7 +143,11 @@ func triggerUploadReleases(releases []UploadRelease) {
 	fmt.Printf("The %s image will be built and released with following triggers:\n", imageName)
 	fmt.Println(uploadTrigger.ToYamlString())
 	if !opts.SkipConfirmation {
-		blockForConfirm("Do you want to continue?")
+		err := blockForConfirm("Do you want to continue?")
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	}
 	externalRefID := payload.Inputs.ExternalRefID
 	client.DispatchWorkflow(payload)
