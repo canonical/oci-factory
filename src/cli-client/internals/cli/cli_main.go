@@ -29,7 +29,7 @@ var parser = flags.NewParser(&opts, flags.Default)
 
 func CliMain() error {
 	addHelp(parser)
-	if len(os.Args) == 1 {
+	if len(os.Args) == 1 || os.Args[1] == "help" {
 		parser.WriteHelp(os.Stdout)
 		os.Exit(0)
 	}
