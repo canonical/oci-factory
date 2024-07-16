@@ -49,6 +49,7 @@ temporal-worker-k8s:
   # Only needed if deploying under a proxy
   # http-proxy: "http://squid.internal:3128"
   # https-proxy: "http://squid.internal:3128"
+  # no-proxy: ".canonical.com"
 
   # Charmed workflows
   # The "workflows-file-name" must match the wheel file created with poetry

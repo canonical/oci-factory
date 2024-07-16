@@ -1,18 +1,26 @@
 version: 1
 upload:
   - source: canonical/prometheus-rock
-    commit: c817c7a768d7a19e127cce0cfc7a6cd9d54f584c
-    directory: 2.52.0
+    commit: ebe3742f58628c2be2c385b1c300d33a5d519e0b
+    directory: 2.37.0
     release:
-      2.52.0-22.04:
-        end-of-life: "2025-05-28T00:00:00Z"
+      2.37.0-22.04:
+        end-of-life: "2024-10-04T00:00:00Z"
         risks:
           - stable
-      2.52-22.04:
-        end-of-life: "2025-05-28T00:00:00Z"
+      2.37-22.04:
+        end-of-life: "2024-10-04T00:00:00Z"
         risks:
           - stable
-      2-22.04:
-        end-of-life: "2025-05-28T00:00:00Z"
+  - source: canonical/prometheus-rock
+    commit: ebe3742f58628c2be2c385b1c300d33a5d519e0b
+    directory: 2.45.0
+    release:
+      2.45.0-22.04:
+        end-of-life: "2024-10-04T00:00:00Z"
+        risks:
+          - stable
+      2.45-22.04:
+        end-of-life: "2024-10-04T00:00:00Z"
         risks:
           - stable
