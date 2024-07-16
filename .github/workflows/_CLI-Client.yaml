@@ -21,3 +21,17 @@ jobs:
         working-directory: src/cli-client
         run: |
           go test ./...
+
+  build:
+    runs-on: ubuntu-latest
+    name: Snap build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: snapcore/action-build@v1
+        id: snapcraft
+        with:
+          path: src/cli-client
+      - uses: actions/upload-artifact@v3
+        with:
+          name: snap
+          path: ${{ steps.snapcraft.outputs.snap }}
