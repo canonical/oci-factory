@@ -83,3 +83,20 @@ class ImageSchema(pydantic.BaseModel):
 
     class Config:
         extra = pydantic.Extra.forbid
+
+    @pydantic.validator("upload")
+    def ensure_unique_triggers(
+        cls, v: Optional[List[ImageUploadSchema]]
+    ) -> Optional[List[ImageUploadSchema]]:
+        """Ensure that the triggers are unique."""
+        if not v:
+            return v
+        unique_triggers = set()
+        for upload in v:
+            trigger = f"{upload.source}_{upload.commit}_{upload.directory}"
+            if trigger in unique_triggers:
+                raise ImageTriggerValidationError(
+                    f"Image trigger {trigger} is not unique."
+                )
+            unique_triggers.add(trigger)
+        return v

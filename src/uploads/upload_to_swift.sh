@@ -22,4 +22,6 @@ cp "$BUILD_METADATA_FILE" "$SBOM_FILE" "$VULN_REPORT_FILE" \
 pushd "${staging_area}"
 
 # SWIFT_CONTAINER_NAME comes from env
-swift upload "$SWIFT_CONTAINER_NAME" "${IMAGE_NAME}" 
+swift upload "$SWIFT_CONTAINER_NAME" "${IMAGE_NAME}"
+# Remove the dummy file uploaded by `upload_dummy_to_swift.sh` in `prepare-upload`
+swift delete "$SWIFT_CONTAINER_NAME" "${IMAGE_NAME}/${TRACK}/${REVISION}/dummy.txt" 
