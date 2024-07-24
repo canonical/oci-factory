@@ -149,6 +149,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [prepare-build, run-build, test]
     name: Prepare upload
+    if: ${{ inputs.upload || (github.ref_name == 'main' && github.event_name == 'push') }}
     env:
       OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
       OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
@@ -238,7 +239,6 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [prepare-build, prepare-upload]
     name: Upload
-    if: ${{ inputs.upload || (github.ref_name == 'main' && github.event_name == 'push') }}
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-upload.outputs.build-matrix) }}
