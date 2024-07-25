@@ -67,6 +67,7 @@ jobs:
     needs: [validate-push-release-request]
     outputs:
       gh-releases-matrix: ${{ steps.release-image.outputs.gh-releases-matrix }}
+      release-commit-sha: ${{ steps.release-commit-sha.outputs.release-commit-sha }}
     env:
       IS_PROD: ${{ ! startsWith(inputs.oci-image-name, 'mock-') }}
     steps:
@@ -146,6 +147,12 @@ jobs:
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: oci/${{ inputs.oci-image-name }}/_releases.json
 
+      - name: Get commit SHA of _release.json update
+        id: release-commit-sha
+        run: |
+          set -ex
+          echo "release-commit-sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
 
   update-documentation:
     name: Update documentation
@@ -153,6 +160,7 @@ jobs:
     uses: ./.github/workflows/Documentation.yaml
     with:
       oci-image-name: "${{ inputs.oci-image-name }}"
+      release-commit-sha: "${{ needs.do-releases.outputs.release-commit-sha }}"
     secrets: inherit
 
 
