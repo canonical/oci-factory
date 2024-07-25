@@ -83,7 +83,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.release-commit-sha}}
+          ref: ${{ inputs.release-commit-sha }}
       
       - uses: actions/setup-python@v5
         with:
