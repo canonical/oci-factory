@@ -3,7 +3,7 @@ name: Validate user access
 # This callable workflow checks if the workflow is triggered by
 # a code owner or an image maintainer by testing the github.actor
 # variable against the CODEOWNERS file and the contacts.yaml file
-# under oci/* path
+# under the oci/* directory
 
 on:
   workflow_call:
