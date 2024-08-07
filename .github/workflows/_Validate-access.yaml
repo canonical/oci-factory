@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check if the workflow is triggered by an admin user
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
         run: |
           echo "github.actor: ${{ github.actor }}"
           echo "admin-only: ${{ inputs.admin-only }}"
