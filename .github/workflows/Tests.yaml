@@ -71,6 +71,7 @@ jobs:
     with:
       admin-only: true
       image-path: "${{ github.event.inputs.oci-image-path }}"
+    secrets: inherit
 
   fetch-oci-image:
     runs-on: ubuntu-22.04

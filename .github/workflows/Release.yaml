@@ -33,6 +33,7 @@ jobs:
     with:
       admin-only: true
       image-path: "oci/${{ github.event.inputs.oci-image-name }}"
+    secrets: inherit
 
   validate-push-release-request:
     runs-on: ubuntu-22.04

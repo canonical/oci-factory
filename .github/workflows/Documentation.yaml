@@ -32,6 +32,7 @@ jobs:
   #   with:
   #     admin-only: true
   #     image-path: "oci/${{ github.event.inputs.oci-image-name }}"
+  #   secrets: inherit
 
 
   validate-documentation-request:
