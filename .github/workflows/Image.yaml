@@ -118,7 +118,7 @@ jobs:
   access-check:
     needs: [prepare-build]
     uses: ./.github/workflows/_Validate-access.yaml
-    if: github.event_name != 'workflow_call'
+    # The if statement is useless since this workflow is listed in the needs of run-build
     with:
       admin-only: true
       image-path: ${{ needs.prepare-build.outputs.oci-img-path }}
