@@ -118,13 +118,14 @@ jobs:
   access-check:
     needs: [prepare-build]
     uses: ./.github/workflows/_Validate-access.yaml
+    if: ${{ github.event_name != 'workflow_call' }}
     with:
       admin-only: true
       image-path: ${{ needs.prepare-build.outputs.oci-img-path }}
     secrets: inherit
 
   run-build:
-    needs: [access-check]
+    needs: [access-check, prepare-build]
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}

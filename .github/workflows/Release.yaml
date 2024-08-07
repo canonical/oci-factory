@@ -30,6 +30,7 @@ on:
 jobs:
   access-check:
     uses: ./.github/workflows/_Validate-access.yaml
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     with:
       admin-only: true
       image-path: "oci/${{ github.event.inputs.oci-image-name }}"
