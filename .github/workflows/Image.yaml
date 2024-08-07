@@ -113,10 +113,18 @@ jobs:
 
           ./src/image/prepare_single_image_build_matrix.py \
             --oci-path ${{ steps.validate-image.outputs.img-path }} \
-            --revision-data-dir ${{ env.DATA_DIR }} \
+            --revision-data-dir ${{ env.DATA_DIR }}
+
+  access-check:
+    needs: [prepare-build]
+    uses: ./.github/workflows/_Validate-access.yaml
+    secrets: inherit
+    with:
+      admin-only: true
+      image-path: ${{ needs.prepare-build.outputs.oci-img-path }}
 
   run-build:
-    needs: [prepare-build]
+    needs: [access-check]
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}

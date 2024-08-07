@@ -66,9 +66,16 @@ env:
   DIVE_IMAGE: 'wagoodman/dive:v0.12'
 
 jobs:
+  access-check:
+    uses: ./.github/workflows/_Validate-access.yaml
+    with:
+      admin-only: true
+      image-path: "${{ github.event.inputs.oci-image-path }}"
+
   fetch-oci-image:
     runs-on: ubuntu-22.04
     name: Fetch OCI image for testing
+    needs: [access-check]
     outputs:
       test-cache-key: ${{ steps.cache.outputs.key }}
     steps:

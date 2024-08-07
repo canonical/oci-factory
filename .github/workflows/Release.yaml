@@ -28,9 +28,16 @@ on:
         type: string
            
 jobs:
+  access-check:
+    uses: ./.github/workflows/_Validate-access.yaml
+    with:
+      admin-only: true
+      image-path: "oci/${{ github.event.inputs.oci-image-name }}"
+
   validate-push-release-request:
     runs-on: ubuntu-22.04
     name: Validate push release request
+    needs: [access-check]
     outputs:
       oci-image-name: ${{ steps.get-image-name.outputs.img-name }}
     steps:
