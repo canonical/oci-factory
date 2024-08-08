@@ -17,11 +17,15 @@ on:
 
 jobs:
   access-check:
-    uses: ./.github/workflows/_Validate-access.yaml
-    with:
-      admin-only: true
-      image-path: "oci/mock-rock"
-    secrets: inherit
+    name: Validate access to mock-rock
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/validate-access
+        with:
+          admin-only: true
+          image-path: "oci/mock-rock"
+          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
 
   test-workflows:
     name: Trigger internal tests for mock-rock

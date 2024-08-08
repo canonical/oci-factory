@@ -94,6 +94,14 @@ jobs:
           echo "img-name=$(basename ${img_path})" >> "$GITHUB_OUTPUT"
           echo "img-path=${img_path}" >> "$GITHUB_OUTPUT"
 
+      - name: Validate access to triggered image
+        uses: ./.github/actions/validate-access
+        if: github.event_name != 'workflow_call'
+        with:
+          admin-only: true
+          image-path: ${{ steps.validate-image.outputs.img-path }}
+          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+
       - name: Use custom image trigger
         if: ${{ inputs.b64-image-trigger != '' }}
         run: echo ${{ inputs.b64-image-trigger }} | base64 -d > ${{ steps.validate-image.outputs.img-path }}/image.yaml
@@ -115,17 +123,8 @@ jobs:
             --oci-path ${{ steps.validate-image.outputs.img-path }} \
             --revision-data-dir ${{ env.DATA_DIR }}
 
-  access-check:
-    needs: [prepare-build]
-    uses: ./.github/workflows/_Validate-access.yaml
-    # The if statement is useless since this workflow is listed in the needs of run-build
-    with:
-      admin-only: true
-      image-path: ${{ needs.prepare-build.outputs.oci-img-path }}
-    secrets: inherit
-
   run-build:
-    needs: [access-check, prepare-build]
+    needs: [prepare-build]
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}

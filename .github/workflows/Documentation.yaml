@@ -29,15 +29,6 @@ on:
         type: string
 
 jobs:
-  # TODO add access-check here exceeds workflow max call depth
-  # access-check:
-  #   uses: ./.github/workflows/_Validate-access.yaml
-  #   with:
-  #     admin-only: true
-  #     image-path: "oci/${{ github.event.inputs.oci-image-name }}"
-  #   secrets: inherit
-
-
   validate-documentation-request:
     runs-on: ubuntu-22.04
     name: Validate documentation request
@@ -51,6 +42,14 @@ jobs:
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/checkout@v4
+
+      - name: Validate access to triggered image
+        uses: ./.github/actions/validate-access
+        if: github.event_name != 'workflow_call'
+        with:
+          admin-only: true
+          image-path: "oci/${{ inputs.oci-image-name }}"
+          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
 
       - name: Infer images to document
         uses: tj-actions/changed-files@v35
