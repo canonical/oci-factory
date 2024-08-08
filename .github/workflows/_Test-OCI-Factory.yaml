@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - ".github/workflows/*"
+      - ".github/actions/*"
       - "!.github/workflows/CLA-Check.yaml"
       - "!.github/workflows/PR-Validator.yaml"
       - "!.github/workflows/_Auto-updates.yaml"
