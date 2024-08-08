@@ -30,7 +30,7 @@ runs:
         echo "admin-only: ${{ inputs.admin-only }}"
         if [[ ${{ inputs.admin-only }} == true ]]; then
           echo "Expanding team mentions in the CODEOWNERS file"
-          teams=$(grep -oE '@[[:alnum:]_.-]+\/[[:alnum:]_.-]+' ${{ github.workspace }}/CODEOWNERS | sort | uniq)
+          teams=$(grep -oE '@[[:alnum:]_.-]+\/[[:alnum:]_.-]+' ${{ github.workspace }}/CODEOWNERS || true | sort | uniq)
 
           for team in $teams; do
             org=$(echo $team | cut -d'/' -f1 | sed 's/@//')
