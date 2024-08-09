@@ -5,6 +5,8 @@ on:
   push:
     paths:
       - "oci/*/documentation.y*ml"
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       oci-image-name:
@@ -25,11 +27,16 @@ on:
         description: 'Commit SHA containing the updated _releases.json'
         required: true
         type: string
+      is-workflow_call:
+        description: 'Flag to indicate if this is a workflow call'
+        type: boolean
+        default: true
 
 jobs:
   validate-documentation-request:
     runs-on: ubuntu-22.04
     name: Validate documentation request
+    # needs: [access-check]
     outputs:
       oci-img-path: ${{ steps.validate-image.outputs.img-path }}
       oci-img-name: ${{ steps.validate-image.outputs.img-name }}
@@ -39,6 +46,14 @@ jobs:
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/checkout@v4
+
+      - name: Validate access to triggered image
+        uses: ./.github/actions/validate-access
+        if: ${{ !inputs.is-workflow_call }}
+        with:
+          admin-only: true
+          image-path: "oci/${{ inputs.oci-image-name }}"
+          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
 
       - name: Infer images to document
         uses: tj-actions/changed-files@v35
