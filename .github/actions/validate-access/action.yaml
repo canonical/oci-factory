@@ -25,29 +25,4 @@ runs:
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
-      run: |
-        echo "github.actor: ${{ github.actor }}"
-        echo "admin-only: ${{ inputs.admin-only }}"
-        if [[ ${{ inputs.admin-only }} == true ]]; then
-          echo "Expanding team mentions in the CODEOWNERS file"
-          teams=$(grep -oE '@[[:alnum:]_.-]+\/[[:alnum:]_.-]+' ${{ github.workspace }}/CODEOWNERS || true | sort | uniq)
-
-          for team in $teams; do
-            org=$(echo $team | cut -d'/' -f1 | sed 's/@//')
-            team_name=$(echo $team | cut -d'/' -f2)
-            members=$(gh api "/orgs/$org/teams/$team_name/members" | jq -r '.[].login')
-            replacement=$(echo "$members" | xargs -I {} echo -n "@{} " | awk '{$1=$1};1')
-            sed -i "s|$team|$replacement|g" ${{ github.workspace }}/CODEOWNERS
-          done
-
-          if grep -wq "@${{ github.actor }}" ${{ github.workspace }}/CODEOWNERS; then
-            echo "The workflow is triggered by ${{ github.actor }} as the code owner"
-          elif cat ${{ github.workspace }}/${{ inputs.image-path }}/contacts.yaml | yq ".maintainers" | grep "\- " | grep -wq "${{ github.actor }}"; then
-            echo "The workflow is triggered by ${{ github.actor }} as a maintainer of the image ${{ inputs.image-path }}"
-          else
-            echo "The workflow is triggered by a user neither as a code owner nor a maintainer of the image ${{ inputs.image-path }}"
-            exit 1
-          fi
-        else
-          echo "The workflow is not restricted to non-code-owner or non-maintainer users"
-        fi
+      run: ./.github/actions/validate-access/validate-access.sh ${{ github.actor }} ${{ inputs.admin-only }} ${{ github.workspace }}  ${{ inputs.image-path }}
