@@ -167,7 +167,7 @@ process.
     ```bash
     # Only set the https_proxy when running inside the cloud environment
     https_proxy="http://squid.internal:3128" git clone https://github.com/canonical/oci-factory
-    cd oci-factory/src/workflow-engine/charms/temporal-worker/
+    cd oci-factory/tools/workflow-engine/charms/temporal-worker/
     ``````
 
 4. use the [existing Python env](../../README.md) and generate a wheel file

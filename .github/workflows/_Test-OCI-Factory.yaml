@@ -12,7 +12,7 @@ on:
       - "examples/**"
       - "oci/mock*"
       - "src/**"
-      - "!src/workflow-engine/**"
+      - "!tools/workflow-engine/**"
       - "!tools/cli-client/**"
 
 jobs:
