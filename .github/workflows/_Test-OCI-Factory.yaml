@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/validate-access
+      - uses: ./.github/actions/validate-actor
         with:
           admin-only: true
           image-path: "oci/mock-rock"

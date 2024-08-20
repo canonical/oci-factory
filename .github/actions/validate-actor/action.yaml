@@ -15,7 +15,7 @@ inputs:
     description: 'The path to the image to be built'
     required: true
   github-token:
-    description: 'The GH_TOKEN for the GitHub CLI'
+    description: 'The GITHUB_TOKEN for the GitHub CLI'
     required: true
 
 runs:
@@ -24,5 +24,5 @@ runs:
     - name: Check if the workflow is triggered by an admin user
       shell: bash
       env:
-        GH_TOKEN: ${{ inputs.github-token }}
-      run: ./.github/actions/validate-access/validate-access.sh ${{ github.actor }} ${{ inputs.admin-only }} ${{ github.workspace }}  ${{ inputs.image-path }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: ./.github/actions/validate-actor/validate-actor.sh ${{ github.actor }} ${{ inputs.admin-only }} ${{ github.workspace }}  ${{ inputs.image-path }}

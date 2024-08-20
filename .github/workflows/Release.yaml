@@ -44,7 +44,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Validate access to triggered image
-        uses: ./.github/actions/validate-access
+        uses: ./.github/actions/validate-actor
         if: ${{ !inputs.is-workflow_call }}
         with:
           admin-only: true
