@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/canonical/oci-factory/src/cli-client/internals/cli"
-	"github.com/canonical/oci-factory/src/cli-client/internals/logger"
+	"github.com/canonical/oci-factory/tools/cli-client/internals/cli"
+	"github.com/canonical/oci-factory/tools/cli-client/internals/logger"
 )
 
 func main() {

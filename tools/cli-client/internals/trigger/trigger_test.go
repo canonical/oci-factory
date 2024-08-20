@@ -5,7 +5,7 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"github.com/canonical/oci-factory/src/cli-client/internals/trigger"
+	"github.com/canonical/oci-factory/tools/cli-client/internals/trigger"
 	"gopkg.in/yaml.v3"
 )
 

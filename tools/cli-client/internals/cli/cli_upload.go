@@ -7,8 +7,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/canonical/oci-factory/src/cli-client/internals/client"
-	"github.com/canonical/oci-factory/src/cli-client/internals/trigger"
+	"github.com/canonical/oci-factory/tools/cli-client/internals/client"
+	"github.com/canonical/oci-factory/tools/cli-client/internals/trigger"
 )
 
 type UploadRelease struct {
