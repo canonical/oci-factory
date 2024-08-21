@@ -5,7 +5,7 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"github.com/canonical/oci-factory/src/cli-client/internals/cli"
+	"github.com/canonical/oci-factory/tools/cli-client/internals/cli"
 )
 
 func Test(t *testing.T) { TestingT(t) }

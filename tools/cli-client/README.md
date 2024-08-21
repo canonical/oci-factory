@@ -47,7 +47,7 @@ sudo snap install go --classic
 
 #### Install the CLI client
 ```bash
-go install github.com/canonical/oci-factory/src/cli-client/cmd/oci-factory
+go install github.com/canonical/oci-factory/tools/cli-client/cmd/oci-factory
 ```
 
 # Triggering workflows
