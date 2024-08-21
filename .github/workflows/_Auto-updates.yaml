@@ -48,11 +48,11 @@ jobs:
 
       - name: Install dependencies
         continue-on-error: true
-        working-directory: src/workflow-engine/charms/temporal-worker
+        working-directory: tools/workflow-engine/charms/temporal-worker
         run: poetry install
 
       - name: Trigger auto-updates
-        working-directory: src/workflow-engine/charms/temporal-worker/oci_factory/activities/
+        working-directory: tools/workflow-engine/charms/temporal-worker/oci_factory/activities/
         env:
           OS_AUTH_URL: ${{ secrets.SWIFT_OS_AUTH_URL }}
           OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
