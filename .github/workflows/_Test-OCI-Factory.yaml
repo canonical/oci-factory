@@ -52,7 +52,7 @@ jobs:
       - name: Run pytest
         continue-on-error: true
         run: |
-          cd "${{ env.OCI_FACTORY_DIR }}"; python3 -m pytest --junit-xml "../${{ env.PYTEST_RESULT_PATH }}"
+          python3 -m pytest --junit-xml "${{ env.PYTEST_RESULT_PATH }}" "${{ env.OCI_FACTORY_DIR }}"
 
       - name: Generate Summary
         if: always()
