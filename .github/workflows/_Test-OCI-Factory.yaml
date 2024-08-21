@@ -15,7 +15,61 @@ on:
       - "!tools/workflow-engine/**"
       - "!tools/cli-client/**"
 
+env:
+  # local path to clone the oci-factory to
+  OCI_FACTORY_DIR: oci-factory/
+
+  # path of pytest junit output
+  PYTEST_RESULT_PATH: pytest_results.xml
+
+
 jobs:
+
+  pytest:
+    # Trigger python unit tests across the repository
+    name: pytest
+    runs-on: ubuntu-22.04
+    steps:
+
+      # Job Setup
+      - uses: actions/checkout@v4
+        with:
+          path: ${{ env.OCI_FACTORY_DIR }}
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      
+      # Note: Add additional dependency installation lines as required below 
+      # test-oci-factory/pytest requirements
+      - run: pip install -r ${{ env.OCI_FACTORY_DIR }}/src/test-oci-factory/pytest/requirements.txt
+
+      # build-rock/configure requirements 
+      - run: pip install -r ${{ env.OCI_FACTORY_DIR }}/src/build-rock/configure/requirements.txt
+
+
+      - name: Run pytest
+        continue-on-error: true
+        run: |
+          python3 -m pytest --junit-xml "${{ env.PYTEST_RESULT_PATH }}" "${{ env.OCI_FACTORY_DIR }}"
+
+      - name: Generate Summary
+        if: always()
+        run: |
+          python3 ${{ env.OCI_FACTORY_DIR }}/src/test-oci-factory/pytest/format_markdown_report.py --input-junit "${{ env.PYTEST_RESULT_PATH }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload pytest Result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PYTEST_RESULT_PATH }}
+          path: ${{ env.PYTEST_RESULT_PATH }}
+          if-no-files-found: error
+
+
+
+
   test-workflows:
     name: Trigger internal tests for mock-rock
     uses: ./.github/workflows/Image.yaml
