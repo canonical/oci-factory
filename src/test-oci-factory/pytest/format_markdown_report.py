@@ -1,5 +1,6 @@
 #! /bin/env python3
 import xml.etree.ElementTree as ET
+from io import TextIOBase
 import json
 
 """
@@ -7,7 +8,7 @@ Generate markdown from a JUnit XML report for $GITHUB_STEP_SUMMARY
 """
 
 
-def print_element(element, output=None):
+def print_element(element: ET.Element, output: TextIOBase = None):
     """Generically display attrs and text of a element"""
     print(f"<pre>", file=output)
 
@@ -21,7 +22,7 @@ def print_element(element, output=None):
     print(f"</pre>", file=output)
 
 
-def print_testsuite_pie_chart(testsuite, output=None):
+def print_testsuite_pie_chart(testsuite: ET.Element, output: TextIOBase = None):
     """Generate a pie chart showing test status from testsuite element"""
 
     failed_tests = int(testsuite.attrib.get("failures", 0))
@@ -39,7 +40,7 @@ def print_testsuite_pie_chart(testsuite, output=None):
         ("skipped", skipped_tests, "#ff0", 3),
         ("pass", pass_tests, "#0f0", 4),
     ]
-    # note: default_order ensure color match if two wedges have the exact same value
+    # note: default_order ensures color match if two wedges have the exact same value
 
     # filter out wedges with 0 width
     chart_data = list(filter(lambda w: w[1] != 0, chart_data))
@@ -47,13 +48,13 @@ def print_testsuite_pie_chart(testsuite, output=None):
     # sort by value, then default order so colors match what we expect
     chart_data = list(sorted(chart_data, key=lambda w: (w[1], w[3]), reverse=True))
 
-    # create a theme
+    # create the chart theme
     theme_dict = {
         "theme": "base",
         "themeVariables": {f"pie{n+1}": w[2] for n, w in enumerate(chart_data)},
     }
 
-    ## begin printing pie chart
+    # begin printing pie chart...
     print("```mermaid", file=output)
 
     # theme colors in order: pass, failed, error, skipped
@@ -67,8 +68,8 @@ def print_testsuite_pie_chart(testsuite, output=None):
     print("```", file=output)
 
 
-def get_testcase_status(testcase):
-    """Get status for individual testcase element status"""
+def get_testcase_status(testcase: ET.Element):
+    """Get status for individual testcase elements"""
 
     if testcase.find("failure") is not None:
         return ":x:"
@@ -80,16 +81,19 @@ def get_testcase_status(testcase):
         return ":white_check_mark:"
 
 
-def print_header(testsuite, output=None):
+def print_header(testsuite: ET.Element, output: TextIOBase = None):
     """Print a header for the summary"""
-    passed = testsuite.attrib.get("failures") == "0" \
-                and testsuite.attrib.get("errors") == "0"
+    passed = (
+        testsuite.attrib.get("failures") == "0"
+        and testsuite.attrib.get("errors") == "0"
+    )
     status = ":white_check_mark:" if passed else ":x:"
+    name = testsuite.attrib["name"]
 
-    print(f"# {status} {testsuite.attrib['name']}", file=output)
+    print(f"# {status} {name}", file=output)
 
 
-def print_testsuite_report(testsuite, output=None):
+def print_testsuite_report(testsuite: ET.Element, output: TextIOBase = None):
     """Print complete testsuite element Report"""
 
     print_header(testsuite, output)
@@ -104,7 +108,7 @@ def print_testsuite_report(testsuite, output=None):
     for testcase in testsuite.findall("testcase"):
 
         print("<details>", file=output)
-        
+
         test_status = get_testcase_status(testcase)
         test_name = (
             testcase.attrib["name"].replace("_", " ").title()
@@ -121,7 +125,8 @@ def print_testsuite_report(testsuite, output=None):
         print("</details>", file=output)
 
 
-def print_junit_report(root, output=None):
+def print_junit_report(root: ET.Element, output: TextIOBase = None):
+    """Print report by iterating over all <testsuite> elements in root"""
 
     for testsuite in root.findall("testsuite"):
         print_testsuite_report(testsuite, output)
