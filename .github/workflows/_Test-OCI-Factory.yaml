@@ -13,8 +13,8 @@ on:
       - "examples/**"
       - "oci/mock*"
       - "src/**"
-      - "!src/workflow-engine/**"
-      - "!src/cli-client/**"
+      - "!tools/workflow-engine/**"
+      - "!tools/cli-client/**"
 
 jobs:
   access-check:
