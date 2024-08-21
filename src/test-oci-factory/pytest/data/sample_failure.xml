@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+   <testsuite name="pytest" errors="0" failures="1" skipped="0" tests="6" time="0.127" timestamp="2024-08-13T11:57:19.793644+00:00" hostname="fv-az1756-954">
+      <testcase classname="oci-factory.src.build-rock.configure.test.test_generate_matrix" name="test_get_target_archs" time="0.001" />
+      <testcase classname="oci-factory.src.build-rock.configure.test.test_generate_matrix" name="test_configure_matrices" time="0.000" />
+      <testcase classname="oci-factory.src.build-rock.configure.test.test_generate_matrix" name="test_configure_matrices_fallback_exception" time="0.000" />
+      <testcase classname="oci-factory.src.build-rock.configure.test.test_generate_matrix" name="test_configure_matrices_lcpi_fallback" time="0.000" />
+      <testcase classname="oci-factory.src.build-rock.configure.test.test_generate_matrix" name="test_set_build_config_outputs" time="0.001" />
+      <testcase classname="oci-factory.src.docs.test.test_generate_oci_doc_yaml" name="test_example_failure" time="0.001">
+         <failure message="AssertionError: This is to exemplify the output of a failed unit test&#10;assert False">def test_example_failure():
+            &gt;       assert False, "This is to exemplify the output of a failed unit test"
+            E       AssertionError: This is to exemplify the output of a failed unit test
+            E       assert False
+            oci-factory/src/docs/test/test_generate_oci_doc_yaml.py:8: AssertionError
+         </failure>
+      </testcase>
+   </testsuite>
+</testsuites>
