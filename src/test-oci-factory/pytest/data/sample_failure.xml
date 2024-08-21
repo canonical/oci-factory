@@ -4,7 +4,7 @@
       <testcase classname="oci-factory.src.build-rock.configure.test.test_generate_matrix" name="test_get_target_archs" time="0.001" />
       <testcase classname="oci-factory.src.build-rock.configure.test.test_generate_matrix" name="test_configure_matrices" time="0.000" />
       <testcase classname="oci-factory.src.build-rock.configure.test.test_generate_matrix" name="test_configure_matrices_fallback_exception" time="0.000" />
-      <testcase classname="oci-factory.src.build-rock.configure.test.test_generate_matrix" name="test_configure_matrices_lcpi_fallback" time="0.000" />
+      <testcase classname="oci-factory.src.build-rock.configure.test.test_generate_matrix" name="test_configure_matrices_lpci_fallback" time="0.000" />
       <testcase classname="oci-factory.src.build-rock.configure.test.test_generate_matrix" name="test_set_build_config_outputs" time="0.001" />
       <testcase classname="oci-factory.src.docs.test.test_generate_oci_doc_yaml" name="test_example_failure" time="0.001">
          <failure message="AssertionError: This is to exemplify the output of a failed unit test&#10;assert False">def test_example_failure():
