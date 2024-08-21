@@ -26,10 +26,6 @@ on:
         description: 'Cache key (to fetch image trigger from cache)'
         required: false
         type: string
-      is-workflow_call:
-        description: 'Flag to indicate if this is a workflow call'
-        type: boolean
-        default: true
            
 jobs:
   validate-push-release-request:
@@ -45,7 +41,7 @@ jobs:
 
       - name: Validate access to triggered image
         uses: ./.github/actions/validate-actor
-        if: ${{ !inputs.is-workflow_call }}
+        if: ${{ github.repository == 'canonical/oci-factory' }}
         with:
           admin-only: true
           image-path: "oci/${{ inputs.oci-image-name }}"

@@ -40,10 +40,6 @@ on:
         required: true
         type: boolean
         default: false
-      is-workflow_call:
-        description: 'Flag to indicate if this is a workflow call'
-        type: boolean
-        default: true
 
 env:
   VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"
@@ -100,7 +96,7 @@ jobs:
 
       - name: Validate access to triggered image
         uses: ./.github/actions/validate-actor
-        if: ${{ !inputs.is-workflow_call }}
+        if: ${{ github.repository == 'canonical/oci-factory' }}
         with:
           admin-only: true
           image-path: ${{ steps.validate-image.outputs.img-path }}

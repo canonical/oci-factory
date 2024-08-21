@@ -26,10 +26,6 @@ on:
         required: false
         type: string
         default: '.vulnerability-report.json'
-      is-workflow_call:
-        description: 'Flag to indicate if this is a workflow call'
-        type: boolean
-        default: true
   workflow_dispatch:
     inputs:
       oci-image-name:
@@ -73,11 +69,10 @@ jobs:
   access-check:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v4
-      if: ${{ !inputs.is-workflow_call }}
+    - uses: actions/checkout@v4 
     - name: Validate access to triggered image
       uses: ./.github/actions/validate-actor
-      if: ${{ !inputs.is-workflow_call }}
+      if: ${{ github.repository == 'canonical/oci-factory' }}
       with:
         admin-only: true
         image-path: ${{ inputs.oci-image-path }}
