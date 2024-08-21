@@ -49,7 +49,6 @@ jobs:
         if: ${{ steps.clone-image-repo.outcome == 'failure' }}
         run: |
           git clone ${{ inputs.rock-repo }} .
-      - run: git checkout ${{ inputs.rock-repo-commit }}
 
       - name: Validate access to triggered image
         uses: ./.github/actions/validate-actor
@@ -58,6 +57,8 @@ jobs:
           admin-only: true
           image-path: ${{ inputs.oci-factory-path }}
           github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+
+      - run: git checkout ${{ inputs.rock-repo-commit }}            
 
       - run: sudo snap install yq --channel=v4/stable
       - name: Validate image naming and base
