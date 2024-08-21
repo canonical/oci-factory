@@ -58,7 +58,7 @@ jobs:
           image-path: ${{ inputs.oci-factory-path }}
           github-token: ${{ secrets.ROCKSBOT_TOKEN }}
 
-      - run: git checkout ${{ inputs.rock-repo-commit }}            
+      - run: git checkout ${{ inputs.rock-repo-commit }}
 
       - run: sudo snap install yq --channel=v4/stable
       - name: Validate image naming and base
