@@ -76,7 +76,7 @@ jobs:
       - name: Configure
         id: configure
         run: |
-          ${{ env.OCI_FACTORY_DIR }}/src/build-rock/configure/generate_matrix.py \
+          ${{ env.OCI_FACTORY_DIR }}/src/build-rock/configure/generate_build_matrix.py \
             --rockfile-directory "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}" \
             --lpci-fallback "${{ toJSON(inputs.lpci-fallback) }}" \
             --config ${{ toJSON(inputs.arch-map) }} # important: do not use quotes here
