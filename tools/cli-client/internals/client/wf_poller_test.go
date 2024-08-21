@@ -3,7 +3,7 @@ package client_test
 import (
 	. "gopkg.in/check.v1"
 
-	"github.com/canonical/oci-factory/src/cli-client/internals/client"
+	"github.com/canonical/oci-factory/tools/cli-client/internals/client"
 )
 
 type PollerSuite struct{}

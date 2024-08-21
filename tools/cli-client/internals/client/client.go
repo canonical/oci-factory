@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/canonical/oci-factory/src/cli-client/internals/logger"
+	"github.com/canonical/oci-factory/tools/cli-client/internals/logger"
 )
 
 const NumRetries = 2
