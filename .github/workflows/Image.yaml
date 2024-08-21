@@ -124,10 +124,11 @@ jobs:
       uses: ./.github/workflows/Build-Rock.yaml
       with:
         oci-archive-name: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}        
-        rock-name: ${{ matrix.name }}
         rock-repo: ${{ matrix.source }}
         rock-repo-commit: ${{ matrix.commit }}
         rockfile-directory: ${{ matrix.directory }}
+        arch-map: '{"amd64": "ubuntu-22.04", "arm64": "Ubuntu_ARM64_4C_16G_01"}'
+        lpci-fallback: true
       secrets: inherit
 
   test:
