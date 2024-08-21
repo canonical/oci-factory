@@ -32,7 +32,7 @@ done
 
 if [ -z "$ROCKCRAFT_DIR" ]
 then
-    echo "Error: Missing rockcraft directory argument (-d)"
+    echo "Error: Missing rockcraft project directory argument (-d)"
     usage
     exit 1
 fi

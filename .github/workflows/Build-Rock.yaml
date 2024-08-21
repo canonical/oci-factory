@@ -148,11 +148,6 @@ jobs:
           path: ${{ env.OCI_FACTORY_DIR }}
           ref: ${{ env.OCI_FACTORY_BRANCH }}
           fetch-depth: 1
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-      - run: pip install -r ${{ env.OCI_FACTORY_DIR }}/src/build-rock/lpci_build/requirements.txt
       
 
       - name: Clone Repo
