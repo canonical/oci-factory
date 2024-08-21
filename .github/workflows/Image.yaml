@@ -131,8 +131,29 @@ jobs:
         lpci-fallback: true
       secrets: inherit
 
-  test:
+  tmp-cache-job:
+    name: Temporary step to cache rocks
+    runs-on: ubuntu-22.04
     needs: [prepare-build, run-build]
+    strategy:
+      fail-fast: true
+      matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
+    steps:
+      
+      - name: Download Rock
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
+          path: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
+
+      - uses: actions/cache/save@v4
+        with:
+          key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}  
+          path: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
+
+
+  test:
+    needs: [prepare-build, run-build, tmp-cache-job]
     name: Test
     strategy:
       fail-fast: true
