@@ -144,7 +144,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
-          path: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
 
       - uses: actions/cache/save@v4
         with:
