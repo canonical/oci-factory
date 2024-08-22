@@ -41,7 +41,7 @@ jobs:
       
       # Note: Add additional dependency installation lines as required below 
       # test-oci-factory/pytest requirements
-      - run: pip install -r src/test-oci-factory/pytest/requirements.txt
+      - run: pip install -r tests/etc/requirements.txt
 
 
       - name: Run pytest
@@ -52,7 +52,7 @@ jobs:
       - name: Generate Summary
         if: ${{ !cancelled() }}
         run: |
-          python3 src/test-oci-factory/pytest/format_markdown_report.py --input-junit "${{ env.PYTEST_RESULT_PATH }}" >> $GITHUB_STEP_SUMMARY
+          python3 -m tools.junit_to_markdown --input-junit "${{ env.PYTEST_RESULT_PATH }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload pytest Result
         if: ${{ !cancelled() }}
