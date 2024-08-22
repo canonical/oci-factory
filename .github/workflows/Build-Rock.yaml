@@ -37,8 +37,8 @@ env:
   ROCK_REPO_DIR: rock-repo # path where the image repo is cloned to
   ROCK_CI_FOLDER: ci-rocks # path of uploaded/downloaded artifacts
   
-  OCI_FACTORY_REPO: clay-lake/oci-factory # TODO: replace with parent repo after merging back
-  OCI_FACTORY_BRANCH: refactor_build-rock_workflow
+  OCI_FACTORY_REPO: canonical/oci-factory
+  OCI_FACTORY_BRANCH: ROCKS-1382-refactor-build-rock-workflow # TODO: update before final merge
 
 jobs:
 
@@ -61,7 +61,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
-      - run: pip install -r src/build-rock/configure/requirements.txt
+      - run: pip install -r src/build_rock/configure/requirements.txt
 
       - uses: actions/checkout@v4
         with:
@@ -74,7 +74,7 @@ jobs:
       - name: Configure
         id: configure
         run: |
-          src/build-rock/configure/generate_build_matrix.py \
+          python3 -m src.build_rock.configure.generate_build_matrix \
             --rockfile-directory "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}" \
             --lpci-fallback "${{ toJSON(inputs.lpci-fallback) }}" \
             --config ${{ toJSON(inputs.arch-map) }} # important: do not use quotes here
@@ -164,7 +164,7 @@ jobs:
           polling_interval_seconds: 5
           retry_wait_seconds: 30
           command: |
-            src/build-rock/lpci_build/lpci_build.sh \
+            src/build_rock/lpci_build/lpci_build.sh \
               -c "${{ secrets.LP_CREDENTIALS_B64 }}" \
               -d "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
 
@@ -198,7 +198,7 @@ jobs:
           ref: ${{ env.OCI_FACTORY_BRANCH }}
           fetch-depth: 1
 
-      - run: src/build-rock/assemble-rock/requirements.sh
+      - run: src/build_rock/assemble_rock/requirements.sh
 
 
       - name: Download Single Arch Rocks
@@ -210,7 +210,7 @@ jobs:
 
       - name: Assemble Multi Arch Rock
         run: |
-          src/build-rock/assemble-rock/assemble.sh \
+          src/build_rock/assemble_rock/assemble.sh \
             -n "${{ inputs.oci-archive-name }}" \
             -d "${{ env.ROCK_CI_FOLDER }}"
 

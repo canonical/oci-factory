@@ -56,4 +56,3 @@ pip3 install -r ${rocks_toolbox}/rockcraft_lpci_build/requirements.txt
 python3 ${rocks_toolbox}/rockcraft_lpci_build/rockcraft_lpci_build.py \
     --lp-credentials-b64 "$LC_CREDENTIALS_B64" \
     --launchpad-accept-public-upload
-    

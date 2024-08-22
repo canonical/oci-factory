@@ -43,8 +43,8 @@ jobs:
       # test-oci-factory/pytest requirements
       - run: pip install -r tests/etc/requirements.txt
 
-      # build-rock/configure requirements 
-      - run: pip install -r ${{ env.OCI_FACTORY_DIR }}/src/build-rock/configure/requirements.txt
+      # build_rock/configure requirements 
+      - run: pip install -r src/build_rock/configure/requirements.txt
 
 
       - name: Run pytest
