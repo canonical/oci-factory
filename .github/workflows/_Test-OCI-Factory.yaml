@@ -17,7 +17,6 @@ on:
 
 env:
   # local path to clone the oci-factory to
-  OCI_FACTORY_DIR: oci-factory/
 
   # path of pytest junit output
   PYTEST_RESULT_PATH: pytest_results.xml
@@ -34,7 +33,6 @@ jobs:
       # Job Setup
       - uses: actions/checkout@v4
         with:
-          path: ${{ env.OCI_FACTORY_DIR }}
           fetch-depth: 1
 
       - uses: actions/setup-python@v5
@@ -43,18 +41,18 @@ jobs:
       
       # Note: Add additional dependency installation lines as required below 
       # test-oci-factory/pytest requirements
-      - run: pip install -r ${{ env.OCI_FACTORY_DIR }}/src/test-oci-factory/pytest/requirements.txt
+      - run: pip install -r src/test-oci-factory/pytest/requirements.txt
 
 
       - name: Run pytest
         continue-on-error: true
         run: |
-          python3 -m pytest --junit-xml "${{ env.PYTEST_RESULT_PATH }}" "${{ env.OCI_FACTORY_DIR }}"
+          python3 -m pytest --junit-xml "${{ env.PYTEST_RESULT_PATH }}"
 
       - name: Generate Summary
         if: always()
         run: |
-          python3 ${{ env.OCI_FACTORY_DIR }}/src/test-oci-factory/pytest/format_markdown_report.py --input-junit "${{ env.PYTEST_RESULT_PATH }}" >> $GITHUB_STEP_SUMMARY
+          python3 src/test-oci-factory/pytest/format_markdown_report.py --input-junit "${{ env.PYTEST_RESULT_PATH }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload pytest Result
         if: always()
