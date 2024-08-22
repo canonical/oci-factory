@@ -17,7 +17,6 @@ on:
 
 env:
   # local path to clone the oci-factory to
-  OCI_FACTORY_DIR: oci-factory/
 
   # path of pytest junit output
   PYTEST_RESULT_PATH: pytest_results.xml
@@ -34,7 +33,6 @@ jobs:
       # Job Setup
       - uses: actions/checkout@v4
         with:
-          path: ${{ env.OCI_FACTORY_DIR }}
           fetch-depth: 1
 
       - uses: actions/setup-python@v5
@@ -43,7 +41,7 @@ jobs:
       
       # Note: Add additional dependency installation lines as required below 
       # test-oci-factory/pytest requirements
-      - run: pip install -r ${{ env.OCI_FACTORY_DIR }}/src/test-oci-factory/pytest/requirements.txt
+      - run: pip install -r tests/etc/requirements.txt
 
       # build-rock/configure requirements 
       - run: pip install -r ${{ env.OCI_FACTORY_DIR }}/src/build-rock/configure/requirements.txt
@@ -52,23 +50,20 @@ jobs:
       - name: Run pytest
         continue-on-error: true
         run: |
-          python3 -m pytest --junit-xml "${{ env.PYTEST_RESULT_PATH }}" "${{ env.OCI_FACTORY_DIR }}"
+          python3 -m pytest --junit-xml "${{ env.PYTEST_RESULT_PATH }}"
 
       - name: Generate Summary
-        if: always()
+        if: ${{ !cancelled() }}
         run: |
-          python3 ${{ env.OCI_FACTORY_DIR }}/src/test-oci-factory/pytest/format_markdown_report.py --input-junit "${{ env.PYTEST_RESULT_PATH }}" >> $GITHUB_STEP_SUMMARY
+          python3 -m tools.junit_to_markdown --input-junit "${{ env.PYTEST_RESULT_PATH }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload pytest Result
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PYTEST_RESULT_PATH }}
           path: ${{ env.PYTEST_RESULT_PATH }}
           if-no-files-found: error
-
-
-
 
   test-workflows:
     name: Trigger internal tests for mock-rock

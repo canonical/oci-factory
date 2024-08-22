@@ -3,10 +3,6 @@ import xml.etree.ElementTree as ET
 from io import TextIOBase
 import json
 
-"""
-Generate markdown from a JUnit XML report for $GITHUB_STEP_SUMMARY 
-"""
-
 
 def print_element(element: ET.Element, output: TextIOBase = None):
     """Generically display attrs and text of a element"""
@@ -33,14 +29,18 @@ def print_testsuite_pie_chart(testsuite: ET.Element, output: TextIOBase = None):
     # passed test has to be inferred
     pass_tests = total_tests - failed_tests - error_tests - skipped_tests
 
-    #   name,       value,          colour,     default_order
+    # disable black autoformatter for a moment 
+    # fmt: off
+
+    #    name,      value,          colour,     default_order
     chart_data = [
-        ("failed", failed_tests, "#f00", 1),
-        ("error", error_tests, "#fa0", 2),
-        ("skipped", skipped_tests, "#ff0", 3),
-        ("pass", pass_tests, "#0f0", 4),
+        ("failed",  failed_tests,   "#f00",     1),
+        ("error",   error_tests,    "#fa0",     2),
+        ("skipped", skipped_tests,  "#ff0",     3),
+        ("pass",    pass_tests,     "#0f0",     4),
     ]
     # note: default_order ensures color match if two wedges have the exact same value
+    # fmt: on
 
     # filter out wedges with 0 width
     chart_data = list(filter(lambda w: w[1] != 0, chart_data))
@@ -130,19 +130,3 @@ def print_junit_report(root: ET.Element, output: TextIOBase = None):
 
     for testsuite in root.findall("testsuite"):
         print_testsuite_report(testsuite, output)
-
-
-if __name__ == "__main__":
-    import argparse, sys
-
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--input-junit", help="Path to JUnit XML Report", required=True, type=str
-    )
-
-    args = parser.parse_args()
-
-    tree = ET.parse(args.input_junit)
-    root = tree.getroot()
-    print_junit_report(root, sys.stdout)
