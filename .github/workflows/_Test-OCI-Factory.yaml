@@ -50,12 +50,12 @@ jobs:
           python3 -m pytest --junit-xml "${{ env.PYTEST_RESULT_PATH }}"
 
       - name: Generate Summary
-        if: always()
+        if: ${{ !cancelled() }}
         run: |
           python3 src/test-oci-factory/pytest/format_markdown_report.py --input-junit "${{ env.PYTEST_RESULT_PATH }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload pytest Result
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PYTEST_RESULT_PATH }}
