@@ -62,9 +62,6 @@ jobs:
           path: ${{ env.PYTEST_RESULT_PATH }}
           if-no-files-found: error
 
-
-
-
   test-workflows:
     name: Trigger internal tests for mock-rock
     uses: ./.github/workflows/Image.yaml
