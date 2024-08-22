@@ -6,7 +6,7 @@ import argparse
 import json
 from enum import Enum
 from typing import Optional
-from shared import github_output 
+from ...shared import github_output 
 
 
 # TODO:

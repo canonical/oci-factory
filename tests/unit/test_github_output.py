@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from .github_output import write, format_value
+from src.shared.github_output import write, format_value
 from io import StringIO
 import pytest
 

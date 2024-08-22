@@ -6,7 +6,7 @@ data related to _release.json and revision tags.
 """
 
 import json
-from src.image.utils.schema.triggers import KNOWN_RISKS_ORDERED
+from ..image.utils.schema.triggers import KNOWN_RISKS_ORDERED
 
 
 class BadChannel(Exception):

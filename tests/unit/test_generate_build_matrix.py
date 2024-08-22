@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from generate_build_matrix import (
+from src.build_rock.configure.generate_build_matrix import (
     get_target_archs,
     configure_matrices,
     MissingArchSupport,
