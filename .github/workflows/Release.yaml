@@ -11,7 +11,7 @@ on:
         description: 'Cache key (to fetch image trigger from cache)'
         required: false
         type: string
-      external_ref_id: #(1)
+      external_ref_id:  # (1)
         description: 'Optional ID for unique run detection'
         required: false
         type: string
@@ -34,7 +34,7 @@ jobs:
     outputs:
       oci-image-name: ${{ steps.get-image-name.outputs.img-name }}
     steps:
-      - name: ${{ inputs.external_ref_id }} #(2)
+      - name: ${{ inputs.external_ref_id }}  # (2)
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
         
       - uses: actions/checkout@v4
@@ -174,8 +174,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-            fetch-depth: 0
-            ref: ${{ matrix.canonical-tag }}
+          fetch-depth: 0
+          ref: ${{ matrix.canonical-tag }}
       
       - uses: dev-drprasad/delete-tag-and-release@v1.0
         # We force delete an existing tag because otherwise we won't get

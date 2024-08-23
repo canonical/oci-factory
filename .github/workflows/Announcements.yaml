@@ -104,4 +104,3 @@ jobs:
           do
             MM_CHANNEL_ID="${channel}" ./src/notifications/send_to_mattermost.sh
           done
-
