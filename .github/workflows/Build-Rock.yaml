@@ -38,7 +38,7 @@ env:
   ROCK_CI_FOLDER: ci-rocks # path of uploaded/downloaded artifacts
   
   OCI_FACTORY_REPO: canonical/oci-factory
-  OCI_FACTORY_BRANCH: ROCKS-1382/refactor-build-rock-workflow # TODO: update before final merge
+  OCI_FACTORY_BRANCH: ROCKS-1452/oci-factory-refactor-build-rock-to-be-externally-reusable # TODO: update before final merge
 
 jobs:
 
