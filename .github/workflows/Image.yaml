@@ -132,6 +132,9 @@ jobs:
       secrets: inherit
 
   tmp-cache-job:
+    # Note: This is a temporary job that will be removed when the refactored test job is merged.
+    # Going forward we download the built rocks from artifacts instead of cache. This job takes
+    # the uploaded rocks then re-caches them for compatibility. 
     name: Temporary step to cache rocks
     runs-on: ubuntu-22.04
     needs: [prepare-build, run-build]

@@ -38,7 +38,8 @@ env:
   ROCK_CI_FOLDER: ci-rocks # path of uploaded/downloaded artifacts
   
   OCI_FACTORY_REPO: canonical/oci-factory
-  OCI_FACTORY_BRANCH: ROCKS-1452/oci-factory-refactor-build-rock-to-be-externally-reusable # TODO: update before final merge
+  # TODO: update before final merge
+  OCI_FACTORY_BRANCH: ROCKS-1452/oci-factory-refactor-build-rock-to-be-externally-reusable # required for external workflow calls.
 
 jobs:
 
@@ -61,7 +62,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
+
       - run: pip install -r src/build_rock/configure/requirements.txt
+
 
       - uses: actions/checkout@v4
         with:
@@ -69,6 +72,7 @@ jobs:
           path: ${{ env.ROCK_REPO_DIR }}
           ref: ${{ inputs.rock-repo-commit }}
           submodules: 'recursive'
+
 
       # Configure matrices for each *-build job
       - name: Configure
@@ -83,7 +87,6 @@ jobs:
   runner-build:
     # runner-build builds rocks per target architecture using pre configured runner images.
     needs: [configure-build]
-    # TODO: replace with better method for checking empty matrix
     if: fromJSON(needs.configure-build.outputs.runner-build-matrix).include[0] != ''
     strategy:
       fail-fast: true
@@ -130,7 +133,6 @@ jobs:
     # outsourced to Launchpad for completion. 
     # Note the Secret
     needs: [configure-build]
-    # TODO: replace with better method for checking empty matrix
     if: fromJSON(needs.configure-build.outputs.lpci-build-matrix).include[0] != ''
     strategy: 
       fail-fast: true
@@ -155,6 +157,7 @@ jobs:
           ref: ${{ inputs.rock-repo-commit }}
           submodules: 'recursive'
 
+
       - name: Build Target
       # TODO: Replace this retry action with bash equivalent for better testing
         uses: nick-fields/retry@v3.0.0
@@ -168,11 +171,13 @@ jobs:
               -c "${{ secrets.LP_CREDENTIALS_B64 }}" \
               -d "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
 
+
       - name: Collect Artifacts
         id: collect-artifacts
         run: |
             mkdir -p ${{ env.ROCK_CI_FOLDER }} && cp ${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}/*.rock "$_"
             echo "filename=${{ matrix.rock-name }}_${{ matrix.architecture }}" >> $GITHUB_OUTPUT
+
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4

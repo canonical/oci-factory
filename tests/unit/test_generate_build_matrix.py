@@ -75,7 +75,7 @@ def test_configure_matrices_lpci_fallback():
 
 
 def test_set_build_config_outputs():
-    """Test """
+    """Test correct generation of build matrices."""
 
     test_build_matrices = {
         "runner-build-matrix": {

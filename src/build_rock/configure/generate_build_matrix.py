@@ -9,10 +9,6 @@ from typing import Optional
 from ...shared import github_output 
 
 
-# TODO:
-# - make data classes for building matrices
-
-
 class MATRIX_NAMES(Enum):
     RUNNER = "runner-build-matrix"
     LPCI = "lpci-build-matrix"
@@ -90,7 +86,7 @@ def set_build_config_outputs(rock_name: str, build_matrices: dict, output_path: 
         **build_matrices
     }
     
-        # set default when not testing
+    # set default when not testing
     if output_path is None:
         output_path = os.environ["GITHUB_OUTPUT"]
 
@@ -98,8 +94,8 @@ def set_build_config_outputs(rock_name: str, build_matrices: dict, output_path: 
         github_output.write(fh, **outputs)
 
 
-if __name__ == "__main__":
 
+def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -147,3 +143,7 @@ if __name__ == "__main__":
 
     # set github outputs for use in later steps
     set_build_config_outputs(rockcraft_yaml["name"], build_matrices)
+
+
+if __name__ == "__main__":
+    main()
