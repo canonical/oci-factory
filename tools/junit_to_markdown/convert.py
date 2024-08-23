@@ -25,6 +25,7 @@ def print_element(element: ET.Element, output: TextIOBase = None):
 
     print(f"</pre>", file=output)
 
+
 def get_chart_data(testsuite: ET.Element):
     """Extract and order data used in pie chart"""
 
@@ -36,7 +37,7 @@ def get_chart_data(testsuite: ET.Element):
     # passed test has to be inferred
     pass_tests = total_tests - failed_tests - error_tests - skipped_tests
 
-    # disable black autoformatter for a moment 
+    # disable black autoformatter for a moment
     # fmt: off
 
     #    name,      value,          colour,     default_order
@@ -56,6 +57,7 @@ def get_chart_data(testsuite: ET.Element):
     chart_data = list(sorted(chart_data, key=lambda w: (w[1], w[3]), reverse=True))
 
     return chart_data
+
 
 def print_testsuite_pie_chart(testsuite: ET.Element, output: TextIOBase = None):
     """Generate a pie chart showing test status from testsuite element"""

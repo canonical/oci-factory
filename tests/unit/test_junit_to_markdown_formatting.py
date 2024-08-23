@@ -4,8 +4,6 @@ import tools.junit_to_markdown.convert as report
 import xml.etree.ElementTree as ET
 
 
-
-
 def test_print_element(str_buff):
     """Ensure printed elements match expected result"""
 
@@ -29,7 +27,6 @@ This is example content.
     result = str_buff.read()
 
     assert result == expected_result
-
 
 
 def test_get_chart_data_order():
@@ -92,6 +89,7 @@ def test_get_testcase_status_not_pass():
 
         assert result == expected_result
 
+
 def test_get_testcase_status_default():
     """Test default status icon selection"""
 
@@ -144,6 +142,7 @@ def print_testsuite_report(str_buff):
     assert "pytest" in result_lines[0], "result is missing header"
     assert any("```mermaid" in line for line in result_lines), "result is missing chart"
 
-    # this may change if <details> is used for any other purpose than testcases  
-    assert sum("<details>" in line for line in result_lines) == 2, "result has incorrect testcase test count"
-
+    # this may change if <details> is used for any other purpose than testcases
+    assert (
+        sum("<details>" in line for line in result_lines) == 2
+    ), "result has incorrect testcase test count"
