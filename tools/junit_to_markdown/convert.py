@@ -3,6 +3,14 @@ import xml.etree.ElementTree as ET
 from io import TextIOBase
 import json
 
+DEFAULT_STATUS_ICON = ":white_check_mark:"
+STATUS_ICONS = {
+    "failure": ":x:",
+    "error": ":warning:",
+    "skipped": ":information_source:",
+    "information_source": ":x:",
+}
+
 
 def print_element(element: ET.Element, output: TextIOBase = None):
     """Generically display attrs and text of a element"""
@@ -17,9 +25,8 @@ def print_element(element: ET.Element, output: TextIOBase = None):
 
     print(f"</pre>", file=output)
 
-
-def print_testsuite_pie_chart(testsuite: ET.Element, output: TextIOBase = None):
-    """Generate a pie chart showing test status from testsuite element"""
+def get_chart_data(testsuite: ET.Element):
+    """Extract and order data used in pie chart"""
 
     failed_tests = int(testsuite.attrib.get("failures", 0))
     error_tests = int(testsuite.attrib.get("errors", 0))
@@ -48,6 +55,13 @@ def print_testsuite_pie_chart(testsuite: ET.Element, output: TextIOBase = None):
     # sort by value, then default order so colors match what we expect
     chart_data = list(sorted(chart_data, key=lambda w: (w[1], w[3]), reverse=True))
 
+    return chart_data
+
+def print_testsuite_pie_chart(testsuite: ET.Element, output: TextIOBase = None):
+    """Generate a pie chart showing test status from testsuite element"""
+
+    chart_data = get_chart_data(testsuite)
+
     # create the chart theme
     theme_dict = {
         "theme": "base",
@@ -71,14 +85,11 @@ def print_testsuite_pie_chart(testsuite: ET.Element, output: TextIOBase = None):
 def get_testcase_status(testcase: ET.Element):
     """Get status for individual testcase elements"""
 
-    if testcase.find("failure") is not None:
-        return ":x:"
-    elif testcase.find("error") is not None:
-        return ":warning:"
-    elif testcase.find("skipped") is not None:
-        return ":information_source:"
-    else:  # passed
-        return ":white_check_mark:"
+    for key, value in STATUS_ICONS.items():
+        if testcase.find(key) is not None:
+            return value
+
+    return DEFAULT_STATUS_ICON
 
 
 def print_header(testsuite: ET.Element, output: TextIOBase = None):
