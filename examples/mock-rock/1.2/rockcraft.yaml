@@ -6,7 +6,6 @@ base: bare
 build-base: ubuntu@22.04
 license: Apache-2.0
 platforms:
-  ppc64el:
   amd64:
 
 parts:
