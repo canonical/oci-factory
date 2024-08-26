@@ -8,3 +8,11 @@ upload:
         end-of-life: "2024-11-23T00:00:00Z"
         risks:
           - stable
+      3.1-22.04:
+        end-of-life: "2024-11-23T00:00:00Z"
+        risks:
+          - stable
+      3-22.04:
+        end-of-life: "2024-11-23T00:00:00Z"
+        risks:
+          - stable
