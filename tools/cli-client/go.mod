@@ -1,4 +1,4 @@
-module github.com/canonical/oci-factory/src/cli-client
+module github.com/canonical/oci-factory/tools/cli-client
 
 go 1.22
 

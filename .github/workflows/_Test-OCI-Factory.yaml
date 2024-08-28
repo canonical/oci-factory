@@ -14,8 +14,8 @@ on:
       - "src/**"
       - "tools/**"
       - "tests/**"
-      - "!src/workflow-engine/**"
-      - "!src/cli-client/**"
+      - "!tools/workflow-engine/**"
+      - "!tools/cli-client/**"
 
 env:
   # local path to clone the oci-factory to

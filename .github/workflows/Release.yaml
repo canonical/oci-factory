@@ -142,7 +142,7 @@ jobs:
       - name: Commit oci/${{ inputs.oci-image-name }}/_releases.json
         uses: actions-x/commit@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.ROCKSBOT_TOKEN }}
           branch: ${{ github.ref }}
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: oci/${{ inputs.oci-image-name }}/_releases.json

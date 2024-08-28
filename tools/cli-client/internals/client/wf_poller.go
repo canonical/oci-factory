@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/briandowns/spinner"
-	"github.com/canonical/oci-factory/src/cli-client/internals/logger"
+	"github.com/canonical/oci-factory/tools/cli-client/internals/logger"
 )
 
 const workflowRunsURL = "https://api.github.com/repos/canonical/oci-factory/actions/workflows/Image.yaml/runs"

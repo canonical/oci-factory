@@ -2,10 +2,10 @@ name: CLI-Client
 on:
   push:
     paths:
-      - "src/cli-client/**"
+      - "tools/cli-client/**"
   pull_request:
     paths:
-      - "src/cli-client/**"
+      - "tools/cli-client/**"
 
 jobs:
   test:
@@ -18,7 +18,7 @@ jobs:
         with:
           go-version: 1.22
       - name: Test
-        working-directory: src/cli-client
+        working-directory: tools/cli-client
         run: |
           go test ./...
 
@@ -30,7 +30,7 @@ jobs:
       - uses: snapcore/action-build@v1
         id: snapcraft
         with:
-          path: src/cli-client
+          path: tools/cli-client
       - uses: actions/upload-artifact@v3
         with:
           name: snap
