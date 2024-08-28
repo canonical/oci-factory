@@ -12,6 +12,8 @@ on:
       - "examples/**"
       - "oci/mock*"
       - "src/**"
+      - "tools/**"
+      - "tests/**"
       - "!src/workflow-engine/**"
       - "!src/cli-client/**"
 
