@@ -94,9 +94,7 @@ if __name__ == "__main__":
                 )
                 continue
             elif not risks.get("end-of-life"):
-                logging.warning(
-                    f"Track {track} is missing its end-of-life field"
-                )
+                logging.warning(f"Track {track} is missing its end-of-life field")
 
             for key, targets in risks.items():
                 if key == "end-of-life":
