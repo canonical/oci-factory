@@ -40,8 +40,8 @@ on:
         default: 'cache'
         type: choice
         options:
-        - cache
-        - registry
+          - cache
+          - registry
       cache-key:
         description: 'Cache key (when fetching from cache)'
         required: false
@@ -51,7 +51,7 @@ on:
         required: true
         type: string
         default: '.vulnerability-report.json'
-      external_ref_id: #(1)
+      external_ref_id:  # (1)
         description: 'Optional ID for unique run detection'
         required: false
         type: string
@@ -85,7 +85,7 @@ jobs:
     outputs:
       test-cache-key: ${{ steps.cache.outputs.key }}
     steps:
-      - name: ${{ inputs.external_ref_id }} #(2)
+      - name: ${{ inputs.external_ref_id }}  # (2)
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
         
       - uses: actions/cache/restore@v4
