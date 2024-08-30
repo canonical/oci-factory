@@ -67,16 +67,21 @@ if __name__ == "__main__":
 
         if args.infer_image_track:
             import sys
+
             sys.path.append("src/")
             from git import Repo
             from tempfile import TemporaryDirectory as tempdir
             from uploads.infer_image_track import get_base_and_track
+
             with tempdir() as d:
                 url = f"https://github.com/{builds[img_number]['source']}.git"
                 repo = Repo.clone_from(url, d)
                 repo.git.checkout(builds[img_number]["commit"])
                 # get the base image from the rockcraft.yaml file
-                with open(f"{d}/{builds[img_number]['directory']}/rockcraft.yaml", encoding="UTF-8") as rockcraft_file:
+                with open(
+                    f"{d}/{builds[img_number]['directory']}/rockcraft.yaml",
+                    encoding="UTF-8",
+                ) as rockcraft_file:
                     rockcraft_yaml = yaml.load(rockcraft_file, Loader=yaml.BaseLoader)
 
             base_release, track = get_base_and_track(rockcraft_yaml)
@@ -86,14 +91,16 @@ if __name__ == "__main__":
         with open(
             f"{args.revision_data_dir}/{builds[img_number]['revision']}",
             "w",
-            encoding="UTF-8"
+            encoding="UTF-8",
         ) as data_file:
             json.dump(builds[img_number], data_file)
 
         # Add dir_identifier to assemble the cache key and artefact path
         # No need to write it to rev data file since it's only used in matrix
-        builds[img_number]["dir_identifier"] = builds[img_number]["directory"].rstrip("/").replace("/", "_")
-        
+        builds[img_number]["dir_identifier"] = (
+            builds[img_number]["directory"].rstrip("/").replace("/", "_")
+        )
+
         # set an output as a marker for later knowing if we need to release
         if "release" in builds[img_number]:
             release_to = "true"

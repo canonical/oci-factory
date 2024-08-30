@@ -265,9 +265,7 @@ class OCIDocumentationData:
             # Set the support date
             if all_tracks.get(track_base):
                 eol = parser.parse(all_tracks[track_base])
-                release_data["support"] = {
-                    "until": eol.strftime("%m/%Y")
-                }
+                release_data["support"] = {"until": eol.strftime("%m/%Y")}
 
             releases.append(release_data)
 

@@ -57,7 +57,6 @@ if __name__ == "__main__":
     ) as rockcraft_file:
         rockcraft_yaml = yaml.load(rockcraft_file, Loader=yaml.BaseLoader)
 
-
     base_release, track = get_base_and_track(rockcraft_yaml)
 
     print(f"rock track: {track}")
