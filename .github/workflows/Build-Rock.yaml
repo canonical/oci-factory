@@ -32,20 +32,19 @@ on:
         required: true
 
 
-
 env:
-  ROCK_REPO_DIR: rock-repo # path where the image repo is cloned to
-  ROCK_CI_FOLDER: ci-rocks # path of uploaded/downloaded artifacts
+  ROCK_REPO_DIR: rock-repo  # path where the image repo is cloned to
+  ROCK_CI_FOLDER: ci-rocks  # path of uploaded/downloaded artifacts
   
   OCI_FACTORY_REPO: canonical/oci-factory
   # TODO: update before final merge
-  OCI_FACTORY_BRANCH: ROCKS-1452/oci-factory-refactor-build-rock-to-be-externally-reusable # required for external workflow calls.
+  OCI_FACTORY_BRANCH: ROCKS-1452/oci-factory-refactor-build-rock-to-be-externally-reusable  # required for external workflow calls.
 
 jobs:
 
   configure-build:
-  # configure-build reads the rockcraft.yaml, creating one or more *-build job runs
-  # depending on the target architecture.
+    # configure-build reads the rockcraft.yaml, creating one or more *-build job runs
+    # depending on the target architecture.
     runs-on: ubuntu-22.04
     outputs:
       runner-build-matrix: ${{ steps.configure.outputs.runner-build-matrix }} 
@@ -159,7 +158,7 @@ jobs:
 
 
       - name: Build Target
-      # TODO: Replace this retry action with bash equivalent for better testing
+        # TODO: Replace this retry action with bash equivalent for better testing
         uses: nick-fields/retry@v3.0.0
         with:
           timeout_minutes: 180

@@ -117,19 +117,19 @@ jobs:
 
 
   run-build:
-      needs: [prepare-build]
-      strategy:
-        fail-fast: true
-        matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
-      uses: ./.github/workflows/Build-Rock.yaml
-      with:
-        oci-archive-name: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}        
-        rock-repo: ${{ matrix.source }}
-        rock-repo-commit: ${{ matrix.commit }}
-        rockfile-directory: ${{ matrix.directory }}
-        arch-map: '{"amd64": "ubuntu-22.04", "arm64": "Ubuntu_ARM64_4C_16G_01"}'
-        lpci-fallback: true
-      secrets: inherit
+    needs: [prepare-build]
+    strategy:
+      fail-fast: true
+      matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
+    uses: ./.github/workflows/Build-Rock.yaml
+    with:
+      oci-archive-name: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}        
+      rock-repo: ${{ matrix.source }}
+      rock-repo-commit: ${{ matrix.commit }}
+      rockfile-directory: ${{ matrix.directory }}
+      arch-map: '{"amd64": "ubuntu-22.04", "arm64": "Ubuntu_ARM64_4C_16G_01"}'
+      lpci-fallback: true
+    secrets: inherit
 
   tmp-cache-job:
     # Note: This is a temporary job that will be removed when the refactored test job is merged.
