@@ -6,7 +6,7 @@ import argparse
 import json
 from enum import Enum
 from typing import Optional
-from ...shared import github_output 
+from ...shared import github_output
 
 
 class MATRIX_NAMES(Enum):
@@ -26,11 +26,11 @@ def get_target_archs(rockcraft: dict) -> list:
     target_archs = set()
 
     for platf, values in rock_platforms.items():
-        
+
         if isinstance(values, dict) and "build-for" in values:
-            # TODO: Should this be "build-on"? 
-            # https://documentation.ubuntu.com/rockcraft/en/latest/reference/rockcraft.yaml/#platforms-entry-build-on 
-            if isinstance(arches := values["build-for"], list): 
+            # TODO: Should this be "build-on"?
+            # https://documentation.ubuntu.com/rockcraft/en/latest/reference/rockcraft.yaml/#platforms-entry-build-on
+            if isinstance(arches := values["build-for"], list):
                 target_archs.update(arches)
             elif isinstance(values, str):
                 target_archs.add(arches)
@@ -40,9 +40,7 @@ def get_target_archs(rockcraft: dict) -> list:
     return target_archs
 
 
-def configure_matrices(
-    target_archs: list, arch_map: dict, lp_fallback: bool
-) -> dict:
+def configure_matrices(target_archs: list, arch_map: dict, lp_fallback: bool) -> dict:
     """Sort build into appropriate build matrices"""
 
     # map configuration to individual job matrices
@@ -59,9 +57,7 @@ def configure_matrices(
 
         # configure LP build
         build_matrices[MATRIX_NAMES.LPCI.value]["include"].append(
-            {
-                "architecture": "-".join(set(target_archs))
-            }
+            {"architecture": "-".join(set(target_archs))}
         )
 
     else:
@@ -69,30 +65,25 @@ def configure_matrices(
         for runner_arch, runner_name in arch_map.items():
             if runner_arch in target_archs:
                 build_matrices[MATRIX_NAMES.RUNNER.value]["include"].append(
-                    {
-                        "architecture": runner_arch, 
-                        "runner": runner_name
-                    }
+                    {"architecture": runner_arch, "runner": runner_name}
                 )
 
     return build_matrices
 
 
-def set_build_config_outputs(rock_name: str, build_matrices: dict, output_path: Optional[str] = None):
+def set_build_config_outputs(
+    rock_name: str, build_matrices: dict, output_path: Optional[str] = None
+):
     """Update GITHUB_OUTPUT with build configuration."""
 
-    outputs = {
-        "rock-name":rock_name,
-        **build_matrices
-    }
-    
+    outputs = {"rock-name": rock_name, **build_matrices}
+
     # set default when not testing
     if output_path is None:
         output_path = os.environ["GITHUB_OUTPUT"]
 
     with open(output_path, "a") as fh:
         github_output.write(fh, **outputs)
-
 
 
 def main():
@@ -108,7 +99,7 @@ def main():
         "--lpci-fallback",
         help="Revert to lpci if architectures are not supported. <true|false>",
         required=True,
-        type=str
+        type=str,
     )
 
     parser.add_argument(
@@ -126,7 +117,6 @@ def main():
     # load config
     arch_map = json.loads(args.config)
 
-
     # check input of lpci_fallback which should be an explicit boolean
     try:
         # use json.loads for conveniently casting string to bool
@@ -134,8 +124,8 @@ def main():
 
         if not isinstance(lpci_fallback, bool):
             raise TypeError("Expected bool type")
-        
-    except (TypeError, json.decoder.JSONDecodeError) as exc: 
+
+    except (TypeError, json.decoder.JSONDecodeError) as exc:
         raise ValueError('--lpci-fallback expected "true" or "false" value') from exc
 
     target_archs = get_target_archs(rockcraft_yaml)

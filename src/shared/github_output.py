@@ -6,7 +6,7 @@ import json
 """This module provides support for writing Github Outputs."""
 
 
-def write(output:TextIOBase = None, **kwargs):
+def write(output: TextIOBase = None, **kwargs):
     """Format kwargs for Github Outputs and write to `output` File Object"""
 
     for key, value in kwargs.items():
@@ -25,4 +25,3 @@ def format_value(value):
     else:
         json_value = json.dumps(value)
         return json_value
-    

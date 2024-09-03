@@ -15,10 +15,10 @@ def test_write(text_buffer):
     """Test github_output write function"""
 
     outputs = {
-        "hello-world":42,
+        "hello-world": 42,
     }
     expected_result = "hello-world=42\n"
-    
+
     write(text_buffer, **outputs)
 
     text_buffer.seek(0)
@@ -44,6 +44,7 @@ def test_format_value_number():
 
     assert expected_result == result
 
+
 def test_format_value_json():
     """Test formatting of JSON for outputs"""
 
@@ -51,5 +52,3 @@ def test_format_value_json():
     result = format_value({"foo": "bar"})
 
     assert expected_result == result
-    
-
