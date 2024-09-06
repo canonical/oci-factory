@@ -127,7 +127,7 @@ jobs:
       rock-repo: ${{ matrix.source }}
       rock-repo-commit: ${{ matrix.commit }}
       rockfile-directory: ${{ matrix.directory }}
-      arch-map: '{"amd64": "ubuntu-22.04", "arm64": "Ubuntu_ARM64_4C_16G_01"}'
+      arch-map: '{"amd64": ["jammy", "X64", "large"], "arm64": ["jammy", "ARM64", "large"]}'
       lpci-fallback: true
     secrets: inherit
 
