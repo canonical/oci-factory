@@ -35,13 +35,13 @@
     "1.1-22.04": {
         "end-of-life": "2025-05-01T00:00:00Z",
         "candidate": {
-            "target": "493"
+            "target": "494"
         },
         "beta": {
-            "target": "493"
+            "target": "494"
         },
         "edge": {
-            "target": "493"
+            "target": "494"
         }
     },
     "1-22.04": {
