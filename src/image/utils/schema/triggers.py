@@ -23,13 +23,13 @@ class ImageUploadReleaseSchema(pydantic.BaseModel):
     risks: List[Literal["edge", "beta", "candidate", "stable"]]
 
     class Config:
-        extra = pydantic.Extra.forbid
+        extra = pydantic.Extra.allow
 
     @pydantic.validator("end_of_life")
-    def ensure_still_supported(cls, v: datetime) -> datetime:
+    def ensure_still_supported(cls, v: datetime, values) -> datetime:
         """ensure that the end of life isn't reached."""
-        if v < datetime.now(timezone.utc):
-            raise ImageReachedEol("This track has reached its end of life")
+        
+        values["expired"] = (v < datetime.now(timezone.utc))
         return v
 
 
@@ -55,7 +55,7 @@ class ChannelsSchema(pydantic.BaseModel):
     edge: Optional[str]
 
     class Config:
-        extra = pydantic.Extra.forbid
+        extra = pydantic.Extra.allow
 
     @pydantic.validator("stable", "candidate", "beta", "edge", pre=True)
     def _check_risks(cls, values: List) -> str:
@@ -67,10 +67,9 @@ class ChannelsSchema(pydantic.BaseModel):
         return values
 
     @pydantic.validator("end_of_life")
-    def ensure_still_supported(cls, v: datetime) -> datetime:
+    def ensure_still_supported(cls, v: datetime, values) -> datetime:
         """ensure that the end of life isn't reached."""
-        if v < datetime.now(timezone.utc):
-            raise ImageReachedEol("This track has reached its end of life")
+        values["expired"] =  (v < datetime.now(timezone.utc))
         return v
 
 

@@ -75,9 +75,17 @@ for track, risks in image_trigger.release.items():
         print(f"Track {track} will be created for the 1st time")
         all_releases[track] = {}
 
+    expired = False
     for risk, value in risks.dict(exclude_none=True).items():
         if risk in ["end-of-life", "end_of_life"]:
+            if all_releases[track]["expired"]:
+                # skip tracks that have expired end_of_life values
+                expired = True
+                break
             all_releases[track]["end-of-life"] = value
+            continue
+
+        if risk == "expired":
             continue
 
         if risk not in KNOWN_RISKS_ORDERED:
@@ -88,6 +96,10 @@ for track, risks in image_trigger.release.items():
         tag = f"{track}_{risk}"
         print(f"Channel {tag} points to {value}")
         tag_mapping_from_trigger[tag] = value
+
+    if expired:
+        # remove the track since it has an expired end_of_life value
+        del all_releases[track]
 
 print(
     "Going to update channels according to the following:\n"
