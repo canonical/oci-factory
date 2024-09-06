@@ -45,6 +45,9 @@ jobs:
       # test-oci-factory/pytest requirements
       - run: pip install -r tests/etc/requirements.txt
 
+      # build_rock/configure requirements 
+      - run: pip install -r src/build_rock/configure/requirements.txt
+
 
       - name: Run pytest
         continue-on-error: true
