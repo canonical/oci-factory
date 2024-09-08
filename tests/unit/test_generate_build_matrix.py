@@ -6,9 +6,8 @@ from src.build_rock.configure.generate_build_matrix import (
     MissingArchSupport,
     set_build_config_outputs,
 )
-from pathlib import Path
 import pytest
-from tempfile import TemporaryDirectory
+from ..fixtures.buffers import github_output
 
 
 def test_get_target_archs():
@@ -74,7 +73,7 @@ def test_configure_matrices_lpci_fallback():
     assert build_matrices == expected_result
 
 
-def test_set_build_config_outputs():
+def test_set_build_config_outputs(github_output):
     """Test correct generation of build matrices."""
 
     test_build_matrices = {
@@ -84,14 +83,10 @@ def test_set_build_config_outputs():
         "lpci-build-matrix": {"include": []},
     }
 
-    with TemporaryDirectory() as tmp:
+    set_build_config_outputs("test", test_build_matrices)
 
-        env_path = Path(tmp) / "env"
-
-        set_build_config_outputs("test", test_build_matrices, output_path=env_path)
-
-        with open(env_path, "r") as fh:
-            gh_output = fh.read()
+    with open(github_output, "r") as fh:
+        gh_output = fh.read()
 
     expected_result = """rock-name=test
 runner-build-matrix={"include": [{"architecture": "amd64", "runner": "ubuntu-22.04"}]}

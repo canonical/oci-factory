@@ -1,27 +1,52 @@
 #!/usr/bin/env python3
 
-from io import TextIOBase
 import json
+from os import environ
 
 """This module provides support for writing Github Outputs."""
 
-
-def write(output: TextIOBase = None, **kwargs):
-    """Format kwargs for Github Outputs and write to `output` File Object"""
-
-    for key, value in kwargs.items():
-
-        formatted_value = format_value(value)
-        print(f"{key}={formatted_value}", file=output)
+# locate
+GITHUB_OUTPUT = environ.get("GITHUB_OUTPUT", None)
 
 
-def format_value(value):
-    """Format `value` such that it can be stored as a github output"""
+class GithubOutput:
 
-    if isinstance(value, str):
-        # str is an exception to casting with json.dumps as we do
-        # not need to represent the string itself, but just the data
-        return value
-    else:
-        json_value = json.dumps(value)
-        return json_value
+    def __init__(self):
+
+        self.output_path = environ["GITHUB_OUTPUT"]
+
+    def __enter__(self):
+
+        self.file_handler = open(self.output_path, "a")
+
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+
+        self.file_handler.close()
+        del self.file_handler
+
+    def write(self, **kwargs):
+        """Format kwargs for Github Outputs and write to `output` File Object"""
+
+        if not getattr(self, "file_handler", None):
+            raise AttributeError(
+                "file_handler not available. Please use in context block."
+            )
+
+        for key, value in kwargs.items():
+
+            formatted_value = self.format_value(value)
+            print(f"{key}={formatted_value}", file=self.file_handler)
+
+    @staticmethod
+    def format_value(value):
+        """Format `value` such that it can be stored as a github output"""
+
+        if isinstance(value, str):
+            # str is an exception to casting with json.dumps as we do
+            # not need to represent the string itself, but just the data
+            return value
+        else:
+            json_value = json.dumps(value)
+            return json_value

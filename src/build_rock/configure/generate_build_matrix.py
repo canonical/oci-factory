@@ -5,8 +5,7 @@ import os
 import argparse
 import json
 from enum import Enum
-from typing import Optional
-from ...shared import github_output
+from ...shared.github_output import GithubOutput
 
 
 class MATRIX_NAMES(Enum):
@@ -71,19 +70,13 @@ def configure_matrices(target_archs: list, arch_map: dict, lp_fallback: bool) ->
     return build_matrices
 
 
-def set_build_config_outputs(
-    rock_name: str, build_matrices: dict, output_path: Optional[str] = None
-):
+def set_build_config_outputs(rock_name: str, build_matrices: dict):
     """Update GITHUB_OUTPUT with build configuration."""
 
     outputs = {"rock-name": rock_name, **build_matrices}
 
-    # set default when not testing
-    if output_path is None:
-        output_path = os.environ["GITHUB_OUTPUT"]
-
-    with open(output_path, "a") as fh:
-        github_output.write(fh, **outputs)
+    with GithubOutput() as github_output:
+        github_output.write(**outputs)
 
 
 def main():
