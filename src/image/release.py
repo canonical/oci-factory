@@ -79,7 +79,7 @@ for track, risks in image_trigger.release.items():
     expired = False
     for risk, value in risks.dict(exclude_none=True).items():
         if risk in ["end-of-life", "end_of_life"]:
-            if all_releases[track][risk] < datetime.now(timezone.utc):
+            if all_releases[track]["end-of-life"] < datetime.now(timezone.utc):
                 # skip tracks that have expired end_of_life values
                 expired = True
                 break
