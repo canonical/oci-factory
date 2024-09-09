@@ -99,6 +99,7 @@ for track, risks in image_trigger.release.items():
 
     if expired:
         # remove the track since it has an expired end_of_life value
+        print(f"Track {track} removed because it has reached its end-of-life")
         del all_releases[track]
 
 print(
