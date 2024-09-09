@@ -21,7 +21,7 @@ do
             ROCKCRAFT_DIR="$OPTARG"
             ;;
         c)
-            LC_CREDENTIALS_B64="$OPTARG"
+            LP_CREDENTIALS_B64="$OPTARG"
             ;;
         ?)
             usage
@@ -37,7 +37,7 @@ then
     exit 1
 fi
 
-if [ -z "$LC_CREDENTIALS_B64" ]
+if [ -z "$LP_CREDENTIALS_B64" ]
 then
     echo "Error: Missing launchpad credentials argument (-c)"
     usage
@@ -54,5 +54,5 @@ ${rocks_toolbox}/rockcraft_lpci_build/requirements.sh
 pip3 install -r ${rocks_toolbox}/rockcraft_lpci_build/requirements.txt
 
 python3 ${rocks_toolbox}/rockcraft_lpci_build/rockcraft_lpci_build.py \
-    --lp-credentials-b64 "$LC_CREDENTIALS_B64" \
+    --lp-credentials-b64 "$LP_CREDENTIALS_B64" \
     --launchpad-accept-public-upload

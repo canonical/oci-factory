@@ -1,5 +1,5 @@
 from ..fixtures.buffers import str_buff
-from ..fixtures.junit_et import junit_with_failure
+from ..fixtures.sample_data import junit_with_failure
 import tools.junit_to_markdown.convert as report
 
 

@@ -8,37 +8,19 @@ from src.build_rock.configure.generate_build_matrix import (
 )
 import pytest
 from ..fixtures.buffers import github_output
+from ..fixtures.sample_data import rockcraft_project
 
 
-def test_get_target_archs():
+def test_get_target_archs(rockcraft_project):
     """Test extraction of target architectures from rockcraft project configuration"""
-    project = {
-        "name": "hello-world",
-        "title": "Hello World",
-        "summary": "An Hello World rock",
-        "description": "This is just an example of a Rockcraft project\nfor a Hello World rock.\n",
-        "version": "latest",
-        "base": "bare",
-        "build-base": "ubuntu@22.04",
-        "license": "Apache-2.0",
-        "run-user": "_daemon_",
-        "environment": {"FOO": "bar"},
-        "services": {
-            "hello": {
-                "override": "replace",
-                "command": "/usr/bin/hello -t",
-                "environment": {"VAR1": "value", "VAR2": "other value"},
-            }
-        },
-        "platforms": {
-            "amd64": None,
-            "armhf": {"build-for": ["armhf", "arm64"]},
-            "ibm": {"build-on": ["s390x"], "build-for": "s390x"},
-        },
-        "parts": {"hello": {"plugin": "nil", "stage-packages": ["hello"]}},
+
+    rockcraft_project["platforms"] = {
+        "amd64": None,
+        "armhf": {"build-for": ["armhf", "arm64"]},
+        "ibm": {"build-on": ["s390x"], "build-for": "s390x"},
     }
 
-    arches = get_target_archs(project)
+    arches = get_target_archs(rockcraft_project)
     assert arches == {"arm64", "armhf", "amd64"}
 
 

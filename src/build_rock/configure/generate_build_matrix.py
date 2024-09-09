@@ -6,6 +6,7 @@ import argparse
 import json
 from enum import Enum
 from ...shared.github_output import GithubOutput
+from pydantic import TypeAdapter
 
 
 class MATRIX_NAMES(Enum):
@@ -92,7 +93,7 @@ def main():
         "--lpci-fallback",
         help="Revert to lpci if architectures are not supported. <true|false>",
         required=True,
-        type=str,
+        type=TypeAdapter(bool).validate_python,
     )
 
     parser.add_argument(
@@ -110,19 +111,8 @@ def main():
     # load config
     arch_map = json.loads(args.config)
 
-    # check input of lpci_fallback which should be an explicit boolean
-    try:
-        # use json.loads for conveniently casting string to bool
-        lpci_fallback = json.loads(args.lpci_fallback.lower())
-
-        if not isinstance(lpci_fallback, bool):
-            raise TypeError("Expected bool type")
-
-    except (TypeError, json.decoder.JSONDecodeError) as exc:
-        raise ValueError('--lpci-fallback expected "true" or "false" value') from exc
-
     target_archs = get_target_archs(rockcraft_yaml)
-    build_matrices = configure_matrices(target_archs, arch_map, lpci_fallback)
+    build_matrices = configure_matrices(target_archs, arch_map, args.lpci_fallback)
 
     # set github outputs for use in later steps
     set_build_config_outputs(rockcraft_yaml["name"], build_matrices)
