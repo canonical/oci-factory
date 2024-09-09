@@ -1,6 +1,6 @@
 import pydantic
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Dict, List, Literal, Optional
 
 
@@ -23,14 +23,7 @@ class ImageUploadReleaseSchema(pydantic.BaseModel):
     risks: List[Literal["edge", "beta", "candidate", "stable"]]
 
     class Config:
-        extra = pydantic.Extra.allow
-
-    @pydantic.validator("end_of_life")
-    def ensure_still_supported(cls, v: datetime, values) -> datetime:
-        """ensure that the end of life isn't reached."""
-        
-        values["expired"] = (v < datetime.now(timezone.utc))
-        return v
+        extra = pydantic.Extra.forbid
 
 
 class ImageUploadSchema(pydantic.BaseModel):
@@ -55,22 +48,16 @@ class ChannelsSchema(pydantic.BaseModel):
     edge: Optional[str]
 
     class Config:
-        extra = pydantic.Extra.allow
+        extra = pydantic.Extra.forbid
 
     @pydantic.validator("stable", "candidate", "beta", "edge", pre=True)
-    def _check_risks(cls, values: List) -> str:
+    def _check_risks(cls, values: List) -> List:
         """There must be at least one risk specified."""
         error = "At least one risk must be specified per track."
         if not any(values):
             raise ImageTriggerValidationError(error)
 
         return values
-
-    @pydantic.validator("end_of_life")
-    def ensure_still_supported(cls, v: datetime, values) -> datetime:
-        """ensure that the end of life isn't reached."""
-        values["expired"] =  (v < datetime.now(timezone.utc))
-        return v
 
 
 class ImageSchema(pydantic.BaseModel):

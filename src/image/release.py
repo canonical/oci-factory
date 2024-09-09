@@ -11,6 +11,7 @@ import os
 import re
 import subprocess
 from collections import defaultdict
+from datetime import datetime, timezone
 import yaml
 from src.image.utils.encoders import DateTimeEncoder
 from src.image.utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
@@ -78,14 +79,11 @@ for track, risks in image_trigger.release.items():
     expired = False
     for risk, value in risks.dict(exclude_none=True).items():
         if risk in ["end-of-life", "end_of_life"]:
-            if all_releases[track]["expired"]:
+            if all_releases[track][risk] < datetime.now(timezone.utc):
                 # skip tracks that have expired end_of_life values
                 expired = True
                 break
             all_releases[track]["end-of-life"] = value
-            continue
-
-        if risk == "expired":
             continue
 
         if risk not in KNOWN_RISKS_ORDERED:
