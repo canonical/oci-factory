@@ -11,7 +11,6 @@ import os
 import re
 import subprocess
 from collections import defaultdict
-from datetime import datetime, timezone
 import yaml
 from src.image.utils.encoders import DateTimeEncoder
 from src.image.utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
@@ -76,13 +75,8 @@ for track, risks in image_trigger.release.items():
         print(f"Track {track} will be created for the 1st time")
         all_releases[track] = {}
 
-    expired = False
     for risk, value in risks.dict(exclude_none=True).items():
         if risk in ["end-of-life", "end_of_life"]:
-            if all_releases[track]["end-of-life"] < datetime.now(timezone.utc):
-                # skip tracks that have expired end_of_life values
-                expired = True
-                break
             all_releases[track]["end-of-life"] = value
             continue
 
@@ -94,11 +88,6 @@ for track, risks in image_trigger.release.items():
         tag = f"{track}_{risk}"
         print(f"Channel {tag} points to {value}")
         tag_mapping_from_trigger[tag] = value
-
-    if expired:
-        # remove the track since it has an expired end_of_life value
-        print(f"Track {track} removed because it has reached its end-of-life")
-        del all_releases[track]
 
 print(
     "Going to update channels according to the following:\n"

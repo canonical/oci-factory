@@ -60,8 +60,10 @@ if __name__ == "__main__":
     builds = image_trigger.get("upload", [])
 
     release_to = "true" if "release" in image_trigger else ""
+
+    img_number = 0
     # inject some extra metadata into the matrix data
-    for img_number, _ in enumerate(builds):
+    while img_number < len(builds):
         builds[img_number]["name"] = args.oci_path.rstrip("/").split("/")[-1]
         builds[img_number]["path"] = args.oci_path
         builds[img_number]["revision"] = img_number + int(args.next_revision)
@@ -108,8 +110,9 @@ if __name__ == "__main__":
                 v["end-of-life"] for v in builds[img_number]["release"].values()
             ), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
             if min_eol < datetime.now(timezone.utc):
-                print(f"Track {img_number} skipped because it reached its end of life")
-                builds[img_number]["release"] = ""
+                print("Track skipped because it reached its end of life")
+                del builds[img_number]
+                continue
             else:
                 release_to = "true"
                 # the workflow GH matrix has a problem parsing nested JSON dicts
@@ -117,6 +120,8 @@ if __name__ == "__main__":
                 builds[img_number]["release"] = "true"
         else:
             builds[img_number]["release"] = ""
+
+        img_number += 1
 
     matrix = {"include": builds}
     print(f"{args.oci_path} - build matrix:\n{json.dumps(matrix, indent=4)}")
