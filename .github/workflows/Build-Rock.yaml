@@ -188,7 +188,7 @@ jobs:
 
   assemble-rock:
     # Assemble individual single-arch rocks into multi-arch rocks
-    needs: [configure-build, runner-build, lpci-build]
+    needs: [runner-build, lpci-build]
     runs-on: ubuntu-22.04
     # Always run even if one of the *-build jobs are skipped
     # Nice example from benjamin-bergia/github-workflow-patterns...
@@ -210,6 +210,7 @@ jobs:
         id: download
         with:
           path: ${{ env.ROCK_CI_FOLDER }} 
+          pattern: ${{ inputs.oci-archive-name }}-*
 
 
       - name: Assemble Multi Arch Rock

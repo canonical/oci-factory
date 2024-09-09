@@ -28,8 +28,6 @@ def get_target_archs(rockcraft: dict) -> list:
     for platf, values in rock_platforms.items():
 
         if isinstance(values, dict) and "build-for" in values:
-            # TODO: Should this be "build-on"?
-            # https://documentation.ubuntu.com/rockcraft/en/latest/reference/rockcraft.yaml/#platforms-entry-build-on
             if isinstance(arches := values["build-for"], list):
                 target_archs.update(arches)
             elif isinstance(values, str):
