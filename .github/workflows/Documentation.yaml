@@ -12,7 +12,7 @@ on:
       oci-image-name:
         description: 'OCI image to generate the documentation for'
         required: true
-      external_ref_id: #(1)
+      external_ref_id:  # (1)
         description: 'Optional ID for unique run detection'
         required: false
         type: string
@@ -36,7 +36,7 @@ jobs:
       oci-img-path: ${{ steps.validate-image.outputs.img-path }}
       oci-img-name: ${{ steps.validate-image.outputs.img-name }}
     steps:
-      - name: ${{ inputs.external_ref_id }} #(2)
+      - name: ${{ inputs.external_ref_id }}  # (2)
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
 

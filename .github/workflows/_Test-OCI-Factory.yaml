@@ -13,8 +13,17 @@ on:
       - "examples/**"
       - "oci/mock*"
       - "src/**"
-      - "!src/workflow-engine/**"
-      - "!src/cli-client/**"
+      - "tools/**"
+      - "tests/**"
+      - "!tools/workflow-engine/**"
+      - "!tools/cli-client/**"
+
+env:
+  # local path to clone the oci-factory to
+
+  # path of pytest junit output
+  PYTEST_RESULT_PATH: pytest_results.xml
+
 
 jobs:
   access-check:
@@ -27,6 +36,44 @@ jobs:
           admin-only: true
           image-path: "oci/mock-rock"
           github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+
+  pytest:
+    # Trigger python unit tests across the repository
+    name: pytest
+    runs-on: ubuntu-22.04
+    steps:
+
+      # Job Setup
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      
+      # Note: Add additional dependency installation lines as required below 
+      # test-oci-factory/pytest requirements
+      - run: pip install -r tests/etc/requirements.txt
+
+
+      - name: Run pytest
+        continue-on-error: true
+        run: |
+          python3 -m pytest --junit-xml "${{ env.PYTEST_RESULT_PATH }}"
+
+      - name: Generate Summary
+        if: ${{ !cancelled() }}
+        run: |
+          python3 -m tools.junit_to_markdown --input-junit "${{ env.PYTEST_RESULT_PATH }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload pytest Result
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PYTEST_RESULT_PATH }}
+          path: ${{ env.PYTEST_RESULT_PATH }}
+          if-no-files-found: error
 
   test-workflows:
     name: Trigger internal tests for mock-rock
