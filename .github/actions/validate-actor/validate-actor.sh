@@ -8,6 +8,7 @@ image_path=$4
 echo "github.actor: ${actor}"
 echo "admin-only: ${admin_only}"
 if [[ ${admin_only} == true ]]; then
+    exit_status=0
     echo "Expanding team mentions in the CODEOWNERS file"
     cp ${workspace}/CODEOWNERS ${workspace}/CODEOWNERS.bak
     teams=$(grep -oE '@[[:alnum:]_.-]+\/[[:alnum:]_.-]+' ${workspace}/CODEOWNERS || true | sort | uniq)
@@ -26,10 +27,10 @@ if [[ ${admin_only} == true ]]; then
         echo "The workflow is triggered by ${actor} as a maintainer of the image ${image_path}"
     else
         echo "The workflow is triggered by a user neither as a code owner nor a maintainer of the image ${image_path}"
-        exit 1
+        exit_status=1
     fi
+    mv ${workspace}/CODEOWNERS.bak ${workspace}/CODEOWNERS
+    exit ${exit_status}
 else
     echo "The workflow is not restricted to non-code-owner or non-maintainer users"
 fi
-
-mv ${workspace}/CODEOWNERS.bak ${workspace}/CODEOWNERS
