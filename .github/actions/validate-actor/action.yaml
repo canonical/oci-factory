@@ -1,0 +1,38 @@
+name: Validate Access
+description: 'Check if the workflow is triggered by an admin user'
+
+# This callable workflow checks if the workflow is triggered by
+# a code owner or an image maintainer by testing the github.actor
+# variable against the CODEOWNERS file and the contacts.yaml file
+# under oci/* path
+
+inputs:
+  admin-only:
+    description: 'The protected workflow should only be triggered as a code owner or an image maintainer'
+    required: true
+    default: 'false'
+  image-path:
+    description: 'The path to the image to be built'
+    required: true
+  github-token:
+    description: 'The GITHUB_TOKEN for the GitHub CLI'
+    required: true
+
+runs:
+  using: "composite" 
+  steps:
+    - name: Check if the workflow is triggered by an admin user
+      id: check-if-permitted
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: ./.github/actions/validate-actor/validate-actor.sh ${{ github.actor }} ${{ inputs.admin-only }} ${{ github.workspace }}  ${{ inputs.image-path }}
+
+    - name: Cancel the remaining workflow if the actor is not permitted
+      if: ${{ !cancelled() && steps.check-if-permitted.outcome == 'failure' }}
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        echo "The workflow is not triggered by a permitted user. Cancelling the workflow."
+        gh run cancel ${{ github.run_id }}
