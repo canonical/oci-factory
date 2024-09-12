@@ -159,7 +159,7 @@ jobs:
     runs-on: ubuntu-22.04
     name: Notify on failure
     needs: [validate-documentation-request, do-documentation]
-    if: ${{ always() && contains(needs.*.result, 'failure') && github.event_name != 'workflow_dispatch' }}
+    if: ${{ !cancelled() && contains(needs.*.result, 'failure') && github.event_name != 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@v4
 
