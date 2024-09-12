@@ -1,0 +1,75 @@
+# Copyright 2023 Canonical Ltd.
+# See LICENSE file for licensing details.
+name: temporal-worker
+summary: Temporal worker app
+description: OCI image for Temporal worker app
+version: "1.0"
+base: ubuntu@22.04
+build-base: ubuntu@22.04
+license: Apache-2.0
+
+services:
+  temporal-worker:
+    override: replace
+    summary: "temporal worker"
+    startup: disabled
+    command: "./app/scripts/start-worker.sh"
+    environment:
+      TWC_HOST: localhost:7233
+      TWC_NAMESPACE: default
+      TWC_QUEUE: test-queue
+      TWC_PROMETHEUS_PORT: "9000"
+      TWC_TLS_ROOT_CAS: ""
+      TWC_AUTH_PROVIDER: "" # "google" or "candid"
+      TWC_ENCRYPTION_KEY: ""
+      TWC_SENTRY_DSN: ""
+      TWC_SENTRY_RELEASE: ""
+      TWC_SENTRY_ENVIRONMENT: ""
+      TWC_SENTRY_REDACT_PARAMS: "False"
+      TWC_SENTRY_SAMPLE_RATE: "1.0"
+      TWC_CANDID_URL: ""
+      TWC_CANDID_USERNAME: ""
+      TWC_CANDID_PRIVATE_KEY: ""
+      TWC_CANDID_PUBLIC_KEY: ""
+      TWC_OIDC_PROJECT_ID: ""
+      TWC_OIDC_PRIVATE_KEY_ID: ""
+      TWC_OIDC_PRIVATE_KEY: ""
+      TWC_OIDC_CLIENT_EMAIL: ""
+      TWC_OIDC_CLIENT_ID: ""
+      TWC_OIDC_AUTH_URI: ""
+      TWC_OIDC_TOKEN_URI: ""
+      TWC_OIDC_AUTH_CERT_URL: ""
+      TWC_OIDC_CLIENT_CERT_URL: ""
+
+      # Vault variables
+      TWC_VAULT_ADDR: ""
+      TWC_VAULT_CACERT_BYTES: ""
+      TWC_VAULT_ROLE_ID: ""
+      TWC_VAULT_ROLE_SECRET_ID: ""
+      TWC_VAULT_MOUNT: ""
+      TWC_VAULT_CERT_PATH: ""
+
+platforms:
+  amd64:
+
+parts:
+  worker-dependencies:
+    plugin: python
+    source: .
+    build-packages:
+      - build-essential
+    # Uncomment if using a 'requirements.txt' file
+    # python-requirements:
+    #   - requirements.txt
+    stage-packages:
+      - python3.10-venv
+      - coreutils
+      - bash
+
+  worker-app:
+    plugin: dump
+    source: .
+    organize:
+      "*": app/
+    stage:
+      - app
