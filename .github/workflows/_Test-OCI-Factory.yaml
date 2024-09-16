@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - ".github/workflows/*"
+      - ".github/actions/**"
       - "!.github/workflows/CLA-Check.yaml"
       - "!.github/workflows/PR-Validator.yaml"
       - "!.github/workflows/_Auto-updates.yaml"
@@ -25,6 +26,16 @@ env:
 
 
 jobs:
+  access-check:
+    name: Validate access to mock-rock
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/validate-actor
+        with:
+          admin-only: true
+          image-path: "oci/mock-rock"
+          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
 
   pytest:
     # Trigger python unit tests across the repository
@@ -67,8 +78,31 @@ jobs:
           path: ${{ env.PYTEST_RESULT_PATH }}
           if-no-files-found: error
 
+  bats-test:
+    # Trigger bash unit tests across the repository
+    name: bats
+    runs-on: ubuntu-22.04
+    steps:
+
+      # Job Setup
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install bats
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats
+
+      - name: Run bats
+        env:
+          GITHUB_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
+        run: |
+          find ${{ github.workspace }} -name 'test-*.bats' | xargs bats
+
   test-workflows:
     name: Trigger internal tests for mock-rock
+    needs: [access-check]
     uses: ./.github/workflows/Image.yaml
     with:
       oci-image-name: "mock-rock"

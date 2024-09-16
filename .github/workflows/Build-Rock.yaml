@@ -58,6 +58,14 @@ jobs:
           ref: ${{ env.OCI_FACTORY_BRANCH }}
           fetch-depth: 1
 
+      - name: Validate access to triggered image
+        uses: ./.github/actions/validate-actor
+        if: ${{ github.repository == 'canonical/oci-factory' }}
+        with:
+          admin-only: true
+          image-path: ${{ inputs.oci-factory-path }}
+          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
