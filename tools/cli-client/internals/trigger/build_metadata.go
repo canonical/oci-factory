@@ -29,18 +29,18 @@ func InferBuildMetadata() BuildMetadata {
 	repo, err := git.PlainOpenWithOptions(".",
 		&git.PlainOpenOptions{DetectDotGit: true, EnableDotGitCommonDir: false})
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to open repository: %v", err)
+		fmt.Fprintf(os.Stderr, "Unable to open repository: %v\n", err)
 		os.Exit(1)
 	}
 
 	// find the source URL
 	remotes, err := repo.Remotes()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to obtain remotes: %v", err)
+		fmt.Fprintf(os.Stderr, "Unable to obtain remotes: %v\n", err)
 		os.Exit(1)
 	}
 	if len(remotes) < 1 || len(remotes[0].Config().URLs) < 1 {
-		fmt.Fprintf(os.Stderr, "No valid remote exists for this repo")
+		fmt.Fprintf(os.Stderr, "No valid remote exists for this repo\n")
 		os.Exit(1)
 	}
 	remoteURL := remotes[0].Config().URLs[0]
@@ -49,12 +49,16 @@ func InferBuildMetadata() BuildMetadata {
 	// use regex to match the repo location
 	regex := regexp.MustCompile("github.com[:/](canonical/.*).git")
 	matches := regex.FindStringSubmatch(remoteURL)
+	if len(matches) < 2 {
+		fmt.Fprintf(os.Stderr, "oci-factory must be called in a git local repository under organization [canonical]\n")
+		os.Exit(1)
+	}
 	source := matches[1]
 	logger.Debugf("Source: %s", source)
 
 	headSha256, err := repo.ResolveRevision("HEAD")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to resolve HEAD: %v", err)
+		fmt.Fprintf(os.Stderr, "Unable to resolve HEAD: %v\n", err)
 		os.Exit(1)
 	}
 	logger.Debugf("HEAD SHA-256: %s", headSha256)
