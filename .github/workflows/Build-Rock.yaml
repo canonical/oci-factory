@@ -11,7 +11,7 @@ on:
       arch-map:
         description: "JSON string mapping target architecture to runner."
         type: string
-        default: '{"amd64": "ubuntu-22.04"}'
+        default: '{"amd64": ["jammy", "X64"]}'
       lpci-fallback:
         description: 'Enable fallback to Launchpad build when runners for target arch are not available.'
         type: boolean
