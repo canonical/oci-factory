@@ -50,8 +50,14 @@ jobs:
         run: |
           git clone ${{ inputs.rock-repo }} .
 
+      # Checkout the OCI Factory repo for the actor validation
+      - uses: actions/checkout@v4
+        if: ${{ github.repository == 'canonical/oci-factory' }}
+        with:
+          path: oci-factory
+
       - name: Validate access to triggered image
-        uses: ./.github/actions/validate-actor
+        uses: ./oci-factory/.github/actions/validate-actor
         if: ${{ github.repository == 'canonical/oci-factory' }}
         with:
           admin-only: true
