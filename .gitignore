@@ -1,6 +1,7 @@
 __pycache__
 .env
 tools/workflow-engine/charms/temporal-worker/config.yml
+tools/workflow-engine/charms/temporal-worker/environment.yml
 tools/workflow-engine/charms/temporal-worker/dist
 *.rock
 .terraform
