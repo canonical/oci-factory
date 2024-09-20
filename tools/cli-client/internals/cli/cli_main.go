@@ -55,7 +55,7 @@ func addHelp(p *flags.Parser) {
 func blockForConfirm(s string) error {
 	// check if is a tty
 	fi, err := os.Stdin.Stat()
-	if err != nil && fi.Mode()&os.ModeNamedPipe == 1 {
+	if err != nil && fi.Mode()&os.ModeNamedPipe != 0 {
 		return fmt.Errorf("non-interactive terminal detected, run with -y option")
 	} else if err != nil {
 		return err
