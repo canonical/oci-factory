@@ -15,6 +15,7 @@ services:
     startup: disabled
     command: "./app/scripts/start-worker.sh"
     environment:
+      TWC_LOG_LEVEL: "DEBUG"
       TWC_HOST: localhost:7233
       TWC_NAMESPACE: default
       TWC_QUEUE: test-queue

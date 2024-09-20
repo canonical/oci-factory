@@ -108,17 +108,13 @@ async def run_worker():
 
         worker_opt = WorkerOptions(sentry=sentry)
 
-    runtime = None
-    if os.getenv("TWC_PROMETHEUS_PORT"):
-        runtime = _init_runtime_with_prometheus(int(os.getenv("TWC_PROMETHEUS_PORT")))
-
-    client = await Client.connect(client_config, runtime=runtime)
+    client = await Client.connect(client_config)
 
     worker = Worker(
         client=client,
         task_queue=os.getenv("TWC_QUEUE"),
-        workflows=[GreetingWorkflow, VaultWorkflow],
-        activities=[compose_greeting, vault_test],
+        workflows=[ConsumeEventsWorkflow],
+        activities=[consume],
         worker_opt=worker_opt,
     )
 
