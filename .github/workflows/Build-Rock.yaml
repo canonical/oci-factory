@@ -3,21 +3,13 @@ name: Build Rock
 on:
   workflow_call:
     inputs:
-      # build configuration
+      # build parameters
       oci-archive-name:
         description: "Final filename of the Rock OCI archive."
         type: string
         required: true
-      arch-map:
-        description: "JSON string mapping target architecture to runner."
-        type: string
-        default: '{"amd64": "ubuntu-22.04"}'
-      lpci-fallback:
-        description: 'Enable fallback to Launchpad build when runners for target arch are not available.'
-        type: boolean
-        default: false
         
-      # source configuration
+      # source parameters
       rock-repo:
         description: "Public Git repo where to build the rock from."
         type: string
@@ -30,6 +22,17 @@ on:
         description: "Directory in repository where to find the rockcraft.yaml file."
         type: string
         required: true
+
+      # optional parameters for multi-arch builds
+      arch-map:
+        description: "JSON string mapping target architecture to runners."
+        type: string
+        default: '{"amd64": ["linux", "X64"], "arm64": ["linux", "ARM64"]}'
+      lpci-fallback:
+        description: 'Enable fallback to Launchpad build when runners for target arch are not available.'
+        type: boolean
+        default: false
+
 
 
 env:
