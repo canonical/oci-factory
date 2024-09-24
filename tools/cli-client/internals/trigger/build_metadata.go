@@ -50,7 +50,7 @@ func InferBuildMetadata() BuildMetadata {
 	regex := regexp.MustCompile(`github.com[:\/](canonical\/[A-Za-z0-9_-]*)(\.git)?`)
 	matches := regex.FindStringSubmatch(remoteURL)
 	if len(matches) < 3 {
-		fmt.Fprintf(os.Stderr, "oci-factory must be called in a git local repository belongs to the organization [canonical]\n")
+		fmt.Fprintf(os.Stderr, "oci-factory must be called in a git local repository belonging to the organization [canonical]\n")
 		os.Exit(1)
 	}
 	source := matches[1]
