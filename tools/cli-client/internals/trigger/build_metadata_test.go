@@ -39,7 +39,7 @@ func (s *BuildMetadataSuite) TestGetBuildMetadataCustomDirector(c *C) {
 		c.Fatal("git not installed")
 	}
 	repoPath := filepath.Join(s.dir, "tester-path")
-	cmd = exec.Command("git", "clone", "https://github.com/canonical/oci-factory.git", repoPath)
+	cmd = exec.Command("git", "clone", "https://github.com/canonical/rocks-toolbox.git", repoPath)
 	var errBuf bytes.Buffer
 	cmd.Stderr = &errBuf
 	if err := cmd.Run(); err != nil {
@@ -47,16 +47,16 @@ func (s *BuildMetadataSuite) TestGetBuildMetadataCustomDirector(c *C) {
 		c.Fatal(err)
 	}
 
-	err := os.Chdir(filepath.Join(repoPath, "examples", "mock-rock", "1.0"))
+	err := os.Chdir(filepath.Join(repoPath, "mock_rock", "1.0"))
 	c.Assert(err, IsNil)
 
 	result := trigger.InferBuildMetadata()
 
-	prefix := filepath.Join("examples", "mock-rock", "1.0") + "/"
+	prefix := filepath.Join("mock_rock", "1.0") + "/"
 	head, err := exec.Command("git", "rev-parse", "HEAD").Output()
 	headStr := strings.TrimSpace(string(head))
 	c.Assert(err, IsNil)
-	source := "canonical/oci-factory"
+	source := "canonical/rocks-toolbox"
 	expected := trigger.BuildMetadata{
 		Source:    source,
 		Directory: prefix,
