@@ -46,14 +46,3 @@ temporal-worker-k8s:
     mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d
     emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     -----END CERTIFICATE-----
-  # Only needed if deploying under a proxy
-  # http-proxy: "http://squid.internal:3128"
-  # https-proxy: "http://squid.internal:3128"
-  # no-proxy: ".canonical.com"
-
-  # Charmed workflows
-  # The "workflows-file-name" must match the wheel file created with poetry
-  workflows-file-name: "oci_factory_workflows-0.0.1-py3-none-any.whl"
-  # To support all defined workflows and activities, use the 'all' keyword
-  supported-workflows: "all"
-  supported-activities: "all"

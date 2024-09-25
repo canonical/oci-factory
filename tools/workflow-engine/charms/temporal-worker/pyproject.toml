@@ -8,9 +8,8 @@ description = "Temporal workflows for supporting the OCI Factory processes"
 authors = ["cjdc <cristovao.cordeiro@canonical.com>"]
 packages = [
     { include = "**/*.py", from = "."  },
-    { include = "**/ca.crt", from = "." }
 ]
-include = ["**/*.avsc"]
+include = ["**/*.avsc", "**/*.crt"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
