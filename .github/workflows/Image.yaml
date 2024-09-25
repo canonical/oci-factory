@@ -94,6 +94,14 @@ jobs:
           echo "img-name=$(basename ${img_path})" >> "$GITHUB_OUTPUT"
           echo "img-path=${img_path}" >> "$GITHUB_OUTPUT"
 
+      - name: Validate access to triggered image
+        uses: ./.github/actions/validate-actor
+        if: ${{ github.repository == 'canonical/oci-factory' }}
+        with:
+          admin-only: true
+          image-path: ${{ steps.validate-image.outputs.img-path }}
+          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+
       - name: Use custom image trigger
         if: ${{ inputs.b64-image-trigger != '' }}
         run: echo ${{ inputs.b64-image-trigger }} | base64 -d > ${{ steps.validate-image.outputs.img-path }}/image.yaml
@@ -113,7 +121,7 @@ jobs:
 
           ./src/image/prepare_single_image_build_matrix.py \
             --oci-path ${{ steps.validate-image.outputs.img-path }} \
-            --revision-data-dir ${{ env.DATA_DIR }} \
+            --revision-data-dir ${{ env.DATA_DIR }}
 
   run-build:
     needs: [prepare-build]
@@ -568,7 +576,7 @@ jobs:
     runs-on: ubuntu-22.04
     name: Notify
     needs: [prepare-build, run-build, upload, prepare-releases, generate-provenance]
-    if: ${{ always() && contains(needs.*.result, 'failure') && github.event_name != 'pull_request' }}
+    if: ${{ !cancelled() && contains(needs.*.result, 'failure') && github.event_name != 'pull_request' }}
     steps:
       - uses: actions/checkout@v4
 

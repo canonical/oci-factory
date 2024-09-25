@@ -66,9 +66,22 @@ env:
   DIVE_IMAGE: 'wagoodman/dive:v0.12'
 
 jobs:
+  access-check:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4 
+    - name: Validate access to triggered image
+      uses: ./.github/actions/validate-actor
+      if: ${{ github.repository == 'canonical/oci-factory' }}
+      with:
+        admin-only: true
+        image-path: ${{ inputs.oci-image-path }}
+        github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+
   fetch-oci-image:
     runs-on: ubuntu-22.04
     name: Fetch OCI image for testing
+    needs: [access-check]
     outputs:
       test-cache-key: ${{ steps.cache.outputs.key }}
     steps:

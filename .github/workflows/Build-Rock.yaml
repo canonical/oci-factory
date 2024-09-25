@@ -38,6 +38,20 @@ jobs:
       build-for: ${{ steps.rock-platforms.outputs.build-for }}
       build-with-lpci: ${{ steps.rock-platforms.outputs.build-with-lpci }}
     steps:
+      # Checkout the OCI Factory repo for the actor validation
+      - uses: actions/checkout@v4
+        if: ${{ github.repository == 'canonical/oci-factory' }}
+
+      - name: Validate access to triggered image
+        uses: ./.github/actions/validate-actor
+        if: ${{ github.repository == 'canonical/oci-factory' }}
+        with:
+          admin-only: true
+          image-path: ${{ inputs.oci-factory-path }}
+          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+
+      - run: rm -rf ./*
+
       - name: Clone GitHub image repository
         uses: actions/checkout@v4
         id: clone-image-repo
@@ -49,7 +63,9 @@ jobs:
         if: ${{ steps.clone-image-repo.outcome == 'failure' }}
         run: |
           git clone ${{ inputs.rock-repo }} .
+
       - run: git checkout ${{ inputs.rock-repo-commit }}
+
       - run: sudo snap install yq --channel=v4/stable
       - name: Validate image naming and base
         working-directory: ${{ inputs.rockfile-directory }}
