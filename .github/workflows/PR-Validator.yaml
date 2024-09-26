@@ -12,7 +12,7 @@ jobs:
       changed-files-matrix: ${{ steps.changed-files-matrix.outputs.matrix }}
       image-name: ${{ steps.changed-files-dir-names.outputs.all_changed_files }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Get changed files
         id: changed-files
@@ -50,7 +50,7 @@ jobs:
     # temporarily continue on error, until the Notification and Doc update jobs are set
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Check if documentation.yaml exists
         uses: andstor/file-existence-action@v2
@@ -72,9 +72,9 @@ jobs:
       fail-fast: true
       matrix: ${{ fromJSON(needs.get-submitted-files.outputs.changed-files-matrix) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
@@ -103,6 +103,8 @@ jobs:
     permissions: 
       pull-requests: write 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Comment PR
         uses: thollander/actions-comment-pull-request@v2
         with:

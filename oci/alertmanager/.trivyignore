@@ -1,0 +1,6 @@
+# Upstream CVEs
+
+# Fix not available in upstream, see https://github.com/prometheus/alertmanager/discussions/3471
+CVE-2022-41723
+# golang.org/x/net - Excessive server resource consumption
+CVE-2023-39325

@@ -1,0 +1,59 @@
+version: 1
+application: zookeeper
+is_chiselled: False
+description: |
+  Current Apache ZooKeeper Docker Image from Canonical, based on Ubuntu. 
+  Receives security updates and tracks the newest combination of Apache 
+  ZooKeeper and Ubuntu. **This repository is free to use and exempted from 
+  per-user rate limits.**
+  
+  # About Apache ZooKeeper
+  ZooKeeper is a centralized service for maintaining configuration information, 
+  naming, providing distributed synchronization, and providing group services. 
+  All of these kinds of services are used in some form or another by 
+  distributed applications. Read more on the Apache website. This image is 
+  shipped in support of the Apache Kafka image.
+  
+  Please note that the images tagged up to 3.1 are Dockerfile-base images,
+  whereas from version 3.8.2 onward the images are now rocks. As such the
+  entrypoint is now Pebble. Read more on the
+  [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
+
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 2181:2181
+  access: Access your ZooKeeper server at `http://localhost:2181`.
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone.
+  - type: -p
+    value: '2181:2181'
+    description: Expose ZooKeeper server on `localhost:2181`.
+  - type: -v
+    value: "/path/to/config/file:/etc/zookeeper/zoo.cfg"
+    description: Local ZooKeeper configuration file.
+  - type: -v
+    value: "zookeeperData:/var/lib/zookeeper/data"
+    description: > 
+      "Persist data in a docker volume named `zookeeperData`. "
+      "Make sure that the mount point is consistent with the configuration property `dataDir`.
+  - type: -v
+    value: "zookeeperLogData:/var/lib/zookeeper/data-log"
+    description: > 
+      "Persist data in a docker volume named `zookeeperLogData`. "
+      "Make sure that the mount point is consistent with the configuration property `dataLogDir`.
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+    ```bash
+    docker logs -f <zookeeper-container>
+    ```
+    
+    To get an interactive shell:
+    ```bash
+    docker exec -it <zookeeper-container> /bin/bash
+    ```

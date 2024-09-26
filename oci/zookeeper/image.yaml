@@ -1,0 +1,11 @@
+version: 1
+    
+upload:  
+  - source: "canonical/zookeeper-rock"
+    commit: 1781da1dacbacf647319731ff25ba4ad00082140
+    directory: .
+    release:
+      3.8-22.04:
+        end-of-life: "2024-09-01T00:00:00Z"
+        risks:
+          - edge

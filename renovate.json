@@ -1,0 +1,26 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "major": {
+        "enabled": false
+    },
+    "ignorePaths": [
+        ".github/workflows/**",
+        "src/**",
+        "examples/**"
+    ],
+    "automerge": false,
+    "customManagers": [
+        {
+            "customType": "regex",
+            "fileMatch": [
+                "\\.github/base_digests/22.04$",
+                "\\.github/base_digests/20.04$"
+            ],
+            "matchStringsStrategy": "any",
+            "matchStrings": [
+                "(?<depName>.*?):(?<currentValue>.*?)@(?<currentDigest>sha256:[a-f0-9]+)\\s"
+            ],
+            "datasourceTemplate": "docker"
+        }
+    ]
+}

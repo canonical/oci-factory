@@ -4,7 +4,6 @@ labels: "onboarding"
 title: "[ONBOARDING] "
 assignees:
   - cjdcordeiro
-  - valentincanonical
 body:
   - type: markdown
     attributes:
@@ -32,7 +31,7 @@ body:
     attributes:
       label: Short description
       description: A short description of the image.
-      placeholder: ex. this is a Foo Ubuntu ROCK for doing X, Y and Z, based on the upstream project Foo
+      placeholder: ex. this is a Foo Ubuntu Rock for doing X, Y and Z, based on the upstream project Foo
     validations:
       required: true
 
@@ -42,17 +41,6 @@ body:
       label: Image repository
       description: What is the URL for this image's Git repository?
       placeholder: ex. https://github.com/canonical/my-rock
-    validations:
-      required: true
-
-  - type: dropdown
-    id: type
-    attributes:
-      label: Image type
-      description: Is this a ROCK or a Dockerfile-based image?
-      options:
-        - ROCK
-        - Docker image
     validations:
       required: true
 
@@ -68,8 +56,8 @@ body:
             I understand and acknowledge the [CONTRIBUTING](https://github.com/canonical/oci-factory/blob/main/CONTRIBUTING.md) guidelines and [Image Maintainer Agreement](https://github.com/canonical/oci-factory/blob/main/IMAGE_MAINTAINER_AGREEMENT.md)
           required: true
         - label: |
-            This image is either a ROCK or a Docker image which already exists in the 'ubuntu' namespace
-          required: true
+            This image is a rock which already exists in the 'ubuntu' namespace
+          required: false
         - label: |
             I agree to be the image's Maintainer and thus own it and be responsible for it, thus committing to maintaining it throughout its lifetime
           required: true
@@ -105,7 +93,7 @@ body:
     attributes:
       label: Security enablement
       description: |
-        List of image dependencies and any additional information that is relevant for the security monitoring (/cc @metorino)
+        List of image dependencies and any additional information that is relevant for the security monitoring (/cc security-snapchat(at)lists.canonical.com)
       placeholder: "ex. List of Ubuntu source packages associate with the image's dependencies:..."
     validations:
       required: false

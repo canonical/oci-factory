@@ -1,0 +1,23 @@
+{
+  "namespace": "bo.schema.avro",
+  "type": "record",
+  "name": "Architecture",
+  "fields": [
+    {"name": "digest", "type": "string"},
+    {"name": "created", "type": "string"},
+    {
+      "name": "layers",
+      "type": {
+        "type": "array",
+        "items": "bo.schema.avro.Layer"
+      }
+    },
+    {
+      "name": "artefacts",
+      "type": {
+        "type": "array",
+        "items": "bo.schema.avro.Artefact"
+      }
+    }
+  ]
+}

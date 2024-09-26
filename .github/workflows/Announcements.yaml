@@ -8,8 +8,6 @@ on:
     types: [published, updated]
 
 env:
-  YQ_VERSION: "v4.32.2"
-  YQ_BINARY: yq_linux_amd64
   NAME: ${{ github.event_name == 'release' && github.event.release.name || github.event.registry_package.name }}
 
 jobs:
@@ -20,10 +18,7 @@ jobs:
       mattermost-channels: ${{ steps.get-contacts.outputs.mattermost-channels }}
       oci-img-name: ${{ steps.get-image-name.outputs.img-name }}
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Install requirements
-        run: ./src/notifications/requirements.sh
+      - uses: actions/checkout@v4
 
       - name: Get image name
         id: get-image-name
@@ -37,6 +32,14 @@ jobs:
               echo "img-name=${img}" >> "$GITHUB_OUTPUT"
             fi
           done
+
+      - name: Validate access to triggered image
+        uses: ./.github/actions/validate-actor
+        if: ${{ github.repository == 'canonical/oci-factory' }}
+        with:
+          admin-only: true
+          image-path: "oci/${{ steps.get-image-name.outputs.img-name }}"
+          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
 
       - name: Get contacts for ${{ steps.get-image-name.outputs.img-name }}
         id: get-contacts
@@ -52,7 +55,7 @@ jobs:
     if: ${{ github.event_name == 'release' }}
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Build release summary
         id: get-summary
@@ -84,7 +87,7 @@ jobs:
     needs: [get-contacts]
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Build package summary
         id: get-summary
@@ -109,4 +112,3 @@ jobs:
           do
             MM_CHANNEL_ID="${channel}" ./src/notifications/send_to_mattermost.sh
           done
-

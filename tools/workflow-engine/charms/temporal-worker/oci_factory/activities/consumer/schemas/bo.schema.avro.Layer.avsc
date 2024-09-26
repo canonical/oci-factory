@@ -1,0 +1,9 @@
+{
+  "namespace": "bo.schema.avro",
+  "type": "record",
+  "name": "Layer",
+  "fields": [
+    {"name": "digest", "type": "string"},
+    {"name": "size", "type": "int"}
+  ]
+}

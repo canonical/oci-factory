@@ -1,0 +1,18 @@
+version: 1
+upload:
+  - source: canonical/prometheus-pushgateway-rock
+    commit: 41d33061394038dd5e439549fbad71b3e61fcad1
+    directory: 1.8.0
+    release:
+      1.8.0-22.04:
+        end-of-life: "2025-05-28T00:00:00Z"
+        risks:
+          - stable
+      1.8-22.04:
+        end-of-life: "2025-05-28T00:00:00Z"
+        risks:
+          - stable
+      1-22.04:
+        end-of-life: "2025-05-28T00:00:00Z"
+        risks:
+          - stable

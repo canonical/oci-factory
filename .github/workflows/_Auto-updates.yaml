@@ -1,0 +1,63 @@
+name: _Auto-updates
+# TODO: this should be replaced by a charmed Temporal worker listening to the Event Bus
+
+on:
+  push:
+    paths:
+      - ".github/base_digests/*"
+    branches:
+      - main
+
+jobs:
+  find-updated-bases:
+    runs-on: ubuntu-22.04
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get updated filenames
+        uses: tj-actions/changed-files@v35
+        id: changed-files
+        with:
+          json: true
+          quotepath: false
+          files: |
+            .github/base_digests/*
+
+      - id: set-matrix
+        run: echo "matrix={\"base\":${{ steps.changed-files.outputs.all_changed_files }}}" >> "$GITHUB_OUTPUT"
+
+  check-auto-updates:
+    name: Check for auto-updates based on ${{ matrix.base }}
+    runs-on: ubuntu-22.04
+    needs: [find-updated-bases]
+    strategy:
+      matrix: ${{ fromJSON(needs.find-updated-bases.outputs.matrix) }}
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Setup Poetry
+        uses: abatilo/actions-poetry@v2
+
+      - name: Install dependencies
+        continue-on-error: true
+        working-directory: tools/workflow-engine/charms/temporal-worker
+        run: poetry install
+
+      - name: Trigger auto-updates
+        working-directory: tools/workflow-engine/charms/temporal-worker/oci_factory/activities/
+        env:
+          OS_AUTH_URL: ${{ secrets.SWIFT_OS_AUTH_URL }}
+          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+          OS_PROJECT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
+          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+          GITHUB_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
+        run: poetry run python3 find_images_to_update.py `basename ${{ matrix.base }}`

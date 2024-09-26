@@ -11,11 +11,21 @@ on:
         description: 'Cache key (to fetch image trigger from cache)'
         required: false
         type: string
-      external_ref_id: #(1)
+      external_ref_id:  # (1)
         description: 'Optional ID for unique run detection'
         required: false
         type: string
         default: "default-id"
+  workflow_call:
+    inputs:
+      oci-image-name:
+        description: 'OCI image to run releases for'
+        required: true
+        type: string
+      image-trigger-cache-key:
+        description: 'Cache key (to fetch image trigger from cache)'
+        required: false
+        type: string
            
 jobs:
   validate-push-release-request:
@@ -24,10 +34,18 @@ jobs:
     outputs:
       oci-image-name: ${{ steps.get-image-name.outputs.img-name }}
     steps:
-      - name: ${{ inputs.external_ref_id }} #(2)
+      - name: ${{ inputs.external_ref_id }}  # (2)
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
         
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
+      - name: Validate access to triggered image
+        uses: ./.github/actions/validate-actor
+        if: ${{ github.repository == 'canonical/oci-factory' }}
+        with:
+          admin-only: true
+          image-path: "oci/${{ inputs.oci-image-name }}"
+          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
 
       - name: Infer number of image triggers
         uses: tj-actions/changed-files@v35
@@ -57,19 +75,20 @@ jobs:
     needs: [validate-push-release-request]
     outputs:
       gh-releases-matrix: ${{ steps.release-image.outputs.gh-releases-matrix }}
+      release-commit-sha: ${{ steps.release-commit-sha.outputs.release-commit-sha }}
     env:
       IS_PROD: ${{ ! startsWith(inputs.oci-image-name, 'mock-') }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/cache/restore@v3
+      - uses: actions/cache/restore@v4
         if: ${{ inputs.image-trigger-cache-key != '' }}
         with:
           path: oci/${{ inputs.oci-image-name }}/image.yaml
           key: ${{ inputs.image-trigger-cache-key }}
           fail-on-cache-miss: true
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
@@ -131,44 +150,26 @@ jobs:
       - name: Commit oci/${{ inputs.oci-image-name }}/_releases.json
         uses: actions-x/commit@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.ROCKSBOT_TOKEN }}
           branch: ${{ github.ref }}
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: oci/${{ inputs.oci-image-name }}/_releases.json
 
+      - name: Get commit SHA of _release.json update
+        id: release-commit-sha
+        run: |
+          set -ex
+          echo "release-commit-sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-  dispatch-documentation:
-    runs-on: ubuntu-22.04
-    name: Dispatch documentation
+
+  update-documentation:
+    name: Update documentation
     needs: [do-releases]
-    steps:
-      - name: Run documentation
-        # Using this actions cause others can have this problem:
-        # https://github.com/convictional/trigger-workflow-and-wait/issues/61
-        uses: mathze/workflow-dispatch-action@v1.2.0
-        id: run-documentation
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.ref_name }}
-          fail-on-error: true
-          workflow-name: Documentation.yaml
-          payload: '{ "oci-image-name": "${{ inputs.oci-image-name }}"}'
-          use-marker-step: true
-          trigger-timeout: '30m'
-          run-id: dummy
-
-      - name: Write step summary
-        run: |
-          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-documentation.outputs.run-id }}'
-          echo " - Triggered documentation updates for '${{ inputs.oci-image-name }}' at [${url}](${url})" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Enforce docs conclusion
-        if: ${{ steps.run-documentation.outputs.run-conclusion != 'success' }}
-        # The previous step doesn't always raise an error
-        run: |
-          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-documentation.outputs.run-id }}'
-          echo "Failed to generate docs for '${{ inputs.oci-image-name }}' at [${url}](${url})."
-          exit 1
+    uses: ./.github/workflows/Documentation.yaml
+    with:
+      oci-image-name: "${{ inputs.oci-image-name }}"
+      release-commit-sha: "${{ needs.do-releases.outputs.release-commit-sha }}"
+    secrets: inherit
 
 
   do-github-release:
@@ -179,10 +180,10 @@ jobs:
       fail-fast: true
       matrix: ${{ fromJSON(needs.do-releases.outputs.gh-releases-matrix) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
-            fetch-depth: 0
-            ref: ${{ matrix.canonical-tag }}
+          fetch-depth: 0
+          ref: ${{ matrix.canonical-tag }}
       
       - uses: dev-drprasad/delete-tag-and-release@v1.0
         # We force delete an existing tag because otherwise we won't get

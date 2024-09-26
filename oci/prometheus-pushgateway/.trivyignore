@@ -1,0 +1,4 @@
+# Upstream CVEs
+
+# golang.org/x/net - golang: net/http, x/net/http2: rapid stream resets can cause excessive work (CVE-2023-44487)
+CVE-2023-39325

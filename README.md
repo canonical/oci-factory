@@ -2,7 +2,7 @@
 
 # Welcome to the OCI Factory! 👋
 
-*Behind every great ROCK is a great quarry...*
+*Behind every great rock is a great quarry...*
 </div>
 
 ## 🍿 **Before you get started**
@@ -39,7 +39,7 @@ subsequent and lifecycle maintenance jobs for every published image.
 
 ### Who is it for?
 
-**Maintainers** of Ubuntu ROCKs and Ubuntu-based OCI images.
+**Maintainers** of Ubuntu Rocks and Ubuntu-based OCI images.
 
 ### How to qualify as a Maintainer?
 
@@ -70,7 +70,12 @@ Pull Requests 🚀.
 
 ### As a **Maintainer** ⛏ 🪨
 
-Maintainers shall use Pull Requests (PRs) as an interface for asking the OCI
+Maintainers can request new image builds and releases by either creating
+Pull Requests (PRs) or via the OCI Factory CLI Client.
+
+#### 1. With Pull Requests
+
+Maintainers can use Pull Requests (PRs) as an interface for asking the OCI
 Factory to build their images. Here's what you should do and know before you
 make your first PR as a Maintainer:
 
@@ -84,6 +89,29 @@ multiple images;
    - that means one PR can only propose changes to
 [Maintainer files](#maintainer-files) within a single `oci` folder.
 
+#### 2. With the CLI Client
+
+Maintainers can use the OCI Factory's CLI Client to interact with the OCI
+Factory. The CLI Client is a Go module at [tools/cli-client](tools/cli-client).
+
+Here's what you should do and know before you use the CLI Client:
+
+1. you **must** already be an onboarded Maintainer and have had significant
+interactions with the OCI Factory (via PRs). Why is that? To use this client
+you'll be granted write permissions to the repository, and thus you'll have
+escalated rights when compared to a regular Maintainer - with great power
+comes great maintainability,
+2. each use of the CLI Client **must** only target one version of an OCI image,
+i.e. you can ask the OCI Factory to build one version of the image, upload and
+release it to GHCR, Docker Hub, and ECR with different tracks, risks and EOL with
+a single command, but **not** multiple versions of the same image.
+
+Further documentation regarding the CLI Client can be found [here](tools/cli-client/README.md).
+
+Refer to the diagram below to understand the oci-factory workflow:
+![OCI Factory Workflow](assets/img/oci-factory-workflow.png)
+
+
 ## 🗃 **Maintainer files**
 
 As a Maintainer, you'll be associated with one or more `oci` folders within
@@ -93,7 +121,6 @@ An `oci` folder name **must match the OCI image's name in the registry** (i.e.
 the field “name” in the `rockcraft.yaml` file). Also, each `oci` folder will
 host the Maintainer files upon which the OCI Factory will rely to understand:
 
-- how to build, i.e. whether it is a ROCK or a Dockerfile-based image;
 - what image to build;
 - what metadata to rely on (like the developer’s contact information);
 - how to tag and release the OCI image;
@@ -147,10 +174,7 @@ Having said that this trigger's syntax is as follows:
 | upload | False | conlist[Dict[str, Any], min_items=1] | List of image builds. Equivalent to `rockcraft pack && rockcraft upload` |
 | upload[*].source | True | str | Git repository hosting the image's project. |
 | upload[*].commit | True | str | Specific reference in the source, where to run the build from. |
-| upload[*].directory | True | str | Path to the "rockcraft.yaml"/"Dockerfile". Where the build will run from. |
-| upload[*].dockerfile-build | False | Dict[str, Any] | In case this is not a ROCK but rather a Dockerfile-based image. |
-| upload[*].dockerfile-build.version | True | str | Same meaning as the `version` field in rockcraft.yaml. |
-| upload[*].dockerfile-build.platforms | True | conlist[str, min_items=1] | Same meaning as the "platforms" field in rockcraft.yaml. |
+| upload[*].directory | True | str | Path to the "rockcraft.yaml". Where the build will run from. |
 | upload[*].release | False | Dict[Dict[str, Any]] | Immediately release this (yet unknown) revision to the given channels. Same as using `--release <channels>` with `rockcraft upload`. |
 | upload[*].release.\<track\> | True | Dict[str, Any] | Track to release this revision to. Canonical track `<version>-<base>` MUST be explicit, always! |
 | upload[*].release.\<track\>.end-of-life | True* | str | Same as `release.<track>` above. |

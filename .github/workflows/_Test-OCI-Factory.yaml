@@ -1,42 +1,107 @@
-name: _Test OCI Factory
+name: _Test OCI Factory | mock-rock
 on:
+  workflow_dispatch:
   push:
     paths:
       - ".github/workflows/*"
+      - ".github/actions/**"
       - "!.github/workflows/CLA-Check.yaml"
       - "!.github/workflows/PR-Validator.yaml"
-      - "oci/mock-*"
+      - "!.github/workflows/_Auto-updates.yaml"
+      - "!.github/workflows/Continuous-Testing.yaml"
+      - "!.github/workflows/CLI-Client.yaml"
       - "examples/**"
+      - "oci/mock*"
       - "src/**"
+      - "tools/**"
+      - "tests/**"
+      - "!tools/workflow-engine/**"
+      - "!tools/cli-client/**"
+
+env:
+  # local path to clone the oci-factory to
+
+  # path of pytest junit output
+  PYTEST_RESULT_PATH: pytest_results.xml
+
 
 jobs:
-  test-workflows:
-    name: Test OCI Factory workflows
+  access-check:
+    name: Validate access to mock-rock
     runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        oci-image: [mock-rock, mock-docker-image]
     steps:
-      - name: Trigger image workflows for ${{ matrix.oci-image }}
-        # Using this actions cause others can have this problem:
-        # https://github.com/convictional/trigger-workflow-and-wait/issues/61
-        uses: mathze/workflow-dispatch-action@v1.2.0
-        id: run-image
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/validate-actor
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.ref_name }}
-          fail-on-error: true
-          workflow-name: Image.yaml
-          payload: '{ "oci-image-name": "${{ matrix.oci-image }}", "upload": true }'
-          trigger-timeout: "5m"
-          wait-timeout: "30m"
-          use-marker-step: true
-          run-id: dummy
+          admin-only: true
+          image-path: "oci/mock-rock"
+          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
 
-      - name: Enforce conclusion
-        if: ${{ steps.run-image.outputs.run-conclusion != 'success' }}
-        # The previous step doesn't always raise an error
+  pytest:
+    # Trigger python unit tests across the repository
+    name: pytest
+    runs-on: ubuntu-22.04
+    steps:
+
+      # Job Setup
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      
+      # Note: Add additional dependency installation lines as required below 
+      # test-oci-factory/pytest requirements
+      - run: pip install -r tests/etc/requirements.txt
+
+
+      - name: Run pytest
+        continue-on-error: true
         run: |
-          url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.run-image.outputs.run-id }}'
-          echo "Image '${{ matrix.oci-image }}' workflow at [${url}](${url}) failed."
-          exit 1
+          python3 -m pytest --junit-xml "${{ env.PYTEST_RESULT_PATH }}"
+
+      - name: Generate Summary
+        if: ${{ !cancelled() }}
+        run: |
+          python3 -m tools.junit_to_markdown --input-junit "${{ env.PYTEST_RESULT_PATH }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload pytest Result
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PYTEST_RESULT_PATH }}
+          path: ${{ env.PYTEST_RESULT_PATH }}
+          if-no-files-found: error
+
+  bats-test:
+    # Trigger bash unit tests across the repository
+    name: bats
+    runs-on: ubuntu-22.04
+    steps:
+
+      # Job Setup
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install bats
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats
+
+      - name: Run bats
+        env:
+          GITHUB_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
+        run: |
+          find ${{ github.workspace }} -name 'test-*.bats' | xargs bats
+
+  test-workflows:
+    name: Trigger internal tests for mock-rock
+    needs: [access-check]
+    uses: ./.github/workflows/Image.yaml
+    with:
+      oci-image-name: "mock-rock"
+      upload: true
+    secrets: inherit

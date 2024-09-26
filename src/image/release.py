@@ -12,6 +12,7 @@ import re
 import subprocess
 from collections import defaultdict
 import yaml
+from src.image.utils.encoders import DateTimeEncoder
 from src.image.utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
 import src.shared.release_info as shared
 
@@ -66,7 +67,7 @@ tag_mapping_from_all_releases = shared.get_tag_mapping_from_all_releases(all_rel
 
 print(f"Parsing image trigger {args.image_trigger}")
 with open(args.image_trigger, encoding="UTF-8") as trigger:
-    image_trigger = ImageSchema(**yaml.safe_load(trigger))
+    image_trigger = ImageSchema(**yaml.load(trigger, Loader=yaml.BaseLoader))
 
 tag_mapping_from_trigger = {}
 for track, risks in image_trigger.release.items():
@@ -75,7 +76,7 @@ for track, risks in image_trigger.release.items():
         all_releases[track] = {}
 
     for risk, value in risks.dict(exclude_none=True).items():
-        if risk == "end-of-life":
+        if risk in ["end-of-life", "end_of_life"]:
             all_releases[track]["end-of-life"] = value
             continue
 
@@ -201,11 +202,12 @@ for revision, tags in group_by_revision.items():
         github_tags.append(gh_release_info)
 
 print(
-    f"Updating {args.all_releases} file with:\n" f"{json.dumps(all_releases, indent=2)}"
+    f"Updating {args.all_releases} file with:\n"
+    f"{json.dumps(all_releases, indent=2, cls=DateTimeEncoder)}"
 )
 
 with open(args.all_releases, "w", encoding="UTF-8") as fd:
-    json.dump(all_releases, fd, indent=4)    
+    json.dump(all_releases, fd, indent=4, cls=DateTimeEncoder)
 
 matrix = {"include": github_tags}
 
