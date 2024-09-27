@@ -40,7 +40,7 @@ jobs:
     steps:
       # Checkout the OCI Factory repo for the actor validation
       - uses: actions/checkout@v4
-        if: ${{ github.repository == 'canonical/oci-factory' }}
+        if: ${{ github.repository == 'canonical/oci-factory'  && !github.event.pull_request.head.repo.fork }}
 
       - name: Validate access to triggered image
         uses: ./.github/actions/validate-actor
@@ -50,7 +50,9 @@ jobs:
           image-path: ${{ inputs.oci-factory-path }}
           github-token: ${{ secrets.ROCKSBOT_TOKEN }}
 
+      # We clear the working directory to make space for the rock repo
       - run: rm -rf ./*
+        if: ${{ github.repository == 'canonical/oci-factory' && !github.event.pull_request.head.repo.fork }}
 
       - name: Clone GitHub image repository
         uses: actions/checkout@v4
