@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+from datetime import datetime, timezone
 import glob
 import json
 import os
@@ -59,8 +60,10 @@ if __name__ == "__main__":
     builds = image_trigger.get("upload", [])
 
     release_to = "true" if "release" in image_trigger else ""
+
+    img_number = 0
     # inject some extra metadata into the matrix data
-    for img_number, _ in enumerate(builds):
+    while img_number < len(builds):
         builds[img_number]["name"] = args.oci_path.rstrip("/").split("/")[-1]
         builds[img_number]["path"] = args.oci_path
         builds[img_number]["revision"] = img_number + int(args.next_revision)
@@ -103,12 +106,22 @@ if __name__ == "__main__":
 
         # set an output as a marker for later knowing if we need to release
         if "release" in builds[img_number]:
-            release_to = "true"
-            # the workflow GH matrix has a problem parsing nested JSON dicts
-            # so let's remove this field since we don't need it for the builds
-            builds[img_number]["release"] = "true"
+            min_eol = datetime.strptime(min(
+                v["end-of-life"] for v in builds[img_number]["release"].values()
+            ), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+            if min_eol < datetime.now(timezone.utc):
+                print("Track skipped because it reached its end of life")
+                del builds[img_number]
+                continue
+            else:
+                release_to = "true"
+                # the workflow GH matrix has a problem parsing nested JSON dicts
+                # so let's remove this field since we don't need it for the builds
+                builds[img_number]["release"] = "true"
         else:
             builds[img_number]["release"] = ""
+
+        img_number += 1
 
     matrix = {"include": builds}
     print(f"{args.oci_path} - build matrix:\n{json.dumps(matrix, indent=4)}")
