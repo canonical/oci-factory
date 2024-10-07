@@ -1,5 +1,5 @@
 name: Image
-run-name: 'Image - ${{ inputs.oci-image-name || github.triggering_actor }} - ${{ github.ref }}'
+run-name: "Image - ${{ inputs.oci-image-name || github.triggering_actor }} - ${{ github.ref }}"
 
 on:
   push:
@@ -25,7 +25,7 @@ on:
         type: boolean
         default: false
       external_ref_id:  # (1)
-        description: 'Optional ID for unique run detection'
+        description: "Optional ID for unique run detection"
         required: false
         type: string
         default: "default-id"
@@ -123,7 +123,6 @@ jobs:
             --oci-path ${{ steps.validate-image.outputs.img-path }} \
             --revision-data-dir ${{ env.DATA_DIR }}
 
-
   run-build:
     needs: [prepare-build]
     strategy:
@@ -131,7 +130,7 @@ jobs:
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     uses: ./.github/workflows/Build-Rock.yaml
     with:
-      oci-archive-name: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}        
+      oci-archive-name: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
       rock-repo: ${{ matrix.source }}
       rock-repo-commit: ${{ matrix.commit }}
       rockfile-directory: ${{ matrix.directory }}
@@ -141,7 +140,7 @@ jobs:
   tmp-cache-job:
     # TODO: This is a temporary job that will be removed when the refactored test job is merged.
     # Going forward we download the built rocks from artifacts instead of cache. This job takes
-    # the uploaded rocks then re-caches them for compatibility. 
+    # the uploaded rocks then re-caches them for compatibility.
     name: Temporary step to cache rocks
     runs-on: ubuntu-22.04
     needs: [prepare-build, run-build]
@@ -149,7 +148,6 @@ jobs:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     steps:
-      
       - name: Download rock
         uses: actions/download-artifact@v4
         with:
@@ -157,9 +155,8 @@ jobs:
 
       - uses: actions/cache/save@v4
         with:
-          key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}  
+          key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
           path: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
-
 
   test:
     needs: [prepare-build, run-build, tmp-cache-job]
@@ -173,10 +170,9 @@ jobs:
       oci-image-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}"
       oci-image-path: "oci/${{ matrix.name }}"
       test-from: "cache"
-      cache-key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}        
+      cache-key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
     secrets: inherit
 
-  
   prepare-upload:
     runs-on: ubuntu-22.04
     needs: [prepare-build, run-build, test]
@@ -599,15 +595,16 @@ jobs:
   notify:
     runs-on: ubuntu-22.04
     name: Notify
-    needs: [prepare-build, run-build, upload, prepare-releases, generate-provenance]
+    needs:
+      [prepare-build, run-build, upload, prepare-releases, generate-provenance]
     if: ${{ !cancelled() && contains(needs.*.result, 'failure') && github.event_name != 'pull_request' }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
-          
+          python-version: "3.x"
+
       - name: Summarize workflow failure message
         id: get-summary
         run: |
@@ -629,7 +626,7 @@ jobs:
           URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           SUMMARY: ${{ steps.get-summary.outputs.summary }}
           FOOTER: "Triggered by ${{ github.triggering_actor }}. Ref: ${{ github.ref }}. Attempts: ${{ github.run_attempt }}"
-          TITLE: '${{ needs.prepare-build.outputs.oci-img-name }}: failed to build->upload->release'
+          TITLE: "${{ needs.prepare-build.outputs.oci-img-name }}: failed to build->upload->release"
         run: |
           for channel in $(echo ${{ steps.get-contacts.outputs.mattermost-channels }} | tr ',' ' ')
           do

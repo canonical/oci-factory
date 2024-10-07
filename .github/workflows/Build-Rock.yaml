@@ -8,7 +8,7 @@ on:
         description: "Final filename of the rock OCI archive."
         type: string
         required: true
-        
+
       # source parameters
       rock-repo:
         description: "Public Git repo where to build the rock from."
@@ -29,31 +29,27 @@ on:
         type: string
         default: '{"amd64": ["linux", "X64"], "arm64": ["linux", "ARM64"]}'
       lpci-fallback:
-        description: 'Enable fallback to Launchpad build when runners for target arch are not available.'
+        description: "Enable fallback to Launchpad build when runners for target arch are not available."
         type: boolean
         default: false
-
-
 
 env:
   ROCK_REPO_DIR: rock-repo  # path where the image repo is cloned to
   ROCK_CI_FOLDER: ci-rocks  # path of uploaded/downloaded artifacts
-  
+
   OCI_FACTORY_REPO: canonical/oci-factory
   # TODO: update before final merge
   OCI_FACTORY_BRANCH: ROCKS-1452/oci-factory-refactor-build-rock-to-be-externally-reusable  # required for external workflow calls.
 
 jobs:
-
   configure-build:
     # configure-build reads the rockcraft.yaml, creating one or more *-build job runs
     # depending on the target architecture.
     runs-on: ubuntu-22.04
     outputs:
-      runner-build-matrix: ${{ steps.configure.outputs.runner-build-matrix }} 
-      lpci-build-matrix: ${{ steps.configure.outputs.lpci-build-matrix }} 
+      runner-build-matrix: ${{ steps.configure.outputs.runner-build-matrix }}
+      lpci-build-matrix: ${{ steps.configure.outputs.lpci-build-matrix }}
     steps:
-
       # Job Setup
       - uses: actions/checkout@v4
         with:
@@ -75,14 +71,12 @@ jobs:
 
       - run: pip install -r src/build_rock/configure/requirements.txt
 
-
       - uses: actions/checkout@v4
         with:
           repository: ${{ inputs.rock-repo }}
           path: ${{ env.ROCK_REPO_DIR }}
           ref: ${{ inputs.rock-repo-commit }}
-          submodules: 'recursive'
-
+          submodules: "recursive"
 
       # Configure matrices for each *-build job
       - name: Configure
@@ -93,7 +87,6 @@ jobs:
             --lpci-fallback "${{ toJSON(inputs.lpci-fallback) }}" \
             --config ${{ toJSON(inputs.arch-map) }} # important: do not use quotes here
 
-
   runner-build:
     # runner-build builds rocks per target architecture using pre configured runner images.
     needs: [configure-build]
@@ -101,18 +94,16 @@ jobs:
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.configure-build.outputs.runner-build-matrix) }}
-    runs-on: ${{ matrix.runner }} 
-    name: 'runner-build | ${{ matrix.architecture }} '
+    runs-on: ${{ matrix.runner }}
+    name: "runner-build | ${{ matrix.architecture }} "
     steps:
-
       - name: Clone Repo
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.rock-repo }}
           path: ${{ env.ROCK_REPO_DIR }}
           ref: ${{ inputs.rock-repo-commit }}
-          submodules: 'recursive'
-
+          submodules: "recursive"
 
       - name: Build Target
         id: rockcraft
@@ -121,13 +112,11 @@ jobs:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
           verbosity: debug
 
-
       - name: Collect Artifacts
         id: collect-artifacts
         run: |
-              mkdir -p ${{ env.ROCK_CI_FOLDER }} && cp ${{ steps.rockcraft.outputs.rock }} "$_"
-              echo "filename=$(basename ${{ steps.rockcraft.outputs.rock }})" >> $GITHUB_OUTPUT
-
+          mkdir -p ${{ env.ROCK_CI_FOLDER }} && cp ${{ steps.rockcraft.outputs.rock }} "$_"
+          echo "filename=$(basename ${{ steps.rockcraft.outputs.rock }})" >> $GITHUB_OUTPUT
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -136,28 +125,25 @@ jobs:
           path: ${{ env.ROCK_CI_FOLDER }}
           if-no-files-found: error
 
-
   lpci-build:
-    # lpci-build is a fallback for building rocks if no suitable runners are 
+    # lpci-build is a fallback for building rocks if no suitable runners are
     # configured for the required architecture. Builds in this job will be
-    # outsourced to Launchpad for completion. 
+    # outsourced to Launchpad for completion.
     # Note the Secret
     needs: [configure-build]
     if: fromJSON(needs.configure-build.outputs.lpci-build-matrix).include[0] != ''
-    strategy: 
+    strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.configure-build.outputs.lpci-build-matrix) }}
     runs-on: ubuntu-22.04
-    name: 'lpci-build | ${{ matrix.architecture }} '
+    name: "lpci-build | ${{ matrix.architecture }} "
     steps:
-
       # Job Setup
       - uses: actions/checkout@v4
         with:
           repository: ${{ env.OCI_FACTORY_REPO }}
           ref: ${{ env.OCI_FACTORY_BRANCH }}
           fetch-depth: 1
-      
 
       - name: Clone Repo
         uses: actions/checkout@v4
@@ -165,8 +151,7 @@ jobs:
           repository: ${{ inputs.rock-repo }}
           path: ${{ env.ROCK_REPO_DIR }}
           ref: ${{ inputs.rock-repo-commit }}
-          submodules: 'recursive'
-
+          submodules: "recursive"
 
       - name: Build Target
         # TODO: Replace this retry action with bash equivalent for better testing
@@ -181,13 +166,11 @@ jobs:
               -c "${{ secrets.LP_CREDENTIALS_B64 }}" \
               -d "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
 
-
       - name: Collect Artifacts
         id: collect-artifacts
         run: |
-            mkdir -p ${{ env.ROCK_CI_FOLDER }} && cp ${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}/*.rock "$_"
-            echo "filename=${{ matrix.rock-name }}_${{ matrix.architecture }}" >> $GITHUB_OUTPUT
-
+          mkdir -p ${{ env.ROCK_CI_FOLDER }} && cp ${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}/*.rock "$_"
+          echo "filename=${{ matrix.rock-name }}_${{ matrix.architecture }}" >> $GITHUB_OUTPUT
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -195,7 +178,6 @@ jobs:
           name: ${{ inputs.oci-archive-name }}-${{ steps.collect-artifacts.outputs.filename }}
           path: ${{ env.ROCK_CI_FOLDER }}
           if-no-files-found: error
-
 
   assemble-rock:
     # Assemble individual single-arch rocks into multi-arch rocks
@@ -205,7 +187,6 @@ jobs:
     # Nice example from benjamin-bergia/github-workflow-patterns...
     if: ${{ always() && contains(needs.*.result, 'success') && !(contains(needs.*.result, 'failure')) }}
     steps:
-
       # Job Setup
       - uses: actions/checkout@v4
         with:
@@ -215,21 +196,18 @@ jobs:
 
       - run: src/build_rock/assemble_rock/requirements.sh
 
-
       - name: Download Single Arch rocks
         uses: actions/download-artifact@v4
         id: download
         with:
-          path: ${{ env.ROCK_CI_FOLDER }} 
+          path: ${{ env.ROCK_CI_FOLDER }}
           pattern: ${{ inputs.oci-archive-name }}-*
-
 
       - name: Assemble Multi Arch rock
         run: |
           src/build_rock/assemble_rock/assemble.sh \
             -n "${{ inputs.oci-archive-name }}" \
             -d "${{ env.ROCK_CI_FOLDER }}"
-
 
       - name: Upload Multi Arch rock
         uses: actions/upload-artifact@v4

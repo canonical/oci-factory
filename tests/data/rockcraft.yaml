@@ -9,11 +9,10 @@ license: Apache-2.0
 base: bare
 build-base: ubuntu@22.04
 platforms:
-  amd64: 
+  amd64:
 
 parts:
   hello:
     plugin: nil
     stage-packages:
       - hello
-      

@@ -24,7 +24,6 @@ env:
   # path of pytest junit output
   PYTEST_RESULT_PATH: pytest_results.xml
 
-
 jobs:
   access-check:
     name: Validate access to mock-rock
@@ -42,7 +41,6 @@ jobs:
     name: pytest
     runs-on: ubuntu-22.04
     steps:
-
       # Job Setup
       - uses: actions/checkout@v4
         with:
@@ -51,14 +49,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
-      
-      # Note: Add additional dependency installation lines as required below 
+
+      # Note: Add additional dependency installation lines as required below
       # test-oci-factory/pytest requirements
       - run: pip install -r tests/etc/requirements.txt
 
-      # build_rock/configure requirements 
+      # build_rock/configure requirements
       - run: pip install -r src/build_rock/configure/requirements.txt
-
 
       - name: Run pytest
         continue-on-error: true
@@ -83,7 +80,6 @@ jobs:
     name: bats
     runs-on: ubuntu-22.04
     steps:
-
       # Job Setup
       - uses: actions/checkout@v4
         with:
