@@ -1,11 +1,11 @@
-name: Build Rock
+name: Build rock
 
 on:
   workflow_call:
     inputs:
       # build parameters
       oci-archive-name:
-        description: "Final filename of the Rock OCI archive."
+        description: "Final filename of the rock OCI archive."
         type: string
         required: true
         
@@ -216,7 +216,7 @@ jobs:
       - run: src/build_rock/assemble_rock/requirements.sh
 
 
-      - name: Download Single Arch Rocks
+      - name: Download Single Arch rocks
         uses: actions/download-artifact@v4
         id: download
         with:
@@ -224,14 +224,14 @@ jobs:
           pattern: ${{ inputs.oci-archive-name }}-*
 
 
-      - name: Assemble Multi Arch Rock
+      - name: Assemble Multi Arch rock
         run: |
           src/build_rock/assemble_rock/assemble.sh \
             -n "${{ inputs.oci-archive-name }}" \
             -d "${{ env.ROCK_CI_FOLDER }}"
 
 
-      - name: Upload Multi Arch Rock
+      - name: Upload Multi Arch rock
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.oci-archive-name }}

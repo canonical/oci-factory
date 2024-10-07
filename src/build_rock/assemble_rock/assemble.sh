@@ -7,7 +7,7 @@ function usage(){
     echo
     echo "$(basename "$0") -d <rock directory> -n <archive name>"
     echo
-    echo "Merge multiple OCI Rock images into one multi arch image."
+    echo "Merge multiple OCI rock images into one multi arch image."
     echo
     echo -e "-d \\t Directory to search for rock OCI images in."
     echo -e "-n \\t Final output archive name. "
