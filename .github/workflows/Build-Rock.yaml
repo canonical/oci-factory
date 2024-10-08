@@ -96,15 +96,7 @@ jobs:
           python-version: "3.x"
 
       # ** Workflow job configuration **
-
       - run: pip install -r src/build_rock/configure/requirements.txt
-
-      # - uses: actions/checkout@v4
-      #   with:
-      #     repository: ${{ inputs.rock-repo }}
-      #     path: ${{ env.ROCK_REPO_DIR }}
-      #     ref: ${{ inputs.rock-repo-commit }}
-      #     submodules: "recursive"
 
       # Configure matrices for each *-build job
       - name: Configure
