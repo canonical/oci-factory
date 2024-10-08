@@ -50,21 +50,43 @@ jobs:
       runner-build-matrix: ${{ steps.configure.outputs.runner-build-matrix }}
       lpci-build-matrix: ${{ steps.configure.outputs.lpci-build-matrix }}
     steps:
-      # Job Setup
+      # Checkout the OCI Factory repo for the actor validation
       - uses: actions/checkout@v4
-        with:
-          repository: ${{ env.OCI_FACTORY_REPO }}
-          ref: ${{ env.OCI_FACTORY_BRANCH }}
-          fetch-depth: 1
+        if: ${{ github.repository == 'canonical/oci-factory'  && !github.event.pull_request.head.repo.fork }}
 
       - name: Validate access to triggered image
         uses: ./.github/actions/validate-actor
-        if: ${{ github.repository == 'canonical/oci-factory' }}
+        if: ${{ github.repository == 'canonical/oci-factory' && !github.event.pull_request.head.repo.fork }}
         with:
           admin-only: true
           image-path: ${{ inputs.oci-factory-path }}
           github-token: ${{ secrets.ROCKSBOT_TOKEN }}
 
+      # We clear the working directory to make space for the rock repo
+      - run: rm -rf ./*
+        if: ${{ github.repository == 'canonical/oci-factory' && !github.event.pull_request.head.repo.fork }}
+
+      - name: Clone GitHub image repository
+        uses: actions/checkout@v4
+        id: clone-image-repo
+        continue-on-error: true
+        with:
+          repository: ${{ env.OCI_FACTORY_REPO }}
+          ref: ${{ env.OCI_FACTORY_BRANCH }}
+          fetch-depth: 1
+
+      - run: git checkout ${{ inputs.rock-repo-commit }}
+
+      - run: sudo snap install yq --channel=v4/stable
+      - name: Validate image naming and base
+        working-directory: ${{ inputs.rockfile-directory }}
+        run: |
+          rock_name=`cat rockcraft.y*ml | yq -r .name`
+          if [[ "${{ inputs.oci-factory-path }}" != *"${rock_name}"* ]]
+          then
+            echo "ERROR: the rock's name '${rock_name}' must match the OCI folder name!"
+            exit 1
+          fi
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"

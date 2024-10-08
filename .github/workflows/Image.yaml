@@ -96,7 +96,7 @@ jobs:
 
       - name: Validate access to triggered image
         uses: ./.github/actions/validate-actor
-        if: ${{ github.repository == 'canonical/oci-factory' }}
+        if: ${{ github.repository == 'canonical/oci-factory' && !github.event.pull_request.head.repo.fork }}
         with:
           admin-only: true
           image-path: ${{ steps.validate-image.outputs.img-path }}
