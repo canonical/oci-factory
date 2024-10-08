@@ -45,7 +45,7 @@ def configure_matrices(target_archs: list, arch_map: dict, lp_fallback: bool) ->
     build_matrices = {name.value: {"include": []} for name in MATRIX_NAMES}
 
     # Check if we have runners for all supported architectures
-    if missing_archs := set(target_archs) - set(arch_map.keys()):
+    if missing_archs := set(target_archs) - set(arch_map):
 
         # raise exception if we cannot fallback to LP builds
         if not lp_fallback:
