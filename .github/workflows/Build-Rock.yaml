@@ -79,7 +79,6 @@ jobs:
           submodules: "recursive"
           fetch-depth: 1
 
-
       - run: sudo snap install yq --channel=v4/stable
       - name: Validate image naming and base
         working-directory: ${{ inputs.rockfile-directory }}
