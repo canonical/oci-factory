@@ -223,7 +223,6 @@ jobs:
           fetch-depth: 1
 
       - run: src/build_rock/assemble_rock/requirements.sh
-
       - name: Download Single Arch rocks
         uses: actions/download-artifact@v4
         id: download
