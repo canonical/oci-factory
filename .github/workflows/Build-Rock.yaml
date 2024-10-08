@@ -50,6 +50,8 @@ jobs:
       runner-build-matrix: ${{ steps.configure.outputs.runner-build-matrix }}
       lpci-build-matrix: ${{ steps.configure.outputs.lpci-build-matrix }}
     steps:
+
+      # ** Workflow authorization and job validation **
       # Checkout the OCI Factory repo for the actor validation
       - uses: actions/checkout@v4
         if: ${{ github.repository == 'canonical/oci-factory'  && !github.event.pull_request.head.repo.fork }}
@@ -71,8 +73,10 @@ jobs:
         id: clone-image-repo
         continue-on-error: true
         with:
-          repository: ${{ env.OCI_FACTORY_REPO }}
-          ref: ${{ env.OCI_FACTORY_BRANCH }}
+          repository: ${{ inputs.rock-repo }}
+          path: ${{ env.ROCK_REPO_DIR }}
+          ref: ${{ inputs.rock-repo-commit }}
+          submodules: "recursive"
           fetch-depth: 1
 
       - run: git checkout ${{ inputs.rock-repo-commit }}
@@ -81,7 +85,7 @@ jobs:
       - name: Validate image naming and base
         working-directory: ${{ inputs.rockfile-directory }}
         run: |
-          rock_name=`cat rockcraft.y*ml | yq -r .name`
+          rock_name=`cat ${{ env.ROCK_REPO_DIR }}/rockcraft.y*ml | yq -r .name`
           if [[ "${{ inputs.oci-factory-path }}" != *"${rock_name}"* ]]
           then
             echo "ERROR: the rock's name '${rock_name}' must match the OCI folder name!"
@@ -91,14 +95,16 @@ jobs:
         with:
           python-version: "3.x"
 
+      # ** Workflow job configuration **
+
       - run: pip install -r src/build_rock/configure/requirements.txt
 
-      - uses: actions/checkout@v4
-        with:
-          repository: ${{ inputs.rock-repo }}
-          path: ${{ env.ROCK_REPO_DIR }}
-          ref: ${{ inputs.rock-repo-commit }}
-          submodules: "recursive"
+      # - uses: actions/checkout@v4
+      #   with:
+      #     repository: ${{ inputs.rock-repo }}
+      #     path: ${{ env.ROCK_REPO_DIR }}
+      #     ref: ${{ inputs.rock-repo-commit }}
+      #     submodules: "recursive"
 
       # Configure matrices for each *-build job
       - name: Configure
