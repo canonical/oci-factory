@@ -2,7 +2,6 @@ import pytest
 from io import StringIO
 import os
 from pathlib import Path
-from tempfile import TemporaryDirectory
 
 
 @pytest.fixture
@@ -13,13 +12,11 @@ def str_buff():
 
 
 @pytest.fixture
-def github_output(monkeypatch):
+def github_output(monkeypatch, tmp_path):
 
-    with TemporaryDirectory() as tmp:
+    env_path = tmp_path / "env"
+    env_path.touch()
 
-        env_path = Path(tmp) / "env"
-        env_path.touch()
+    monkeypatch.setitem(os.environ, "GITHUB_OUTPUT", str(env_path))
 
-        monkeypatch.setitem(os.environ, "GITHUB_OUTPUT", str(env_path))
-
-        yield env_path
+    yield env_path
