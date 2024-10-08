@@ -49,10 +49,18 @@ jobs:
     outputs:
       runner-build-matrix: ${{ steps.configure.outputs.runner-build-matrix }}
       lpci-build-matrix: ${{ steps.configure.outputs.lpci-build-matrix }}
+      oci-factory-branch: ${{ steps.oci-factory-branch.outputs.branch }}
     steps:
 
       # ** Workflow authorization and job validation **
       # Checkout the OCI Factory repo for the actor validation
+
+      # move this to an action since it may be used frequently 
+      - name: Select oci-factory branch
+        id: oci-factory-branch
+        run: echo "branch=$(${{ github.repository == 'canonical/oci-factory' }} && echo something || echo ${{ env.OCI_FACTORY_BRANCH }})" >> $GITHUB_OUTPUT
+
+
       - uses: actions/checkout@v4
         if: ${{ github.repository == 'canonical/oci-factory'  && !github.event.pull_request.head.repo.fork }}
 
@@ -160,7 +168,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: ${{ env.OCI_FACTORY_REPO }}
-          ref: ${{ env.OCI_FACTORY_BRANCH }}
+          ref: ${{ needs.configure-build.outputs.oci-factory-branch }}
           fetch-depth: 1
 
       - name: Clone Repo
@@ -209,7 +217,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: ${{ env.OCI_FACTORY_REPO }}
-          ref: ${{ env.OCI_FACTORY_BRANCH }}
+          ref: ${{ needs.configure-build.outputs.oci-factory-branch }}
           fetch-depth: 1
 
       - run: src/build_rock/assemble_rock/requirements.sh
