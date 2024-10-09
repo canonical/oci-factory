@@ -50,6 +50,9 @@ jobs:
       lpci-build-matrix: ${{ steps.configure.outputs.lpci-build-matrix }}
     steps:
 
+      - run: echo WORKFLOW REF "${{ github.workflow_ref	}}"
+      - run: echo WORKFLOW SHA "${{ github.workflow_sha	}}"
+
       - name: Cloning OCI Factory
         uses: actions/checkout@v4
         with:
