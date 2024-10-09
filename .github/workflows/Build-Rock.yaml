@@ -34,7 +34,7 @@ on:
         default: false
 
 env:
-  ROCK_REPO_DIR: rock-repo  # path where the image repo is cloned to
+  ROCK_REPO_DIR: rock-repo  # path where the image repo is cloned into
   ROCK_CI_FOLDER: ci-rocks  # path of uploaded/downloaded artifacts
 
   OCI_FACTORY_REPO: canonical/oci-factory
