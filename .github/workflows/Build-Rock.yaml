@@ -55,7 +55,7 @@ jobs:
           repository-name: canonical/oci-factory
           file-name: Build-Rock.yaml
 
-      - run: echo workflow-version ${{ steps.workflow-version.outputs }}
+      - run: echo workflow-version ${{ toJSON(steps.workflow-version.outputs) }}
 
       - name: Select OCI Factory Branch
         id: select-oci-factory-branch
