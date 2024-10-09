@@ -65,7 +65,7 @@ jobs:
           fetch-depth: 1
 
       - name: Cloning Target Repo
-        uses: ./.github/actions/validate-actor
+        uses: ./.github/actions/checkout
         with:
           repository: ${{ inputs.rock-repo }}
           path: ${{ env.ROCK_REPO_DIR }}
