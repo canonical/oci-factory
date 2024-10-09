@@ -93,7 +93,8 @@ jobs:
       - run: sudo snap install yq --channel=v4/stable
       - name: Validate image naming and base
         run: |
-          ls -lashR
+          # ls -lashR
+          cat "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}/rockcraft.y*ml"
           rock_name=`cat "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}/rockcraft.y*ml" | yq -r .name`
           if [[ "${{ inputs.oci-factory-path }}" != *"${rock_name}"* ]]
           then
