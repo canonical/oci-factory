@@ -55,12 +55,10 @@ jobs:
           repository-name: canonical/oci-factory
           file-name: Build-Rock.yaml
 
-      - run: echo workflow-version ${{ steps.workflow-version.outputs.sha }}
-
       - name: Select OCI Factory Branch
         id: select-oci-factory-ref
         run: | 
-          echo "oci-factory-ref=$(echo "${{ steps.workflow-version.outputs.sha }}">> GITHUB_OUTPUT
+          echo "oci-factory-ref=$(echo "${{ steps.workflow-version.outputs.sha }})">> GITHUB_OUTPUT
 
       - name: Cloning OCI Factory
         uses: actions/checkout@v4
