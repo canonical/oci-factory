@@ -39,7 +39,7 @@ env:
 
   OCI_FACTORY_REPO: canonical/oci-factory
   # TODO: update before final merge
-  OCI_FACTORY_BRANCH: ${{ github.repository == 'canonical/oci-factory' && github.ref_name || main }}  # required for external workflow calls.
+  OCI_FACTORY_BRANCH: ${{ github.repository == 'canonical/oci-factory' && github.ref_name || 'main' }}  # required for external workflow calls.
 
 jobs:
 
