@@ -123,13 +123,30 @@ jobs:
             --oci-path ${{ steps.validate-image.outputs.img-path }} \
             --revision-data-dir ${{ env.DATA_DIR }}
 
+  validate-matrix:
+    # validate matrix previously prepared for oci-factory
+    runs-on: ubuntu-22.04
+    needs: [prepare-build]
+    strategy:
+      fail-fast: true
+      matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
+    steps:
+
+      - name: Clone GitHub image repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.source }}
+          ref: ${{ matrix.commit }}
+          submodules: "recursive"
+          fetch-depth: 1
+
       - name: Installing yq
         run: sudo snap install yq --channel=v4/stable
 
       - name: Validate image naming and base
         run: |
-          rock_name=`cat "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"/rockcraft.y*ml | yq -r .name`
-          folder_name="${{ inputs.oci-factory-path }}"
+          rock_name=`cat "${{ matrix.directory }}"/rockcraft.y*ml | yq -r .name`
+          folder_name="${{ matrix.path }}"
           if [[ "${folder_name}" != *"${rock_name}"* ]]
           then
             echo "ERROR: the OCI folder name '${folder_name}', must contain the rock's name '${rock_name}'."
@@ -138,7 +155,7 @@ jobs:
 
 
   run-build:
-    needs: [prepare-build]
+    needs: [prepare-build, validate-build]
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
