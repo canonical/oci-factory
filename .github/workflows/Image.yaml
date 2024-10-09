@@ -155,7 +155,7 @@ jobs:
 
 
   run-build:
-    needs: [prepare-build, validate-build]
+    needs: [prepare-build, validate-matrix]
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
