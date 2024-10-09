@@ -37,9 +37,6 @@ env:
   ROCK_REPO_DIR: rock-repo  # path where the image repo is cloned into
   ROCK_CI_FOLDER: ci-rocks  # path of uploaded/downloaded artifacts
 
-  OCI_FACTORY_REPO: canonical/oci-factory
-  OCI_FACTORY_BRANCH: ${{ github.repository == 'canonical/oci-factory' && github.ref_name || 'main' }}  # required for external workflow calls.
-
 jobs:
   configure-build:
     # configure-build reads the rockcraft.yaml, creating one or more *-build job runs
@@ -48,16 +45,19 @@ jobs:
     outputs:
       runner-build-matrix: ${{ steps.configure.outputs.runner-build-matrix }}
       lpci-build-matrix: ${{ steps.configure.outputs.lpci-build-matrix }}
+      oci-factory-branch: ${{ steps.select-oci-factory-branch.outputs.oci-factory-branch }}
     steps:
 
-      - run: echo WORKFLOW REF "${{ github.workflow_ref	}}"
-      - run: echo WORKFLOW SHA "${{ github.workflow_sha	}}"
+      - name: Select OCI Factory Branch
+        id: select-oci-factory-branch
+        run: | 
+          echo "oci-factory-branch=$(echo "${{ github.workflow_ref	}}" | sed s/.*@//)">> GITHUB_OUTPUT
 
       - name: Cloning OCI Factory
         uses: actions/checkout@v4
         with:
-          repository: ${{ env.OCI_FACTORY_REPO }}
-          ref: ${{ steps.configure-build.outputs.branch }}
+          repository: canonical/oci-factory
+          ref: ${{ steps.select-oci-factory-branch.outputs.oci-factory-branch }}
           fetch-depth: 1
 
       - name: Cloning Target Repo
@@ -142,8 +142,8 @@ jobs:
       - name: Cloning OCI Factory
         uses: actions/checkout@v4
         with:
-          repository: ${{ env.OCI_FACTORY_REPO }}
-          ref: ${{ env.OCI_FACTORY_BRANCH }}
+          repository: canonical/oci-factory
+          ref: ${{ needs.configure-build.outputs.oci-factory-branch }}
           fetch-depth: 1
 
       - name: Cloning Target Repo
@@ -191,8 +191,8 @@ jobs:
       # Job Setup
       - uses: actions/checkout@v4
         with:
-          repository: ${{ env.OCI_FACTORY_REPO }}
-          ref: ${{ env.OCI_FACTORY_BRANCH }}
+          repository: canonical/oci-factory
+          ref: ${{ needs.configure-build.outputs.oci-factory-branch }}
           fetch-depth: 1
 
       - run: src/build_rock/assemble_rock/requirements.sh
