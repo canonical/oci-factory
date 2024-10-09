@@ -124,7 +124,7 @@ jobs:
             --revision-data-dir ${{ env.DATA_DIR }}
 
   validate-matrix:
-    # validate matrix previously prepared for oci-factory
+    # validate matrix prepared in previous job before running Build-Rock workflow.
     runs-on: ubuntu-22.04
     needs: [prepare-build]
     strategy:
@@ -152,7 +152,6 @@ jobs:
             echo "ERROR: the OCI folder name '${folder_name}', must contain the rock's name '${rock_name}'."
             exit 1
           fi
-
 
   run-build:
     needs: [prepare-build, validate-matrix]
