@@ -48,7 +48,7 @@ jobs:
       oci-factory-ref: ${{ steps.workflow-version.outputs.sha }}
     steps:
 
-      - name: Get workflow version
+      - name: Get Workflow Version
         id: workflow-version
         uses: canonical/get-workflow-version-action@v1
         with:
