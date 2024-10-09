@@ -30,7 +30,7 @@ runs:
         then
           git_url="${{ inputs.repository }}"
         else
-          git_url="${{ inputs.github-server-url }}/${{ inputs.repository }}"
+          git_url="${{ inputs.github-server-url }}/${{ inputs.repository }}.git"
         fi
 
         repo_path="$GITHUB_WORKSPACE/${{ inputs.path }}"
