@@ -51,4 +51,3 @@ runs:
           git submodule update ${{ inputs.submodules == 'recursive' && '--recursive' || '' }}
         fi
 
-
