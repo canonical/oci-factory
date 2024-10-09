@@ -45,7 +45,7 @@ jobs:
     outputs:
       runner-build-matrix: ${{ steps.configure.outputs.runner-build-matrix }}
       lpci-build-matrix: ${{ steps.configure.outputs.lpci-build-matrix }}
-      oci-factory-ref: ${{ steps.select-oci-factory-ref.outputs.oci-factory-ref }}
+      oci-factory-ref: ${{ steps.workflow-version.outputs.sha }}
     steps:
 
       - name: Get workflow version
@@ -55,16 +55,11 @@ jobs:
           repository-name: canonical/oci-factory
           file-name: Build-Rock.yaml
 
-      - name: Select OCI Factory Branch
-        id: select-oci-factory-ref
-        run: | 
-          echo "oci-factory-ref=$(echo "${{ steps.workflow-version.outputs.sha }}")>> GITHUB_OUTPUT
-
       - name: Cloning OCI Factory
         uses: actions/checkout@v4
         with:
           repository: canonical/oci-factory
-          ref: ${{ steps.select-oci-factory-ref.outputs.oci-factory-ref }}
+          ref: ${{ steps.workflow-version.outputs.sha }}
           fetch-depth: 1
 
       - name: Cloning Target Repo
