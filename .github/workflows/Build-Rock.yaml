@@ -49,6 +49,8 @@ jobs:
     steps:
 
       - name: Get Workflow Version
+        # Note: we may need to pass a github token when working with private repositories. 
+        # https://github.com/canonical/get-workflow-version-action  
         id: workflow-version
         uses: canonical/get-workflow-version-action@v1
         with:
@@ -63,14 +65,12 @@ jobs:
           fetch-depth: 1
 
       - name: Cloning Target Repo
-        uses: actions/checkout@v4
-        continue-on-error: true
+        uses: ./.github/actions/validate-actor
         with:
           repository: ${{ inputs.rock-repo }}
           path: ${{ env.ROCK_REPO_DIR }}
           ref: ${{ inputs.rock-repo-commit }}
           submodules: "recursive"
-          fetch-depth: 1
 
       - name: Installing Python 
         uses: actions/setup-python@v5
