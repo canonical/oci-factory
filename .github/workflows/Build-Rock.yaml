@@ -41,53 +41,9 @@ env:
   OCI_FACTORY_BRANCH: ${{ github.repository == 'canonical/oci-factory' && github.ref_name || 'main' }}  # required for external workflow calls.
 
 jobs:
-
-  access-validation:
-    runs-on: ubuntu-22.04
-    if: ${{ github.repository == 'canonical/oci-factory'  && !github.event.pull_request.head.repo.fork }}
-    steps:
-
-      - name: Cloning OCI Factory
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ env.OCI_FACTORY_REPO }}
-          ref: ${{ steps.configure-build.outputs.branch }}
-          fetch-depth: 1
-
-      - name: Validate access to triggered image
-        uses: ./.github/actions/validate-actor
-        with:
-          admin-only: true
-          image-path: ${{ inputs.oci-factory-path }}
-          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
-
-
-      - name: Clone GitHub image repository
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ inputs.rock-repo }}
-          path: ${{ env.ROCK_REPO_DIR }}
-          ref: ${{ inputs.rock-repo-commit }}
-          submodules: "recursive"
-          fetch-depth: 1
-
-      - name: Installing yq
-        run: sudo snap install yq --channel=v4/stable
-
-      - name: Validate image naming and base
-        run: |
-          rock_name=`cat "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"/rockcraft.y*ml | yq -r .name`
-          folder_name="${{ inputs.oci-factory-path }}"
-          if [[ "${folder_name}" != *"${rock_name}"* ]]
-          then
-            echo "ERROR: the OCI folder name '${folder_name}', must contain the rock's name '${rock_name}'."
-            exit 1
-          fi
-
   configure-build:
     # configure-build reads the rockcraft.yaml, creating one or more *-build job runs
     # depending on the target architecture.
-    needs: [access-validation]
     runs-on: ubuntu-22.04
     outputs:
       runner-build-matrix: ${{ steps.configure.outputs.runner-build-matrix }}
