@@ -38,7 +38,6 @@ env:
   ROCK_CI_FOLDER: ci-rocks  # path of uploaded/downloaded artifacts
 
   OCI_FACTORY_REPO: canonical/oci-factory
-  # TODO: update before final merge
   OCI_FACTORY_BRANCH: ${{ github.repository == 'canonical/oci-factory' && github.ref_name || 'main' }}  # required for external workflow calls.
 
 jobs:
@@ -48,19 +47,11 @@ jobs:
     if: ${{ github.repository == 'canonical/oci-factory'  && !github.event.pull_request.head.repo.fork }}
     steps:
 
-      - uses: actions/checkout@v4
+      - name: Cloning OCI Factory
+        uses: actions/checkout@v4
         with:
           repository: ${{ env.OCI_FACTORY_REPO }}
           ref: ${{ steps.configure-build.outputs.branch }}
-          fetch-depth: 1
-
-      - name: Clone GitHub image repository
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ inputs.rock-repo }}
-          path: ${{ env.ROCK_REPO_DIR }}
-          ref: ${{ inputs.rock-repo-commit }}
-          submodules: "recursive"
           fetch-depth: 1
 
       - name: Validate access to triggered image
@@ -71,14 +62,25 @@ jobs:
           github-token: ${{ secrets.ROCKSBOT_TOKEN }}
 
 
-      - run: sudo snap install yq --channel=v4/stable
+      - name: Clone GitHub image repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.rock-repo }}
+          path: ${{ env.ROCK_REPO_DIR }}
+          ref: ${{ inputs.rock-repo-commit }}
+          submodules: "recursive"
+          fetch-depth: 1
+
+      - name: Installing yq
+        run: sudo snap install yq --channel=v4/stable
+
       - name: Validate image naming and base
         run: |
           rock_name=`cat "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"/rockcraft.y*ml | yq -r .name`
-          folder_name=`basename "${{ inputs.rockfile-directory }}"`
-          if [[ "${folder_name}" != "${rock_name}" ]]
+          folder_name="${{ inputs.oci-factory-path }}"
+          if [[ "${folder_name}" != *"${rock_name}"* ]]
           then
-            echo "ERROR: the rock's name '${rock_name}' must match the OCI folder name '${folder_name}'"
+            echo "ERROR: the OCI folder name '${folder_name}', must contain the rock's name '${rock_name}'."
             exit 1
           fi
 
@@ -92,13 +94,14 @@ jobs:
       lpci-build-matrix: ${{ steps.configure.outputs.lpci-build-matrix }}
     steps:
 
-      - uses: actions/checkout@v4
+      - name: Cloning OCI Factory
+        uses: actions/checkout@v4
         with:
           repository: ${{ env.OCI_FACTORY_REPO }}
           ref: ${{ steps.configure-build.outputs.branch }}
           fetch-depth: 1
 
-      - name: Clone GitHub image repository
+      - name: Cloning Target Repo
         uses: actions/checkout@v4
         continue-on-error: true
         with:
@@ -108,14 +111,16 @@ jobs:
           submodules: "recursive"
           fetch-depth: 1
 
-      - uses: actions/setup-python@v5
+      - name: Installing Python 
+        uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
-      - run: pip install -r src/build_rock/configure/requirements.txt
+      - name: Installing Python requirements
+        run: pip install -r src/build_rock/configure/requirements.txt
 
       # Configure matrices for each *-build job
-      - name: Configure
+      - name: Configuring Jobs
         id: configure
         run: |
           python3 -m src.build_rock.configure.generate_build_matrix \
@@ -133,7 +138,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     name: "runner-build | ${{ matrix.architecture }} "
     steps:
-      - name: Clone Repo
+      - name: Cloning Target Repo
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.rock-repo }}
@@ -141,20 +146,20 @@ jobs:
           ref: ${{ inputs.rock-repo-commit }}
           submodules: "recursive"
 
-      - name: Build Target
+      - name: Building Target
         id: rockcraft
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
           verbosity: debug
 
-      - name: Collect Artifacts
+      - name: Collecting Artifacts
         id: collect-artifacts
         run: |
           mkdir -p ${{ env.ROCK_CI_FOLDER }} && cp ${{ steps.rockcraft.outputs.rock }} "$_"
           echo "filename=$(basename ${{ steps.rockcraft.outputs.rock }})" >> $GITHUB_OUTPUT
 
-      - name: Upload Artifacts
+      - name: Uploading Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.oci-archive-name }}-${{ steps.collect-artifacts.outputs.filename }}
@@ -174,14 +179,15 @@ jobs:
     runs-on: ubuntu-22.04
     name: "lpci-build | ${{ matrix.architecture }} "
     steps:
-      # Job Setup
-      - uses: actions/checkout@v4
+
+      - name: Cloning OCI Factory
+        uses: actions/checkout@v4
         with:
           repository: ${{ env.OCI_FACTORY_REPO }}
           ref: ${{ env.OCI_FACTORY_BRANCH }}
           fetch-depth: 1
 
-      - name: Clone Repo
+      - name: Cloning Target Repo
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.rock-repo }}
@@ -189,7 +195,7 @@ jobs:
           ref: ${{ inputs.rock-repo-commit }}
           submodules: "recursive"
 
-      - name: Build Target
+      - name: Building Target
         # TODO: Replace this retry action with bash equivalent for better testing
         uses: nick-fields/retry@v3.0.0
         with:
@@ -202,13 +208,13 @@ jobs:
               -c "${{ secrets.LP_CREDENTIALS_B64 }}" \
               -d "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
 
-      - name: Collect Artifacts
+      - name: Collecting Artifacts
         id: collect-artifacts
         run: |
           mkdir -p ${{ env.ROCK_CI_FOLDER }} && cp ${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}/*.rock "$_"
           echo "filename=${{ matrix.rock-name }}_${{ matrix.architecture }}" >> $GITHUB_OUTPUT
 
-      - name: Upload Artifacts
+      - name: Uploading Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.oci-archive-name }}-${{ steps.collect-artifacts.outputs.filename }}
@@ -231,20 +237,20 @@ jobs:
           fetch-depth: 1
 
       - run: src/build_rock/assemble_rock/requirements.sh
-      - name: Download Single Arch rocks
+      - name: Downloading Single Arch rocks
         uses: actions/download-artifact@v4
         id: download
         with:
           path: ${{ env.ROCK_CI_FOLDER }}
           pattern: ${{ inputs.oci-archive-name }}-*
 
-      - name: Assemble Multi Arch rock
+      - name: Assembling Multi Arch rock
         run: |
           src/build_rock/assemble_rock/assemble.sh \
             -n "${{ inputs.oci-archive-name }}" \
             -d "${{ env.ROCK_CI_FOLDER }}"
 
-      - name: Upload Multi Arch rock
+      - name: Uploading Multi Arch rock
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.oci-archive-name }}
