@@ -58,7 +58,7 @@ jobs:
       - name: Select OCI Factory Branch
         id: select-oci-factory-ref
         run: | 
-          echo "oci-factory-ref=$(echo "${{ steps.workflow-version.outputs.sha }})">> GITHUB_OUTPUT
+          echo "oci-factory-ref=$(echo "${{ steps.workflow-version.outputs.sha }}")>> GITHUB_OUTPUT
 
       - name: Cloning OCI Factory
         uses: actions/checkout@v4
