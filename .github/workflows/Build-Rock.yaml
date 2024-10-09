@@ -39,7 +39,7 @@ env:
 
   OCI_FACTORY_REPO: canonical/oci-factory
   # TODO: update before final merge
-  OCI_FACTORY_BRANCH: ROCKS-1452/oci-factory-refactor-build-rock-to-be-externally-reusable  # required for external workflow calls.
+  OCI_FACTORY_BRANCH: main  # required for external workflow calls.
 
 jobs:
   configure-build:
@@ -58,11 +58,14 @@ jobs:
       # move this to an action since it may be used frequently 
       - name: Select oci-factory branch
         id: oci-factory-branch
-        run: echo "branch=$(${{ github.repository == 'canonical/oci-factory' }} && echo something || echo ${{ env.OCI_FACTORY_BRANCH }})" >> $GITHUB_OUTPUT
-
+        run: echo "branch=$(${{ github.repository == 'canonical/oci-factory' }} && echo ${{ github.ref }} || echo ${{ env.OCI_FACTORY_BRANCH }})" >> $GITHUB_OUTPUT
 
       - uses: actions/checkout@v4
         if: ${{ github.repository == 'canonical/oci-factory'  && !github.event.pull_request.head.repo.fork }}
+        with:
+          repository: ${{ env.OCI_FACTORY_REPO }}
+          ref: ${{ steps.configure-build.outputs.branch }}
+          fetch-depth: 1
 
       - name: Validate access to triggered image
         uses: ./.github/actions/validate-actor
