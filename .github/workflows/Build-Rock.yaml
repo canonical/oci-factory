@@ -48,6 +48,9 @@ jobs:
       oci-factory-branch: ${{ steps.select-oci-factory-branch.outputs.oci-factory-branch }}
     steps:
 
+      - run: cat github.event_path ${{ github.event_path }}
+      - run: cat github.event ${{ github.event }}
+
       - name: Select OCI Factory Branch
         id: select-oci-factory-branch
         run: | 
