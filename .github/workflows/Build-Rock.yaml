@@ -94,7 +94,8 @@ jobs:
       - name: Validate image naming and base
         run: |
           rock_name=`cat "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"/rockcraft.y*ml | yq -r .name`
-          if [[ "${{ inputs.oci-factory-path }}" != *"${rock_name}"* ]]
+          folder_name=`basename "${{ inputs.rockfile-directory }}"`
+          if [[ "${folder_name}" != "${rock_name}" ]]
           then
             echo "ERROR: the rock's name '${rock_name}' must match the OCI folder name!"
             exit 1
