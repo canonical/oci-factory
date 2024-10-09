@@ -48,8 +48,14 @@ jobs:
       oci-factory-branch: ${{ steps.select-oci-factory-branch.outputs.oci-factory-branch }}
     steps:
 
-      - run: cat github.event_path ${{ github.event_path }}
-      - run: cat github.event ${{ github.event }}
+      - name: Get workflow version
+        id: workflow-version
+        uses: canonical/get-workflow-version-action@v1
+        with:
+          repository-name: canonical/oci-factory
+          file-name: Build-Rock.yaml
+
+      - run: echo workflow-version ${{ steps.workflow-version.outputs }}
 
       - name: Select OCI Factory Branch
         id: select-oci-factory-branch
