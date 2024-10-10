@@ -100,6 +100,13 @@ jobs:
     name: "runner-build | ${{ matrix.architecture }} "
     steps:
 
+      - name: Cloning OCI Factory
+        uses: actions/checkout@v4
+        with:
+          repository: canonical/oci-factory
+          ref: ${{ steps.workflow-version.outputs.sha }}
+          fetch-depth: 1
+
       - name: Cloning Target Repo
         uses: ./.github/actions/checkout
         with:
