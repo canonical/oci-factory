@@ -104,7 +104,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: canonical/oci-factory
-          ref: ${{ steps.workflow-version.outputs.sha }}
+          ref: ${{ needs.configure-build.outputs.oci-factory-ref }}
           fetch-depth: 1
 
       - name: Cloning Target Repo
