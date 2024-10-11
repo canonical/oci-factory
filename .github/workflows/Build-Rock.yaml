@@ -151,7 +151,7 @@ jobs:
       fail-fast: true
       matrix: ${{ fromJSON(needs.configure-build.outputs.lpci-build-matrix) }}
     runs-on: ubuntu-22.04
-    name: "lpci-build - ${{ matrix.architecture }} | ${{ env.BUILD_ID }}"
+    name: "lpci-build - ${{ matrix.architecture }} | ${{ inputs.build-id || inputs.oci-archive-name }}"
     steps:
 
       - name: Cloning OCI Factory
