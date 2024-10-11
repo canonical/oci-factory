@@ -46,6 +46,7 @@ jobs:
       runner-build-matrix: ${{ steps.configure.outputs.runner-build-matrix }}
       lpci-build-matrix: ${{ steps.configure.outputs.lpci-build-matrix }}
       oci-factory-ref: ${{ steps.workflow-version.outputs.sha }}
+    name: "configure-build | ${{ inputs.oci-archive-name }}"
     steps:
 
       - name: Get Workflow Version
@@ -97,7 +98,7 @@ jobs:
       fail-fast: true
       matrix: ${{ fromJSON(needs.configure-build.outputs.runner-build-matrix) }}
     runs-on: ${{ matrix.runner }}
-    name: "runner-build | ${{ matrix.architecture }} "
+    name: "runner-build | ${{ inputs.oci-archive-name }} |  | ${{ matrix.architecture }} "
     steps:
 
       - name: Cloning OCI Factory
@@ -146,7 +147,7 @@ jobs:
       fail-fast: true
       matrix: ${{ fromJSON(needs.configure-build.outputs.lpci-build-matrix) }}
     runs-on: ubuntu-22.04
-    name: "lpci-build | ${{ matrix.architecture }} "
+    name: "lpci-build | ${{ inputs.oci-archive-name }} | ${{ matrix.architecture }} "
     steps:
 
       - name: Cloning OCI Factory
@@ -197,6 +198,7 @@ jobs:
     # Always run even if one of the *-build jobs are skipped
     # Nice example from benjamin-bergia/github-workflow-patterns...
     if: ${{ always() && contains(needs.*.result, 'success') && !(contains(needs.*.result, 'failure')) }}
+    name: "assemble-rock | ${{ inputs.oci-archive-name }}"
     steps:
       # Job Setup
       - uses: actions/checkout@v4
