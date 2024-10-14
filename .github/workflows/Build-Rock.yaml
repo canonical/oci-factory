@@ -9,7 +9,7 @@ on:
         type: string
         required: true
       build-id:
-        description: "Optional identifier for managing job in GitHub UI. Defaults to oci-archive-name."
+        description: "Optional identifier for managing job in GitHub UI"
         type: string
         default: "${{ inputs.oci-archive-name }}"
 
@@ -50,7 +50,7 @@ jobs:
       runner-build-matrix: ${{ steps.configure.outputs.runner-build-matrix }}
       lpci-build-matrix: ${{ steps.configure.outputs.lpci-build-matrix }}
       oci-factory-ref: ${{ steps.workflow-version.outputs.sha }}
-    name: "configure-build | ${{ inputs.build-id }}"
+    name: "configure-build ${{ inputs.build-id && '| ' + inputs.build-id || ' '}}"
     steps:
 
       - name: Get Workflow Version
