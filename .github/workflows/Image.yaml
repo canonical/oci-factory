@@ -161,7 +161,6 @@ jobs:
     uses: ./.github/workflows/Build-Rock.yaml
     with:
       oci-archive-name: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
-      build-id: ${{ matrix.name }}
       rock-repo: ${{ matrix.source }}
       rock-repo-commit: ${{ matrix.commit }}
       rockfile-directory: ${{ matrix.directory }}
