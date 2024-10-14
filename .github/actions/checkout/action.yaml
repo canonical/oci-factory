@@ -50,4 +50,3 @@ runs:
         then
           git submodule update ${{ inputs.submodules == 'recursive' && '--recursive' || '' }}
         fi
-
