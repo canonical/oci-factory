@@ -1,0 +1,12 @@
+version: 1
+upload:
+  - source: "canonical/identity-platform-login-ui"
+    commit: 65a391341520f1c41a12fdcc12b513e5a3493102
+    directory: .
+    release:
+      0.18.0-22.04:
+        risks:
+          - stable
+          - candidate
+          - edge
+        end-of-life: "2024-03-01T00:00:00Z"
