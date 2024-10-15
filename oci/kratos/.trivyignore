@@ -1,0 +1,10 @@
+# Upstream CVEs
+
+# github.com/jackc/pgproto3/v2 - pgproto3 SQL Injection via Protocol Message Size Overflow
+GHSA-7jwh-3vrq-q3m8
+# github.com/jackc/pgx/v4 - pgx SQL Injection via Line Comment Creation
+CVE-2024-27289
+# github.com/jackc/pgx/v4 - pgx SQL Injection via Protocol Message Size Overflow
+CVE-2024-27304
+# github.com/docker/docker - Authz zero length regression 
+CVE-2024-41110
