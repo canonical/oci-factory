@@ -196,7 +196,7 @@ jobs:
 
   assemble-rock:
     # Assemble individual single-arch rocks into multi-arch rocks
-    needs: [runner-build, lpci-build]
+    needs: [runner-build, lpci-build, configure-build]
     runs-on: ubuntu-22.04
     # Always run even if one of the *-build jobs are skipped
     # Nice example from benjamin-bergia/github-workflow-patterns...
@@ -204,7 +204,8 @@ jobs:
     name: "assemble-rock ${{ inputs.build-id != '' && format('| {0}', inputs.build-id) || ' '}}"
     steps:
       # Job Setup
-      - uses: actions/checkout@v4
+      - name: Cloning OCI Factory
+        uses: actions/checkout@v4
         with:
           repository: canonical/oci-factory
           ref: ${{ needs.configure-build.outputs.oci-factory-ref }}
