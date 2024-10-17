@@ -1,0 +1,52 @@
+name: Git Checkout
+description: 'Checkout action supporting both github and non github repositories.'
+
+
+inputs:
+  repository:
+    description: 'Github repository in the format owner/repo or external http(s) URL'
+    required: true
+  ref:
+    description: 'The branch, tag or SHA to checkout'
+    default: ''
+  path:
+    description: 'Relative path under $GITHUB_WORKSPACE to place the repository'
+    default: '.'
+  submodules: 
+    description: 'Whether to checkout submodules. true|false|recursive according to actions/checkout@v4'
+    default: 'false'
+  github-server-url: 
+    description: 'The base URL for the GitHub instance that you are trying to clone from'
+    default: 'https://github.com'
+
+runs:
+  using: "composite" 
+  steps:
+    - name: Checkout
+      shell: bash
+      run: |
+        
+        # If URL lacks the protocol, assume it is a github repo 
+        if [[ "${{ inputs.repository }}" =~ https?:// ]]
+        then
+          git_url="${{ inputs.repository }}"
+        else
+          git_url="${{ inputs.github-server-url }}/${{ inputs.repository }}.git"
+        fi
+
+        # create repo path relative to GITHUB_WORKSPACE as per actions/checkout@v4
+        repo_path="$GITHUB_WORKSPACE/${{ inputs.path }}"
+
+        # clone the repo and cd into it
+        git clone $git_url "$repo_path"
+        cd "$repo_path"
+
+        # checkout the correct ref
+        git config advice.detachedHead false
+        git checkout ${{ inputs.ref }}
+        
+        # and update sub modules if required
+        if ${{ inputs.submodules == 'true' || inputs.submodules == 'recursive' }}
+        then
+          git submodule update ${{ inputs.submodules == 'recursive' && '--recursive' || '' }}
+        fi

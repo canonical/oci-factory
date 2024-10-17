@@ -69,14 +69,14 @@ jobs:
   access-check:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v4 
-    - name: Validate access to triggered image
-      uses: ./.github/actions/validate-actor
-      if: ${{ github.repository == 'canonical/oci-factory' && !github.event.pull_request.head.repo.fork }}
-      with:
-        admin-only: true
-        image-path: ${{ inputs.oci-image-path }}
-        github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+      - uses: actions/checkout@v4 
+      - name: Validate access to triggered image
+        uses: ./.github/actions/validate-actor
+        if: ${{ github.repository == 'canonical/oci-factory' && !github.event.pull_request.head.repo.fork }}
+        with:
+          admin-only: true
+          image-path: ${{ inputs.oci-image-path }}
+          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
 
   fetch-oci-image:
     runs-on: ubuntu-22.04

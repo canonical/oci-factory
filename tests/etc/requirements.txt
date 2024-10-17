@@ -1,1 +1,2 @@
 pytest==8.3.2
+-r ../../src/build_rock/configure/requirements.txt
