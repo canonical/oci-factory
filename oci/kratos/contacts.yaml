@@ -1,0 +1,93 @@
+notify:
+  emails:
+    - identity.charmers@lists.launchpad.net
+  mattermost-channels:
+    - ofi4for9obfq8m978h318x56ar
+---
+version: 1
+application: kratos
+is_chiselled: False
+description: "Ory Kratos is the developer-friendly, security-hardened and battle-tested Identity, \nUser Management and Authentication system for the Cloud."
+---
+version: 1
+upload:
+  - source: "canonical/kratos-rock"
+    commit: 396bf3a71cb65f97cf853540117858d6859ef43b
+    directory: .
+    release:
+      1.1.0-22.04:
+        risks:
+          - stable
+          - candidate
+          - edge
+        end-of-life: "2026-01-01T00:00:00Z"
+---
+version: 1
+application: kratos
+is_chiselled: False
+description: "Ory Kratos is the developer-friendly, security-hardened and battle-tested Identity, \nUser Management and Authentication system for the Cloud.\n\nThe identity management server Ory Kratos enables you to implement user management, \nlogin and registration in a secure and straightforward way. \nDon't rewrite every aspect of identity management yourself. \nOry Kratos implements all common flows such as login and logout, account activation, \nmfa/2fa, profile and session management, user facing errors and account recovery methods. \nJust spin up a docker image and write a simple UI for it in the language or framework of \nyour choice. \n"
+docker:
+  parameters:
+    - -p 4433:4433
+    - -p 4434:4434
+  access: Access your Kratos Public API at `http://localhost:4433`, Admin API at `http://localhost:4434`.
+parameters:
+  - type: -e
+    value: 'TRACING_ENABLED=true'
+    description: Tracing enablement.
+  - type: -e
+    value: 'TRACING_PROVIDER=otel'
+    description: Tracing protocol to be used.
+  - type: -e
+    value: 'TRACING_PROVIDERS_OTLP_INSECURE=true'
+    description: Allow Tracing via non TLS/insecure communication.
+  - type: -e
+    value: 'TRACING_PROVIDERS_OTLP_SAMPLING_SAMPLING_RATIO=1.0'
+    description: Tracing sampling ratio.
+  - type: -e
+    value: 'TRACING_PROVIDERS_OTLP_SERVER_URL=tempo.server.io:4318'
+    description: Tracing server url and port.
+  - type: -e
+    value: 'SERVE_PUBLIC_BASE_URL=https://kratos.io/dev/path'
+    description: Public URL kratos will be served from.
+  - type: -e
+    value: 'DSN=postgres://user:pass@postgresql:5432/db'
+    description: Database connection string for postgresql database.
+  - type: -e
+    value: 'HTTPS_PROXY=http://proxy.internal'
+    description: HTTPS proxy used in air gapped environments.
+  - type: -e
+    value: 'HTTP_PROXY=http://proxy.internal'
+    description: HTTP proxy used in air gapped environments.
+  - type: -e
+    value: 'NO_PROXY=*.canonical.com'
+    description: Domain that needs to be exluded from the proxy, used in air gapped environments.
+  - type: -p
+    value: '4433:4433'
+    description: Kratos Public API port.
+  - type: -p
+    value: '4434:4434'
+    description: Kratos Admin API port.
+  - type: -v
+    value: "/path/to/Kratos/config.yaml:/kratos.yaml"
+    description: >
+      Kratos config contains all the information needed to successfully configure it as an OIDC Provider, see https://www.ory.sh/docs/kratos/reference/configuration as a reference
+
+  - type: CMD
+    value: "Kratos serve all --config /kratos.yaml"
+    description: >
+      Launch Kratos web server(s) using a mix of environment variables and the config mounted via volume.
+
+---
+version: 1
+upload:
+  - source: "canonical/kratos-rock"
+    commit: 396bf3a71cb65f97cf853540117858d6859ef43b
+    directory: .
+    release:
+      1.1.0-22.04:
+        risks:
+          - stable
+          - candidate
+          - edge
+        end-of-life: "2025-05-01T00:00:00Z"
