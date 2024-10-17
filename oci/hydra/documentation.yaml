@@ -36,11 +36,11 @@ parameters:
     value: '4445:4445'
     description: Hydra Admin API port.
   - type: -v
-    value: "/path/to/hydra/config.yaml:/hydra.yaml"
+    value: '/path/to/hydra/config.yaml:/hydra.yaml'
     description: >
       Hydra config contains all the information needed to successfully configure it as an OIDC
       Provider, see https://github.com/ory/hydra/blob/master/internal/config/config.yaml as a reference
   - type: CMD
-    value: "hydra serve all --config /hydra.yaml"
+    value: 'hydra serve all --config /hydra.yaml'
     description: >
       Launch Hydra web server(s) using a mix of environment variables and the config mounted via volume.
