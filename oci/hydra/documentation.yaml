@@ -44,3 +44,5 @@ parameters:
     value: "hydra serve all --config /hydra.yaml"
     description: >
       Launch Hydra web server(s) using a mix of environment variables and the config mounted via volume.
+debug:
+  text: null
