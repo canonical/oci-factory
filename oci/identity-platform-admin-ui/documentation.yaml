@@ -1,0 +1,11 @@
+version: 1
+application: identity-platform-admin-ui
+is_chiselled: False
+description: |
+  Canonical IAM Admin UI is a component that allows you to interact with the components
+  that are part of the Identity Platform solution.
+  
+  It provides a set of API to view,modify and delete resources on Ory Kratos, Ory Hydra 
+  Ory Oathkeeper and OpenFGA
+
+  For further information check our repository on Github https://github.com/canonical/identity-platform-admin-ui
