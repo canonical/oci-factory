@@ -1,5 +1,5 @@
 name: Image
-run-name: 'Image - ${{ inputs.oci-image-name || github.triggering_actor }} - ${{ github.ref }}'
+run-name: "Image - ${{ inputs.oci-image-name || github.triggering_actor }} - ${{ github.ref }}"
 
 on:
   push:
@@ -24,8 +24,8 @@ on:
         required: true
         type: boolean
         default: false
-      external_ref_id: #(1)
-        description: 'Optional ID for unique run detection'
+      external_ref_id:  # (1)
+        description: "Optional ID for unique run detection"
         required: false
         type: string
         default: "default-id"
@@ -136,23 +136,75 @@ jobs:
           path: ${{ steps.prepare-matrix.outputs.revision-data-dir }}
           key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
 
-  run-build:
+  validate-matrix:
+    # validate matrix prepared in previous job before running Build-Rock workflow.
+    runs-on: ubuntu-22.04
     needs: [prepare-build]
+    strategy:
+      fail-fast: true
+      matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
+    steps:
+
+      - name: Clone GitHub image repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.source }}
+          ref: ${{ matrix.commit }}
+          submodules: "recursive"
+          fetch-depth: 1
+
+      - name: Installing yq
+        run: sudo snap install yq --channel=v4/stable
+
+      - name: Validate image naming and base
+        run: |
+          rock_name=`cat "${{ matrix.directory }}"/rockcraft.y*ml | yq -r .name`
+          folder_name="${{ matrix.path }}"
+          if [[ "${folder_name}" != *"${rock_name}"* ]]
+          then
+            echo "ERROR: the OCI folder name '${folder_name}', must contain the rock's name '${rock_name}'."
+            exit 1
+          fi
+
+  run-build:
+    needs: [prepare-build, validate-matrix]
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     uses: ./.github/workflows/Build-Rock.yaml
     with:
-      oci-archive-name: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}
-      oci-factory-path: ${{ matrix.path }}
-      rock-name: ${{ matrix.name }}
+      oci-archive-name: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
+      build-id: ${{ matrix.name }}
       rock-repo: ${{ matrix.source }}
       rock-repo-commit: ${{ matrix.commit }}
       rockfile-directory: ${{ matrix.directory }}
+      lpci-fallback: true
     secrets: inherit
 
-  test:
+  tmp-cache-job:
+    # TODO: This is a temporary job that will be removed when the refactored test job is merged.
+    # Going forward we download the built rocks from artifacts instead of cache. This job takes
+    # the uploaded rocks then re-caches them for compatibility.
+    name: Temporary step to cache rocks
+    runs-on: ubuntu-22.04
     needs: [prepare-build, run-build]
+    strategy:
+      fail-fast: true
+      matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
+    steps:
+      - name: Download rock
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
+
+      - uses: actions/cache/save@v4
+        with:
+          key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
+          path: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
+
+  test:
+    needs: [prepare-build, run-build, tmp-cache-job]
+    # TODO: Remove tmp-cache-job when removing the job tmp-cache-job
     name: Test
     strategy:
       fail-fast: true
@@ -162,8 +214,98 @@ jobs:
       oci-image-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}"
       oci-image-path: "oci/${{ matrix.name }}"
       test-from: "cache"
-      cache-key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.revision }}        
+      cache-key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
     secrets: inherit
+
+  prepare-upload:
+    runs-on: ubuntu-22.04
+    needs: [prepare-build, run-build, test]
+    name: Prepare upload
+    if: ${{ inputs.upload || (github.ref_name == 'main' && github.event_name == 'push') }}
+    env:
+      OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+      OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
+      OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+      OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
+      OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+      IMAGE_NAME: ${{ needs.prepare-build.outputs.oci-img-name }}
+      SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
+      DATA_DIR: "revision-data"
+    outputs:
+      build-matrix: ${{ steps.prepare-matrix.outputs.build-matrix }}
+      revision-data-cache-key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use custom image trigger
+        if: ${{ inputs.b64-image-trigger != '' }}
+        run: echo ${{ inputs.b64-image-trigger }} | base64 -d > ${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - run: |
+          ./src/uploads/requirements.sh
+          pip install -r src/image/requirements.txt -r src/uploads/requirements.txt
+
+      - name: Upload the lockfile for the image
+        id: swift-lock
+        run: |
+          ./src/uploads/swift_lockfile_lock.sh \
+            ${{ needs.prepare-build.outputs.oci-img-name }}
+
+      # Here starts the critical section, have to be executed in sequence outside of matrix.
+      - name: Get next revision number
+        id: get-next-revision
+        run: ./src/image/define_image_revision.sh
+
+      - name: Prepare builds matrix for upload
+        id: prepare-matrix
+        run: |
+          set -ex
+
+          mkdir ${{ env.DATA_DIR }}
+
+          ./src/image/prepare_single_image_build_matrix.py \
+            --oci-path ${{ needs.prepare-build.outputs.oci-img-path }} \
+            --revision-data-dir ${{ env.DATA_DIR }} \
+            --next-revision ${{ steps.get-next-revision.outputs.revision }} \
+            --infer-image-track
+
+          echo "revision-data-cache-key=${{ github.run_id }}-${{ env.DATA_DIR }}-$(date +%s)" >> "$GITHUB_OUTPUT"
+
+      - name: Preempt Swift slot
+        run: |
+          ./src/uploads/preempt_swift_slots.sh ${{ env.DATA_DIR }}
+
+      # Here leaves the critical section.
+      # The lock will be removed even if the steps above fail,
+      # or the workflow is cancelled.
+      - name: Remove the lockfile for the image
+        # Failing to lock the swift container can mean there are multiple
+        # workflows trying to upload the same image at the same time.
+        # Therefore we should not remove the lockfile if the swift lock failed.
+        if: ${{ always() && steps.swift-lock.outcome != 'failure' }}
+        run: |
+          ./src/uploads/swift_lockfile_unlock.sh \
+            ${{ needs.prepare-build.outputs.oci-img-name }}
+
+      # The revision files have to be sanitised before merging,
+      # since the `track` field should not be present.
+      - name: Sanitise revision files
+        run: |
+          set -ex
+          for revision_file in `ls ${{ env.DATA_DIR }}`
+          do
+            jq 'del(.track, .base)' ${{ env.DATA_DIR }}/$revision_file > ${{ env.DATA_DIR }}/$revision_file.tmp
+            mv ${{ env.DATA_DIR }}/$revision_file.tmp ${{ env.DATA_DIR }}/$revision_file
+          done
+
+      - uses: actions/cache/save@v4
+        with:
+          path: ${{ steps.prepare-matrix.outputs.revision-data-dir }}
+          key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
 
   upload:
     runs-on: ubuntu-22.04
@@ -519,15 +661,16 @@ jobs:
   notify:
     runs-on: ubuntu-22.04
     name: Notify
-    needs: [prepare-build, run-build, upload, prepare-releases, generate-provenance]
-    if: ${{ always() && contains(needs.*.result, 'failure') && github.event_name != 'pull_request' }}
+    needs:
+      [prepare-build, run-build, upload, prepare-releases, generate-provenance]
+    if: ${{ !cancelled() && contains(needs.*.result, 'failure') && github.event_name != 'pull_request' }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
-          
+          python-version: "3.x"
+
       - name: Summarize workflow failure message
         id: get-summary
         run: |
@@ -549,7 +692,7 @@ jobs:
           URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           SUMMARY: ${{ steps.get-summary.outputs.summary }}
           FOOTER: "Triggered by ${{ github.triggering_actor }}. Ref: ${{ github.ref }}. Attempts: ${{ github.run_attempt }}"
-          TITLE: '${{ needs.prepare-build.outputs.oci-img-name }}: failed to build->upload->release'
+          TITLE: "${{ needs.prepare-build.outputs.oci-img-name }}: failed to build->upload->release"
         run: |
           for channel in $(echo ${{ steps.get-contacts.outputs.mattermost-channels }} | tr ',' ' ')
           do

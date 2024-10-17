@@ -2,6 +2,7 @@
 this module is the pydantic version
 of the documentation.yaml schema.
 """
+
 from typing import Optional
 from pydantic import BaseModel, Extra, constr, conlist
 
