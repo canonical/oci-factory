@@ -1,6 +1,6 @@
 version: 1
 application: hydra
-is_chiselled: False
+is_chiselled: True
 description: |
   Ory Hydra is a hardened, OpenID Certified OAuth 2.0 Server and OpenID Connect Provider
   optimized for low-latency, high throughput, and low resource consumption.
@@ -45,4 +45,4 @@ parameters:
     description: >
       Launch Hydra web server(s) using a mix of environment variables and the config mounted via volume.
 debug:
-  text: null
+  text: ""
