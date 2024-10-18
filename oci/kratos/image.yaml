@@ -1,0 +1,12 @@
+version: 1
+upload:
+  - source: "canonical/kratos-rock"
+    commit: 396bf3a71cb65f97cf853540117858d6859ef43b
+    directory: .
+    release:
+      1.1.0-22.04:
+        risks:
+          - stable
+          - candidate
+          - edge
+        end-of-life: "2025-05-01T00:00:00Z"
