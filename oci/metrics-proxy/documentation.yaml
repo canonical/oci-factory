@@ -1,0 +1,43 @@
+version: 1
+# --- OVERVIEW INFORMATION ---
+application: metrics-proxy
+description: >
+  Metrics Proxy is a lightweight proxy designed to expose a unified metrics endpoint for multiple Kubernetes pods.
+  The proxy watches for pods in a Kubernetes cluster and listens on a configurable port,
+  where it exposes aggregated metrics on a configurable endpoint.
+  Read more on the [project repo](https://github.com/canonical/metrics-k8s-proxy).
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 15090:15090
+  access: Access aggregated metrics at `http://localhost:15090`.
+
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone setting for the container.
+  - type: -p
+    value: '15090:15090'
+    description: Port mapping for accessing the metrics-proxy aggregated metrics endpoint.
+  - type: --labels
+    value: 'foo=bar'
+    description: Specify labels to filter Kubernetes pods for metrics aggregation.
+  - type: --port
+    value: '15090'
+    description: The port on which the metrics-proxy listens for scrape requests.
+  - type: --scrape_timeout
+    value: '9s'
+    description: Configures the timeout duration for scraping metrics from the pods.
+
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+    ```bash
+    docker exec -it metrics-proxy-container pebble logs -f metrics-proxy
+    ```
+    To get an interactive shell:
+    ```bash
+    docker exec -it metrics-proxy-container /bin/bash
+    ```
