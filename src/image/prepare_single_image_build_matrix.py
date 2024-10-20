@@ -11,14 +11,12 @@ from pathlib import Path
 from git import Repo
 from tempfile import TemporaryDirectory as tempdir
 from copy import deepcopy
-import sys
 import logging
 
-# TODO: in the future call as submodule
-sys.path.append('.')
+
 from src.uploads.infer_image_track import get_base_and_track
 from src.shared.github_output import GithubOutput
-from utils.schema.triggers import ImageSchema
+from src.image.utils.schema.triggers import ImageSchema
 
 # TODO: 
 # - inject_metadata uses a static github url, does this break builds that are sourced
