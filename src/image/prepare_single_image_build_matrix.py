@@ -18,7 +18,7 @@ from src.uploads.infer_image_track import get_base_and_track
 from src.shared.github_output import GithubOutput
 from src.image.utils.schema.triggers import ImageSchema
 
-# TODO: 
+# TODO:
 # - inject_metadata uses a static github url, does this break builds that are sourced
 #   from non-gh repos?
 
@@ -48,14 +48,17 @@ parser.add_argument(
     default=False,
 )
 
+
 class AmbiguousConfigFileError(Exception):
     """Raised when multiple trigger image.y*ml files are found."""
+
     pass
+
 
 class InvalidSchemaError(Exception):
     """Raised when image.yaml schema is found."""
-    pass
 
+    pass
 
 
 def validate_image_trigger(data: dict) -> None:
@@ -65,39 +68,43 @@ def validate_image_trigger(data: dict) -> None:
 
     _ = ImageSchema(**data)
 
-    return None
 
-
-def is_track_eol(track_value: str, track_name: str|None = None) -> bool:
+def is_track_eol(track_value: str, track_name: str | None = None) -> bool:
     """Test if track is EOL, or still valid. Log warning if track_name is provided."""
-    eol_date = datetime.strptime(track_value['end-of-life'],"%Y-%m-%dT%H:%M:%SZ",).replace(tzinfo=timezone.utc)
+    eol_date = datetime.strptime(
+        track_value["end-of-life"],
+        "%Y-%m-%dT%H:%M:%SZ",
+    ).replace(tzinfo=timezone.utc)
     is_eol = eol_date < datetime.now(timezone.utc)
 
     if is_eol and track_name is not None:
-        logging.warning(f"Removing EOL track \"{track_name}\", EOL: {eol_date}")
+        logging.warning(f'Removing EOL track "{track_name}", EOL: {eol_date}')
 
     return is_eol
 
+
 def filter_eol_tracks(build: dict[str, Any]) -> dict[str, Any]:
     """Filter EOL tracks from build."""
-    build['release'] = {
-            key:value 
-            for key, value in build['release'].items() 
-            if not is_track_eol(value, track_name=f"{key}:{build['name']}")
-        }
+    build["release"] = {
+        key: value
+        for key, value in build["release"].items()
+        if not is_track_eol(value, track_name=f"{key}:{build['name']}")
+    }
 
     return build
 
-def filter_empty_release(builds: list[dict[str, Any]]) -> list[dict[str, Any]]:
+
+def filter_eol_builds(builds: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Filter any builds with no tracks specified."""
 
     # remove any end of life tracks
     builds = [filter_eol_tracks(build) for build in builds]
 
-    return [build for build in builds if len(build['release'])]
+    return [build for build in builds if len(build["release"])]
+
 
 def write_build(data_dir: Path, build: dict[str, Any]):
-    with open(data_dir / str(build['revision']), "w", encoding="UTF-8") as fh:
+    with open(data_dir / str(build["revision"]), "w", encoding="UTF-8") as fh:
         json.dump(build, fh)
 
 
@@ -107,11 +114,14 @@ def locate_trigger_yaml(oci_path: Path) -> Path:
     oci_path_yaml_files = glob.glob(str(oci_path / "image.y*ml"))
 
     if len(oci_path_yaml_files) == 0:
-        raise FileNotFoundError(f"image.y*ml not found in {oci_pat}")
+        raise FileNotFoundError(f"image.y*ml not found in {oci_path}")
     elif len(oci_path_yaml_files) > 1:
-        raise AmbiguousConfigFileError(f"More than one image.y*ml not found in {oci_pat}")
+        raise AmbiguousConfigFileError(
+            f"More than one image.y*ml not found in {oci_path}"
+        )
 
     return Path(oci_path_yaml_files[0])
+
 
 def load_trigger_yaml(oci_path: Path) -> dict[str, Any]:
     """Load image trigger file (image.yaml) located in oci_path directory."""
@@ -128,26 +138,26 @@ def load_trigger_yaml(oci_path: Path) -> dict[str, Any]:
 
     return image_trigger
 
-def write_github_output(release_to: bool, builds: list[dict[str, Any]], revision_data_dir: Path):
+
+def write_github_output(
+    release_to: bool, builds: list[dict[str, Any]], revision_data_dir: Path
+):
     """Write script result to GITHUB_OUTPUT."""
-    
+
     outputs = {
-        'build-matrix':
-            {
-                'include': builds
-             },
-        'release-to': release_to,
-        'revision-data-dir': str(revision_data_dir)
+        "build-matrix": {"include": builds},
+        "release-to": release_to,
+        "revision-data-dir": str(revision_data_dir),
     }
-    print(outputs)
-    # with GithubOutput() as github_output:
-    #     github_output.write(**outputs)
+    with GithubOutput() as github_output:
+        github_output.write(**outputs)
+
 
 def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: Path):
-    """Inject additional metadata (name, path, revision, directory, dir_identifier, 
+    """Inject additional metadata (name, path, revision, directory, dir_identifier,
     track, base) into build dicts.
     """
-    
+
     _builds = deepcopy(builds)
 
     # inject some extra metadata into the matrix data
@@ -160,9 +170,7 @@ def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: 
 
         # Add dir_identifier to assemble the cache key and artefact path
         # No need to write it to rev data file since it's only used in matrix
-        build["dir_identifier"] = (
-            build["directory"].rstrip("/").replace("/", "_")
-        )
+        build["dir_identifier"] = build["directory"].rstrip("/").replace("/", "_")
 
         with tempdir() as d:
             url = f"https://github.com/{build['source']}.git"
@@ -181,6 +189,7 @@ def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: 
 
     return _builds
 
+
 def main():
     """Executed when script is called directly."""
     args = parser.parse_args()
@@ -195,10 +204,12 @@ def main():
     builds = inject_metadata(builds, args.next_revision, args.oci_path)
 
     # remove any builds without valid tracks
-    builds = filter_empty_release(builds)
+    builds = filter_eol_builds(builds)
 
     # pretty print builds
-    logging.info(f"Generating matrix for following builds: \n {json.dumps(builds, indent=4)}")
+    logging.info(
+        f"Generating matrix for following builds: \n {json.dumps(builds, indent=4)}"
+    )
 
     for build in builds:
         write_build(args.revision_data_dir, build)

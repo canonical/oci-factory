@@ -10,6 +10,7 @@ GITHUB_OUTPUT = environ.get("GITHUB_OUTPUT", None)
 
 # TODO: write custom json serializer to handle pathlib.Path
 
+
 class GithubOutput:
 
     def __init__(self):
