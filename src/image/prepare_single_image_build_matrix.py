@@ -51,9 +51,11 @@ parser.add_argument(
 )
 
 class AmbiguousConfigFileError(Exception):
+    """Raised when multiple trigger image.y*ml files are found."""
     pass
 
 class InvalidSchemaError(Exception):
+    """Raised when image.yaml schema is found."""
     pass
 
 
@@ -68,25 +70,28 @@ def validate_image_trigger(data: dict) -> None:
     return None
 
 
-def is_track_eol(track_value: str, warn: str|None = None):
+def is_track_eol(track_value: str, track_name: str|None = None) -> bool:
+    """Test if track is EOL, or still valid. Log warning if track_name is provided."""
     eol_date = datetime.strptime(track_value['end-of-life'],"%Y-%m-%dT%H:%M:%SZ",).replace(tzinfo=timezone.utc)
     is_eol = eol_date < datetime.now(timezone.utc)
 
-    if is_eol and warn is not None:
-        logging.warning(f"Removing EOL track \"{warn}\"")
+    if is_eol and track_name is not None:
+        logging.warning(f"Removing EOL track \"{track_name}\", EOL: {eol_date}")
 
     return is_eol
 
-def filter_eol_tracks(build: dict[str, Any]):
+def filter_eol_tracks(build: dict[str, Any]) -> dict[str, Any]:
+    """Filter EOL tracks from build."""
     build['release'] = {
             key:value 
             for key, value in build['release'].items() 
-            if not is_track_eol(value, warn=f"{build['name']} - {key}")
+            if not is_track_eol(value, track_name=f"{key}:{build['name']}")
         }
 
     return build
 
-def filter_empty_release(builds: list[dict[str, Any]]):
+def filter_empty_release(builds: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Filter any builds with no tracks specified."""
 
     # remove any end of life tracks
     builds = [filter_eol_tracks(build) for build in builds]
@@ -98,19 +103,20 @@ def write_build(data_dir: Path, build: dict[str, Any]):
         json.dump(build, fh)
 
 
-def locate_trigger_yaml(oci_path: Path):
+def locate_trigger_yaml(oci_path: Path) -> Path:
+    """Locate image trigger file if that is image.yaml or image.yml"""
 
     oci_path_yaml_files = glob.glob(str(oci_path / "image.y*ml"))
-
 
     if len(oci_path_yaml_files) == 0:
         raise FileNotFoundError(f"image.y*ml not found in {oci_pat}")
     elif len(oci_path_yaml_files) > 1:
         raise AmbiguousConfigFileError(f"More than one image.y*ml not found in {oci_pat}")
 
-    return oci_path_yaml_files[0]
+    return Path(oci_path_yaml_files[0])
 
-def load_trigger_yaml(oci_path: Path):
+def load_trigger_yaml(oci_path: Path) -> dict[str, Any]:
+    """Load image trigger file (image.yaml) located in oci_path directory."""
 
     image_trigger_file = locate_trigger_yaml(oci_path)
 
@@ -125,6 +131,7 @@ def load_trigger_yaml(oci_path: Path):
     return image_trigger
 
 def write_github_output(release_to: bool, builds: list[dict[str, Any]], revision_data_dir: Path):
+    """Write script result to GITHUB_OUTPUT."""
     
     outputs = {
         'build-matrix':
@@ -134,11 +141,14 @@ def write_github_output(release_to: bool, builds: list[dict[str, Any]], revision
         'release-to': release_to,
         'revision-data-dir': str(revision_data_dir)
     }
-
-    with GithubOutput() as github_output:
-        github_output.write(**outputs)
+    print(outputs)
+    # with GithubOutput() as github_output:
+    #     github_output.write(**outputs)
 
 def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: Path):
+    """Inject additional metadata (name, path, revision, directory, dir_identifier, 
+    track, base) into build dicts.
+    """
     
     _builds = deepcopy(builds)
 
@@ -174,7 +184,7 @@ def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: 
     return _builds
 
 def main():
-
+    """Executed when script is called directly."""
     args = parser.parse_args()
 
     # locate and load image.yaml
