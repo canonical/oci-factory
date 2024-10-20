@@ -129,7 +129,7 @@ def write_github_output(release_to: bool, builds: list[dict[str, Any]], revision
     outputs = {
         'build-matrix':
             {
-                'matrix': builds
+                'include': builds
              },
         'release-to': release_to,
         'revision-data-dir': str(revision_data_dir)
