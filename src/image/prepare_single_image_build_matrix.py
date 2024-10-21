@@ -4,11 +4,61 @@ import argparse
 from datetime import datetime, timezone
 import glob
 import json
-import os
 import pydantic
 import yaml
+from typing import Any
+from pathlib import Path
+from git import Repo
+from tempfile import TemporaryDirectory as tempdir
+from copy import deepcopy
+import logging
 
-from utils.schema.triggers import ImageSchema
+
+from src.uploads.infer_image_track import get_base_and_track
+from src.shared.github_output import GithubOutput
+from src.image.utils.schema.triggers import ImageSchema
+
+# TODO:
+# - inject_metadata uses a static github url, does this break builds that are sourced
+#   from non-gh repos?
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--oci-path",
+    help="Local path to the image's folder hosting the image.yaml file",
+    type=Path,
+    required=True,
+)
+parser.add_argument(
+    "--revision-data-dir",
+    help="Path where to save the revision data files for each build",
+    type=Path,
+    required=True,
+)
+parser.add_argument(
+    "--next-revision",
+    help="Next revision number",
+    type=int,
+    default=1,
+)
+parser.add_argument(
+    "--infer-image-track",
+    help="Infer the track corresponding to the releases",
+    action="store_true",
+    default=False,
+)
+
+
+class AmbiguousConfigFileError(Exception):
+    """Raised when multiple trigger image.y*ml files are found."""
+
+    pass
+
+
+class InvalidSchemaError(Exception):
+    """Raised when image.yaml schema is found."""
+
+    pass
 
 
 def validate_image_trigger(data: dict) -> None:
@@ -18,115 +68,160 @@ def validate_image_trigger(data: dict) -> None:
 
     _ = ImageSchema(**data)
 
-    return None
+
+def is_track_eol(track_value: str, track_name: str | None = None) -> bool:
+    """Test if track is EOL, or still valid. Log warning if track_name is provided."""
+    eol_date = datetime.strptime(
+        track_value["end-of-life"],
+        "%Y-%m-%dT%H:%M:%SZ",
+    ).replace(tzinfo=timezone.utc)
+    is_eol = eol_date < datetime.now(timezone.utc)
+
+    if is_eol and track_name is not None:
+        logging.warning(f'Removing EOL track "{track_name}", EOL: {eol_date}')
+
+    return is_eol
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--oci-path",
-        help="Local path to the image's folder hosting the image.yaml file",
-        required=True,
-    )
-    parser.add_argument(
-        "--revision-data-dir",
-        help="Path where to save the revision data files for each build",
-        required=True,
-    )
-    parser.add_argument(
-        "--next-revision",
-        help="Next revision number",
-        default=1,
-    )
-    parser.add_argument(
-        "--infer-image-track",
-        help="Infer the track corresponding to the releases",
-        action="store_true",
-        default=False,
-    )
+def filter_eol_tracks(build: dict[str, Any]) -> dict[str, Any]:
+    """Filter EOL tracks from build."""
+    build["release"] = {
+        key: value
+        for key, value in build["release"].items()
+        if not is_track_eol(value, track_name=f"{key}:{build['name']}")
+    }
 
-    args = parser.parse_args()
+    return build
 
-    image_trigger_file = glob.glob(f"{args.oci_path}/image.y*ml")[0]
 
-    print(f"Generating build matrix for {image_trigger_file}")
+def filter_eol_builds(builds: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Remove any builds with no tracks specified."""
+
+    # remove any end of life tracks
+    builds = [filter_eol_tracks(build) for build in builds]
+
+    return [build for build in builds if len(build["release"])]
+
+
+def write_build(data_dir: Path, build: dict[str, Any]):
+    with open(data_dir / str(build["revision"]), "w", encoding="UTF-8") as fh:
+        json.dump(build, fh)
+
+
+def locate_trigger_yaml(oci_path: Path) -> Path:
+    """Locate image trigger file if that is image.yaml or image.yml"""
+
+    oci_path_yaml_files = glob.glob(str(oci_path / "image.y*ml"))
+
+    if len(oci_path_yaml_files) == 0:
+        raise FileNotFoundError(f"image.y*ml not found in {oci_path}")
+    elif len(oci_path_yaml_files) > 1:
+        raise AmbiguousConfigFileError(
+            f"More than one image.y*ml not found in {oci_path}"
+        )
+
+    return Path(oci_path_yaml_files[0])
+
+
+def load_trigger_yaml(oci_path: Path) -> dict[str, Any]:
+    """Load image trigger file (image.yaml) located in oci_path directory."""
+
+    image_trigger_file = locate_trigger_yaml(oci_path)
+
     with open(image_trigger_file, encoding="UTF-8") as bf:
         image_trigger = yaml.load(bf, Loader=yaml.BaseLoader)
-        try:
-            validate_image_trigger(image_trigger)
-        except pydantic.error_wrappers.ValidationError as err:
-            raise Exception(f"Bad schema for {image_trigger_file}") from err
 
-    builds = image_trigger.get("upload", [])
+    try:
+        validate_image_trigger(image_trigger)
+    except pydantic.ValidationError as err:
+        raise InvalidSchemaError(f"Bad schema for {image_trigger_file}") from err
 
-    release_to = "true" if "release" in image_trigger else ""
+    return image_trigger
 
-    img_number = 0
+
+def write_github_output(
+    release_to: bool, builds: list[dict[str, Any]], revision_data_dir: Path
+):
+    """Write script result to GITHUB_OUTPUT."""
+
+    outputs = {
+        "build-matrix": {"include": builds},
+        "release-to": release_to,
+        "revision-data-dir": str(revision_data_dir),
+    }
+    with GithubOutput() as github_output:
+        github_output.write(**outputs)
+
+
+def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: Path):
+    """Inject additional metadata (name, path, revision, directory, dir_identifier,
+    track, base) into build dicts.
+    """
+
+    _builds = deepcopy(builds)
+
     # inject some extra metadata into the matrix data
-    while img_number < len(builds):
-        builds[img_number]["name"] = args.oci_path.rstrip("/").split("/")[-1]
-        builds[img_number]["path"] = args.oci_path
-        builds[img_number]["revision"] = img_number + int(args.next_revision)
+    for img_number, build in enumerate(_builds):
+        build["name"] = str(oci_path).rstrip("/").split("/")[-1]
+        build["path"] = str(oci_path)
 
-        if args.infer_image_track:
-            import sys
-
-            sys.path.append("src/")
-            from git import Repo
-            from tempfile import TemporaryDirectory as tempdir
-            from uploads.infer_image_track import get_base_and_track
-
-            with tempdir() as d:
-                url = f"https://github.com/{builds[img_number]['source']}.git"
-                repo = Repo.clone_from(url, d)
-                repo.git.checkout(builds[img_number]["commit"])
-                # get the base image from the rockcraft.yaml file
-                with open(
-                    f"{d}/{builds[img_number]['directory']}/rockcraft.yaml",
-                    encoding="UTF-8",
-                ) as rockcraft_file:
-                    rockcraft_yaml = yaml.load(rockcraft_file, Loader=yaml.BaseLoader)
-
-            base_release, track = get_base_and_track(rockcraft_yaml)
-            builds[img_number]["track"] = track
-            builds[img_number]["base"] = f"ubuntu:{base_release}"
-
-        with open(
-            f"{args.revision_data_dir}/{builds[img_number]['revision']}",
-            "w",
-            encoding="UTF-8",
-        ) as data_file:
-            json.dump(builds[img_number], data_file)
+        # used in setting the path where the build info is saved
+        build["revision"] = img_number + int(next_revision)
 
         # Add dir_identifier to assemble the cache key and artefact path
         # No need to write it to rev data file since it's only used in matrix
-        builds[img_number]["dir_identifier"] = (
-            builds[img_number]["directory"].rstrip("/").replace("/", "_")
-        )
+        build["dir_identifier"] = build["directory"].rstrip("/").replace("/", "_")
 
-        # set an output as a marker for later knowing if we need to release
-        if "release" in builds[img_number]:
-            min_eol = datetime.strptime(
-                min(v["end-of-life"] for v in builds[img_number]["release"].values()),
-                "%Y-%m-%dT%H:%M:%SZ",
-            ).replace(tzinfo=timezone.utc)
-            if min_eol < datetime.now(timezone.utc):
-                print("Track skipped because it reached its end of life")
-                del builds[img_number]
-                continue
-            else:
-                release_to = "true"
-                # the workflow GH matrix has a problem parsing nested JSON dicts
-                # so let's remove this field since we don't need it for the builds
-                builds[img_number]["release"] = "true"
-        else:
-            builds[img_number]["release"] = ""
+        with tempdir() as d:
+            url = f"https://github.com/{build['source']}.git"
+            repo = Repo.clone_from(url, d)
+            repo.git.checkout(build["commit"])
+            # get the base image from the rockcraft.yaml file
+            with open(
+                f"{d}/{build['directory']}/rockcraft.yaml",
+                encoding="UTF-8",
+            ) as rockcraft_file:
+                rockcraft_yaml = yaml.load(rockcraft_file, Loader=yaml.BaseLoader)
 
-        img_number += 1
+        base_release, track = get_base_and_track(rockcraft_yaml)
+        build["track"] = track
+        build["base"] = f"ubuntu:{base_release}"
 
-    matrix = {"include": builds}
-    print(f"{args.oci_path} - build matrix:\n{json.dumps(matrix, indent=4)}")
-    with open(os.environ["GITHUB_OUTPUT"], "a") as gh_out:
-        print(f"build-matrix={matrix}", file=gh_out)
-        print(f"release-to={release_to}", file=gh_out)
-        print(f"revision-data-dir={args.revision_data_dir}", file=gh_out)
+    return _builds
+
+
+def main():
+    """Executed when script is called directly."""
+    args = parser.parse_args()
+
+    # locate and load image.yaml
+    image_trigger = load_trigger_yaml(args.oci_path)
+
+    # extract builds to upload
+    builds = image_trigger.get("upload", [])
+
+    # inject additional meta data into builds
+    builds = inject_metadata(builds, args.next_revision, args.oci_path)
+
+    # remove any builds without valid tracks
+    builds = filter_eol_builds(builds)
+
+    # pretty print builds
+    logging.info(
+        f"Generating matrix for following builds: \n {json.dumps(builds, indent=4)}"
+    )
+
+    for build in builds:
+        write_build(args.revision_data_dir, build)
+
+        # the workflow GH matrix has a problem parsing nested JSON dicts
+        # so let's remove this field since we don't need it for the builds
+        del build["release"]
+
+    release_to = "true" if "release" in image_trigger else ""
+
+    write_github_output(release_to, builds, args.revision_data_dir)
+
+
+if __name__ == "__main__":
+    main()
