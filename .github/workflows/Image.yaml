@@ -119,7 +119,7 @@ jobs:
         run: |
           mkdir ${{ env.DATA_DIR }}
 
-          ./src/image/prepare_single_image_build_matrix.py \
+          python3 -m src.image.prepare_single_image_build_matrix \
             --oci-path ${{ steps.validate-image.outputs.img-path }} \
             --revision-data-dir ${{ env.DATA_DIR }}
 
@@ -254,7 +254,7 @@ jobs:
 
           mkdir ${{ env.DATA_DIR }}
 
-          ./src/image/prepare_single_image_build_matrix.py \
+          python3 -m src.image.prepare_single_image_build_matrix \
             --oci-path ${{ needs.prepare-build.outputs.oci-img-path }} \
             --revision-data-dir ${{ env.DATA_DIR }} \
             --next-revision ${{ steps.get-next-revision.outputs.revision }} \
