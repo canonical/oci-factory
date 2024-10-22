@@ -1,0 +1,54 @@
+version: 1
+application: identity-platform-login-ui
+is_chiselled: True
+description: |
+  Canonical IAM Login UI is a core components of the Identity Platform solution.
+  
+  It provides a way to login using OIDC via interactions with Ory Kratos and Ory Hydra, also allows
+  you to manage self service functionalities for everything related to authentication 
+
+  For further information check our repository on Github https://github.com/canonical/identity-platform-login-ui
+docker:
+  parameters:
+    - -p 8080:8080
+  access: Access the API at `http://localhost:8080`.
+parameters:
+  - type: -e
+    value: 'TRACING_ENABLED=true'
+    description: Tracing enablement.
+  - type: -e
+    value: 'OTEL_GRPC_ENDPOINT=tempo-0.tempo-endpoints.stg-identity-jaas-dev.svc.cluster.local:4317'
+    description: Tracing server GRPC endpoint, has priority on OTEL_HTTP_ENDPOINT.
+  - type: -e
+    value: 'OTEL_HTTP_ENDPOINT=http://tempo-0.tempo-endpoints.stg-identity-jaas-dev.svc.cluster.local:4318'
+    description: Tracing server HTTP endpoint.
+  - type: -e
+    value: 'MFA_ENABLED="true"'
+    description: Enable MFA validation on logins.
+  - type: -e
+    value: 'HYDRA_ADMIN_URL=http://hydra.io:4445'
+    description: Hydra Admin API URL, used to validate logins 
+  - type: -e
+    value: 'KRATOS_ADMIN_URL=http://kratos.io:4434'
+    description: Kratos Admin API URL, used to manage identities
+  - type: -e
+    value: 'KRATOS_PUBLIC_URL=http://kratos.io:4433'
+    description: Kratos Public API URL, used to manage identities
+  - type: -e
+    value: 'BASE_URL=https://iam.io/dev/path'
+    description: Public URL Login UI will be served from.
+  - type: -e
+    value: 'LOG_FILE=log.txt'
+    description: Destination file for logs.
+  - type: -e
+    value: 'LOG_LEVEL=error'
+    description: Log level.
+  - type: -p
+    value: '8080:8080'
+    description: Server API port.
+  - type: CMD
+    value: '/usr/bin/identity-platform-login-ui serve'
+    description: >
+      Launch Login UI web server(s) using environment variables.
+debug:
+  text: ""

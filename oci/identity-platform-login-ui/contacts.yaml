@@ -1,0 +1,5 @@
+notify:
+  emails:
+    - identity.charmers@lists.launchpad.net
+  mattermost-channels:
+    - ofi4for9obfq8m978h318x56ar

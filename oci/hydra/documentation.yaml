@@ -1,0 +1,48 @@
+version: 1
+application: hydra
+is_chiselled: True
+description: |
+  Ory Hydra is a hardened, OpenID Certified OAuth 2.0 Server and OpenID Connect Provider
+  optimized for low-latency, high throughput, and low resource consumption.
+  Ory Hydra enables you to become an OAuth 2.0 and OpenID Connect provider. 
+  If you're not writing a basic web app but something that has to work on different devices, 
+  that has machine-2-machine interaction, or enables third-party developers to use your API 
+  (and pay for it), then this is what you're looking for.
+docker:
+  parameters:
+    - -p 4444:4444
+    - -p 4445:4445
+  access: Access your Hydra Public API at `http://localhost:4444`, Admin API at `http://localhost:4445`.
+parameters:
+  - type: -e
+    value: 'TRACING_ENABLED=true'
+    description: Tracing enablement.
+  - type: -e
+    value: 'TRACING_PROVIDER=otel'
+    description: Tracing protocol to be used.
+  - type: -e
+    value: 'TRACING_PROVIDERS_OTLP_INSECURE=true'
+    description: Allow Tracing via non TLS/insecure communication.
+  - type: -e
+    value: 'TRACING_PROVIDERS_OTLP_SAMPLING_SAMPLING_RATIO=1.0'
+    description: Tracing sampling ratio.
+  - type: -e
+    value: 'TRACING_PROVIDERS_OTLP_SERVER_URL=tempo.server.io:4318'
+    description: Tracing server url and port.
+  - type: -p
+    value: '4444:4444'
+    description: Hydra Public API port.
+  - type: -p
+    value: '4445:4445'
+    description: Hydra Admin API port.
+  - type: -v
+    value: "/path/to/hydra/config.yaml:/hydra.yaml"
+    description: >
+      Hydra config contains all the information needed to successfully configure it as an OIDC
+      Provider, see https://github.com/ory/hydra/blob/master/internal/config/config.yaml as a reference
+  - type: CMD
+    value: "hydra serve all --config /hydra.yaml"
+    description: >
+      Launch Hydra web server(s) using a mix of environment variables and the config mounted via volume.
+debug:
+  text: ""

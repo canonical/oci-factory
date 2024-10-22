@@ -1,0 +1,139 @@
+version: 1
+application: identity-platform-admin-ui
+is_chiselled: True
+description: |
+  Canonical IAM Admin UI is a component that allows you to interact with the components
+  that are part of the Identity Platform solution.
+  
+  It provides a set of API to view,modify and delete resources on Ory Kratos, Ory Hydra 
+  Ory Oathkeeper and OpenFGA
+
+  For further information check our repository on Github https://github.com/canonical/identity-platform-admin-ui
+docker:
+  parameters:
+    - -p 8080:8080
+  access: Access the API at `http://localhost:8080`.
+parameters:
+  - type: -e
+    value: 'TRACING_ENABLED=true'
+    description: Tracing enablement.
+  - type: -e
+    value: 'OTEL_GRPC_ENDPOINT=tempo-0.tempo-endpoints.stg-identity-jaas-dev.svc.cluster.local:4317'
+    description: Tracing server GRPC endpoint, has priority on OTEL_HTTP_ENDPOINT.
+  - type: -e
+    value: 'OTEL_HTTP_ENDPOINT=http://tempo-0.tempo-endpoints.stg-identity-jaas-dev.svc.cluster.local:4318'
+    description: Tracing server HTTP endpoint.
+  - type: -e
+    value: 'MFA_ENABLED="true"'
+    description: Enable MFA validation on logins.
+  - type: -e
+    value: 'HYDRA_ADMIN_URL=http://hydra.io:4445'
+    description: Hydra Admin API URL, used to manage clients
+  - type: -e
+    value: 'KRATOS_ADMIN_URL=http://kratos.io:4434'
+    description: Kratos Admin API URL, used to manage identities
+  - type: -e
+    value: 'KRATOS_PUBLIC_URL=http://kratos.io:4433'
+    description: Kratos Public API URL, used to manage identities
+  - type: -e
+    value: 'OATHKEEPER_PUBLIC_URL=http://oathkeeper.io:4455'
+    description: Oathkeeper Public API URL, used to manage rules
+  - type: -e
+    value: 'BASE_URL=https://iam.io/dev/path'
+    description: Public URL Login UI will be served from.
+  - type: -e
+    value: 'ACCESS_TOKEN_VERIFICATION_STRATEGY=jwks'
+    description: Strategy used to verify JWT tokens.
+  - type: -e
+    value: 'AUTHENTICATION_ENABLED="true"'
+    description: Authentication enable flag.
+  - type: -e
+    value: 'AUTHORIZATION_ENABLED="true"'
+    description: Authorization enable flag.
+  - type: -e
+    value: 'CONTEXT_PATH=/dev/path'
+    description: Path needed by the UI to work behind an ingress proxy.
+  - type: -e
+    value: 'IDP_CONFIGMAP_NAME=providers'
+    description: Name of kubernetes configmap where Kratos IDP are configured.
+  - type: -e
+    value: 'IDP_CONFIGMAP_NAMESPACE=default'
+    description: Namespace of kubernetes configmap where Kratos IDP are configured.
+  - type: -e
+    value: 'RULES_CONFIGMAP_NAME=rules'
+    description: Name of kubernetes configmap where Oathkeeper rules are configured.
+  - type: -e
+    value: 'RULES_CONFIGMAP_NAMESPACE=default'
+    description: Namespace of kubernetes configmap where Oathkeeper rules are configured.
+  - type: -e
+    value: 'RULES_CONFIGMAP_FILENAME=rules.yaml'
+    description: Name of the file where Oathkeeper rules are configured.
+  - type: -e
+    value: 'SCHEMAS_CONFIGMAP_NAME=schemas'
+    description: Name of kubernetes configmap where Kratos identity schemas are configured.
+  - type: -e
+    value: 'SCHEMAS_CONFIGMAP_NAMESPACE=default'
+    description: Namespace of kubernetes configmap where Kratos identity schemas are configured.
+  - type: -e
+    value: 'MAIL_FROM_ADDRESS=iam@canonical.com'
+    description: Email sender
+  - type: -e
+    value: 'MAIL_HOST=smtp.io'
+    description: SMPT server host
+  - type: -e
+    value: 'MAIL_PASSWORD="***********************************"'
+    description: SMTP password
+  - type: -e
+    value: 'MAIL_PORT="1025"'
+    description: SMTP server port
+  - type: -e
+    value: 'MAIL_USERNAME="***********************************"'
+    description: SMTP password
+  - type: -e
+    value: 'OAUTH2_AUTH_COOKIES_ENCRYPTION_KEY="***********************************"'
+    description: Key used to encrypt authentication cookies
+  - type: -e
+    value: 'OAUTH2_CLIENT_ID=***********************************'
+    description: OAuth2 client ID, needed for OIDC authentication
+  - type: -e
+    value: 'OAUTH2_CLIENT_SECRET=***********************************'
+    description: OAuth2 client secret, needed for OIDC authentication
+  - type: -e
+    value: 'OAUTH2_CODEGRANT_SCOPES=openid,email,profile,offline_access'
+    description: OAuth2 scopes needed by the application, needed for OIDC authentication 
+  - type: -e
+    value: 'OAUTH2_REDIRECT_URI=https://iam..io/dev/api/v0/auth/callback'
+    description: OAuth2 redirect uri where /api/v0/auth/callback is the endpoint used by the application, needed for OIDC authentication
+  - type: -e
+    value: 'OIDC_ISSUER=https://iam.dev.canonical.com/stg-identity-jaas-dev-hydra'
+    description: OAuth2 server issuer
+  - type: -e
+    value: 'OPENFGA_API_HOST=openfga:8443'
+    description: OpenFGA server address 
+  - type: -e
+    value: 'OPENFGA_API_SCHEME=http'
+    description: OpenFGA server scheme
+  - type: -e
+    value: 'OPENFGA_API_TOKEN=***********************************'
+    description: OpenFGA server API token, needed for authentication to the server
+  - type: -e
+    value: 'OPENFGA_AUTHORIZATION_MODEL_ID=***********************************'
+    description: OpenFGA model ID
+  - type: -e
+    value: 'OPENFGA_STORE_ID=***********************************'
+    description: OpenFGA store ID 
+  - type: -e
+    value: 'LOG_FILE=log.txt'
+    description: Destination file for logs.
+  - type: -e
+    value: 'LOG_LEVEL=error'
+    description: Log level.
+  - type: -p
+    value: '8080:8080'
+    description: Server API port.
+  - type: CMD
+    value: '/usr/bin/identity-platform-admin-ui serve'
+    description: >
+      Launch Admin UI web server(s) using environment variables.
+debug:
+  text: ""

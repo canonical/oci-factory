@@ -1,0 +1,12 @@
+version: 1
+upload:
+  - source: "canonical/identity-platform-admin-ui"
+    commit: c46a9568f9be665f86aa5a274d8ac9d90054ba6b
+    directory: .
+    release:
+      1.19.0-22.04:
+        risks:
+          - stable
+          - candidate
+          - edge
+        end-of-life: "2025-03-01T00:00:00Z"
