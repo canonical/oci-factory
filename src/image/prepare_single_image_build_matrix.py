@@ -14,10 +14,10 @@ from copy import deepcopy
 import logging
 
 
-from src.uploads.infer_image_track import get_base_and_track
-from src.shared.github_output import GithubOutput
-from src.image.utils.schema.triggers import ImageSchema
-from src.image.utils.schema.revision_data import RevisionDataSchema
+from ..uploads.infer_image_track import get_base_and_track
+from ..shared.github_output import GithubOutput
+from .utils.schema.triggers import ImageSchema
+from .utils.schema.revision_data import RevisionDataSchema
 
 # TODO:
 # - inject_metadata uses a static github url, does this break builds that are sourced

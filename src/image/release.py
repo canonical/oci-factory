@@ -12,8 +12,8 @@ import re
 import subprocess
 from collections import defaultdict
 import yaml
-from src.image.utils.encoders import DateTimeEncoder
-from src.image.utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
+from .utils.encoders import DateTimeEncoder
+from .utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
 import src.shared.release_info as shared
 
 parser = argparse.ArgumentParser()
