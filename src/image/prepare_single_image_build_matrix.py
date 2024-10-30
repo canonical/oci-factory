@@ -17,6 +17,7 @@ import logging
 from src.uploads.infer_image_track import get_base_and_track
 from src.shared.github_output import GithubOutput
 from src.image.utils.schema.triggers import ImageSchema
+from utils.schema.revision_data import RevisionDataSchema
 
 # TODO:
 # - inject_metadata uses a static github url, does this break builds that are sourced
@@ -47,6 +48,21 @@ parser.add_argument(
     action="store_true",
     default=False,
 )
+
+
+class RevisionDataSchemaFilter(RevisionDataSchema):
+    """A subclass of RevisionDataSchema to prepare data for serialization."""
+
+    model_config = pydantic.ConfigDict(extra="ignore")
+
+    @pydantic.model_validator(mode="before")
+    def _warn_extra_fields(cls, data: Any) -> Any:
+        for extra_field in data.keys() - cls.model_fields.keys():
+            logging.warning(
+                f'Field "{extra_field}" removed from {data["name"]} revision data'
+            )
+
+        return data
 
 
 class AmbiguousConfigFileError(Exception):
@@ -103,9 +119,11 @@ def filter_eol_builds(builds: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [build for build in builds if len(build["release"])]
 
 
-def write_build(data_dir: Path, build: dict[str, Any]):
+def write_revision_data(data_dir: Path, build: dict[str, Any]):
+    """Prepare and dump revision data from build dict. Ignore any fields not included in RevisionDataSchema"""
+    revision_data = RevisionDataSchemaFilter(**build)
     with open(data_dir / str(build["revision"]), "w", encoding="UTF-8") as fh:
-        json.dump(build, fh)
+        json.dump(revision_data.model_dump(), fh)
 
 
 def locate_trigger_yaml(oci_path: Path) -> Path:
@@ -212,7 +230,7 @@ def main():
     )
 
     for build in builds:
-        write_build(args.revision_data_dir, build)
+        write_revision_data(args.revision_data_dir, build)
 
         # the workflow GH matrix has a problem parsing nested JSON dicts
         # so let's remove this field since we don't need it for the builds
