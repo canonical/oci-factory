@@ -7,3 +7,4 @@ class RevisionDataSchema(ImageUploadSchema):
     name: str
     path: str
     revision: int
+    track: str
