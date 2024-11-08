@@ -131,7 +131,6 @@ jobs:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     steps:
-
       - name: Clone GitHub image repository
         uses: actions/checkout@v4
         with:
@@ -535,7 +534,7 @@ jobs:
 
             echo "Merge revision $revision_file with requested releases"
 
-            ./src/image/merge_release_info.py \
+            python3 -m src.image.merge_release_info \
               --image-trigger "${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml" \
               --revision-data-file "${{ env.REVISION_DATA_DIR }}/${revision_file}"
           done
@@ -640,7 +639,7 @@ jobs:
         id: get-summary
         run: |
           echo '${{ toJson(needs) }}' > jobs.json
-          ./src/notifications/summarize_workflow_results.py --jobs-file jobs.json
+          python3 -m src.notifications.summarize_workflow_results --jobs-file jobs.json
 
       - name: Get contacts for ${{ needs.prepare-build.outputs.oci-img-name }}
         id: get-contacts
