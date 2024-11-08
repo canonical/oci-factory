@@ -33,7 +33,7 @@ func (s *BuildMetadataSuite) TestGetRockcraftYamlName(c *C) {
 	c.Assert(result, Equals, expected)
 }
 
-func (s *BuildMetadataSuite) TestGetBuildMetadataCustomDirector(c *C) {
+func (s *BuildMetadataSuite) TestGetBuildMetadataCustomDirectory(c *C) {
 	cmd := exec.Command("git", "--version")
 	if err := cmd.Run(); err != nil {
 		c.Fatal("git not installed")
@@ -52,7 +52,7 @@ func (s *BuildMetadataSuite) TestGetBuildMetadataCustomDirector(c *C) {
 
 	result := trigger.InferBuildMetadata()
 
-	prefix := filepath.Join("mock_rock", "1.0") + "/"
+	prefix := "./" + filepath.Join("mock_rock", "1.0") + "/"
 	head, err := exec.Command("git", "rev-parse", "HEAD").Output()
 	headStr := strings.TrimSpace(string(head))
 	c.Assert(err, IsNil)
