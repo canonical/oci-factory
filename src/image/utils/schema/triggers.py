@@ -2,7 +2,6 @@ import pydantic
 
 from datetime import datetime
 from typing import Dict, List, Literal, Optional, Any
-from typing_extensions import Annotated
 
 
 LATEST_SCHEMA_VERSION = 1
@@ -21,7 +20,10 @@ class ImageUploadReleaseSchema(pydantic.BaseModel):
     """Schema of the release option for uploads in the image.yaml trigger"""
 
     end_of_life: datetime = pydantic.Field(alias="end-of-life")
-    risks: List[Literal[*KNOWN_RISKS_ORDERED]]
+    # Unpack operator in subscript requires Python 3.11 or newer
+    # TODO: when upgrading to 24.04, switch to the following line
+    # risks: List[Literal[*KNOWN_RISKS_ORDERED]]
+    risks: List[Literal["stable", "candidate", "beta", "edge"]]
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
