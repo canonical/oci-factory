@@ -23,7 +23,6 @@ def test_is_track_eol():
 
 
 def test_filter_eol_tracks():
-
     build = {
         "release": {
             "1.0.0-22.04": {
@@ -43,7 +42,6 @@ def test_filter_eol_tracks():
 
 
 def test_filter_eol_builds():
-
     builds = [
         {
             "release": {
@@ -83,7 +81,6 @@ def test_filter_eol_builds():
 
 
 def test_locate_trigger_yaml(tmpdir):
-
     tmpdir_path = Path(tmpdir)
     image_yaml_path = tmpdir_path / "image.yaml"
     image_yml_path = tmpdir_path / "image.yml"

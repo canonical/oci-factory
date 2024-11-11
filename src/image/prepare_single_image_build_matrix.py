@@ -68,13 +68,9 @@ class RevisionDataSchemaFilter(RevisionDataSchema):
 class AmbiguousConfigFileError(Exception):
     """Raised when multiple trigger image.y*ml files are found."""
 
-    pass
-
 
 class InvalidSchemaError(Exception):
     """Raised when image.yaml schema is found."""
-
-    pass
 
 
 def validate_image_trigger(data: dict) -> None:
@@ -112,7 +108,6 @@ def filter_eol_tracks(build: dict[str, Any]) -> dict[str, Any]:
 
 def filter_eol_builds(builds: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Remove any builds with no tracks specified."""
-
     # remove any end of life tracks
     builds = [filter_eol_tracks(build) for build in builds]
 
@@ -143,7 +138,6 @@ def locate_trigger_yaml(oci_path: Path) -> Path:
 
 def load_trigger_yaml(oci_path: Path) -> dict[str, Any]:
     """Load image trigger file (image.yaml) located in oci_path directory."""
-
     image_trigger_file = locate_trigger_yaml(oci_path)
 
     with open(image_trigger_file, encoding="UTF-8") as bf:
@@ -161,7 +155,6 @@ def write_github_output(
     release_to: bool, builds: list[dict[str, Any]], revision_data_dir: Path
 ):
     """Write script result to GITHUB_OUTPUT."""
-
     outputs = {
         "build-matrix": {"include": builds},
         "release-to": release_to,
@@ -175,7 +168,6 @@ def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: 
     """Inject additional metadata (name, path, revision, directory, dir_identifier,
     track, base) into build dicts.
     """
-
     _builds = deepcopy(builds)
 
     # inject some extra metadata into the matrix data

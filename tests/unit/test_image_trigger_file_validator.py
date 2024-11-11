@@ -8,13 +8,11 @@ from pathlib import Path
 
 
 def test_existing_image_trigger_files():
-
     for oci_path in glob("oci/*"):
         prep_matrix.load_trigger_yaml(Path(oci_path))
 
 
 def test_image_trigger_validator_missing_channel_risks():
-
     image_trigger = {
         "version": 1,
         "release": {
@@ -29,7 +27,6 @@ def test_image_trigger_validator_missing_channel_risks():
 
 
 def test_image_trigger_validator_missing_release_risks():
-
     image_trigger = {
         "version": 1,
         "release": {
@@ -57,7 +54,6 @@ def test_image_trigger_validator_missing_release_risks():
 
 
 def test_image_trigger_validator_minimal_input():
-
     image_trigger = {
         "version": 1,
         "release": {
