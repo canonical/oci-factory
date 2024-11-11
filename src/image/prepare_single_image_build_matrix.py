@@ -118,7 +118,7 @@ def write_revision_data(data_dir: Path, build: dict[str, Any]):
     """Prepare and dump revision data from build dict. Ignore any fields not included in RevisionDataSchema"""
     revision_data = RevisionDataSchemaFilter(**build)
     with open(data_dir / str(build["revision"]), "w", encoding="UTF-8") as fh:
-        fh.write(revision_data.model_dump_json())
+        fh.write(revision_data.model_dump_json(by_alias=True))
 
 
 def locate_trigger_yaml(oci_path: Path) -> Path:
