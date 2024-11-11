@@ -240,6 +240,8 @@ class OCIDocumentationData:
             digest = single_tag_details["imageDetail"]["imageDigest"]
             tag = single_tag_details["imageTag"]
 
+            logging.info(f"single_tag_details {single_tag_details}")
+
             if tag not in ecr_tag_names:
                 ecr_tag_names.append(tag)
             if digest not in ecr_digests:
@@ -250,6 +252,8 @@ class OCIDocumentationData:
         ecr_tag_names.sort()
         logging.info(f"All available OCI tags in ECR:\n{ecr_tag_names}")
         logging.info(f"{len(ecr_digests)} available digests in ECR")
+        logging.info(f"ecr_digests {ecr_digests}")
+        logging.info(f"tags_by_digest {tags_by_digest}")
 
         releases = []  # section to be added to the final YAML file
         for digest, digest_tags in tags_by_digest.items():
