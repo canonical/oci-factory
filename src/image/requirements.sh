@@ -22,8 +22,9 @@ git remote add origin git+ssh://${ROCKS_DEV_LP_USERNAME}@${CPC_BUILD_TOOLS_REPO}
 git fetch --depth 1 origin main # ${CPC_BUILD_TOOLS_REPO_REF}
 git checkout FETCH_HEAD
 
-sudo mv oci_registry_upload.py /usr/local/bin/cpc-build-tools.oci-registry-upload
-sudo chmod +x /usr/local/bin/cpc-build-tools.oci-registry-upload
+sudo mv /tmp/cpc-build-tools/* /usr/local/bin/
+sudo chmod +x /usr/local/bin/oci_registry_upload.py
+ln -s oci_registry_upload.py /usr/local/bin/cpc-build-tools.oci-registry-upload
 popd
 ##
 
