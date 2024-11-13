@@ -12,9 +12,8 @@ import re
 import subprocess
 import sys
 import tempfile
-import timezone
 from typing import Any, Dict, List
-from datetime import datetime
+from datetime import datetime, timezone
 from dateutil import parser
 
 import boto3
