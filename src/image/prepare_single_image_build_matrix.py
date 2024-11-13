@@ -72,9 +72,10 @@ if __name__ == "__main__":
 
         # set an output as a marker for later knowing if we need to release
         if "release" in builds[img_number]:
-            min_eol = datetime.strptime(min(
-                v["end-of-life"] for v in builds[img_number]["release"].values()
-            ), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+            min_eol = datetime.strptime(
+                min(v["end-of-life"] for v in builds[img_number]["release"].values()),
+                "%Y-%m-%dT%H:%M:%SZ",
+            ).replace(tzinfo=timezone.utc)
             if min_eol < datetime.now(timezone.utc):
                 print("Track skipped because it reached its end of life")
                 del builds[img_number]
