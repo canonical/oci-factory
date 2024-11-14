@@ -75,7 +75,7 @@ for track, risks in image_trigger.release.items():
         print(f"Track {track} will be created for the 1st time")
         all_releases[track] = {}
 
-    for risk, value in risks.dict(exclude_none=True).items():
+    for risk, value in risks.model_dump(exclude_none=True).items():
         if risk in ["end-of-life", "end_of_life"]:
             all_releases[track]["end-of-life"] = value
             continue
