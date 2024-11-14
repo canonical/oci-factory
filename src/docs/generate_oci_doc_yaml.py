@@ -3,6 +3,7 @@
 This module contains functions for generating documentation
 for OCI images within the oci-factory
 """
+
 import argparse
 import base64
 import json
@@ -279,7 +280,7 @@ class OCIDocumentationData:
             try:
                 base_doc_data = DocSchema(
                     **yaml.load(file, Loader=yaml.BaseLoader) or {}
-                ).dict(exclude_none=True)
+                ).model_dump(exclude_none=True)
             except (yaml.YAMLError, pydantic.ValidationError) as exc:
                 msg = f"Error loading the {doc_file} file"
                 raise Exception(msg) from exc
