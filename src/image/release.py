@@ -77,11 +77,18 @@ for track, risks in image_trigger.release.items():
 
     for risk, value in risks.dict(exclude_none=True).items():
         if risk in ["end-of-life", "end_of_life"]:
-            all_releases[track]["end-of-life"] = value
+            # Only set 'end-of-life' if it hasn't been set already
+            if "end-of-life" not in all_releases[track]:
+                all_releases[track]["end-of-life"] = value
+            else:
+                print(
+                    f"Track {track} already has an end-of-life date "
+                    f"({all_releases[track]['end-of-life']}), so it is not overwritten."
+                )
             continue
 
         if risk not in KNOWN_RISKS_ORDERED:
-            print(f"Skipping unkown risk {risk} in track {track}")
+            print(f"Skipping unknown risk {risk} in track {track}")
             continue
 
         all_releases[track][risk] = {"target": value}
