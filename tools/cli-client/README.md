@@ -10,7 +10,7 @@ A CLI client that triggers GitHub workflows for building, uploading and releasin
 
 See ["How to Contribute as a Maintainer"](https://github.com/canonical/oci-factory?tab=readme-ov-file#as-a-maintainer--).
 
-Upon finishing the onboarding, the user should add their GitHub username to the `rockcraft.yaml` file in the
+Upon finishing the onboarding, the user should add their GitHub username to the `contacts.yaml` file in the
 `maintainers` field of the corresponding rock. This field is a list of GitHub usernames that are allowed to
 trigger the build, upload, and release workflows. The onboarded user needs to generate a GitHub Personal Access Token
 to authenticate themselves when using the CLI client.
