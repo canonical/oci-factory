@@ -20,7 +20,7 @@ class ConfigMapFile(BaseModel):
 class Microk8sConfigMap(BaseModel):
     """Schema of the microk8s[configmap] section."""
 
-    name: Optional[str]
+    name: Optional[str] = None
     files: conlist(item_type=ConfigMapFile, min_length=1)
 
     model_config = ConfigDict(extra="forbid")
@@ -38,7 +38,7 @@ class Microk8sDeploy(BaseModel):
 class Microk8sInfo(BaseModel):
     """Schema of the microk8s section."""
 
-    configmap: Optional[Microk8sConfigMap]
+    configmap: Optional[Microk8sConfigMap] = None
     deploy: Microk8sDeploy
 
     model_config = ConfigDict(extra="forbid")
@@ -48,7 +48,7 @@ class DockerRunParameters(BaseModel):
     """Schema of the docker section."""
 
     parameters: conlist(item_type=str, min_length=1)
-    access: Optional[str]
+    access: Optional[str] = None
 
     model_config = ConfigDict(extra="forbid")
 
@@ -76,11 +76,11 @@ class DocSchema(BaseModel):
 
     version: str
     application: constr(min_length=1, strip_whitespace=True)
-    is_chiselled: Optional[bool]
-    description: constr(min_length=1, strip_whitespace=True)
-    docker: Optional[DockerRunParameters]
-    parameters: Optional[conlist(item_type=Parameter, min_length=1)]
-    debug: Optional[DebugInfo]
-    microk8s: Optional[Microk8sInfo]
+    is_chiselled: Optional[bool] = None
+    description: constr(min_length=1, strip_whitespace=True) = None
+    docker: Optional[DockerRunParameters] = None
+    parameters: Optional[conlist(item_type=Parameter, min_length=1)] = None
+    debug: Optional[DebugInfo] = None
+    microk8s: Optional[Microk8sInfo] = None
 
     model_config = ConfigDict(extra="forbid")
