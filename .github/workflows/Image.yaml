@@ -277,17 +277,6 @@ jobs:
           ./src/uploads/swift_lockfile_unlock.sh \
             ${{ needs.prepare-build.outputs.oci-img-name }}
 
-      # The revision files have to be sanitised before merging,
-      # since the `track` field should not be present.
-      - name: Sanitise revision files
-        run: |
-          set -ex
-          for revision_file in `ls ${{ env.DATA_DIR }}`
-          do
-            jq 'del(.track, .base)' ${{ env.DATA_DIR }}/$revision_file > ${{ env.DATA_DIR }}/$revision_file.tmp
-            mv ${{ env.DATA_DIR }}/$revision_file.tmp ${{ env.DATA_DIR }}/$revision_file
-          done
-
       - uses: actions/cache/save@v4
         with:
           path: ${{ steps.prepare-matrix.outputs.revision-data-dir }}
