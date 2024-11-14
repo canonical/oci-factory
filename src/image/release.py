@@ -86,7 +86,7 @@ for track, risks in image_trigger["release"].items():
             continue
 
         if risk not in KNOWN_RISKS_ORDERED:
-            print(f"Skipping unkown risk {risk} in track {track}")
+            print(f"Skipping unknown risk {risk} in track {track}")
             continue
 
         all_releases[track][risk] = {"target": value}
