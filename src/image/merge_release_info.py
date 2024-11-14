@@ -66,7 +66,7 @@ if __name__ == "__main__":
     print(f"Getting pre-release from {args.revision_data_file}")
     with open(args.revision_data_file, encoding="UTF-8") as revision_data_f:
         revision_data = json.load(revision_data_f)
-    print(f"revision_data {revision_data}")
+
     _ = RevisionDataSchema(**revision_data)
 
     new_revision_releases = revision_data["release"]
