@@ -67,15 +67,20 @@ tag_mapping_from_all_releases = shared.get_tag_mapping_from_all_releases(all_rel
 
 print(f"Parsing image trigger {args.image_trigger}")
 with open(args.image_trigger, encoding="UTF-8") as trigger:
-    image_trigger = ImageSchema(**yaml.load(trigger, Loader=yaml.BaseLoader))
+    image_trigger = yaml.load(trigger, Loader=yaml.BaseLoader)
+
+_ = ImageSchema(**image_trigger)
 
 tag_mapping_from_trigger = {}
-for track, risks in image_trigger.release.items():
+for track, risks in image_trigger["release"].items():
     if track not in all_releases:
         print(f"Track {track} will be created for the 1st time")
         all_releases[track] = {}
 
-    for risk, value in risks.model_dump(exclude_none=True).items():
+    for risk, value in risks.items():
+        if value is None:
+            continue
+
         if risk in ["end-of-life", "end_of_life"]:
             all_releases[track]["end-of-life"] = value
             continue
