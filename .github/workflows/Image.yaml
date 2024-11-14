@@ -119,7 +119,7 @@ jobs:
         run: |
           mkdir ${{ env.DATA_DIR }}
 
-          ./src/image/prepare_single_image_build_matrix.py \
+          python3 -m src.image.prepare_single_image_build_matrix \
             --oci-path ${{ steps.validate-image.outputs.img-path }} \
             --revision-data-dir ${{ env.DATA_DIR }}
 
@@ -131,7 +131,6 @@ jobs:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     steps:
-
       - name: Clone GitHub image repository
         uses: actions/checkout@v4
         with:
@@ -254,7 +253,7 @@ jobs:
 
           mkdir ${{ env.DATA_DIR }}
 
-          ./src/image/prepare_single_image_build_matrix.py \
+          python3 -m src.image.prepare_single_image_build_matrix \
             --oci-path ${{ needs.prepare-build.outputs.oci-img-path }} \
             --revision-data-dir ${{ env.DATA_DIR }} \
             --next-revision ${{ steps.get-next-revision.outputs.revision }} \
@@ -277,17 +276,6 @@ jobs:
         run: |
           ./src/uploads/swift_lockfile_unlock.sh \
             ${{ needs.prepare-build.outputs.oci-img-name }}
-
-      # The revision files have to be sanitised before merging,
-      # since the `track` field should not be present.
-      - name: Sanitise revision files
-        run: |
-          set -ex
-          for revision_file in `ls ${{ env.DATA_DIR }}`
-          do
-            jq 'del(.track, .base)' ${{ env.DATA_DIR }}/$revision_file > ${{ env.DATA_DIR }}/$revision_file.tmp
-            mv ${{ env.DATA_DIR }}/$revision_file.tmp ${{ env.DATA_DIR }}/$revision_file
-          done
 
       - uses: actions/cache/save@v4
         with:
@@ -535,7 +523,7 @@ jobs:
 
             echo "Merge revision $revision_file with requested releases"
 
-            ./src/image/merge_release_info.py \
+            python3 -m src.image.merge_release_info \
               --image-trigger "${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml" \
               --revision-data-file "${{ env.REVISION_DATA_DIR }}/${revision_file}"
           done
@@ -640,7 +628,7 @@ jobs:
         id: get-summary
         run: |
           echo '${{ toJson(needs) }}' > jobs.json
-          ./src/notifications/summarize_workflow_results.py --jobs-file jobs.json
+          python3 -m src.notifications.summarize_workflow_results --jobs-file jobs.json
 
       - name: Get contacts for ${{ needs.prepare-build.outputs.oci-img-name }}
         id: get-contacts
