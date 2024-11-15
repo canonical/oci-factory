@@ -95,14 +95,14 @@ for track, risks in image_trigger["release"].items():
         tag_mapping_from_trigger[tag] = value
 
 # update EOL dates from upload dictionary
-for upload in image_trigger.upload or []:
-    for track, upload_release_dict in (upload.release or {}).items():
+for upload in image_trigger["upload"] or []:
+    for track, upload_release_dict in (upload["release"] or {}).items():
         if track not in all_releases:
             print(f"Track {track} will be created for the 1st time")
             all_releases[track] = {}
 
-        if upload_release_dict and upload_release_dict.end_of_life:
-            all_releases[track]["end-of-life"] = upload_release_dict.end_of_life
+        if upload_release_dict and upload_release_dict["end_of_life"]:
+            all_releases[track]["end-of-life"] = upload_release_dict["end_of_life"]
 
 print(
     "Going to update channels according to the following:\n"
