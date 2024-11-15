@@ -101,8 +101,8 @@ for upload in image_trigger["upload"] or []:
             print(f"Track {track} will be created for the 1st time")
             all_releases[track] = {}
 
-        if upload_release_dict and upload_release_dict.get("end_of_life"):
-            all_releases[track]["end-of-life"] = upload_release_dict["end_of_life"]
+        if upload_release_dict and upload_release_dict.get("end-of-life"):
+            all_releases[track]["end-of-life"] = upload_release_dict["end-of-life"]
 
 print(
     "Going to update channels according to the following:\n"
