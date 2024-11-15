@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 
 import argparse
-from datetime import datetime, timezone
 import glob
 import json
+import logging
+from copy import deepcopy
+from datetime import datetime, timezone
+from pathlib import Path
+from tempfile import TemporaryDirectory as tempdir
+from typing import Any
+
 import pydantic
 import yaml
-from typing import Any
-from pathlib import Path
 from git import Repo
-from tempfile import TemporaryDirectory as tempdir
-from copy import deepcopy
-import logging
 
-
-from ..uploads.infer_image_track import get_base_and_track
 from ..shared.github_output import GithubOutput
-from .utils.schema.triggers import ImageSchema
+from ..uploads.infer_image_track import get_base_and_track
 from .utils.schema.revision_data import RevisionDataSchema
+from .utils.schema.triggers import ImageSchema
 
 # TODO:
 # - inject_metadata uses a static github url, does this break builds that are sourced
