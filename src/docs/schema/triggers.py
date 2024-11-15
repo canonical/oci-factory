@@ -4,7 +4,7 @@ of the documentation.yaml schema.
 """
 
 from typing import Optional
-from pydantic import BaseModel, Extra, constr, conlist
+from pydantic import BaseModel, constr, conlist, ConfigDict
 
 
 class ConfigMapFile(BaseModel):
@@ -14,22 +14,16 @@ class ConfigMapFile(BaseModel):
     name: str
     link: str
 
-    class Config:
-        """permit to not accept extra parameters"""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class Microk8sConfigMap(BaseModel):
     """Schema of the microk8s[configmap] section."""
 
-    name: Optional[str]
-    files: conlist(item_type=ConfigMapFile, min_items=1)
+    name: Optional[str] = None
+    files: conlist(item_type=ConfigMapFile, min_length=1)
 
-    class Config:
-        """permit to not accept extra parameters"""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class Microk8sDeploy(BaseModel):
@@ -38,34 +32,25 @@ class Microk8sDeploy(BaseModel):
     link: str
     access: str
 
-    class Config:
-        """permit to not accept extra parameters"""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class Microk8sInfo(BaseModel):
     """Schema of the microk8s section."""
 
-    configmap: Optional[Microk8sConfigMap]
+    configmap: Optional[Microk8sConfigMap] = None
     deploy: Microk8sDeploy
 
-    class Config:
-        """permit to not accept extra parameters"""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class DockerRunParameters(BaseModel):
     """Schema of the docker section."""
 
-    parameters: conlist(item_type=str, min_items=1)
-    access: Optional[str]
+    parameters: conlist(item_type=str, min_length=1)
+    access: Optional[str] = None
 
-    class Config:
-        """permit to not accept extra parameters"""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class Parameter(BaseModel):
@@ -75,10 +60,7 @@ class Parameter(BaseModel):
     value: str
     description: str
 
-    class Config:
-        """permit to not accept extra parameters"""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class DebugInfo(BaseModel):
@@ -86,10 +68,7 @@ class DebugInfo(BaseModel):
 
     text: str
 
-    class Config:
-        """permit to not accept extra parameters"""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class DocSchema(BaseModel):
@@ -97,14 +76,11 @@ class DocSchema(BaseModel):
 
     version: str
     application: constr(min_length=1, strip_whitespace=True)
-    is_chiselled: Optional[bool]
-    description: constr(min_length=1, strip_whitespace=True)
-    docker: Optional[DockerRunParameters]
-    parameters: Optional[conlist(item_type=Parameter, min_items=1)]
-    debug: Optional[DebugInfo]
-    microk8s: Optional[Microk8sInfo]
+    is_chiselled: Optional[bool] = None
+    description: constr(min_length=1, strip_whitespace=True) = None
+    docker: Optional[DockerRunParameters] = None
+    parameters: Optional[conlist(item_type=Parameter, min_length=1)] = None
+    debug: Optional[DebugInfo] = None
+    microk8s: Optional[Microk8sInfo] = None
 
-    class Config:
-        """permit to not accept extra parameters"""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
