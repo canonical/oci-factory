@@ -77,14 +77,7 @@ for track, risks in image_trigger.release.items():
 
     for risk, value in risks.dict(exclude_none=True).items():
         if risk in ["end-of-life", "end_of_life"]:
-            # Only set 'end-of-life' if it hasn't been set already
-            if "end-of-life" not in all_releases[track]:
-                all_releases[track]["end-of-life"] = value
-            else:
-                print(
-                    f"Track {track} already has an end-of-life date "
-                    f"({all_releases[track]['end-of-life']}), so it is not overwritten."
-                )
+            all_releases[track]["end-of-life"] = value
             continue
 
         if risk not in KNOWN_RISKS_ORDERED:
@@ -95,6 +88,16 @@ for track, risks in image_trigger.release.items():
         tag = f"{track}_{risk}"
         print(f"Channel {tag} points to {value}")
         tag_mapping_from_trigger[tag] = value
+
+# update EOL dates from upload dictionary
+for upload in image_trigger.upload or []:
+    for track, upload_release_dict in (upload.release or {}).items():
+        if track not in all_releases:
+            print(f"Track {track} will be created for the 1st time")
+            all_releases[track] = {}
+
+        if upload_release_dict and upload_release_dict.end_of_life:
+            all_releases[track]["end-of-life"] = upload_release_dict.end_of_life
 
 print(
     "Going to update channels according to the following:\n"
