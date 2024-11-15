@@ -98,8 +98,7 @@ for track, risks in image_trigger["release"].items():
 for upload in image_trigger["upload"] or []:
     for track, upload_release_dict in (upload["release"] or {}).items():
         if track not in all_releases:
-            print(f"Track {track} will be created for the 1st time")
-            all_releases[track] = {}
+            continue
 
         if upload_release_dict and upload_release_dict.get("end_of_life"):
             all_releases[track]["end-of-life"] = upload_release_dict["end_of_life"]
