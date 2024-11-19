@@ -322,7 +322,7 @@ The `contacts.yaml` file has the following schema:
 | notify | False | Dict[str, List[str]] | Who and how to notify about the build progress. |
 | notify.emails | False | List[str] | List of emails that should receive notifications. |
 | notify.mattermost-channels | False | List[str] | Mattermost channel **IDs**. |
-| maintainers | False | List[str] | List of maintainers' GitHub usernames, who are permitted to trigger workflows against this image. |
+| maintainers | False | List[str] | The maintainers' GitHub usernames who can trigger workflows against this image. |
 
 ##### Example: *contacts.yaml*
 
@@ -335,7 +335,7 @@ notify:
     - fbdezwkcxpfofpysjore1wpfoc
 
 maintainers:
-  - foo
+  - octocat
 ```
 
 #### Vulnerability Filtering
