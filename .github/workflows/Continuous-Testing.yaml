@@ -31,8 +31,6 @@ jobs:
           last_scan="$(date --date='26 hours ago' +'%Y-%m-%dT%H:%M:00Z')"
           echo "date=$last_scan" >> "$GITHUB_OUTPUT"
 
-
-
   run-tests:
     name: Run tests for released images
     needs: [prepare-test-matrix]
@@ -46,9 +44,6 @@ jobs:
       date-last-scan: ${{ needs.prepare-test-matrix.outputs.last-scan }}
     secrets: inherit
 
-
-
-
   issue:
     runs-on: ubuntu-22.04
     name: Create issue
@@ -57,7 +52,6 @@ jobs:
       - run-tests
     env:
       GITHUB_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
-    if: ${{ !cancelled() && github.event_name != 'pull_request' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -127,7 +121,6 @@ jobs:
           fi
 
       - name: Close issue
-        if: ${{ needs.run-tests.result == 'success' && steps.issue-exists.outputs.issue-exists == 'true' && steps.create-markdown.outputs.vulnerability-exists == 'false' }}
+        if: ${{ steps.create-markdown.outputs.vulnerability-exists == 'false' && steps.issue-exists.outputs.issue-exists == 'true' && steps.create-markdown.outputs.vulnerability-exists == 'false' }}
         run: |
           gh issue close ${{ steps.issue-exists.outputs.issue-number }} --repo ${{ steps.get-image-repo.outputs.img-repo }}
-
