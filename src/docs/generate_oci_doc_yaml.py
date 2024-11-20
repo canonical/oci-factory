@@ -14,6 +14,7 @@ import subprocess
 import sys
 import tempfile
 from typing import Any, Dict, List
+from datetime import datetime, timezone
 from dateutil import parser
 
 import boto3
@@ -267,6 +268,11 @@ class OCIDocumentationData:
             if all_tracks.get(track_base):
                 eol = parser.parse(all_tracks[track_base])
                 release_data["support"] = {"until": eol.strftime("%m/%Y")}
+
+                if eol < datetime.now(timezone.utc):
+                    release_data["deprecated"] = {
+                        "date": eol.strftime("%m/%Y")
+                    }
 
             releases.append(release_data)
 
