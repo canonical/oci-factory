@@ -1,0 +1,3 @@
+# False positive for encoding/gob that not used by pebble
+# encoding/gob: cover missed cases when checking ignore depth
+CVE-2024-34156
