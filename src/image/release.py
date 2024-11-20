@@ -101,7 +101,7 @@ for upload in image_trigger["upload"] or []:
             print(f"Track {track} will be created for the 1st time")
             all_releases[track] = {}
 
-        if upload_release_dict and upload_release_dict.get("end-of-life"):
+        if isinstance(upload_release_dict, dict) and "end-of-life" in upload_release_dict:
             all_releases[track]["end-of-life"] = upload_release_dict["end-of-life"]
 
 print(
