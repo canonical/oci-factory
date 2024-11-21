@@ -24,7 +24,7 @@ on:
         required: true
         type: boolean
         default: false
-      external_ref_id:  # (1)
+      external_ref_id: # (1)
         description: "Optional ID for unique run detection"
         required: false
         type: string
@@ -54,7 +54,7 @@ jobs:
       oci-img-path: ${{ steps.validate-image.outputs.img-path }}
       oci-img-name: ${{ steps.validate-image.outputs.img-name }}
     steps:
-      - name: ${{ inputs.external_ref_id }}  # (2)
+      - name: ${{ inputs.external_ref_id }} # (2)
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
 
@@ -167,40 +167,37 @@ jobs:
       lpci-fallback: true
     secrets: inherit
 
-  tmp-cache-job:
-    # TODO: This is a temporary job that will be removed when the refactored test job is merged.
-    # Going forward we download the built rocks from artifacts instead of cache. This job takes
-    # the uploaded rocks then re-caches them for compatibility.
-    name: Temporary step to cache rocks
-    runs-on: ubuntu-22.04
-    needs: [prepare-build, run-build]
-    strategy:
-      fail-fast: true
-      matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
-    steps:
-      - name: Download rock
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
+  # tmp-cache-job:
+  #   # TODO: This is a temporary job that will be removed when the refactored test job is merged.
+  #   # Going forward we download the built rocks from artifacts instead of cache. This job takes
+  #   # the uploaded rocks then re-caches them for compatibility.
+  #   name: Temporary step to cache rocks
+  #   runs-on: ubuntu-22.04
+  #   needs: [prepare-build, run-build]
+  #   strategy:
+  #     fail-fast: true
+  #     matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
+  #   steps:
+  #     - name: Download rock
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
 
-      - uses: actions/cache/save@v4
-        with:
-          key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
-          path: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
+  #     - uses: actions/cache/save@v4
+  #       with:
+  #         key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
+  #         path: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
 
   test:
-    needs: [prepare-build, run-build, tmp-cache-job]
+    needs: [prepare-build, run-build]
     # TODO: Remove tmp-cache-job when removing the job tmp-cache-job
     name: Test
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
-    uses: ./.github/workflows/Tests.yaml
+    uses: ./.github/workflows/Test-Rock.yaml
     with:
       oci-image-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}"
-      oci-image-path: "oci/${{ matrix.name }}"
-      test-from: "cache"
-      cache-key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
     secrets: inherit
 
   prepare-upload:
