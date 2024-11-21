@@ -197,7 +197,7 @@ jobs:
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     uses: ./.github/workflows/Test-Rock.yaml
     with:
-      oci-image-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}"
+      oci-archive-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}"
     secrets: inherit
 
   prepare-upload:
