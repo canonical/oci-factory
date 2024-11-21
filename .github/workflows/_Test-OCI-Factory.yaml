@@ -76,7 +76,7 @@ jobs:
           if-no-files-found: error
 
   build-rock:
-    uses: canonical/oci-factory/.github/workflows/Build-Rock.yaml
+    uses: canonical/oci-factory/.github/workflows/Build-Rock.yaml@main
     with:
       oci-archive-name: "test-rock"
       rock-repo: canonical/rocks-toolbox
