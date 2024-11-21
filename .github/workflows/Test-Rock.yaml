@@ -126,7 +126,7 @@ jobs:
       - name: Cache Rock
         uses: actions/cache/save@v4
         with:
-          path: ${{ env.TEST_IMAGE_NAME}}
+          path: ${{ env.TEST_IMAGE_NAME }}
           key: ${{ steps.set-cache.outputs.key }}
 
   test-oci-compliance:
@@ -136,7 +136,7 @@ jobs:
     steps:
       - uses: actions/cache/restore@v4
         with:
-          path: ${{ env.TEST_IMAGE_NAME}}
+          path: ${{ env.TEST_IMAGE_NAME }}
           key: ${{ needs.unpack-rock.outputs.cache-key }}
 
       - name: Install Umoci
@@ -148,10 +148,10 @@ jobs:
       - name: Run Umoci tests
         run: |
           sudo umoci unpack --keep-dirlinks \
-            --image ${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
+            --image ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
             bundle
 
-          umoci list --layout ${{ env.TEST_IMAGE_NAME}} | grep -w -c ${{ env.TEST_IMAGE_TAG }}
+          umoci list --layout ${{ env.TEST_IMAGE_NAME }} | grep -w -c ${{ env.TEST_IMAGE_TAG }}
 
   test-black-box:
     strategy:
@@ -163,7 +163,7 @@ jobs:
     steps:
       - uses: actions/cache/restore@v4
         with:
-          path: ${{ env.TEST_IMAGE_NAME}}
+          path: ${{ env.TEST_IMAGE_NAME }}
           key: ${{ needs.unpack-rock.outputs.cache-key }}
 
       - name: Copy image to Docker daemon
@@ -171,18 +171,18 @@ jobs:
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
             -v $PWD:/workdir -w /workdir \
             ${{ env.SKOPEO_IMAGE }} \
-            copy oci:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
-            docker-daemon:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
+            copy oci:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
+            docker-daemon:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}
 
       - name: Test rock
         run: |
           set -ex
-          docker run --rm ${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
+          docker run --rm ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
             help | grep Pebble
 
       - name: Create container
         run: |
-          docker create ${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
+          docker create ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}
 
   test-efficiency:
     runs-on: ubuntu-22.04
@@ -195,7 +195,7 @@ jobs:
 
       - uses: actions/cache/restore@v4
         with:
-          path: ${{ env.TEST_IMAGE_NAME}}
+          path: ${{ env.TEST_IMAGE_NAME }}
           key: ${{ needs.unpack-rock.outputs.cache-key }}
 
       - name: Copy image to Docker daemon
@@ -203,8 +203,8 @@ jobs:
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
             -v $PWD:/workdir -w /workdir \
             ${{ env.SKOPEO_IMAGE }} \
-            copy oci:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
-            docker-daemon:${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}
+            copy oci:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
+            docker-daemon:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}
 
       # The existing Dive GH actions are outdated:
       # https://github.com/MartinHeinz/dive-action/issues/1
@@ -215,7 +215,7 @@ jobs:
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v $PWD/src/tests/.dive-ci.yaml:/.dive-ci.yaml \
             ${{ env.DIVE_IMAGE }} \
-            ${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} --ci-config /.dive-ci.yaml
+            ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} --ci-config /.dive-ci.yaml
 
   # test-vulnerabilities:
   #   name: Vulnerability scan
@@ -252,24 +252,22 @@ jobs:
           final_name="$(echo ${full_name} | sed 's/ghcr.io\/canonical\/oci-factory\///g' | tr ':' '_')"
           echo "name=$final_name" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache/restore@v4
-        if: ${{ inputs.cache-key != '' }}
+      - name: Download Rock
+        uses: actions/download-artifact@v4
         with:
-          path: ${{ env.TEST_IMAGE_NAME}}
-          key: ${{ inputs.cache-key }}
-          fail-on-cache-miss: true
+          name: ${{ inputs.oci-archive-name }}
 
       - name: Copy image to Docker daemon
         id: to-docker-daemon
         run: |
-          d_img_name="${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }}"
+          d_img_name="${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}"
           echo "name=$d_img_name" >> "$GITHUB_OUTPUT"
-          source=oci-archive:${{ env.TEST_IMAGE_NAME}} 
+          source=oci-archive:${{ env.TEST_IMAGE_NAME }} 
 
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
             -v $PWD:/workdir -w /workdir \
             ${{ env.SKOPEO_IMAGE }} \
-            copy $source \
+            copy oci-archive:${{ inputs.oci-archive-name }} \
             docker-daemon:$d_img_name
 
       - name: Check for .trivyignore
@@ -352,7 +350,7 @@ jobs:
 
       - uses: actions/cache/restore@v4
         with:
-          path: ${{ env.TEST_IMAGE_NAME}}
+          path: ${{ env.TEST_IMAGE_NAME }}
           key: ${{ needs.unpack-rock.outputs.cache-key }}
 
       - name: Install Umoci
@@ -365,7 +363,7 @@ jobs:
         run: |
           set -ex
           umoci unpack \
-            --image ${{ env.TEST_IMAGE_NAME}}:${{ env.TEST_IMAGE_TAG }} \
+            --image ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
             --rootless raw
 
       - uses: actions/setup-python@v5

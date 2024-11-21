@@ -89,15 +89,6 @@ jobs:
     with:
       oci-archive-name: "eicar-rock"
 
-  # test-rock:
-  #   name: Trigger internal tests for mock-rock
-  #   needs: [access-check]
-  #   uses: ./.github/workflows/Image.yaml
-  #   with:
-  #     oci-image-name: "mock-rock"
-  #     upload: true
-  #   secrets: inherit
-
   # bats-test:
   #   # Trigger bash unit tests across the repository
   #   name: bats
