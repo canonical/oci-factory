@@ -243,8 +243,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: ${{ steps.vulnerability-report.outputs.name }}
-          path: ${{ steps.vulnerability-report.outputs.name }}
+          name: ${{ steps.configure-trivy.outputs.report-name }}
+          path: ${{ steps.configure-trivy.outputs.report-name}}
 
   test-malware:
     runs-on: ubuntu-22.04
