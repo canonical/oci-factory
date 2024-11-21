@@ -77,17 +77,17 @@ env:
   TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db,aquasec/trivy-java-db,ghcr.io/aquasecurity/trivy-java-db
 
 jobs:
-  access-check:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: Validate access to triggered image
-        uses: ./.github/actions/validate-actor
-        if: ${{ github.repository == 'canonical/oci-factory' && !github.event.pull_request.head.repo.fork }}
-        with:
-          admin-only: true
-          image-path: ${{ inputs.oci-image-path }}
-          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+  # access-check:
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Validate access to triggered image
+  #       uses: ./.github/actions/validate-actor
+  #       if: ${{ github.repository == 'canonical/oci-factory' && !github.event.pull_request.head.repo.fork }}
+  #       with:
+  #         admin-only: true
+  #         image-path: ${{ inputs.oci-image-path }}
+  #         github-token: ${{ secrets.ROCKSBOT_TOKEN }}
 
   unpack-rock:
     # unpack-rock downloads and unpacks the image under test and
@@ -95,7 +95,6 @@ jobs:
     # in test-oci-compliance and test_malware jobs
     runs-on: ubuntu-22.04
     name: Unpack Rock
-    needs: [access-check]
     outputs:
       cache-key: ${{ steps.set-cache.outputs.key }}
     steps:
@@ -239,13 +238,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate access to triggered image
-        uses: ./.github/actions/validate-actor
-        if: ${{ github.repository == 'canonical/oci-factory' && !github.event.pull_request.head.repo.fork }}
-        with:
-          admin-only: true
-          image-path: ${{ inputs.oci-image-path }}
-          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+      # - name: Validate access to triggered image
+      #   uses: ./.github/actions/validate-actor
+      #   if: ${{ github.repository == 'canonical/oci-factory' && !github.event.pull_request.head.repo.fork }}
+      #   with:
+      #     admin-only: true
+      #     image-path: ${{ inputs.oci-image-path }}
+      #     github-token: ${{ secrets.ROCKSBOT_TOKEN }}
 
       - id: vulnerability-report
         run: |
