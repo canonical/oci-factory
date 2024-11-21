@@ -76,12 +76,12 @@ jobs:
           if-no-files-found: error
 
   build-rock:
-    uses: canonical/oci-factory/.github/workflows/Build-Rock.yaml@main
+    uses: ./.github/workflows/Build-Rock.yaml
     with:
       oci-archive-name: "test-rock"
       rock-repo: canonical/rocks-toolbox
       rock-repo-commit: oci-factory_workflows
-      rockfile-directory: mock_rock/1.0
+      rockfile-directory: oci-factory_workflows/rocks/eicar
 
   # test-rock:
   #   name: Trigger internal tests for mock-rock
