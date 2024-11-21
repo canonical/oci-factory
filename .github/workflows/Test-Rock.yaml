@@ -217,17 +217,6 @@ jobs:
             ${{ env.DIVE_IMAGE }} \
             ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} --ci-config /.dive-ci.yaml
 
-  # test-vulnerabilities:
-  #   name: Vulnerability scan
-  #   needs: [fetch-oci-image]
-  #   uses: ./.github/workflows/Vulnerability-Scan.yaml
-  #   with:
-  #     oci-image-name: "${{ inputs.oci-image-name }}"
-  #     oci-image-path: "${{ inputs.oci-image-path }}"
-  #     cache-key: "${{ needs.fetch-oci-image.outputs.test-cache-key }}"
-  #     vulnerability-report-suffix: "${{ inputs.vulnerability-report-suffix}}"
-  #   secrets: inherit
-
   test-vulnerabilities:
     runs-on: ubuntu-22.04
     name: Vulnerability scan
@@ -237,14 +226,6 @@ jobs:
       vulnerabilities: ${{ steps.check-report.outputs.vulnerabilities }}
     steps:
       - uses: actions/checkout@v4
-
-      # - name: Validate access to triggered image
-      #   uses: ./.github/actions/validate-actor
-      #   if: ${{ github.repository == 'canonical/oci-factory' && !github.event.pull_request.head.repo.fork }}
-      #   with:
-      #     admin-only: true
-      #     image-path: ${{ inputs.oci-image-path }}
-      #     github-token: ${{ secrets.ROCKSBOT_TOKEN }}
 
       - id: vulnerability-report
         run: |
@@ -298,42 +279,6 @@ jobs:
           # missing ${{ runner.arch }}
           output: "${{ steps.vulnerability-report.outputs.name }}"
           image-ref: "${{ steps.to-docker-daemon.outputs.name }}"
-
-      - name: Process report
-        if: ${{ !cancelled() }}
-        id: check-report
-        run: |
-          report="${{ steps.vulnerability-report.outputs.name }}"
-          echo "notify=false" >> "$GITHUB_OUTPUT"
-          set -x
-          vulnerabilities="$(jq -r -c '[
-                  try(.scanner.result.Results[])
-                  | .Target as $target
-                  | .Vulnerabilities
-                  | select(. != null)
-                  | .[]
-                  | {Target: $target, LastModifiedDate: .LastModifiedDate, VulnerabilityID: .VulnerabilityID,
-                     PkgName: .PkgName, Severity: .Severity}
-                ]' < $report)"
-          echo "vulnerabilities=$vulnerabilities" >> "$GITHUB_OUTPUT"
-          last_modified_dates="$(echo "$vulnerabilities" | jq -r '.[] | select(.LastModifiedDate != null) | .LastModifiedDate')"
-          cat "$GITHUB_OUTPUT"
-          # We want to notify only if the CVEs have been updated since the last
-          # time this scan ran
-          for cve_updated in $last_modified_dates
-          do
-            if [[ "$cve_updated" > "${{ inputs.date-last-scan }}" ]]
-            then
-              echo "notify=true" >> "$GITHUB_OUTPUT"
-              break
-            fi
-          done
-
-      - uses: actions/cache/save@v4
-        if: ${{ !cancelled() }}
-        with:
-          path: ${{ steps.vulnerability-report.outputs.name }}
-          key: ${{ github.run_id }}-${{ steps.vulnerability-report.outputs.name }}
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
