@@ -1,32 +1,6 @@
 name: Tests
 run-name: "Tests - ${{ inputs.oci-image-name }} - ${{ github.ref }}"
 
-# on:
-#   workflow_call:
-#     inputs:
-# oci-image-name:
-#   description: "Name of the image to be fetched and tested"
-#   required: true
-#   type: string
-# oci-image-path:
-#   description: 'Path to the image in this repo (eg. "oci/foo")'
-#   required: true
-#   type: string
-# test-from:
-#   description: "From where to fetch the OCI image to be tested"
-#   required: true
-#   default: "cache"
-#   type: string
-# cache-key:
-#   description: "Cache key (when fetching from cache)"
-#   required: false
-#   type: string
-# vulnerability-report-suffix:
-#   description: "Suffix for the vulnerability report artefact"
-#   required: false
-#   type: string
-#   default: ".vulnerability-report.json"
-
 on:
   workflow_call:
     inputs:
@@ -55,10 +29,6 @@ on:
         description: "Enable vulnerability test."
         default: true
         type: boolean
-      date-last-scan:
-        description: "Report if there are new CVEs after this date."
-        type: string
-        default: "9999-12-31T23:59:59"
 
       ## Malware Test
       test_malware:
@@ -220,29 +190,20 @@ jobs:
   test-vulnerabilities:
     runs-on: ubuntu-22.04
     name: Vulnerability scan
-    outputs:
-      vulnerability-report: ${{ steps.vulnerability-report.outputs.name }}
-      notify: ${{ steps.check-report.outputs.notify }}
-      vulnerabilities: ${{ steps.check-report.outputs.vulnerabilities }}
     steps:
       - uses: actions/checkout@v4
-
-      - id: vulnerability-report
-        run: |
-          full_name="${{ inputs.oci-image-name }}${{ inputs.vulnerability-report-suffix }}"
-          final_name="$(echo ${full_name} | sed 's/ghcr.io\/canonical\/oci-factory\///g' | tr ':' '_')"
-          echo "name=$final_name" >> "$GITHUB_OUTPUT"
 
       - name: Download Rock
         uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.oci-archive-name }}
 
-      - name: Copy image to Docker daemon
-        id: to-docker-daemon
+      - name: Configure Trivy
+        id: configure-trivy
         run: |
+
           d_img_name="${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}"
-          echo "name=$d_img_name" >> "$GITHUB_OUTPUT"
+          echo "docker-image=$d_img_name" >> "$GITHUB_OUTPUT"
           source=oci-archive:${{ env.TEST_IMAGE_NAME }} 
 
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
@@ -251,9 +212,6 @@ jobs:
             copy oci-archive:${{ inputs.oci-archive-name }} \
             docker-daemon:$d_img_name
 
-      - name: Check for .trivyignore
-        id: trivyignore
-        run: |
           if [ -f ${{ inputs.oci-image-path }}/.trivyignore ]
           then
             file=${{ inputs.oci-image-path }}/.trivyignore
@@ -262,14 +220,16 @@ jobs:
             file=.trivyignore
             touch $file
           fi
-          echo "file=$file" >> "$GITHUB_OUTPUT"
+          echo "trivyignore=$file" >> "$GITHUB_OUTPUT"
+
+          echo "report-name=${{ inputs.oci-archive-name }}_trivy_report.json" >> "$GITHUB_OUTPUT"
 
       - name: Scan for vulnerabilities
         uses: aquasecurity/trivy-action@0.28.0
         with:
           # NOTE: we're allowing images with vulnerabilities to be published
           ignore-unfixed: true
-          trivyignores: ${{ steps.trivyignore.outputs.file }}
+          trivyignores: ${{ steps.configure-trivy.outputs.trivyignore }}
           format: "cosign-vuln"
           severity: "HIGH,CRITICAL"
           exit-code: "1"
@@ -277,8 +237,8 @@ jobs:
           # CVE-2021-43565, CVE-2022-27191
           skip-files: "/bin/pebble,/usr/bin/pebble"
           # missing ${{ runner.arch }}
-          output: "${{ steps.vulnerability-report.outputs.name }}"
-          image-ref: "${{ steps.to-docker-daemon.outputs.name }}"
+          output: "${{ steps.configure-trivy.outputs.report-name }}"
+          image-ref: "${{ steps.configure-trivy.outputs.docker-image }}"
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
