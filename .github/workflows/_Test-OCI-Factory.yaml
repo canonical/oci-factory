@@ -78,10 +78,17 @@ jobs:
   build-rock:
     uses: ./.github/workflows/Build-Rock.yaml
     with:
+      # mock rock
       oci-archive-name: "eicar-rock"
       rock-repo: canonical/rocks-toolbox
-      rock-repo-commit: oci-factory_workflows
-      rockfile-directory: oci-factory_workflows/rocks/eicar
+      rock-repo-commit: main
+      rockfile-directory: mock_rock/1.0
+
+      # # eicar rock, will fail
+      # oci-archive-name: "eicar-rock"
+      # rock-repo: canonical/rocks-toolbox
+      # rock-repo-commit: oci-factory_workflows
+      # rockfile-directory: oci-factory_workflows/rocks/eicar
 
   test-rock:
     uses: ./.github/workflows/Test-Rock.yaml
