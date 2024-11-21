@@ -85,6 +85,7 @@ jobs:
 
   test-rock:
     uses: ./.github/workflows/Test-Rock.yaml
+    needs: [build-rock]
     with:
       oci-archive-name: "eicar-rock"
 
