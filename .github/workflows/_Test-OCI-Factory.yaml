@@ -78,10 +78,15 @@ jobs:
   build-rock:
     uses: ./.github/workflows/Build-Rock.yaml
     with:
-      oci-archive-name: "test-rock"
+      oci-archive-name: "eicar-rock"
       rock-repo: canonical/rocks-toolbox
       rock-repo-commit: oci-factory_workflows
       rockfile-directory: oci-factory_workflows/rocks/eicar
+
+  test-rock:
+    uses: ./.github/workflows/Test-Rock.yaml
+    with:
+      oci-archive-name: "eicar-rock"
 
   # test-rock:
   #   name: Trigger internal tests for mock-rock
