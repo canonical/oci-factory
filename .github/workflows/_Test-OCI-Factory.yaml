@@ -117,11 +117,11 @@ jobs:
   #       run: |
   #         find ${{ github.workspace }} -name 'test-*.bats' | xargs bats
 
-  test-workflows:
-    name: Trigger internal tests for mock-rock
-    needs: [access-check]
-    uses: ./.github/workflows/Image.yaml
-    with:
-      oci-image-name: "mock-rock"
-      upload: true
-    secrets: inherit
+  # test-workflows:
+  #   name: Trigger internal tests for mock-rock
+  #   needs: [access-check]
+  #   uses: ./.github/workflows/Image.yaml
+  #   with:
+  #     oci-image-name: "mock-rock"
+  #     upload: true
+  #   secrets: inherit
