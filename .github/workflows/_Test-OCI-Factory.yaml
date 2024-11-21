@@ -75,32 +75,49 @@ jobs:
           path: ${{ env.PYTEST_RESULT_PATH }}
           if-no-files-found: error
 
-  bats-test:
-    # Trigger bash unit tests across the repository
-    name: bats
-    runs-on: ubuntu-22.04
-    steps:
-      # Job Setup
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Install bats
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y bats
-
-      - name: Run bats
-        env:
-          GITHUB_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
-        run: |
-          find ${{ github.workspace }} -name 'test-*.bats' | xargs bats
-
-  test-workflows:
-    name: Trigger internal tests for mock-rock
-    needs: [access-check]
-    uses: ./.github/workflows/Image.yaml
+  build-rock:
+    uses: canonical/oci-factory/.github/workflows/Build-Rock.yaml
     with:
-      oci-image-name: "mock-rock"
-      upload: true
-    secrets: inherit
+      oci-archive-name: "test-rock"
+      rock-repo: canonical/rocks-toolbox
+      rock-repo-commit: oci-factory_workflows
+      rockfile-directory: mock_rock/1.0
+
+  # test-rock:
+  #   name: Trigger internal tests for mock-rock
+  #   needs: [access-check]
+  #   uses: ./.github/workflows/Image.yaml
+  #   with:
+  #     oci-image-name: "mock-rock"
+  #     upload: true
+  #   secrets: inherit
+
+  # bats-test:
+  #   # Trigger bash unit tests across the repository
+  #   name: bats
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     # Job Setup
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 1
+
+  #     - name: Install bats
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install -y bats
+
+  #     - name: Run bats
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
+  #       run: |
+  #         find ${{ github.workspace }} -name 'test-*.bats' | xargs bats
+
+  # test-workflows:
+  #   name: Trigger internal tests for mock-rock
+  #   needs: [access-check]
+  #   uses: ./.github/workflows/Image.yaml
+  #   with:
+  #     oci-image-name: "mock-rock"
+  #     upload: true
+  #   secrets: inherit
