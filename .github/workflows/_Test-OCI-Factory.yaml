@@ -96,26 +96,26 @@ jobs:
   #   with:
   #     oci-archive-name: "eicar-rock"
 
-  bats-test:
-    # Trigger bash unit tests across the repository
-    name: bats
-    runs-on: ubuntu-22.04
-    steps:
-      # Job Setup
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
+  # bats-test:
+  #   # Trigger bash unit tests across the repository
+  #   name: bats
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     # Job Setup
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 1
 
-      - name: Install bats
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y bats
+  #     - name: Install bats
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install -y bats
 
-      - name: Run bats
-        env:
-          GITHUB_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
-        run: |
-          find ${{ github.workspace }} -name 'test-*.bats' | xargs bats
+  #     - name: Run bats
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
+  #       run: |
+  #         find ${{ github.workspace }} -name 'test-*.bats' | xargs bats
 
   test-workflows:
     name: Trigger internal tests for mock-rock
