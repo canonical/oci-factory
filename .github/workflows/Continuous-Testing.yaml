@@ -37,9 +37,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.prepare-test-matrix.outputs.released-revisions-matrix) }}
-    uses: canonical/oci-factory/.github/workflows/Vulnerability-Scan.yaml@main
+    uses: ./.github/workflows/Vulnerability-Scan.yaml
     with:
       oci-image-name: "${{ matrix.source-image }}"
       oci-image-path: "oci/${{ matrix.name }}"
       date-last-scan: ${{ needs.prepare-test-matrix.outputs.last-scan }}
+      is-from-release: 'true'
     secrets: inherit
