@@ -44,5 +44,5 @@ jobs:
       oci-image-name: "${{ matrix.source-image }}"
       oci-image-path: "oci/${{ matrix.name }}"
       date-last-scan: ${{ needs.prepare-test-matrix.outputs.last-scan }}
-      is-from-release: 'true'
+      is-from-release: true
     secrets: inherit
