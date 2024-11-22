@@ -29,6 +29,10 @@ on:
         description: "Enable vulnerability test."
         default: true
         type: boolean
+      vulnerability-report-suffix:
+        description: "Suffix appended to trivy report artifact."
+        default: ".vulnerability-report.json"
+        type: string
 
       ## Malware Test
       test_malware:
@@ -222,7 +226,7 @@ jobs:
           fi
           echo "trivyignore=$file" >> "$GITHUB_OUTPUT"
 
-          echo "report-name=${{ inputs.oci-archive-name }}_trivy_report.json" >> "$GITHUB_OUTPUT"
+          echo "report-name=${{ inputs.oci-archive-name }}_${{ inputs.vulnerability-report-suffix }}" >> "$GITHUB_OUTPUT"
 
       - name: Scan for vulnerabilities
         uses: aquasecurity/trivy-action@0.28.0
