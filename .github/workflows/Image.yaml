@@ -198,7 +198,6 @@ jobs:
     uses: ./.github/workflows/Test-Rock.yaml
     with:
       oci-archive-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}"
-      vulnerability-report-suffix: "${{ env.VULNERABILITY_REPORT_SUFFIX }}"
     secrets: inherit
 
   prepare-upload:

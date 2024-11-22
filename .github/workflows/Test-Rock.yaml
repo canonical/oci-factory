@@ -29,10 +29,7 @@ on:
         description: "Enable vulnerability test."
         default: true
         type: boolean
-      vulnerability-report-suffix:
-        description: "Suffix appended to trivy report artifact."
-        default: ".vulnerability-report.json"
-        type: string
+
 
       ## Malware Test
       test_malware:
@@ -41,6 +38,7 @@ on:
         type: boolean
 
 env:
+  VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json" # TODO: inherit string from caller
   TEST_IMAGE_NAME: "test-img"
   TEST_IMAGE_TAG: "test"
   SKOPEO_IMAGE: "quay.io/skopeo/stable:v1.15.1"
@@ -226,7 +224,7 @@ jobs:
           fi
           echo "trivyignore=$file" >> "$GITHUB_OUTPUT"
 
-          echo "report-name=${{ inputs.oci-archive-name }}_${{ inputs.vulnerability-report-suffix }}" >> "$GITHUB_OUTPUT"
+          echo "report-name=${{ inputs.oci-archive-name }}_${{ env.VULNERABILITY_REPORT_SUFFIX }}" >> "$GITHUB_OUTPUT"
 
       - name: Scan for vulnerabilities
         uses: aquasecurity/trivy-action@0.28.0
