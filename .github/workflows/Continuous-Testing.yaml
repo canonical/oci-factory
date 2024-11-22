@@ -3,8 +3,6 @@ name: Continuous image testing
 on:
   schedule:
     - cron: "0 1 * * *"
-  workflow_dispatch:
-
 
 jobs:
   prepare-test-matrix:
@@ -22,7 +20,7 @@ jobs:
 
       - name: Prepare test matrix
         id: prepare-test-matrix
-        run: ./src/tests/get_released_revisions.py --oci-images-path $PWD/test-oci
+        run: ./src/tests/get_released_revisions.py --oci-images-path $PWD/oci
 
       - name: Infer date of last scan
         id: last-scan
