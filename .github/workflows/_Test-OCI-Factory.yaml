@@ -75,15 +75,7 @@ jobs:
           path: ${{ env.PYTEST_RESULT_PATH }}
           if-no-files-found: error
 
-  build-rock:
-    uses: canonical/oci-factory/.github/workflows/Build-Rock.yaml
-    with:
-      oci-archive-name: "test-rock"
-      rock-repo: canonical/rocks-toolbox
-      rock-repo-commit: oci-factory_workflows
-      rockfile-directory: mock_rock/1.0
-
-  # test-rock:
+  # test-workflows:
   #   name: Trigger internal tests for mock-rock
   #   needs: [access-check]
   #   uses: ./.github/workflows/Image.yaml
@@ -91,6 +83,61 @@ jobs:
   #     oci-image-name: "mock-rock"
   #     upload: true
   #   secrets: inherit
+
+
+  build-rock:
+    uses: ./.github/workflows/Build-Rock.yaml
+    with:
+      # mock rock
+      oci-archive-name: "eicar-rock"
+      rock-repo: canonical/rocks-toolbox
+      rock-repo-commit: main
+      rockfile-directory: mock_rock/1.2 # 1.0 - multi arch, 1.2 single arch rock
+
+      # # eicar rock, will fail
+      # oci-archive-name: "eicar-rock"
+      # rock-repo: canonical/rocks-toolbox
+      # rock-repo-commit: oci-factory_workflows
+      # rockfile-directory: oci-factory_workflows/rocks/eicar
+
+  test-rock:
+    uses: ./.github/workflows/Test-Rock.yaml
+    needs: [build-rock]
+    with:
+      oci-archive-name: "eicar-rock"
+
+
+
+  test-vulnerability-scan:
+    name: Test vulnerability scan workflow
+    needs: [access-check]
+    uses: ./.github/workflows/Vulnerability-Scan.yaml
+    with:
+      oci-image-name: "ghcr.io/canonical/oci-factory/mock-rock:1.1-22.04_844"
+      oci-image-path: "oci/mock-rock"
+    secrets: inherit
+
+
+  # build-rock:
+  #   uses: ./.github/workflows/Build-Rock.yaml
+  #   with:
+  #     # mock rock
+  #     oci-archive-name: "eicar-rock"
+  #     rock-repo: canonical/rocks-toolbox
+  #     rock-repo-commit: main
+  #     rockfile-directory: mock_rock/1.2 # 1.0 - multi arch, 1.2 single arch rock
+
+  #     # # eicar rock, will fail
+  #     # oci-archive-name: "eicar-rock"
+  #     # rock-repo: canonical/rocks-toolbox
+  #     # rock-repo-commit: oci-factory_workflows
+  #     # rockfile-directory: oci-factory_workflows/rocks/eicar
+
+  # test-rock:
+  #   uses: ./.github/workflows/Test-Rock.yaml
+  #   needs: [build-rock]
+  #   with:
+  #     oci-archive-name: "eicar-rock"
 
   # bats-test:
   #   # Trigger bash unit tests across the repository
@@ -112,12 +159,3 @@ jobs:
   #         GITHUB_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
   #       run: |
   #         find ${{ github.workspace }} -name 'test-*.bats' | xargs bats
-
-  # test-workflows:
-  #   name: Trigger internal tests for mock-rock
-  #   needs: [access-check]
-  #   uses: ./.github/workflows/Image.yaml
-  #   with:
-  #     oci-image-name: "mock-rock"
-  #     upload: true
-  #   secrets: inherit
