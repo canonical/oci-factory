@@ -214,24 +214,24 @@ jobs:
             copy oci-archive:${{ inputs.oci-archive-name }} \
             docker-daemon:$d_img_name
 
-          if [ -f ${{ inputs.oci-image-path }}/.trivyignore ]
+          if [ -f ${{ inputs.trivyignore-path }} ]
           then
-            file=${{ inputs.oci-image-path }}/.trivyignore
+            trivyignore_path=${{ inputs.trivyignore-path }}
           else
             # dummy .trivyignore file
-            file=.trivyignore
-            touch $file
+            trivyignore_path=.trivyignore
+            touch $trivyignore_path
           fi
-          echo "trivyignore=$file" >> "$GITHUB_OUTPUT"
+          echo "trivyignore-path=$trivyignore_path" >> "$GITHUB_OUTPUT"
 
-          echo "report-name=${{ inputs.oci-archive-name }}_${{ env.VULNERABILITY_REPORT_SUFFIX }}" >> "$GITHUB_OUTPUT"
+          echo "report-name=${{ inputs.oci-archive-name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}" >> "$GITHUB_OUTPUT"
 
       - name: Scan for vulnerabilities
         uses: aquasecurity/trivy-action@0.28.0
         with:
           # NOTE: we're allowing images with vulnerabilities to be published
           ignore-unfixed: true
-          trivyignores: ${{ steps.configure-trivy.outputs.trivyignore }}
+          trivyignores: ${{ steps.configure-trivy.outputs.trivyignore-path }}
           format: "cosign-vuln"
           severity: "HIGH,CRITICAL"
           exit-code: "1"
