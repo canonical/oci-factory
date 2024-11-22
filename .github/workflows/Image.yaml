@@ -310,11 +310,9 @@ jobs:
           ./src/uploads/requirements.sh
           pip install -r src/uploads/requirements.txt -r src/image/requirements.txt
 
-      - uses: actions/cache/restore@v4
+      - uses: actions/download-artifact@v4
         with:
-          path: ${{ env.OCI_ARCHIVE_NAME }}
-          key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
-          fail-on-cache-miss: true
+          name: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
 
       - name: Name output artefact
         id: rename-oci-archive
