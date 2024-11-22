@@ -312,7 +312,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
+          name: ${{ env.OCI_ARCHIVE_NAME }}
 
       - name: Name output artefact
         id: rename-oci-archive
