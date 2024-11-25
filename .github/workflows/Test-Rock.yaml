@@ -64,7 +64,7 @@ jobs:
         uses: canonical/get-workflow-version-action@v1
         with:
           repository-name: canonical/oci-factory
-          file-name: Build-Rock.yaml
+          file-name: Test-Rock.yaml
 
       - name: Cloning OCI Factory
         uses: actions/checkout@v4
