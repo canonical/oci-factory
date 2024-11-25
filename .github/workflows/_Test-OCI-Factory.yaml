@@ -75,39 +75,48 @@ jobs:
           path: ${{ env.PYTEST_RESULT_PATH }}
           if-no-files-found: error
 
-  # test-workflows:
-  #   name: Trigger internal tests for mock-rock
-  #   needs: [access-check]
-  #   uses: ./.github/workflows/Image.yaml
-  #   with:
-  #     oci-image-name: "mock-rock"
-  #     upload: true
-  #   secrets: inherit
+  bats-test:
+    # Trigger bash unit tests across the repository
+    name: bats
+    runs-on: ubuntu-22.04
+    steps:
+      # Job Setup
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
+      - name: Install bats
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats
 
+      - name: Run bats
+        env:
+          GITHUB_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
+        run: |
+          find ${{ github.workspace }} -name 'test-*.bats' | xargs bats
+  
+  # Test use case of reuseable workflow 
   build-rock:
     uses: ./.github/workflows/Build-Rock.yaml
     with:
       # mock rock
-      oci-archive-name: "eicar-rock"
+      oci-archive-name: "mock-rock"
       rock-repo: canonical/rocks-toolbox
       rock-repo-commit: main
-      rockfile-directory: mock_rock/1.2 # 1.0 - multi arch, 1.2 single arch rock
-
-      # # eicar rock, will fail
-      # oci-archive-name: "eicar-rock"
-      # rock-repo: canonical/rocks-toolbox
-      # rock-repo-commit: oci-factory_workflows
-      # rockfile-directory: oci-factory_workflows/rocks/eicar
+      rockfile-directory: mock_rock/1.2  # 1.0 - multi arch, 1.2 single arch rock
 
   test-rock:
     uses: ./.github/workflows/Test-Rock.yaml
     needs: [build-rock]
     with:
-      oci-archive-name: "eicar-rock"
+      oci-archive-name: "mock-rock"
+      test-vulnerabilities: true
+      test-oci-compliance: true
+      test-efficiency: true
+      test_malware: true
 
-
-
+  # Test workflow used in continuous testing
   test-vulnerability-scan:
     name: Test vulnerability scan workflow
     needs: [access-check]
@@ -117,45 +126,12 @@ jobs:
       oci-image-path: "oci/mock-rock"
     secrets: inherit
 
-
-  # build-rock:
-  #   uses: ./.github/workflows/Build-Rock.yaml
-  #   with:
-  #     # mock rock
-  #     oci-archive-name: "eicar-rock"
-  #     rock-repo: canonical/rocks-toolbox
-  #     rock-repo-commit: main
-  #     rockfile-directory: mock_rock/1.2 # 1.0 - multi arch, 1.2 single arch rock
-
-  #     # # eicar rock, will fail
-  #     # oci-archive-name: "eicar-rock"
-  #     # rock-repo: canonical/rocks-toolbox
-  #     # rock-repo-commit: oci-factory_workflows
-  #     # rockfile-directory: oci-factory_workflows/rocks/eicar
-
-  # test-rock:
-  #   uses: ./.github/workflows/Test-Rock.yaml
-  #   needs: [build-rock]
-  #   with:
-  #     oci-archive-name: "eicar-rock"
-
-  # bats-test:
-  #   # Trigger bash unit tests across the repository
-  #   name: bats
-  #   runs-on: ubuntu-22.04
-  #   steps:
-  #     # Job Setup
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         fetch-depth: 1
-
-  #     - name: Install bats
-  #       run: |
-  #         sudo apt-get update
-  #         sudo apt-get install -y bats
-
-  #     - name: Run bats
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
-  #       run: |
-  #         find ${{ github.workspace }} -name 'test-*.bats' | xargs bats
+  # Test full image workflow
+  test-workflows:
+    name: Trigger internal tests for mock-rock
+    needs: [access-check]
+    uses: ./.github/workflows/Image.yaml
+    with:
+      oci-image-name: "mock-rock"
+      upload: true
+    secrets: inherit

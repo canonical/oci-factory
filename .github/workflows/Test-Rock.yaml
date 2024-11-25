@@ -1,5 +1,5 @@
-name: Tests
-run-name: "Tests - ${{ inputs.oci-image-name }} - ${{ github.ref }}"
+name: Test rock
+run-name: "Test rock - ${{ inputs.oci-image-name }} - ${{ github.ref }}"
 
 on:
   workflow_call:
@@ -40,7 +40,7 @@ on:
         type: boolean
 
 env:
-  VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json" # TODO: inherit string from caller
+  VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"  # TODO: inherit string from caller
   TEST_IMAGE_NAME: "test-img"
   TEST_IMAGE_TAG: "test"
   SKOPEO_IMAGE: "quay.io/skopeo/stable:v1.15.1"
