@@ -87,6 +87,19 @@ def get_revision_to_track(all_revisions_tags: list) -> dict:
     return revision_track
 
 
+def _find_alias_revision(tag_mapping_from_all_releases: dict, rev: str, visited: set, tag: str) -> str:
+    if rev in visited:
+        raise BadChannel(
+            f"Tag {tag} was caught in a circular dependency, "
+            "following tags that follow themselves. Cannot pin a revision."
+        )
+    visited.add(rev)
+    if not rev.isdigit():
+        return _find_alias_revision(
+            tag_mapping_from_all_releases, tag_mapping_from_all_releases[rev], visited, tag
+        )
+    return rev
+
 def get_revision_to_released_tags(all_releases: dict) -> dict:
     """
     Iterates over the provided dictionary with all the releases
@@ -99,21 +112,7 @@ def get_revision_to_released_tags(all_releases: dict) -> dict:
     for tag, revision in tag_mapping_from_all_releases.items():
         if not revision.isdigit():
             visited = set()
-
-            def find_alias_revision(rev: str, visited: set) -> str:
-                if rev in visited:
-                    raise BadChannel(
-                        f"Tag {tag} was caught in a circular dependency, "
-                        "following tags that follow themselves. Cannot pin a revision."
-                    )
-                visited.add(rev)
-                if not rev.isdigit():
-                    return find_alias_revision(
-                        tag_mapping_from_all_releases[rev], visited
-                    )
-                return rev
-
-            revision = find_alias_revision(revision, visited)
+            revision = _find_alias_revision(tag_mapping_from_all_releases, revision, visited, tag)
         revision = int(revision)
         revision_to_released_tags[revision].append(tag)
 

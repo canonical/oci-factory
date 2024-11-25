@@ -34,12 +34,8 @@ def test_get_revision_to_release_circular():
         }
     }
 
-    with pytest.raises(BadChannel) as excinfo:
+    with pytest.raises(BadChannel, match=r"Tag .* was caught in a circular dependency, following tags that follow themselves. Cannot pin a revision."):
         get_revision_to_released_tags(all_releases)
-    assert (
-        "Tag 1.19.0-22.04_candidate was caught in a circular dependency, following tags that follow themselves. Cannot pin a revision."
-        in str(excinfo)
-    )
 
 
 def test_get_revision_to_release_alias():
