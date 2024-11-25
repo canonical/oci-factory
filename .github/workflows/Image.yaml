@@ -167,42 +167,21 @@ jobs:
       lpci-fallback: true
     secrets: inherit
 
-  # tmp-cache-job:
-  #   # TODO: This is a temporary job that will be removed when the refactored test job is merged.
-  #   # Going forward we download the built rocks from artifacts instead of cache. This job takes
-  #   # the uploaded rocks then re-caches them for compatibility.
-  #   name: Temporary step to cache rocks
-  #   runs-on: ubuntu-22.04
-  #   needs: [prepare-build, run-build]
-  #   strategy:
-  #     fail-fast: true
-  #     matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
-  #   steps:
-  #     - name: Download rock
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
-
-  #     - uses: actions/cache/save@v4
-  #       with:
-  #         key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
-  #         path: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
-
-  test:
+  test-build:
     needs: [prepare-build, run-build]
     # TODO: Remove tmp-cache-job when removing the job tmp-cache-job
-    name: Test
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     uses: ./.github/workflows/Test-Rock.yaml
     with:
       oci-archive-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}"
+      trivyignore-path: "oci/${{ matrix.name }}/.trivyignore"
     secrets: inherit
 
   prepare-upload:
     runs-on: ubuntu-22.04
-    needs: [prepare-build, run-build, test]
+    needs: [prepare-build, run-build, test-build]
     name: Prepare upload
     if: ${{ inputs.upload || (github.ref_name == 'main' && github.event_name == 'push') }}
     env:

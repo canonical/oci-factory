@@ -4,13 +4,13 @@ run-name: "Tests - ${{ inputs.oci-image-name }} - ${{ github.ref }}"
 on:
   workflow_call:
     inputs:
-      # Workflow Configuration
+      # Workflow Parameters
       oci-archive-name:
         description: "OCI image artifact name."
         required: true
         type: string
 
-      # Individual Test Configurations:
+      # Individual Test Parameters:
 
       ## ICU Compliance Test
       test-oci-compliance:
@@ -29,7 +29,9 @@ on:
         description: "Enable vulnerability test."
         default: true
         type: boolean
-
+      trivyignore-path:
+        description: "Optional path to .trivyignore file."
+        type: string
 
       ## Malware Test
       test_malware:
@@ -215,19 +217,19 @@ jobs:
         id: configure-trivy
         run: |
 
-          d_img_name="${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}"
-          echo "docker-image=$d_img_name" >> "$GITHUB_OUTPUT"
+          docker_image="${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}"
+          echo "docker-image=$docker_image" >> "$GITHUB_OUTPUT"
           source=oci-archive:${{ env.TEST_IMAGE_NAME }} 
 
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
             -v $PWD:/workdir -w /workdir \
             ${{ env.SKOPEO_IMAGE }} \
             copy oci-archive:${{ inputs.oci-archive-name }} \
-            docker-daemon:$d_img_name
+            docker-daemon:$docker_image
 
-          if [ -f ${{ inputs.trivyignore-path }} ]
+          if [ -n "${{ inputs.trivyignore-path }}" ] && [ -f "${{ inputs.trivyignore-path }}" ]
           then
-            trivyignore_path=${{ inputs.trivyignore-path }}
+            trivyignore_path="${{ inputs.trivyignore-path }}"
           else
             # dummy .trivyignore file
             trivyignore_path=.trivyignore
