@@ -176,6 +176,7 @@ jobs:
     uses: ./.github/workflows/Test-Rock.yaml
     with:
       oci-archive-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}"
+      trivyignore-path: "oci/${{ matrix.name }}/.trivyignore"
     secrets: inherit
 
   prepare-upload:
