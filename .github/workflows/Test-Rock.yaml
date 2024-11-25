@@ -49,34 +49,32 @@ env:
   TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db,aquasec/trivy-java-db,ghcr.io/aquasecurity/trivy-java-db
 
 jobs:
-  # access-check:
-  #   runs-on: ubuntu-22.04
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Validate access to triggered image
-  #       uses: ./.github/actions/validate-actor
-  #       if: ${{ github.repository == 'canonical/oci-factory' && !github.event.pull_request.head.repo.fork }}
-  #       with:
-  #         admin-only: true
-  #         image-path: ${{ inputs.oci-image-path }}
-  #         github-token: ${{ secrets.ROCKSBOT_TOKEN }}
-
-  unpack-rock:
-    # unpack-rock downloads and unpacks the image under test and
-    # stores it under a common cache key. This unpacked image is used
-    # in test-oci-compliance and test_malware jobs
+  configure-tests:
     runs-on: ubuntu-22.04
-    name: Unpack Rock
     outputs:
+      oci-factory-ref: ${{ steps.workflow-version.outputs.sha }}
       cache-key: ${{ steps.set-cache.outputs.key }}
+    name: "configure-tests ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
+
     steps:
-      # Job Setup
-      - uses: actions/checkout@v4
+      - name: Get Workflow Version
+        # Note: we may need to pass a github token when working with private repositories. 
+        # https://github.com/canonical/get-workflow-version-action  
+        id: workflow-version
+        uses: canonical/get-workflow-version-action@v1
         with:
-          repository: ${{ env.OCI_FACTORY_REPO }}
-          ref: ${{ env.OCI_FACTORY_BRANCH }}
+          repository-name: canonical/oci-factory
+          file-name: Build-Rock.yaml
+
+      - name: Cloning OCI Factory
+        uses: actions/checkout@v4
+        with:
+          repository: canonical/oci-factory
+          ref: ${{ steps.workflow-version.outputs.sha }}
           fetch-depth: 1
 
+      # download and unpacks the image under test, then store it under a common cache key. 
+      # This unpacked image is used in test-oci-compliance and test_malware jobs
       - name: Download Rock
         uses: actions/download-artifact@v4
         with:
@@ -103,13 +101,13 @@ jobs:
 
   test-oci-compliance:
     runs-on: ubuntu-22.04
-    name: Test OCI compliance
-    needs: [unpack-rock]
+    name: "test-oci-compliance ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
+    needs: [configure-tests]
     steps:
       - uses: actions/cache/restore@v4
         with:
           path: ${{ env.TEST_IMAGE_NAME }}
-          key: ${{ needs.unpack-rock.outputs.cache-key }}
+          key: ${{ needs.configure-tests.outputs.cache-key }}
 
       - name: Install Umoci
         run: |
@@ -130,13 +128,13 @@ jobs:
       matrix:
         os: [ubuntu-22.04, ubuntu-20.04]
     runs-on: ${{ matrix.os }}
-    name: Black-box and portability tests
-    needs: [unpack-rock]
+    name: "test-black-box ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
+    needs: [configure-tests]
     steps:
       - uses: actions/cache/restore@v4
         with:
           path: ${{ env.TEST_IMAGE_NAME }}
-          key: ${{ needs.unpack-rock.outputs.cache-key }}
+          key: ${{ needs.configure-tests.outputs.cache-key }}
 
       - name: Copy image to Docker daemon
         run: |
@@ -158,8 +156,8 @@ jobs:
 
   test-efficiency:
     runs-on: ubuntu-22.04
-    name: Efficiency test
-    needs: [unpack-rock]
+    name: "test-efficiency ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
+    needs: [configure-tests]
     # TODO: remove once https://chat.charmhub.io/charmhub/pl/o5wxpb65ffbfzy7bcmi8kzftzy is fixed
     continue-on-error: true
     steps:
@@ -168,7 +166,7 @@ jobs:
       - uses: actions/cache/restore@v4
         with:
           path: ${{ env.TEST_IMAGE_NAME }}
-          key: ${{ needs.unpack-rock.outputs.cache-key }}
+          key: ${{ needs.configure-tests.outputs.cache-key }}
 
       - name: Copy image to Docker daemon
         run: |
@@ -191,7 +189,7 @@ jobs:
 
   test-vulnerabilities:
     runs-on: ubuntu-22.04
-    name: Vulnerability scan
+    name: "test-vulnerabilities ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
     steps:
       - uses: actions/checkout@v4
 
@@ -250,15 +248,15 @@ jobs:
 
   test-malware:
     runs-on: ubuntu-22.04
-    name: Malware scan
-    needs: [unpack-rock]
+    name: "test-malware ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
+    needs: [configure-tests]
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/cache/restore@v4
         with:
           path: ${{ env.TEST_IMAGE_NAME }}
-          key: ${{ needs.unpack-rock.outputs.cache-key }}
+          key: ${{ needs.configure-tests.outputs.cache-key }}
 
       - name: Install Umoci
         run: |
