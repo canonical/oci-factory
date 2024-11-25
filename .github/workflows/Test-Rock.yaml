@@ -161,7 +161,13 @@ jobs:
     # TODO: remove once https://chat.charmhub.io/charmhub/pl/o5wxpb65ffbfzy7bcmi8kzftzy is fixed
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+
+      - name: Cloning OCI Factory
+        uses: actions/checkout@v4
+        with:
+          repository: canonical/oci-factory
+          ref: ${{ needs.configure-tests.outputs.oci-factory-ref }}
+          fetch-depth: 1
 
       - uses: actions/cache/restore@v4
         with:
@@ -190,8 +196,15 @@ jobs:
   test-vulnerabilities:
     runs-on: ubuntu-22.04
     name: "test-vulnerabilities ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
+    needs: [configure-tests]
     steps:
-      - uses: actions/checkout@v4
+
+      - name: Cloning OCI Factory
+        uses: actions/checkout@v4
+        with:
+          repository: canonical/oci-factory
+          ref: ${{ needs.configure-tests.outputs.oci-factory-ref }}
+          fetch-depth: 1
 
       - name: Download Rock
         uses: actions/download-artifact@v4
@@ -251,7 +264,12 @@ jobs:
     name: "test-malware ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
     needs: [configure-tests]
     steps:
-      - uses: actions/checkout@v4
+      - name: Cloning OCI Factory
+        uses: actions/checkout@v4
+        with:
+          repository: canonical/oci-factory
+          ref: ${{ needs.configure-tests.outputs.oci-factory-ref }}
+          fetch-depth: 1
 
       - uses: actions/cache/restore@v4
         with:
