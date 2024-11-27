@@ -10,13 +10,13 @@ A CLI client that triggers GitHub workflows for building, uploading and releasin
 
 See ["How to Contribute as a Maintainer"](https://github.com/canonical/oci-factory?tab=readme-ov-file#as-a-maintainer--).
 
-Upon finishing the onboarding, the user should receive a GitHub Personal Access Token. This token grants you proper
-permissions to trigger the build, upload and release of your rocks. This token should never be shared with 
-third-parties, nor put anywhere that is publicly available.
+Upon finishing the onboarding, the user should add their GitHub username to the `contacts.yaml` file in the
+[`maintainers` field](../../README.md#contacts) field of the corresponding rock. This field is a list of GitHub
+usernames that are allowed to trigger the build, upload, and release workflows. The onboarded user needs to 
+generate a GitHub Personal Access Token to authenticate themselves when using the CLI client.
 
-The user will be asked to input the GitHub Personal Access Token upon triggering a workflow. For a non-interactive
-terminal, it is possible to assign the token to the environmental variable `export GITHUB_TOKEN=<your token>`, and pass
-`-y` to confirm the triggering by default.
+For a non-interactive terminal of the CLI client, it is possible to assign the token to the environmental variable 
+`export GITHUB_TOKEN=<your token>`, and pass `-y` to confirm the triggering by default.
 
 ### Install using Snap
 

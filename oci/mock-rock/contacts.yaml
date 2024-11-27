@@ -9,3 +9,10 @@ notify:
   # opt, type: List[str]
   mattermost-channels:
     - fbdezwkcxpfofpysjore1wpfoc
+
+maintainers:
+  - cjdc
+  - clay-lake
+  - linostar
+  - rebornplusplus
+  - zhijie-yang
