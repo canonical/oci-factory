@@ -19,14 +19,14 @@ parameters:
   - type: -p
     value: '15090:15090'
     description: Port mapping for accessing the metrics-proxy aggregated metrics endpoint.
-  - type: --labels
-    value: 'foo=bar'
+  - type: -e
+    value: 'POD_LABEL_SELECTOR="foo=bar"'
     description: Specify labels to filter Kubernetes pods for metrics aggregation.
-  - type: --port
-    value: '15090'
+  - type: -e
+    value: 'PORT="15090"'
     description: The port on which the metrics-proxy listens for scrape requests.
-  - type: --scrape_timeout
-    value: '9s'
+  - type: -e
+    value: 'SCRAPE_TIMEOUT="9s"'
     description: Configures the timeout duration for scraping metrics from the pods.
 
 debug:
