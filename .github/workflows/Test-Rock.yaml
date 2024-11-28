@@ -12,7 +12,7 @@ on:
 
       # Individual Test Parameters:
 
-      ## ICU Compliance Test
+      ## OCI Compliance Test
       test-oci-compliance:
         description: "Enable compliance test."
         default: true
