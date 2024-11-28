@@ -152,7 +152,7 @@ jobs:
             exit 1
           fi
 
-  run-build:
+  build-rock:
     needs: [prepare-build, validate-matrix]
     strategy:
       fail-fast: true
@@ -167,8 +167,8 @@ jobs:
       lpci-fallback: true
     secrets: inherit
 
-  test-build:
-    needs: [prepare-build, run-build]
+  test-rock:
+    needs: [prepare-build, build-rock]
     # TODO: Remove tmp-cache-job when removing the job tmp-cache-job
     strategy:
       fail-fast: true
@@ -181,7 +181,7 @@ jobs:
 
   prepare-upload:
     runs-on: ubuntu-22.04
-    needs: [prepare-build, run-build, test-build]
+    needs: [prepare-build, build-rock, test-rock]
     name: Prepare upload
     if: ${{ inputs.upload || (github.ref_name == 'main' && github.event_name == 'push') }}
     env:
@@ -586,7 +586,7 @@ jobs:
     runs-on: ubuntu-22.04
     name: Notify
     needs:
-      [prepare-build, run-build, upload, prepare-releases, generate-provenance]
+      [prepare-build, build-rock, upload, prepare-releases, generate-provenance]
     if: ${{ !cancelled() && contains(needs.*.result, 'failure') && github.event_name != 'pull_request' }}
     steps:
       - uses: actions/checkout@v4
