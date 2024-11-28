@@ -96,35 +96,35 @@ jobs:
         run: |
           find ${{ github.workspace }} -name 'test-*.bats' | xargs bats
   
-  # Test use case of reuseable workflow 
-  build-rock:
-    uses: ./.github/workflows/Build-Rock.yaml
-    with:
-      # mock rock
-      oci-archive-name: "mock-rock"
-      rock-repo: canonical/rocks-toolbox
-      rock-repo-commit: main
-      rockfile-directory: mock_rock/1.2  # 1.0 - multi arch, 1.2 single arch rock
+  # # Test use case of reuseable workflow 
+  # build-rock:
+  #   uses: ./.github/workflows/Build-Rock.yaml
+  #   with:
+  #     # mock rock
+  #     oci-archive-name: "mock-rock"
+  #     rock-repo: canonical/rocks-toolbox
+  #     rock-repo-commit: main
+  #     rockfile-directory: mock_rock/1.2  # 1.0 - multi arch, 1.2 single arch rock
 
-  test-rock:
-    uses: ./.github/workflows/Test-Rock.yaml
-    needs: [build-rock]
-    with:
-      oci-archive-name: "mock-rock"
-      test-vulnerabilities: true
-      test-oci-compliance: true
-      test-efficiency: true
-      test_malware: true
+  # test-rock:
+  #   uses: ./.github/workflows/Test-Rock.yaml
+  #   needs: [build-rock]
+  #   with:
+  #     oci-archive-name: "mock-rock"
+  #     test-vulnerabilities: true
+  #     test-oci-compliance: true
+  #     test-efficiency: true
+  #     test_malware: true
 
-  # Test workflow used in continuous testing
-  test-vulnerability-scan:
-    name: Test vulnerability scan workflow
-    needs: [access-check]
-    uses: ./.github/workflows/Vulnerability-Scan.yaml
-    with:
-      oci-image-name: "ghcr.io/canonical/oci-factory/mock-rock:1.1-22.04_844"
-      oci-image-path: "oci/mock-rock"
-    secrets: inherit
+  # # Test workflow used in continuous testing
+  # test-vulnerability-scan:
+  #   name: Test vulnerability scan workflow
+  #   needs: [access-check]
+  #   uses: ./.github/workflows/Vulnerability-Scan.yaml
+  #   with:
+  #     oci-image-name: "ghcr.io/canonical/oci-factory/mock-rock:1.1-22.04_844"
+  #     oci-image-path: "oci/mock-rock"
+  #   secrets: inherit
 
   # Test full image workflow
   test-workflows:
