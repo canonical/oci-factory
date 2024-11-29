@@ -152,7 +152,7 @@ jobs:
             exit 1
           fi
 
-  run-build:
+  build-rock:
     needs: [prepare-build, validate-matrix]
     strategy:
       fail-fast: true
@@ -167,45 +167,21 @@ jobs:
       lpci-fallback: true
     secrets: inherit
 
-  tmp-cache-job:
-    # TODO: This is a temporary job that will be removed when the refactored test job is merged.
-    # Going forward we download the built rocks from artifacts instead of cache. This job takes
-    # the uploaded rocks then re-caches them for compatibility.
-    name: Temporary step to cache rocks
-    runs-on: ubuntu-22.04
-    needs: [prepare-build, run-build]
-    strategy:
-      fail-fast: true
-      matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
-    steps:
-      - name: Download rock
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
-
-      - uses: actions/cache/save@v4
-        with:
-          key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
-          path: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
-
-  test:
-    needs: [prepare-build, run-build, tmp-cache-job]
+  test-rock:
+    needs: [prepare-build, build-rock]
     # TODO: Remove tmp-cache-job when removing the job tmp-cache-job
-    name: Test
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
-    uses: ./.github/workflows/Tests.yaml
+    uses: ./.github/workflows/Test-Rock.yaml
     with:
-      oci-image-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}"
-      oci-image-path: "oci/${{ matrix.name }}"
-      test-from: "cache"
-      cache-key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
+      oci-archive-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}"
+      trivyignore-path: "oci/${{ matrix.name }}/.trivyignore"
     secrets: inherit
 
   prepare-upload:
     runs-on: ubuntu-22.04
-    needs: [prepare-build, run-build, test]
+    needs: [prepare-build, build-rock, test-rock]
     name: Prepare upload
     if: ${{ inputs.upload || (github.ref_name == 'main' && github.event_name == 'push') }}
     env:
@@ -313,11 +289,9 @@ jobs:
           ./src/uploads/requirements.sh
           pip install -r src/uploads/requirements.txt -r src/image/requirements.txt
 
-      - uses: actions/cache/restore@v4
+      - uses: actions/download-artifact@v4
         with:
-          path: ${{ env.OCI_ARCHIVE_NAME }}
-          key: ${{ github.run_id }}-${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
-          fail-on-cache-miss: true
+          name: ${{ env.OCI_ARCHIVE_NAME }}
 
       - name: Name output artefact
         id: rename-oci-archive
@@ -380,12 +354,9 @@ jobs:
 
           echo "sboms=${all_sboms_zip}" >> "$GITHUB_OUTPUT"
 
-      - name: Fetch vulnerability artifacts for hashing
-        uses: actions/cache/restore@v4
+      - uses: actions/download-artifact@v4
         with:
-          path: ${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
-          key: ${{ github.run_id }}-${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
-          fail-on-cache-miss: true
+          name: ${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
 
       # https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/generic/README.md
       - name: Calculate artefacts hashes
@@ -615,7 +586,7 @@ jobs:
     runs-on: ubuntu-22.04
     name: Notify
     needs:
-      [prepare-build, run-build, upload, prepare-releases, generate-provenance]
+      [prepare-build, build-rock, upload, prepare-releases, generate-provenance]
     if: ${{ !cancelled() && contains(needs.*.result, 'failure') && github.event_name != 'pull_request' }}
     steps:
       - uses: actions/checkout@v4
