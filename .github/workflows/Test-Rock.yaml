@@ -248,8 +248,8 @@ jobs:
           format: "cosign-vuln"
           severity: "HIGH,CRITICAL"
           exit-code: "1"
-          # NOTE: pebble is flagged with a HIGH vuln because of golang.org/x/crypto
-          # CVE-2021-43565, CVE-2022-27191
+          # NOTE: pebble is flagged with a HIGH vuln because of golang.org/x/crypto and encoding/gob
+          # CVE-2021-43565, CVE-2022-27191, CVE-2024-34156
           skip-files: "/bin/pebble,/usr/bin/pebble"
           # missing ${{ runner.arch }}
           output: "${{ steps.configure-trivy.outputs.report-name }}"
