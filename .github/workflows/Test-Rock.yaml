@@ -139,7 +139,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: "test-black-box ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
     needs: [configure-tests]
-    if: inputs.test-black-box == 'true'
+    if: inputs.test-black-box
     steps:
       - uses: actions/cache/restore@v4
         with:
