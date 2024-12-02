@@ -111,11 +111,11 @@ jobs:
     needs: [build-rock]
     with:
       oci-archive-name: "mock-rock"
-      test-black-box: false
-      test-efficiency: false
+      test-black-box: true
+      test-efficiency: true
       test-malware: true
-      test-oci-compliance: false
-      test-vulnerabilities: false
+      test-oci-compliance: true
+      test-vulnerabilities: true
 
   # # Test workflow used in continuous testing
   # test-vulnerability-scan:
