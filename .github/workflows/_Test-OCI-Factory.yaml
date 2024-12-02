@@ -115,7 +115,7 @@ jobs:
       test-black-box: false
       test-oci-compliance: false
       test-efficiency: false
-      test_malware: false
+      test-malware: false
 
   # # Test workflow used in continuous testing
   # test-vulnerability-scan:
