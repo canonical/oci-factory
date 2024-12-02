@@ -96,26 +96,15 @@ jobs:
         run: |
           find ${{ github.workspace }} -name 'test-*.bats' | xargs bats
   
-  # Test use case of reuseable workflow 
-  build-rock:
-    uses: ./.github/workflows/Build-Rock.yaml
-    with:
-      # mock rock
-      oci-archive-name: "mock-rock"
-      rock-repo: canonical/rocks-toolbox
-      rock-repo-commit: main
-      rockfile-directory: mock_rock/1.2  # 1.0 - multi arch, 1.2 single arch rock
-
-  test-rock:
-    uses: ./.github/workflows/Test-Rock.yaml
-    needs: [build-rock]
-    with:
-      oci-archive-name: "mock-rock"
-      test-black-box: true
-      test-efficiency: true
-      test-malware: false
-      test-oci-compliance: false
-      test-vulnerabilities: false
+  # # Test use case of reuseable workflow 
+  # build-rock:
+  #   uses: ./.github/workflows/Build-Rock.yaml
+  #   with:
+  #     # mock rock
+  #     oci-archive-name: "mock-rock"
+  #     rock-repo: canonical/rocks-toolbox
+  #     rock-repo-commit: main
+  #     rockfile-directory: mock_rock/1.2  # 1.0 - multi arch, 1.2 single arch rock
 
   # test-rock:
   #   uses: ./.github/workflows/Test-Rock.yaml
@@ -139,12 +128,12 @@ jobs:
   #     oci-image-path: "oci/mock-rock"
   #   secrets: inherit
 
-  # # Test full image workflow
-  # test-workflows:
-  #   name: Trigger internal tests for mock-rock
-  #   needs: [access-check]
-  #   uses: ./.github/workflows/Image.yaml
-  #   with:
-  #     oci-image-name: "mock-rock"
-  #     upload: true
-  #   secrets: inherit
+  # Test full image workflow
+  test-workflows:
+    name: Trigger internal tests for mock-rock
+    needs: [access-check]
+    uses: ./.github/workflows/Image.yaml
+    with:
+      oci-image-name: "mock-rock"
+      upload: true
+    secrets: inherit
