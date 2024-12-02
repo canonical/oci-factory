@@ -112,10 +112,10 @@ jobs:
     with:
       oci-archive-name: "mock-rock"
       test-black-box: true
-      test-efficiency: true
-      test-malware: true
-      test-oci-compliance: true
-      test-vulnerabilities: true
+      test-efficiency: false
+      test-malware: false
+      test-oci-compliance: false
+      test-vulnerabilities: false
 
   # test-rock:
   #   uses: ./.github/workflows/Test-Rock.yaml

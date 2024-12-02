@@ -7,7 +7,7 @@ on:
       # Workflow Parameters
       oci-archive-name:
         description: "OCI image artifact name."
-        required: true
+        required: 'true'
         type: string
 
       # Individual Test Parameters:
@@ -15,25 +15,25 @@ on:
       ## OCI Compliance Test
       test-oci-compliance:
         description: "Enable compliance test."
-        default: true
+        default: 'true'
         type: boolean
 
       ## Rock black-box Test
       test-black-box:
         description: "Enable rock black-box test."
-        default: true
+        default: 'true'
         type: boolean
 
       ## Image Efficiency Test
       test-efficiency:
         description: "Enable image efficiency test."
-        default: true
+        default: 'true'
         type: boolean
 
       ## Vulnerability Test
       test-vulnerabilities:
         description: "Enable vulnerability test."
-        default: true
+        default: 'true'
         type: boolean
       trivyignore-path:
         description: "Optional path to .trivyignore file."
@@ -42,7 +42,7 @@ on:
       ## Malware Test
       test-malware:
         description: "Enable malware test."
-        default: true
+        default: 'true'
         type: boolean
 
 env:
