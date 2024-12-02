@@ -112,10 +112,10 @@ jobs:
     with:
       oci-archive-name: "mock-rock"
       test-black-box: true
-      test-efficiency: false
-      test-malware: false
-      test-oci-compliance: false
-      test-vulnerabilities: false
+      test-efficiency: true
+      test-malware: true
+      test-oci-compliance: true
+      test-vulnerabilities: true
 
   # test-rock:
   #   uses: ./.github/workflows/Test-Rock.yaml
@@ -139,12 +139,12 @@ jobs:
   #     oci-image-path: "oci/mock-rock"
   #   secrets: inherit
 
-  # Test full image workflow
-  test-workflows:
-    name: Trigger internal tests for mock-rock
-    needs: [access-check]
-    uses: ./.github/workflows/Image.yaml
-    with:
-      oci-image-name: "mock-rock"
-      upload: true
-    secrets: inherit
+  # # Test full image workflow
+  # test-workflows:
+  #   name: Trigger internal tests for mock-rock
+  #   needs: [access-check]
+  #   uses: ./.github/workflows/Image.yaml
+  #   with:
+  #     oci-image-name: "mock-rock"
+  #     upload: true
+  #   secrets: inherit
