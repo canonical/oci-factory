@@ -96,15 +96,26 @@ jobs:
         run: |
           find ${{ github.workspace }} -name 'test-*.bats' | xargs bats
   
-  # # Test use case of reuseable workflow 
-  # build-rock:
-  #   uses: ./.github/workflows/Build-Rock.yaml
-  #   with:
-  #     # mock rock
-  #     oci-archive-name: "mock-rock"
-  #     rock-repo: canonical/rocks-toolbox
-  #     rock-repo-commit: main
-  #     rockfile-directory: mock_rock/1.2  # 1.0 - multi arch, 1.2 single arch rock
+  # Test use case of reuseable workflow 
+  build-rock:
+    uses: ./.github/workflows/Build-Rock.yaml
+    with:
+      # mock rock
+      oci-archive-name: "mock-rock"
+      rock-repo: canonical/rocks-toolbox
+      rock-repo-commit: main
+      rockfile-directory: mock_rock/1.2  # 1.0 - multi arch, 1.2 single arch rock
+
+  test-rock:
+    uses: ./.github/workflows/Test-Rock.yaml
+    needs: [build-rock]
+    with:
+      oci-archive-name: "mock-rock"
+      test-black-box: true
+      test-efficiency: false
+      test-malware: false
+      test-oci-compliance: false
+      test-vulnerabilities: false
 
   # test-rock:
   #   uses: ./.github/workflows/Test-Rock.yaml
@@ -116,6 +127,7 @@ jobs:
   #     test-malware: true
   #     test-oci-compliance: true
   #     test-vulnerabilities: true
+
 
   # # Test workflow used in continuous testing
   # test-vulnerability-scan:

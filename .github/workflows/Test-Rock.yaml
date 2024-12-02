@@ -111,7 +111,7 @@ jobs:
     runs-on: ubuntu-22.04
     name: "test-oci-compliance ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
     needs: [configure-tests]
-    if: ${{ inputs.test-oci-compliance }}
+    if: ${{ inputs.test-oci-compliance == 'true' }}
     steps:
       - uses: actions/cache/restore@v4
         with:
@@ -139,7 +139,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: "test-black-box ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
     needs: [configure-tests]
-    if: ${{ inputs.test-black-box }}
+    if: ${{ inputs.test-black-box == 'true'  }}
     steps:
       - uses: actions/cache/restore@v4
         with:
@@ -170,7 +170,7 @@ jobs:
     needs: [configure-tests]
     # TODO: remove once https://chat.charmhub.io/charmhub/pl/o5wxpb65ffbfzy7bcmi8kzftzy is fixed
     continue-on-error: true
-    if: ${{ inputs.test-efficiency }}
+    if: ${{ inputs.test-efficiency == 'true' }}
     steps:
 
       - name: Cloning OCI Factory
@@ -208,7 +208,7 @@ jobs:
     runs-on: ubuntu-22.04
     name: "test-vulnerabilities ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
     needs: [configure-tests]
-    if: ${{ inputs.test-vulnerabilities }}
+    if: ${{ inputs.test-vulnerabilities == 'true' }}
     steps:
 
       - name: Cloning OCI Factory
@@ -275,7 +275,7 @@ jobs:
     runs-on: ubuntu-22.04
     name: "test-malware ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
     needs: [configure-tests]
-    if: ${{ inputs.test-malware }}
+    if: ${{ inputs.test-malware == 'true' }}
     steps:
       - name: Cloning OCI Factory
         uses: actions/checkout@v4
