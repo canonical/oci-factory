@@ -113,7 +113,7 @@ jobs:
       oci-archive-name: "mock-rock"
       test-black-box: false
       test-efficiency: false
-      test-malware: false
+      test-malware: true
       test-oci-compliance: false
       test-vulnerabilities: false
 
