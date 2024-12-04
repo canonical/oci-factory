@@ -18,6 +18,12 @@ on:
         default: true
         type: boolean
 
+      ## Rock black-box Test
+      test-black-box:
+        description: "Enable rock black-box test."
+        default: true
+        type: boolean
+
       ## Image Efficiency Test
       test-efficiency:
         description: "Enable image efficiency test."
@@ -34,7 +40,7 @@ on:
         type: string
 
       ## Malware Test
-      test_malware:
+      test-malware:
         description: "Enable malware test."
         default: true
         type: boolean
@@ -75,8 +81,8 @@ jobs:
           ref: ${{ steps.workflow-version.outputs.sha }}
           fetch-depth: 1
 
-      # download and unpacks the image under test, then store it under a common cache key. 
-      # This unpacked image is used in test-oci-compliance and test_malware jobs
+      # download and unpack the image under test, then store it under a common cache key. 
+      # This unpacked image is used in test-oci-compliance, test-black-box and test-malware jobs
       - name: Download Rock
         uses: actions/download-artifact@v4
         with:
@@ -105,6 +111,7 @@ jobs:
     runs-on: ubuntu-22.04
     name: "test-oci-compliance ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
     needs: [configure-tests]
+    if: inputs.test-oci-compliance
     steps:
       - uses: actions/cache/restore@v4
         with:
@@ -132,6 +139,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: "test-black-box ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
     needs: [configure-tests]
+    if: inputs.test-black-box
     steps:
       - uses: actions/cache/restore@v4
         with:
@@ -146,15 +154,15 @@ jobs:
             copy oci:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
             docker-daemon:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}
 
+      - name: Create container
+        run: |
+          docker create ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}
+
       - name: Test rock
         run: |
           set -ex
           docker run --rm ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
             help | grep Pebble
-
-      - name: Create container
-        run: |
-          docker create ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}
 
   test-efficiency:
     runs-on: ubuntu-22.04
@@ -162,6 +170,7 @@ jobs:
     needs: [configure-tests]
     # TODO: remove once https://chat.charmhub.io/charmhub/pl/o5wxpb65ffbfzy7bcmi8kzftzy is fixed
     continue-on-error: true
+    if: inputs.test-efficiency
     steps:
 
       - name: Cloning OCI Factory
@@ -199,6 +208,7 @@ jobs:
     runs-on: ubuntu-22.04
     name: "test-vulnerabilities ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
     needs: [configure-tests]
+    if: inputs.test-vulnerabilities
     steps:
 
       - name: Cloning OCI Factory
@@ -265,6 +275,7 @@ jobs:
     runs-on: ubuntu-22.04
     name: "test-malware ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
     needs: [configure-tests]
+    if: inputs.test-malware
     steps:
       - name: Cloning OCI Factory
         uses: actions/checkout@v4
