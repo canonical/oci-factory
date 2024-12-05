@@ -27,7 +27,7 @@
       - [Example: *contacts.yaml*](#Example:-*contacts.yaml*)
     - [Vulnerability Filtering](#Vulnerability-Filtering)
       - [Example: *.trivyignore*](#Example:-*.trivyignore*)
-- [Reusable workflows](#📦-Reusable-workflows)
+- [Reusable workflows](#Reusable-workflows)
   - [Build-Rock Workflow](#Build-Rock-Workflow)
   - [Test-Rock Workflow](#Test-Rock-Workflow)
 
