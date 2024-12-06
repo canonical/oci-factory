@@ -1,0 +1,8 @@
+version: 1
+
+application: valkey
+is_chiselled: False
+description: |
+  This is an OCI image that bundles Valkey together with the metrics exporter.
+  Valkey is an open source, flexible distributed key-value datastore that is
+  optimized for caching and other realtime workloads.
