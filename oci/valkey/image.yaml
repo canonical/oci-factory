@@ -1,0 +1,11 @@
+version: 1
+
+upload:
+  - source: "canonical/charmed-valkey-rock"
+    commit: 878db63623f67cfb8eb94ce2a502a7fcf5efce6a
+    directory: .
+    release:
+      7.2.5-22.04:
+        end-of-life: "2025-12-01T00:00:00Z"
+        risks:
+          - edge
