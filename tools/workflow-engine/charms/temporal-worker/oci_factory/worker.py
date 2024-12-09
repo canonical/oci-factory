@@ -52,7 +52,7 @@ def _get_auth_header():
             auth_uri=os.getenv("TWC_OIDC_AUTH_URI"),
             token_uri=os.getenv("TWC_OIDC_TOKEN_URI"),
             auth_provider_x509_cert_url=os.getenv("TWC_OIDC_AUTH_CERT_URL"),
-            client_x509_cert_url=os.getenv("TWC_OIDC_CLIENT_CERT_URL"),
+            # client_x509_cert_url=os.getenv("TWC_OIDC_CLIENT_CERT_URL"),
         )
 
     return None
