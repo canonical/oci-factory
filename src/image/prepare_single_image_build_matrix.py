@@ -228,7 +228,10 @@ def main():
         # so let's remove this field since we don't need it for the builds
         del build["release"]
 
-    release_to = "true" if "release" in image_trigger else ""
+    release_to = "true" if any("release" in track for track in image_trigger["upload"]) else ""
+
+    print(image_trigger.keys())
+    print(image_trigger["upload"][0].keys())
 
     write_github_output(release_to, builds, args.revision_data_dir)
 
