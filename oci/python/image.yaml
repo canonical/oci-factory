@@ -2,7 +2,7 @@ version: 1
 
 upload:
   - source: canonical/chiselled-python
-    commit: e0943bf2923ef50c9117ac58cd02a86146ece1fb
+    commit: 4f4d52540d7be7902bc4232ef51a16f42ec7d60a
     directory: python3.8/
     release:
       3.8-20.04:
@@ -13,7 +13,7 @@ upload:
           - beta
           - edge
   - source: canonical/chiselled-python
-    commit: e0943bf2923ef50c9117ac58cd02a86146ece1fb
+    commit: 4f4d52540d7be7902bc4232ef51a16f42ec7d60a
     directory: python3.10/
     release:
       3.10-22.04:
@@ -24,7 +24,7 @@ upload:
           - beta
           - edge
   - source: canonical/chiselled-python
-    commit: e0943bf2923ef50c9117ac58cd02a86146ece1fb
+    commit: 4f4d52540d7be7902bc4232ef51a16f42ec7d60a
     directory: python3.12/
     release:
       3.12-24.04:
