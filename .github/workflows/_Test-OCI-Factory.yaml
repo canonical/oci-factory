@@ -117,7 +117,6 @@ jobs:
   #     test-oci-compliance: true
   #     test-vulnerabilities: true
 
-
   # # Test workflow used in continuous testing
   # test-vulnerability-scan:
   #   name: Test vulnerability scan workflow
