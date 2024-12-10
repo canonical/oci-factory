@@ -60,7 +60,7 @@ def test_release_to(prep_execution, release_to):
     prepare_build_matrix()
 
     github_output_content = github_output.read_text("utf8")
-    print(github_output_content)
+    
     assert re.search(
         "^release-to=" + "true" if release_to else "", github_output_content, re.M
     ), "Invalid release-to value"
