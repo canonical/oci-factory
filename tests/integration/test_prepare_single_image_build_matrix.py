@@ -1,14 +1,16 @@
 # from pathlib import Path
 # import pytest
 
-# from src.image.utils.schema.triggers import ImageTriggerValidationError
-# import yaml
-# from glob import glob
-from src.image.prepare_single_image_build_matrix import main as prepare_build_matrix
-import pytest
+import json
 import re
 import shutil
 import sys
+from pathlib import Path
+
+import pytest
+
+from src.image.prepare_single_image_build_matrix import \
+    main as prepare_build_matrix
 
 from .. import DATA_DIR
 
@@ -44,27 +46,41 @@ def prep_execution(tmpdir, monkeypatch, request):
 
 
 @pytest.mark.parametrize(
-    "prep_execution, release_to",
+    "prep_execution, expected_release_to, expected_release_count",
     [
-        (DATA_DIR / "image_all_eol_tracks_with_release.yaml", True),
-        (DATA_DIR / "image_all_eol_tracks.yaml", False),
-        (DATA_DIR / "image_no_track_releases.yaml", False),
-        (DATA_DIR / "image_single_track_release.yaml", True),
-        (DATA_DIR / "image_with_release.yaml", True),
-        (DATA_DIR / "image_without_release.yaml", True),
+        (DATA_DIR / "image_all_eol_tracks_with_release.yaml", True, 0),
+        (DATA_DIR / "image_all_eol_tracks.yaml", False, 0),
+        (DATA_DIR / "image_no_track_releases.yaml", False, 0),
+        (DATA_DIR / "image_single_track_release.yaml", True, 1),
+        (DATA_DIR / "image_with_release.yaml", True, 3),
+        (DATA_DIR / "image_without_release.yaml", True, 3),
     ],
     indirect=["prep_execution"],
 )
-def test_release_to(prep_execution, release_to):
+def test_release_to(prep_execution, expected_release_to, expected_release_count):
     """Test state of release-to in github output after running prepare_single_image_build_matrix"""
-    _, github_output = prep_execution
+    revision_data_dir, github_output = prep_execution
 
     # run main from prepare_single_image_build_matrix
     prepare_build_matrix()
 
     github_output_content = github_output.read_text("utf8")
-    
+
     assert re.search(
-                f'^release-to={"true" if release_to else ""}$' , github_output_content, re.M
-            ), \
-        "Invalid release-to value"
+        f'^release-to={"true" if expected_release_to else ""}$',
+        github_output_content,
+        re.M,
+    ), "Invalid release-to value"
+
+    revision_files = Path(revision_data_dir).glob("*")
+
+    release_count = 0
+
+    for file in revision_files:
+        revision_data = json.loads(file.read_text())
+        if release_list := revision_data.get("release"):
+            release_count += len(release_list)
+
+    assert (
+        expected_release_count == release_count
+    ), "Invalid number of builds to release"
