@@ -46,9 +46,12 @@ def prep_execution(tmpdir, monkeypatch, request):
 @pytest.mark.parametrize(
     "prep_execution, release_to",
     [
+        (DATA_DIR / "image_all_eol_tracks_with_release.yaml", True),
+        (DATA_DIR / "image_all_eol_tracks.yaml", False),
+        (DATA_DIR / "image_no_track_releases.yaml", False),
+        (DATA_DIR / "image_single_track_release.yaml", True),
         (DATA_DIR / "image_with_release.yaml", True),
         (DATA_DIR / "image_without_release.yaml", True),
-        (DATA_DIR / "image_all_eol_tracks.yaml", False),
     ],
     indirect=["prep_execution"],
 )
@@ -62,5 +65,6 @@ def test_release_to(prep_execution, release_to):
     github_output_content = github_output.read_text("utf8")
     
     assert re.search(
-        "^release-to=" + "true" if release_to else "", github_output_content, re.M
-    ), "Invalid release-to value"
+                f'^release-to={"true" if release_to else ""}$' , github_output_content, re.M
+            ), \
+        "Invalid release-to value"
