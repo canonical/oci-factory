@@ -377,11 +377,11 @@ private-key
 
 ## 📦 Reusable workflows
 
-The oci-factory provides reusable GitHub workflows designed to support
+The OCI Factory provides reusable GitHub workflows designed to support
 Rock-oriented CI/CD tasks in other repositories. Currently there are two
 reusable workflows available, Test-Rock and Build-Rock. As the name suggests,
 these workflows are capable of building and testing rocks, and use the same
-methods as the oci-factory itself.
+methods as the OCI Factory itself.
 
 
 ### Build-Rock Workflow
@@ -392,13 +392,13 @@ project file (rockcraft.yaml). This project file can be located in the
 repository initiating the workflow, an external repository hosted on GitHub, or
 a Git repository hosted elsewhere. The resulting image is uploaded as a build
 artifact in the GitHub workflow. Currently, multi-architecture builds support
-AMD64 and ARM64, depending on the availability of GitHub runners for these
-architectures. Additional architectures, such as PPC64EL and S390X, are
+`amd64` and `arm64`, depending on the availability of GitHub runners for these
+architectures. Additional architectures, such as `ppc64el` and `s390x` are
 supported through Launchpad build services.
 
 **Samples:**
 - [Building an external Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/build_mock_rock.yaml) 
-  - Build the "Mock Rock" located in `mock_rock/1.0`
+  - Build the `mock-rock` located in `mock_rock/1.0`
 - [Build and Test EICAR Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/build_and_test_eicar_rock.yaml) 
   - Build a Rock that includes the
     [EICAR test file](https://en.wikipedia.org/wiki/EICAR_test_file) and run the
@@ -410,31 +410,31 @@ supported through Launchpad build services.
 **Workflow Inputs:**
 - `oci-archive-name`
   - Final filename of the rock OCI archive.
-  - Type: string
+  - Type: `string`
   - Required
 - `build-id`
   - Optional string for identifying workflow jobs in GitHub UI
-  - Type: string
+  - Type: `string`
   - Optional, default: `""`
 - `rock-repo`
   - Public Git repo where to build the rock from.
-  - Type: string
+  - Type: `string`
   - Required
 - `rock-repo-commit`
   - Git ref from where to build the rock from.
-  - Type: string
+  - Type: `string`
   - Required
 - `rockfile-directory`
   - Directory in repository where to find the rockcraft.yaml file.
-  - Type: string
+  - Type: `string`
   - Required
 - `arch-map`
   - JSON string mapping target architecture to runners.
-  - Type: string
+  - Type: `string`
   - Optional, default: `'{"amd64": ["linux", "X64"], "arm64": ["linux", "ARM64"]}'`
 - `lpci-fallback`
   - Enable fallback to Launchpad build when runners for target arch are not available.
-  - Type: boolean
+  - Type: `boolean`
   - Optional, default: `false`
 
 ### Test-Rock Workflow
@@ -471,23 +471,23 @@ needed.
 - `oci-archive-name`
   - Artifact name to download for testing.
   - required
-  - type: string
+  - type: `string`
 - `test-black-box`
   - Enable rock black-box test.
   - optional, default: `true`
-  - type: boolean
+  - type: `boolean`
 - `test-oci-compliance`
   - Enable Umoci OCI Image compliance test.
   - optional, default: `true`
-  - type: boolean
+  - type: `boolean`
 - `test-efficiency`
   - Enable Dive image efficiency test.
   - optional, default: `true`
-  - type: boolean
+  - type: `boolean`
 - `test-vulnerabilities`
   - Enable Trivy vulnerability test.
   - optional, default: `true`
-  - type: boolean
+  - type: `boolean`
 - `trivyignore-path`
   - Optional path to `.trivyignore` file used in vulnerability scan.
   - optional, default: `""`
@@ -495,4 +495,4 @@ needed.
 - `test_malware`
   - Enable ClamAV malware test.
   - optional, default: `true`
-  - type: boolean
+  - type: `boolean`
