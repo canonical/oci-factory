@@ -397,14 +397,14 @@ architectures. Additional architectures, such as PPC64EL and S390X, are
 supported through Launchpad build services.
 
 **Samples:**
-- [Building an external Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/build_mock_rock.yaml) 
+- [Building an external Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/oci-factory_build_mock_rock.yaml) 
   - Build the "Mock Rock" located in `mock_rock/1.0`
-- [Build and Test EICAR Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/build_and_test_eicar_rock.yaml) 
+- [Build and Test EICAR Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/oci-factory_build_and_test_eicar_rock.yaml) 
   - Build a Rock that includes the
     [EICAR test file](https://en.wikipedia.org/wiki/EICAR_test_file) and run the
     Test-Rock workflow on it. The workflow is expected to fail during the
     malware scan for demonstration purposes.
-- [Building an external Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/build_external_rock.yaml) 
+- [Building an external Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/oci-factory_build_external_rock.yaml) 
   - Build a Chiseled-Python Rock from an external repository using a specified Git commit hash.
 
 **Workflow Inputs:**
@@ -455,13 +455,13 @@ needed.
 - Scanning for malware using [ClamAV](https://www.clamav.net/)
 
 **Samples:**
-- [Build and Test EICAR Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/build_and_test_eicar_rock.yaml) 
+- [Build and Test EICAR Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/oci-factory_build_and_test_eicar_rock.yaml) 
   - Build a Rock that includes the
     [EICAR test file](https://en.wikipedia.org/wiki/EICAR_test_file) and run the
     Test-Rock workflow on it. The workflow is expected to fail during the
     malware scan for demonstration purposes.
 
-- [Test an External Image](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/test_external_rock.yaml) 
+- [Test an External Image](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/oci-factory_test_external_rock.yaml) 
   - Download and test the
     [bkimminich/juice-shop](https://hub.docker.com/r/bkimminich/juice-shop)
     image from Docker Hub. Note that we must skip the Black Box testing since
