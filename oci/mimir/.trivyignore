@@ -8,3 +8,5 @@ CVE-2023-39325
 GHSA-m425-mq94-257g
 # go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp - opentelemetry: DoS vulnerability in otelhttp
 CVE-2023-45142
+# golang.org/x/crypto - Applications and libraries which misuse the ServerConfig.PublicKeyCall ...
+CVE-2024-45337
