@@ -1,19 +1,18 @@
 version: 1
 upload:
-- source: canonical/grafana-agent-rock
-  commit: d3c1eaec89c38897141ff2b5b2e549664dea3992
-  directory: 0.43.4
-  release:
-    0-24.04:
-      end-of-life: '2025-03-12T00:00:00Z'
-      risks:
-      - stable
-    0.43-24.04:
-      end-of-life: '2025-03-12T00:00:00Z'
-      risks:
-      - stable
-    0.43.4-24.04:
-      end-of-life: '2025-03-12T00:00:00Z'
-      risks:
-      - stable
-
+  - source: canonical/grafana-agent-rock
+    commit: d3c1eaec89c38897141ff2b5b2e549664dea3992
+    directory: 0.43.4
+    release:
+      0-24.04:
+        end-of-life: '2025-03-12T00:00:00Z'
+        risks:
+          - stable
+      0.43-24.04:
+        end-of-life: '2025-03-12T00:00:00Z'
+        risks:
+          - stable
+      0.43.4-24.04:
+        end-of-life: '2025-03-12T00:00:00Z'
+        risks:
+          - stable
