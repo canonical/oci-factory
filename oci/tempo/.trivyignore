@@ -1,0 +1,4 @@
+# Upstream CVEs
+
+# golang.org/x/crypto - Applications and libraries which misuse the ServerConfig.PublicKeyCall ...
+CVE-2024-45337
