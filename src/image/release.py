@@ -11,10 +11,17 @@ import os
 import re
 import subprocess
 from collections import defaultdict
+from datetime import datetime, timezone
+
 import yaml
-from .utils.encoders import DateTimeEncoder
-from .utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
+
 import src.shared.release_info as shared
+
+from .utils.encoders import DateTimeEncoder
+from .utils.schema.triggers import KNOWN_RISKS_ORDERED, ImageSchema
+
+# generate single date for consistent EOL checking
+execution_timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -101,7 +108,10 @@ for upload in image_trigger["upload"] or []:
             print(f"Track {track} will be created for the 1st time")
             all_releases[track] = {}
 
-        if isinstance(upload_release_dict, dict) and "end-of-life" in upload_release_dict:
+        if (
+            isinstance(upload_release_dict, dict)
+            and "end-of-life" in upload_release_dict
+        ):
             all_releases[track]["end-of-life"] = upload_release_dict["end-of-life"]
 
 print(
@@ -154,6 +164,25 @@ for channel_tag, target in tag_mapping_from_trigger.items():
 
         print(f"Tag {follow_tag} is following tag {parent_tag}.")
         follow_tag = parent_tag
+
+    # check if any of the followed tags are eol
+    is_eol = False
+    for tag in [*followed_tags]:
+
+        track = tag.split("_")[0]
+
+        # check if eol data exists, if not skip ahead
+        if "end-of-life" not in all_releases[track]:
+            continue
+
+        # TODO: we should be parsing the timetamp to unix time for comparison
+        # this can be dangerous if the timestamp formatting changes. Also see:
+        # oci-factory/tools/workflow-engine/charms/temporal-worker/oci_factory/activities/find_images_to_update.py
+        is_eol |= all_releases[track]["end-of-life"] < execution_timestamp
+
+    # if we are eol, skip this release
+    if is_eol:
+        continue
 
     if int(follow_tag) not in revision_to_track:
         msg = str(
