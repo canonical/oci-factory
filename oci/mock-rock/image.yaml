@@ -11,7 +11,7 @@ release:
     end-of-life: "2030-05-01T00:00:00Z"
     beta: 1.0-22.04_beta
   eol-release:
-    end-of-life: "2030-05-01T00:00:00Z"
+    end-of-life: "2000-05-01T00:00:00Z"
     beta: 1.0-22.04_beta
 
 upload:
