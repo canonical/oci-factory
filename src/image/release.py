@@ -20,9 +20,9 @@ import src.shared.release_info as shared
 from .utils.encoders import DateTimeEncoder
 from .utils.schema.triggers import KNOWN_RISKS_ORDERED, ImageSchema
 
+
 # generate single date for consistent EOL checking
 execution_timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--image-trigger",
@@ -108,10 +108,7 @@ for upload in image_trigger["upload"] or []:
             print(f"Track {track} will be created for the 1st time")
             all_releases[track] = {}
 
-        if (
-            isinstance(upload_release_dict, dict)
-            and "end-of-life" in upload_release_dict
-        ):
+        if isinstance(upload_release_dict, dict) and "end-of-life" in upload_release_dict:
             all_releases[track]["end-of-life"] = upload_release_dict["end-of-life"]
 
 print(
@@ -130,7 +127,6 @@ all_tags_mapping = {
 # - the target tags (when following) do not incur in a circular dependency
 # - the target tags (when following) exist
 tag_to_revision = tag_mapping_from_trigger.copy()
-eol_targets = []
 for channel_tag, target in tag_mapping_from_trigger.items():
     # a target cannot follow its own tag
     if target == channel_tag:
@@ -166,25 +162,6 @@ for channel_tag, target in tag_mapping_from_trigger.items():
         print(f"Tag {follow_tag} is following tag {parent_tag}.")
         follow_tag = parent_tag
 
-    # check if any of the followed tags are eol
-    is_eol = False
-    print("followed_tags", followed_tags)
-    for tag in followed_tags:
-
-        track = tag.split("_")[0]
-
-        # check if eol data exists, if not skip ahead
-        if "end-of-life" not in all_releases[track]:
-            continue
-
-        # TODO: we should be parsing the timetamp to unix time for comparison
-        # this can be dangerous if the timestamp formatting changes. Also see:
-        # src/image/prepare_single_image_build_matrix.py
-        # oci-factory/tools/workflow-engine/charms/temporal-worker/oci_factory/activities/find_images_to_update.py
-        if all_releases[track]["end-of-life"] < execution_timestamp and tag not in eol_targets:
-            print(f'Found eol {track} {all_releases[track]["end-of-life"]}')
-            eol_targets.append(target)
-
     if int(follow_tag) not in revision_to_track:
         msg = str(
             f"The tag {channel_tag} points to revision {follow_tag}, "
@@ -196,8 +173,45 @@ for channel_tag, target in tag_mapping_from_trigger.items():
 
 # if we get here, it is a valid (tag, revision)
 
+    
+filtered_tag_to_revision = tag_to_revision.copy()
+for base_tag, revision in tag_to_revision.items():
+
+    is_eol = True
+    path = []
+    tag = base_tag
+    while tag not in path:
+        path.append(tag)
+
+
+        # we allways expect len == 2 since non revision tags split into track, risk
+        if not len(split := tag.split("_")) == 2:
+            break
+
+        track, risk = split
+
+
+        # if no more tag exist in all_releases, break
+        if track not in all_releases or risk not in all_releases[track]:
+            break
+
+
+        # if eol date is specified and expired, pip the tag
+        if "end-of-life" in all_releases[track] \
+            and all_releases[track]["end-of-life"] < execution_timestamp \
+            and base_tag in filtered_tag_to_revision:
+            print("removing", base_tag)
+            filtered_tag_to_revision.pop(base_tag)
+
+        tag = all_releases[track][risk]['target']
+
+print(
+    "Removed all EOL tags from release:\n"
+    f"{json.dumps(filtered_tag_to_revision, indent=2)}"
+)
+
 # we now need to add tag aliases
-release_tags = tag_to_revision.copy()
+release_tags = filtered_tag_to_revision.copy()
 for base_tag, revision in tag_to_revision.items():
     # "latest" is a special tag for OCI
     if re.match(
@@ -218,22 +232,16 @@ for base_tag, revision in tag_to_revision.items():
 # we finally have all the OCI tags to be released,
 # and which revisions to release for each tag. Let's release!
 group_by_revision = defaultdict(list)
-print("eol_tags", eol_targets)
 for tag, revision in sorted(release_tags.items()):
-
-    if tag in eol_targets:
-        print(f"Warning: Skipping release of {tag} since it is end of life.")
-        continue
-
     group_by_revision[revision].append(tag)
 
 print(
     "Processed tag aliases and ready to release the following revisions:\n"
     f"{json.dumps(group_by_revision, indent=2)}"
 )
+
 github_tags = []
 for revision, tags in group_by_revision.items():
-
     revision_track = revision_to_track[revision]
     source_img = (
         "docker://ghcr.io/" f"{args.ghcr_repo}/{img_name}:{revision_track}_{revision}"
@@ -251,7 +259,6 @@ for revision, tags in group_by_revision.items():
         gh_release_info["name"] = f"{img_name}"
         gh_release_info["revision"] = f"{revision}"
         gh_release_info["channel"] = f"{tag}"
-        gh_release_info["end-of-life"] = f"{tag}"
         github_tags.append(gh_release_info)
 
 print(
