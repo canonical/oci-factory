@@ -8,14 +8,13 @@ description = "Temporal workflows for supporting the OCI Factory processes"
 authors = ["cjdc <cristovao.cordeiro@canonical.com>"]
 packages = [
     { include = "**/*.py", from = "."  },
-    { include = "**/ca.crt", from = "." }
 ]
-include = ["**/*.avsc"]
+include = ["**/*.avsc", "**/*.crt"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
 PyYAML = "^6.0"
-temporal-lib-py = "^1.1.0"
+temporal-lib-py = "^1.8.0"
 python-json-logger = "^2.0.4"
 python-keystoneclient = "^5.2.0"
 python-swiftclient = "^4.4.0"

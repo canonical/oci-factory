@@ -58,10 +58,10 @@ async def consume(topic: str, consumer_group: str) -> dict:
         try:
             while True:
                 msg = consumer.poll(timeout=1.0)
-                print(msg)
 
                 if msg is None:
                     continue
+                logging.info(f"Message received: {msg}")
                 if msg.error():
                     raise KafkaException(msg.error())
                 value = deserialize(msg.value())
