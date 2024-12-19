@@ -130,6 +130,7 @@ all_tags_mapping = {
 # - the target tags (when following) do not incur in a circular dependency
 # - the target tags (when following) exist
 tag_to_revision = tag_mapping_from_trigger.copy()
+eol_tags = []
 for channel_tag, target in tag_mapping_from_trigger.items():
     # a target cannot follow its own tag
     if target == channel_tag:
@@ -177,12 +178,10 @@ for channel_tag, target in tag_mapping_from_trigger.items():
 
         # TODO: we should be parsing the timetamp to unix time for comparison
         # this can be dangerous if the timestamp formatting changes. Also see:
+        # src/image/prepare_single_image_build_matrix.py
         # oci-factory/tools/workflow-engine/charms/temporal-worker/oci_factory/activities/find_images_to_update.py
-        is_eol |= all_releases[track]["end-of-life"] < execution_timestamp
-
-    # if we are eol, skip this release
-    if is_eol:
-        continue
+        if all_releases[track]["end-of-life"] < execution_timestamp:
+            eol_tags.append(tag)
 
     if int(follow_tag) not in revision_to_track:
         msg = str(
@@ -226,6 +225,10 @@ print(
 )
 github_tags = []
 for revision, tags in group_by_revision.items():
+
+    if tag in eol_tags:
+        print("Skipping release of {tag} since it is end of life.")
+
     revision_track = revision_to_track[revision]
     source_img = (
         "docker://ghcr.io/" f"{args.ghcr_repo}/{img_name}:{revision_track}_{revision}"
