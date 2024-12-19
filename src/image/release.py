@@ -168,7 +168,8 @@ for channel_tag, target in tag_mapping_from_trigger.items():
 
     # check if any of the followed tags are eol
     is_eol = False
-    for tag in [*followed_tags]:
+    print("followed_tags", followed_tags)
+    for tag in followed_tags:
 
         track = tag.split("_")[0]
 
@@ -180,7 +181,7 @@ for channel_tag, target in tag_mapping_from_trigger.items():
         # this can be dangerous if the timestamp formatting changes. Also see:
         # src/image/prepare_single_image_build_matrix.py
         # oci-factory/tools/workflow-engine/charms/temporal-worker/oci_factory/activities/find_images_to_update.py
-        if all_releases[track]["end-of-life"] < execution_timestamp:
+        if all_releases[track]["end-of-life"] < execution_timestamp and tag not in eol_tags:
             print(f'Found eol {track} {all_releases[track]["end-of-life"]}')
             eol_tags.append(tag)
 
@@ -217,10 +218,11 @@ for base_tag, revision in tag_to_revision.items():
 # we finally have all the OCI tags to be released,
 # and which revisions to release for each tag. Let's release!
 group_by_revision = defaultdict(list)
+print("eol_tags", eol_tags)
 for tag, revision in sorted(release_tags.items()):
 
     if tag in eol_tags:
-        print(f"Warning: Skipping release of {tag} since it is end of life. {eol_tags}")
+        print(f"Warning: Skipping release of {tag} since it is end of life.")
         continue
 
     group_by_revision[revision].append(tag)
