@@ -440,7 +440,7 @@ supported through Launchpad build services.
 ### Test-Rock Workflow
 
 The [Test-Rock workflow](.github/workflows/Test-Rock.yaml)
-runs a series of tests on a Rock or OCI image. The image can be sourced either
+runs a series of tests on a rock or an OCI image. The image can be sourced either
 from a local artifact or from an external location uploaded as an artifact. The
 workflow includes the following tests, which can be enabled or disabled as
 needed.
