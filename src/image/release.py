@@ -181,6 +181,7 @@ for channel_tag, target in tag_mapping_from_trigger.items():
         # src/image/prepare_single_image_build_matrix.py
         # oci-factory/tools/workflow-engine/charms/temporal-worker/oci_factory/activities/find_images_to_update.py
         if all_releases[track]["end-of-life"] < execution_timestamp:
+            print(f'Found eol {track} {all_releases[track]["end-of-life"]}')
             eol_tags.append(tag)
 
     if int(follow_tag) not in revision_to_track:
@@ -219,7 +220,7 @@ group_by_revision = defaultdict(list)
 for tag, revision in sorted(release_tags.items()):
 
     if tag in eol_tags:
-        print(f"Warning: Skipping release of {tag} since it is end of life.")
+        print(f"Warning: Skipping release of {tag} since it is end of life. {eol_tags}")
         continue
 
     group_by_revision[revision].append(tag)
