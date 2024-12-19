@@ -217,6 +217,11 @@ for base_tag, revision in tag_to_revision.items():
 # and which revisions to release for each tag. Let's release!
 group_by_revision = defaultdict(list)
 for tag, revision in sorted(release_tags.items()):
+
+    if tag in eol_tags:
+        print(f"Warning: Skipping release of {tag} since it is end of life.")
+        continue
+
     group_by_revision[revision].append(tag)
 
 print(
@@ -225,9 +230,6 @@ print(
 )
 github_tags = []
 for revision, tags in group_by_revision.items():
-
-    if tag in eol_tags:
-        print("Skipping release of {tag} since it is end of life.")
 
     revision_track = revision_to_track[revision]
     source_img = (
@@ -246,6 +248,7 @@ for revision, tags in group_by_revision.items():
         gh_release_info["name"] = f"{img_name}"
         gh_release_info["revision"] = f"{revision}"
         gh_release_info["channel"] = f"{tag}"
+        gh_release_info["end-of-life"] = f"{tag}"
         github_tags.append(gh_release_info)
 
 print(
