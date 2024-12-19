@@ -465,7 +465,7 @@ needed.
   - Download and test the
     [bkimminich/juice-shop](https://hub.docker.com/r/bkimminich/juice-shop)
     image from Docker Hub. Note that we must skip the Black Box testing since
-    this is not a rock and does not include Pebble.
+    this is not a rock and does not include [Pebble](https://github.com/canonical/pebble).
 
 **Workflow Inputs:**
 - `oci-archive-name`
