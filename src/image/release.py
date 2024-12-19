@@ -130,7 +130,7 @@ all_tags_mapping = {
 # - the target tags (when following) do not incur in a circular dependency
 # - the target tags (when following) exist
 tag_to_revision = tag_mapping_from_trigger.copy()
-eol_tags = []
+eol_targets = []
 for channel_tag, target in tag_mapping_from_trigger.items():
     # a target cannot follow its own tag
     if target == channel_tag:
@@ -181,9 +181,9 @@ for channel_tag, target in tag_mapping_from_trigger.items():
         # this can be dangerous if the timestamp formatting changes. Also see:
         # src/image/prepare_single_image_build_matrix.py
         # oci-factory/tools/workflow-engine/charms/temporal-worker/oci_factory/activities/find_images_to_update.py
-        if all_releases[track]["end-of-life"] < execution_timestamp and tag not in eol_tags:
+        if all_releases[track]["end-of-life"] < execution_timestamp and tag not in eol_targets:
             print(f'Found eol {track} {all_releases[track]["end-of-life"]}')
-            eol_tags.append(tag)
+            eol_targets.append(target)
 
     if int(follow_tag) not in revision_to_track:
         msg = str(
@@ -218,10 +218,10 @@ for base_tag, revision in tag_to_revision.items():
 # we finally have all the OCI tags to be released,
 # and which revisions to release for each tag. Let's release!
 group_by_revision = defaultdict(list)
-print("eol_tags", eol_tags)
+print("eol_tags", eol_targets)
 for tag, revision in sorted(release_tags.items()):
 
-    if tag in eol_tags:
+    if tag in eol_targets:
         print(f"Warning: Skipping release of {tag} since it is end of life.")
         continue
 
