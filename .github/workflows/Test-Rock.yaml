@@ -297,7 +297,7 @@ jobs:
             echo "## $title" >> $GITHUB_STEP_SUMMARY
             echo "| ID | Target | Severity | Package |" >> $GITHUB_STEP_SUMMARY
             echo "| -- | ----- | -------- | ------- |" >> $GITHUB_STEP_SUMMARY
-            echo '$vulnerabilities' | jq -r '.[] | "| \(.VulnerabilityID) | /\(.Target) | \(.Severity) | \(.PkgName) |"' >> $GITHUB_STEP_SUMMARY
+            echo "$vulnerabilities" | jq -r '.[] | "| \(.VulnerabilityID) | /\(.Target) | \(.Severity) | \(.PkgName) |"' >> $GITHUB_STEP_SUMMARY
           fi
           
 
