@@ -418,35 +418,6 @@ supported through Launchpad build services.
 | `arch-map` | False | JSON str | JSON string mapping target architecture to runners. |
 | `lpci-fallback` | False | bool | Enable fallback to Launchpad build when runners for target arch are not available. |
 
-- `oci-archive-name`
-  - Final filename of the rock OCI archive.
-  - Type: `string`
-  - Required
-- `build-id`
-  - Optional string for identifying workflow jobs in GitHub UI
-  - Type: `string`
-  - Optional, default: `""`
-- `rock-repo`
-  - Public Git repo where to build the rock from.
-  - Type: `string`
-  - Required
-- `rock-repo-commit`
-  - Git ref from where to build the rock from.
-  - Type: `string`
-  - Required
-- `rockfile-directory`
-  - Directory in repository where to find the rockcraft.yaml file.
-  - Type: `string`
-  - Required
-- `arch-map`
-  - JSON string mapping target architecture to runners.
-  - Type: `string`
-  - Optional, default: `'{"amd64": ["linux", "X64"], "arm64": ["linux", "ARM64"]}'`
-- `lpci-fallback`
-  - Enable fallback to Launchpad build when runners for target arch are not available.
-  - Type: `boolean`
-  - Optional, default: `false`
-
 ### Test-Rock Workflow
 
 The [Test-Rock workflow](.github/workflows/Test-Rock.yaml)
