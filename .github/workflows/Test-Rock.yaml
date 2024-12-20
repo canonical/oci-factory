@@ -275,6 +275,7 @@ jobs:
       # We have to walk through the vulnerabilities since trivy does not support outputting the results as Markdown
       - name: Create markdown content
         id: create-markdown
+        if: ${{ !cancelled() }}
         run: |
           set -x
 
