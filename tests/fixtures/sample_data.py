@@ -1,7 +1,24 @@
-import pytest
+import json
 import xml.etree.ElementTree as ET
+
+import pytest
 import yaml
+
 from .. import DATA_DIR
+
+
+@pytest.fixture
+def release_json():
+    """Load a sample of _release.json from mock-rock"""
+    release_str = (DATA_DIR / "mock-rock_release.json").read_text()
+    return json.loads(release_str)
+
+
+@pytest.fixture
+def circular_release_json():
+    """Load a sample of _release.json from mock-rock"""
+    release_str = (DATA_DIR / "mock-rock_circular_release.json").read_text()
+    return json.loads(release_str)
 
 
 @pytest.fixture
