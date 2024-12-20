@@ -408,6 +408,16 @@ supported through Launchpad build services.
   - Build a Chiseled-Python Rock from an external repository using a specified Git commit hash.
 
 **Workflow Inputs:**
+| Property | Required | Type | Description |
+|---|---|---|---|
+| `oci-archive-name` | True | str | Final filename of the rock OCI archive. |
+| `build-id` | False | str | Optional string for identifying workflow jobs in GitHub UI |
+| `rock-repo` | True | str | Public Git repo where to build the rock from. |
+| `rock-repo-commit` | True | str | Git ref from where to build the rock from. |
+| `rockfile-directory` | True | str | Directory in repository where to find the rockcraft.yaml file. |
+| `arch-map` | False | JSON str | JSON string mapping target architecture to runners. |
+| `lpci-fallback` | False | bool | Enable fallback to Launchpad build when runners for target arch are not available. |
+
 - `oci-archive-name`
   - Final filename of the rock OCI archive.
   - Type: `string`
@@ -468,31 +478,12 @@ needed.
     this is not a rock and does not include [Pebble](https://github.com/canonical/pebble).
 
 **Workflow Inputs:**
-- `oci-archive-name`
-  - Artifact name to download for testing.
-  - required
-  - type: `string`
-- `test-black-box`
-  - Enable rock black-box test.
-  - optional, default: `true`
-  - type: `boolean`
-- `test-oci-compliance`
-  - Enable Umoci OCI Image compliance test.
-  - optional, default: `true`
-  - type: `boolean`
-- `test-efficiency`
-  - Enable Dive image efficiency test.
-  - optional, default: `true`
-  - type: `boolean`
-- `test-vulnerabilities`
-  - Enable Trivy vulnerability test.
-  - optional, default: `true`
-  - type: `boolean`
-- `trivyignore-path`
-  - Optional path to `.trivyignore` file used in vulnerability scan.
-  - optional, default: `""`
-  - type: string
-- `test_malware`
-  - Enable ClamAV malware test.
-  - optional, default: `true`
-  - type: `boolean`
+| Property | Required | Type | Description |
+|---|---|---|---|
+|`oci-archive-name`| True | str | Artifact name to download for testing. |
+|`test-black-box`| False | bool | Enable rock black-box test. Enabled by default. |
+|`test-oci-compliance`| False | bool | Enable Umoci OCI Image compliance test. Enabled by default. |
+|`test-efficiency`| False | bool | Enable Dive image efficiency test. Enabled by default. |
+|`test-vulnerabilities`| False | bool | Enable Trivy vulnerability test. Enabled by default. |
+|`trivyignore-path`| False | str | Optional path to `.trivyignore` file used in vulnerability scan. |
+|`test-malware`| False | bool | Enable ClamAV malware test. Enabled by default. |
