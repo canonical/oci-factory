@@ -30,6 +30,24 @@ def test_remove_eol_tags_malformed_tag(release_json):
         remove_eol_tags(revision_to_tag, release_json)
 
 
+def test_remove_eol_tags_dangling_tag(release_json):
+    """Ensure dangling tag raises BadChannel exception."""
+
+    dangling_track = {
+        "1.0.0-22.04_beta": "",  # the track for this tag does not exist
+    }
+
+    dangling_risk = {
+        "1.0-22.04_gamma": "",  # the risk for this tag does not exist
+    }
+
+    with pytest.raises(shared.BadChannel):
+        remove_eol_tags(dangling_track, release_json)
+
+    with pytest.raises(shared.BadChannel):
+        remove_eol_tags(dangling_risk, release_json)
+
+
 def test_remove_eol_tags(release_json):
     """Ensure EOL tags are removed."""
 

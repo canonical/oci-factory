@@ -73,14 +73,16 @@ def remove_eol_tags(tag_to_revision, all_releases):
             # we allways expect len == 2 unless we reach the final numeric tag
             if not len(split := tag.split("_")) == 2:
                 raise shared.BadChannel(
-                    f"Malformed tag. Expected format is <track>_<risk>. Found tag: {tag}."
+                    f"Malformed tag. Expected format is <track>_<risk>. Found tag {repr(tag)}."
                 )
 
             track, risk = split
 
-            # if track does not exist in all_releases, break
+            # if we do not end on a numeric revision, we have a dangling tag.
             if track not in all_releases or risk not in all_releases[track]:
-                break
+                raise shared.BadChannel(
+                    f"Dangling tag found. Tag {repr(tag)} does not point to any revision."
+                )
 
             # if EOL date is specified and expired, pop the tag from the map
             if (
