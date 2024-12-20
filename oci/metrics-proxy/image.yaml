@@ -1,18 +1,18 @@
 version: 1
 upload:
-  - source: canonical/mimir-rock
-    commit: d4d848e4e0344ed052bfdeabd8d528c52b8b7434
-    directory: 2.14.2
+  - source: canonical/metrics-proxy-rock
+    commit: 78ab3165104b87d648d077a1c3f80c308a10b6af
+    directory: 0.1.1
     release:
-      2-24.04:
+      0-24.04:
         end-of-life: '2025-03-14T00:00:00Z'
         risks:
           - stable
-      2.14-24.04:
+      0.1-24.04:
         end-of-life: '2025-03-14T00:00:00Z'
         risks:
           - stable
-      2.14.2-24.04:
+      0.1.1-24.04:
         end-of-life: '2025-03-14T00:00:00Z'
         risks:
           - stable
