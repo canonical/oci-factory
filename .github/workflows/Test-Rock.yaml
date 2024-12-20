@@ -271,35 +271,6 @@ jobs:
           name: ${{ steps.configure-trivy.outputs.report-name }}
           path: ${{ steps.configure-trivy.outputs.report-name}}
 
-
-      # We have to walk through the vulnerabilities since trivy does not support outputting the results as Markdown
-      - name: Create markdown content
-        id: create-markdown
-        run: |
-          set -x
-
-          vulnerabilities="$(jq -r -c '[
-            try(.scanner.result.Results[])
-            | .Target as $target
-            | .Vulnerabilities
-            | select(. != null)
-            | .[]
-            | {Target: $target, LastModifiedDate: .LastModifiedDate, VulnerabilityID: .VulnerabilityID,
-              PkgName: .PkgName, Severity: .Severity}
-                  ]' < ${{ steps.configure-trivy.outputs.report-name }})"
-
-          num_vulns=$(echo '$vulnerabilities' | jq -r 'length')
-          
-          if [[ $num_vulns -gt 0 ]]; then
-            echo "# Vulnerabilities found for ${{ inputs.oci-archive-name }}" >> $GITHUB_STEP_SUMMARY
-            title="Vulnerabilities found for ${{ inputs.oci-archive-name }}"
-            echo "## $title" >> $GITHUB_STEP_SUMMARY
-            echo "| ID | Target | Severity | Package |" >> $GITHUB_STEP_SUMMARY
-            echo "| -- | ----- | -------- | ------- |" >> $GITHUB_STEP_SUMMARY
-            echo '$vulnerabilities' | jq -r '.[] | "| \(.VulnerabilityID) | /\(.Target) | \(.Severity) | \(.PkgName) |"' >> $GITHUB_STEP_SUMMARY
-          fi
-          
-
   test-malware:
     runs-on: ubuntu-22.04
     name: "test-malware ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
