@@ -288,7 +288,7 @@ jobs:
               PkgName: .PkgName, Severity: .Severity}
                   ]' < ${{ steps.configure-trivy.outputs.report-name }})"
 
-          num_vulns=$(echo '$vulnerabilities' | jq -r 'length')
+          num_vulns=$(echo "$vulnerabilities" | jq -r 'length')
           
           if [[ $num_vulns -gt 0 ]]; then
             echo "# Vulnerabilities found for ${{ inputs.oci-archive-name }}" >> $GITHUB_STEP_SUMMARY
