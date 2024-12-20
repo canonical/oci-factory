@@ -56,11 +56,9 @@ def remove_eol_tags(tag_to_revision, all_releases):
 
     filtered_tag_to_revision = tag_to_revision.copy()
     for base_tag, _ in tag_to_revision.items():
-
         path = []  # track revisions to prevent inf loop
         tag = base_tag  # init state
         while True:
-
             if tag in path:
                 raise shared.BadChannel(
                     f"Circular tracks found in release JSON:\n {all_releases}"
@@ -68,9 +66,15 @@ def remove_eol_tags(tag_to_revision, all_releases):
 
             path.append(tag)
 
+            # if we find a numeric revision, break since we reached the end of the path
+            if tag.isdigit():
+                break
+
             # we allways expect len == 2 unless we reach the final numeric tag
             if not len(split := tag.split("_")) == 2:
-                break
+                raise shared.BadChannel(
+                    f"Malformed tag. Expected format is <track>_<risk>. Found tag: {tag}."
+                )
 
             track, risk = split
 
@@ -85,7 +89,6 @@ def remove_eol_tags(tag_to_revision, all_releases):
                 < execution_timestamp
                 and base_tag in filtered_tag_to_revision
             ):
-
                 print(f"Warning: Removing EOL tag {repr(base_tag)}, date: {eol_date}")
                 filtered_tag_to_revision.pop(base_tag)
 
@@ -96,7 +99,6 @@ def remove_eol_tags(tag_to_revision, all_releases):
 
 
 def main():
-
     args = parser.parse_args()
     img_name = (
         args.image_name

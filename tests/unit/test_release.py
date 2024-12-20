@@ -19,6 +19,17 @@ def test_remove_eol_tags_no_change(release_json):
     assert revision_to_tag == result, "No change should have occured"
 
 
+def test_remove_eol_tags_malformed_tag(release_json):
+    """Ensure malformed tag raises BadChannel exception."""
+
+    revision_to_tag = {
+        "malformed-tag": "1033",
+    }
+
+    with pytest.raises(shared.BadChannel):
+        remove_eol_tags(revision_to_tag, release_json)
+
+
 def test_remove_eol_tags(release_json):
     """Ensure EOL tags are removed."""
 
