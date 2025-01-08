@@ -15,15 +15,16 @@ import io
 import json
 import logging
 import os
-from datetime import datetime, timezone
-import requests
-import swiftclient
 import sys
 import tempfile
 import time
-import yaml
 import zipfile
+from datetime import datetime, timezone
+from fnmatch import fnmatchcase
 
+import requests
+import swiftclient
+import yaml
 
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stderr, level=logging.INFO)
@@ -103,11 +104,10 @@ if __name__ == "__main__":
             )
 
             # This is the metadata file we want to get from Swift
-            build_metadata_file = "build_metadata.json"
+            # match objects with name <IMAGE_NAME>/<TRACK>/<REVISION>/build_metadata.json
             img_objs = list(
                 filter(
-                    lambda o: o["name"].startswith(image)
-                    and o["name"].endswith(build_metadata_file),
+                    lambda o: fnmatchcase(o["name"], f"{image}/*/*/build_metadata.json"),
                     swift_oci_factory_objs,
                 )
             )
