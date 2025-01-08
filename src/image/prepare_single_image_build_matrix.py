@@ -107,11 +107,20 @@ def filter_eol_tracks(build: dict[str, Any]) -> dict[str, Any]:
 
 
 def filter_eol_builds(builds: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Remove any builds with no tracks specified."""
-    # remove any end of life tracks
-    builds = [filter_eol_tracks(build) for build in builds]
+    """Remove any builds with eol tracks."""
 
-    return [build for build in builds if len(build["release"])]
+    # if no release exists and therefore no eol is specified, do nothing
+    non_release_builds = [build for build in builds if "release" not in build]
+
+    # if we have release info, then filter based on eol
+    release_builds = [
+        filtered_build
+        for build in builds
+        if "release" in build
+        and (filtered_build := filter_eol_tracks(build))["release"]
+    ]
+
+    return non_release_builds + release_builds
 
 
 def write_revision_data(data_dir: Path, build: dict[str, Any]):
@@ -157,7 +166,7 @@ def write_github_output(
     """Write script result to GITHUB_OUTPUT."""
     outputs = {
         "build-matrix": {"include": builds},
-        "release-to": release_to,
+        "release-to": "true" if release_to else "",
         "revision-data-dir": str(revision_data_dir),
     }
     with GithubOutput() as github_output:
@@ -221,16 +230,21 @@ def main():
         f"Generating matrix for following builds: \n {json.dumps(builds, indent=4)}"
     )
 
+    # trigger a release if specified in the image_trigger root
+    release = "release" in image_trigger
+
     for build in builds:
         write_revision_data(args.revision_data_dir, build)
 
-        # the workflow GH matrix has a problem parsing nested JSON dicts
-        # so let's remove this field since we don't need it for the builds
-        del build["release"]
+        if "release" in build:
+            # trigger a release if specified in any of the builds
+            release = True
 
-    release_to = "true" if "release" in image_trigger else ""
+            # the workflow GH matrix has a problem parsing nested JSON dicts
+            # so let's remove this field since we don't need it for the builds themselves
+            del build["release"]
 
-    write_github_output(release_to, builds, args.revision_data_dir)
+    write_github_output(release, builds, args.revision_data_dir)
 
 
 if __name__ == "__main__":
