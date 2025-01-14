@@ -2,7 +2,7 @@ version: 1
 
 upload:
   - source: "canonical/charmed-valkey-rock"
-    commit: e2caa5564f0e876e04d600dc9d5b00f15ff7d1a7
+    commit: e244d7a2887a335642ce35e2dd464f8cc41afa22
     directory: .
     release:
       7.2.7-24.04:
