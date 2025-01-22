@@ -3,7 +3,7 @@ module github.com/canonical/oci-factory/tools/cli-client
 go 1.22
 
 require (
-	github.com/briandowns/spinner v1.23.0
+	github.com/briandowns/spinner v1.23.2
 	github.com/canonical/go-flags v0.0.0-20230403090104-105d09a091b8
 	github.com/go-git/go-git/v5 v5.13.1
 	golang.org/x/term v0.28.0
