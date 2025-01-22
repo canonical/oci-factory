@@ -10,3 +10,7 @@ CVE-2023-45142
 CVE-2023-39325
 # google.golang.org/grpc - gRPC-Go HTTP/2 Rapid Reset vulnerability
 GHSA-m425-mq94-257g
+# golang.org/x/crypto - Applications and libraries which misuse the ServerConfig.PublicKeyCall ...
+CVE-2024-45337
+# stdlib - encoding/gob: golang: Calling Decoder.Decode on a message which contains deeply nested structures ...
+CVE-2024-34156
