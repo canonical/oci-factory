@@ -158,11 +158,22 @@ jobs:
         run: |
           docker create ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}
 
-      - name: Test rock
+      - name: Test rock with pebble entry point
+        id: test-pebble-entrypoint
+        timeout-minutes: 10
+        continue-on-error: true
         run: |
           set -ex
           docker run --rm ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
             help | grep Pebble
+
+      - name: Test rock with custom entry point
+        if: steps.test-pebble-entrypoint.outcome == 'failure' || steps.test-pebble-entrypoint.outcome == 'cancelled'
+        timeout-minutes: 10
+        run: |
+          set -ex
+          docker run --rm -d --name ${{ env.TEST_IMAGE_NAME }} ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}
+          docker exec ${{ env.TEST_IMAGE_NAME }} pebble help | grep Pebble
 
   test-efficiency:
     runs-on: ubuntu-22.04
