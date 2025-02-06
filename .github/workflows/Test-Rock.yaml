@@ -48,7 +48,7 @@ on:
     secrets:
       # authentication parameters
       host-github-token:
-        description: "Github token for operating in private repositories"
+        description: "Github token for operating in a private repository."
 
 env:
   VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"  # TODO: inherit string from caller

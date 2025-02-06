@@ -418,6 +418,12 @@ supported through Launchpad build services.
 | `arch-map` | False | JSON str | JSON string mapping target architecture to runners. |
 | `lpci-fallback` | False | bool | Enable fallback to Launchpad build when runners for target arch are not available. |
 
+**Workflow Secrets:**
+| Property | Required | Description |
+|---|---|---|
+| `source-github-token` | False | Github token for pulling from private repositories.|
+| `host-github-token` | False | Github token for operating in a private repository. |
+
 ### Test-Rock Workflow
 
 The [Test-Rock workflow](.github/workflows/Test-Rock.yaml)
@@ -458,3 +464,8 @@ needed.
 |`test-vulnerabilities`| False | bool | Enable Trivy vulnerability test. Enabled by default. |
 |`trivyignore-path`| False | str | Optional path to `.trivyignore` file used in vulnerability scan. |
 |`test-malware`| False | bool | Enable ClamAV malware test. Enabled by default. |
+
+**Workflow Secrets:**
+| Property | Required | Description |
+|---|---|---|
+| `host-github-token` | False  | Github token for operating in a private repository.|
