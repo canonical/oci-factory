@@ -21,8 +21,6 @@ inputs:
 secrets:
   token:
     description: "Github token for pulling from private repositories"
-    type: str
-    default: ""
 
 runs:
   using: "composite" 

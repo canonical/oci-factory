@@ -40,13 +40,8 @@ on:
       # authentication parameters
       host-github-token:
         description: "Github token for operating in private repositories"
-        type: str
-        default: ""
       source-github-token:
         description: "Github token for pulling from private repositories"
-        type: str
-        default: ""
-
 env:
   ROCK_REPO_DIR: rock-repo  # path where the image repo is cloned into
   ROCK_CI_FOLDER: ci-rocks  # path of uploaded/downloaded artifacts
