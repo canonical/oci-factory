@@ -28,7 +28,7 @@ runs:
     - name: Checkout
       shell: bash
       env:
-        token: ${{ inputs.token }}
+        token: ${{ secrets.token }}
       run: |
         
         # If URL lacks the protocol, assume it is a github repo 
