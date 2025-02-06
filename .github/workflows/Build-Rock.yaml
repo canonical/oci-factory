@@ -35,7 +35,13 @@ on:
         description: "Enable fallback to Launchpad build when runners for target arch are not available."
         type: boolean
         default: false
-
+    
+    secrets:
+      # authentication parameters
+      host-github-token:
+        description: "Github token for operating in private repositories"
+      source-github-token:
+        description: "Github token for pulling from private repositories"
 env:
   ROCK_REPO_DIR: rock-repo  # path where the image repo is cloned into
   ROCK_CI_FOLDER: ci-rocks  # path of uploaded/downloaded artifacts
@@ -53,13 +59,12 @@ jobs:
     steps:
 
       - name: Get Workflow Version
-        # Note: we may need to pass a github token when working with private repositories. 
-        # https://github.com/canonical/get-workflow-version-action  
         id: workflow-version
         uses: canonical/get-workflow-version-action@v1
         with:
           repository-name: canonical/oci-factory
           file-name: Build-Rock.yaml
+          github-token: ${{ secrets.host-github-token }}
 
       - name: Cloning OCI Factory
         uses: actions/checkout@v4
@@ -75,6 +80,7 @@ jobs:
           path: ${{ env.ROCK_REPO_DIR }}
           ref: ${{ inputs.rock-repo-commit }}
           submodules: "recursive"
+          token: ${{ secrets.source-github-token }}
 
       - name: Installing Python 
         uses: actions/setup-python@v5
@@ -118,6 +124,7 @@ jobs:
           path: ${{ env.ROCK_REPO_DIR }}
           ref: ${{ inputs.rock-repo-commit }}
           submodules: "recursive"
+          token: ${{ secrets.source-github-token }}
 
       - name: Building Target
         id: rockcraft
@@ -167,6 +174,7 @@ jobs:
           path: ${{ env.ROCK_REPO_DIR }}
           ref: ${{ inputs.rock-repo-commit }}
           submodules: "recursive"
+          token: ${{ secrets.source-github-token }}
 
       - name: Building Target
         # TODO: Replace this retry action with bash equivalent for better testing
