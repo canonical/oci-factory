@@ -1,0 +1,43 @@
+version: 1
+# --- OVERVIEW INFORMATION ---
+application: opentelemetry-collector
+description: >
+  The OpenTelemetry Collector offers a vendor-agnostic implementation on how to receive, 
+  process and export telemetry data. In addition, it removes the need to run, operate and 
+  maintain multiple agents/collectors in order to support open-source telemetry data formats 
+  (e.g. Jaeger, Prometheus, etc.) to multiple open-source or commercial back-ends.
+  Read more on the [official documentation](https://opentelemetry.io/docs/collector/)
+
+  Please note that this repository is holding a rock, not a Dockerfile-based image.
+  As such the entrypoint is Pebble.
+  Read more on the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 4318:4318
+  access: Access your OpenTelemetry Collector instance at `http://localhost:4318` 
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone.
+  - type: -p
+    value: '4318:4318'
+    description: Expose OpenTelemetry Collector on `localhost:4318`.
+  - type: -v 
+    value: "/path/to/config.yaml:/etc/otelcol/config.yaml"
+    description: Local configuration file `config.yaml`.
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+
+    ```bash
+    docker logs -f otelcol-container
+    ```
+
+    To get an interactive shell:
+
+    ```bash
+    docker exec -it otelcol-container exec /bin/bash
+    ```
