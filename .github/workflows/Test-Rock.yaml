@@ -45,6 +45,11 @@ on:
         default: true
         type: boolean
 
+    secrets:
+      # authentication parameters
+      host-github-token:
+        description: "Github token for operating in private repositories"
+
 env:
   VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"  # TODO: inherit string from caller
   TEST_IMAGE_NAME: "test-img"
@@ -66,13 +71,12 @@ jobs:
 
     steps:
       - name: Get Workflow Version
-        # Note: we may need to pass a github token when working with private repositories. 
-        # https://github.com/canonical/get-workflow-version-action  
         id: workflow-version
         uses: canonical/get-workflow-version-action@v1
         with:
           repository-name: canonical/oci-factory
           file-name: Test-Rock.yaml
+          github-token: ${{ secrets.host-github-token }}
 
       - name: Cloning OCI Factory
         uses: actions/checkout@v4
