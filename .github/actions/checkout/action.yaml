@@ -29,6 +29,8 @@ runs:
     - name: Checkout
       shell: bash
       run: |
+
+        set -x
         
         # If URL lacks the protocol, assume it is a github repo 
         if [[ "${{ inputs.repository }}" =~ https?:// ]]
@@ -45,6 +47,7 @@ runs:
         # fi
 
         git_url="${git_url/${protocol}/${protocol}testtoken@}"
+        echo $git_url
 
         # create repo path relative to GITHUB_WORKSPACE as per actions/checkout@v4
         repo_path="$GITHUB_WORKSPACE/${{ inputs.path }}"
