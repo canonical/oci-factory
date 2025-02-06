@@ -18,12 +18,19 @@ inputs:
   github-server-url: 
     description: 'The base URL for the GitHub instance that you are trying to clone from'
     default: 'https://github.com'
+secrets:
+  token:
+    description: "Github token for pulling from private repositories"
+    type: str
+    default: ""
 
 runs:
   using: "composite" 
   steps:
     - name: Checkout
       shell: bash
+      env:
+        token: ${{ inputs.token }}
       run: |
         
         # If URL lacks the protocol, assume it is a github repo 
@@ -32,6 +39,12 @@ runs:
           git_url="${{ inputs.repository }}"
         else
           git_url="${{ inputs.github-server-url }}/${{ inputs.repository }}.git"
+        fi
+
+        # if a token is provided, use it
+        if [[ -z "$token" ]]; then
+          protocol=$(echo "$URL" | grep -oE '^[a-zA-Z]+://')
+          git_url="${git_url/$protocol/$protocol$token@}"
         fi
 
         # create repo path relative to GITHUB_WORKSPACE as per actions/checkout@v4
@@ -50,3 +63,7 @@ runs:
         then
           git submodule update ${{ inputs.submodules == 'recursive' && '--recursive' || '' }}
         fi
+
+
+
+token: ${{ inputs.source-github-token }}
