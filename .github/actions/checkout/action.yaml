@@ -46,6 +46,7 @@ runs:
         #   git_url="${git_url/${protocol}/${protocol}testtoken@}"
         # fi
 
+        protocol=$(echo "$git_url" | grep -oE '^[a-zA-Z]+://')
         git_url="${git_url/${protocol}/${protocol}testtoken@}"
         echo $git_url
 
