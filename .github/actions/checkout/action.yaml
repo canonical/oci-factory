@@ -41,7 +41,7 @@ runs:
         # if a token is provided, use it
         if [[ -z "${{ inputs.token }}" ]]; then
           protocol=$(echo "$git_url" | grep -oE '^[a-zA-Z]+://')
-          git_url="${git_url/${protocol}/${protocol}${{ inputs.token }}@}"
+          git_url="${git_url/${protocol}/${protocol}testtoken@}"
         fi
 
         # create repo path relative to GITHUB_WORKSPACE as per actions/checkout@v4
