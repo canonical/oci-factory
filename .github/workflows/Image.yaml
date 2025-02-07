@@ -607,7 +607,7 @@ jobs:
     name: Notify
     needs:
       [prepare-build, build-rock, test-rock, upload, prepare-releases, generate-provenance]
-    if: ${{ !cancelled() && contains(needs.*.result, 'failure') && github.event_name != 'pull_request' }}
+    if: ${{ !cancelled() && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) && github.event_name != 'pull_request' }}
     steps:
       - uses: actions/checkout@v4
 
