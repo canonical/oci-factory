@@ -171,7 +171,7 @@ jobs:
     needs: [prepare-build, build-rock]
     # TODO: Remove tmp-cache-job when removing the job tmp-cache-job
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     uses: ./.github/workflows/Test-Rock.yaml
     with:
