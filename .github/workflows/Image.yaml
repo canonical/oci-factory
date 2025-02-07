@@ -179,6 +179,26 @@ jobs:
       trivyignore-path: "oci/${{ matrix.name }}/.trivyignore"
     secrets: inherit
 
+  debug-result-not-cancelled:
+    runs-on: ubuntu-22.04
+    needs: [prepare-build, build-rock, test-rock]
+    if: ${{ !cancelled() }}
+    steps:
+      - run: |
+          echo "prepare-build: ${{ needs.prepare-build.result }}"
+          echo "build-rock: ${{ needs.build-rock.result }}"
+          echo "test-rock: ${{ needs.test-rock.result }}"
+
+  debug-result-always:
+    runs-on: ubuntu-22.04
+    needs: [prepare-build, build-rock, test-rock]
+    if: ${{ always() }}
+    steps:
+      - run: |
+          echo "prepare-build: ${{ needs.prepare-build.result }}"
+          echo "build-rock: ${{ needs.build-rock.result }}"
+          echo "test-rock: ${{ needs.test-rock.result }}"
+
   prepare-upload:
     runs-on: ubuntu-22.04
     needs: [prepare-build, build-rock, test-rock]
