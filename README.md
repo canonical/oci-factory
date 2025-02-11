@@ -421,8 +421,8 @@ supported through Launchpad build services.
 **Workflow Secrets:**
 | Property | Required | Description |
 |---|---|---|
-| `source-github-token` | False | Github token for pulling from private repositories.|
-| `host-github-token` | False | Github token for operating in a private repository. |
+| `source-github-token` | False | Github token for pulling from a private repository. |
+| `host-github-token` | False | Github token from repository calling this workflow. |
 
 ### Test-Rock Workflow
 
@@ -468,4 +468,4 @@ needed.
 **Workflow Secrets:**
 | Property | Required | Description |
 |---|---|---|
-| `host-github-token` | False  | Github token for operating in a private repository.|
+| `host-github-token` | False  | Github token from repository calling this workflow. |
