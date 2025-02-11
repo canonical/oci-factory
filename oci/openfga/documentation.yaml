@@ -9,10 +9,10 @@ description: |
   well as pluggable database modules. 
 docker:
   parameters:
-    - -p 8080:8080 # http
-    - -p 8081:8081 # grpc
-    - -p 3000:3000 # playground
-    - -p 2112:2112 # prometheus metrics
+    - -p 8080:8080  # http
+    - -p 8081:8081  # grpc
+    - -p 3000:3000  # playground
+    - -p 2112:2112  # prometheus metrics
   access: Access the API either on http via "http://localhost:8080" or grpc on "localhost:8081", UI playground on "http://localhost:3000" 
 parameters:
   - type: -e
