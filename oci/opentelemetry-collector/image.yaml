@@ -1,0 +1,18 @@
+version: 1
+upload:
+  - source: canonical/opentelemetry-collector-rock
+    commit: 9169b0160226c79500eb0450c500a93ea3eb65f4
+    directory: 0.118.0
+    release:
+      0-24.04:
+        end-of-life: '2025-04-18T00:00:00Z'
+        risks:
+          - stable
+      0.118-24.04:
+        end-of-life: '2025-04-18T00:00:00Z'
+        risks:
+          - stable
+      0.118.0-24.04:
+        end-of-life: '2025-04-18T00:00:00Z'
+        risks:
+          - stable
