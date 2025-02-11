@@ -1,0 +1,12 @@
+version: 1
+upload:
+  - source: "canonical/glauth-rock"
+    commit: 388696fcf8976768cf84d551bde84f0bf1ae2e35
+    directory: .
+    release:
+      2-22.04:
+        risks:
+          - stable
+          - candidate
+          - edge
+        end-of-life: "2025-05-01T00:00:00Z"
