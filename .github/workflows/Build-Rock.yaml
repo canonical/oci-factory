@@ -39,9 +39,9 @@ on:
     secrets:
       # authentication parameters
       host-github-token:
-        description: "Github token from repository executing this workflow."
+        description: "GitHub token from repository executing this workflow."
       source-github-token:
-        description: "Github token for pulling a Rockcraft project from a private repository."
+        description: "GitHub token for pulling a Rockcraft project from a private repository."
 env:
   ROCK_REPO_DIR: rock-repo  # path where the image repo is cloned into
   ROCK_CI_FOLDER: ci-rocks  # path of uploaded/downloaded artifacts

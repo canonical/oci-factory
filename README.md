@@ -432,8 +432,8 @@ many cases, these repositories are the same, meaning both `host-github-token` an
 _See Note on Private Repositories._
 | Property | Required | Description |
 |---|---|---|
-| `source-github-token` | False | Github token for pulling a Rockcraft project from a private repository. |
-| `host-github-token` | False | Github token from repository executing this workflow. |
+| `source-github-token` | False | GitHub token for pulling a Rockcraft project from a private repository. |
+| `host-github-token` | False | GitHub token from repository executing this workflow. |
 
 ### Test-Rock Workflow
 
@@ -481,4 +481,4 @@ needed.
 _See Note on Private Repositories._
 | Property | Required | Description |
 |---|---|---|
-| `host-github-token` | False  | Github token from repository executing this workflow. |
+| `host-github-token` | False  | GitHub token from repository executing this workflow. |
