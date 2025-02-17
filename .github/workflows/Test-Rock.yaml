@@ -48,7 +48,7 @@ on:
     secrets:
       # authentication parameters
       host-github-token:
-        description: "Github token from repository calling this workflow."
+        description: "Github token from repository executing this workflow."
 
 env:
   VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"  # TODO: inherit string from caller

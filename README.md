@@ -407,6 +407,15 @@ supported through Launchpad build services.
 - [Building an external Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/oci-factory_build_external_rock.yaml) 
   - Build a Chiseled-Python Rock from an external repository using a specified Git commit hash.
 
+
+**Note on Private Repositories** 
+When using reusable workflows with private repositories, one or more GitHub
+tokens must be provided. If the repository executing the workflow is private,
+the `host-github-token` is required. If the source repository containing the
+rockcraft.yaml file is private, the `source-github-token` must be provided. In
+many cases, these repositories are the same, meaning both `host-github-token` and
+`source-github-token` are required and should use the same token.
+
 **Workflow Inputs:**
 | Property | Required | Type | Description |
 |---|---|---|---|
@@ -419,10 +428,12 @@ supported through Launchpad build services.
 | `lpci-fallback` | False | bool | Enable fallback to Launchpad build when runners for target arch are not available. |
 
 **Workflow Secrets:**
+
+_See Note on Private Repositories._
 | Property | Required | Description |
 |---|---|---|
-| `source-github-token` | False | Github token for pulling from a private repository. |
-| `host-github-token` | False | Github token from repository calling this workflow. |
+| `source-github-token` | False | Github token for pulling a Rockcraft project from a private repository. |
+| `host-github-token` | False | Github token from repository executing this workflow. |
 
 ### Test-Rock Workflow
 
@@ -466,6 +477,8 @@ needed.
 |`test-malware`| False | bool | Enable ClamAV malware test. Enabled by default. |
 
 **Workflow Secrets:**
+
+_See Note on Private Repositories._
 | Property | Required | Description |
 |---|---|---|
-| `host-github-token` | False  | Github token from repository calling this workflow. |
+| `host-github-token` | False  | Github token from repository executing this workflow. |
