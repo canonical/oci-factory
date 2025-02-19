@@ -5,11 +5,11 @@ upload:
     directory: 1.24.3
     release:
       1-24.04:
-        end-of-life: '2025-08-19T00:00:00Z'
+        end-of-life: '2025-08-20T00:00:00Z'
         risks:
           - stable
       1.24-24.04:
-        end-of-life: '2025-08-19T00:00:00Z'
+        end-of-life: '2025-08-20T00:00:00Z'
         risks:
           - stable
       1.24.3-24.04:
