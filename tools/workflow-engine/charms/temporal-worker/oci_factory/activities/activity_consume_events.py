@@ -1,6 +1,7 @@
 import logging
 import os
 import subprocess
+from datetime import datetime
 
 from confluent_kafka import Consumer, KafkaException
 from temporalio import activity
@@ -25,6 +26,22 @@ MM_MESSAGE_BODY += f"[More details]({TEMPORAL_WEB_UI})"
 
 # `TWC_LOG_LEVEL` is the mapped value of `log-level` in the charm config
 logging.basicConfig(level=os.environ.get("TWC_LOG_LEVEL", "info").upper())
+
+# Custom log format function
+class CustomFormatter(logging.Formatter):
+    def format(self, record):
+        timestamp = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+        return f"{record.filename}: {timestamp}: {record.getMessage()}"
+
+# Configure the root logger
+logging.basicConfig(
+    level=logging.DEBUG,  # Set logging level
+    handlers=[logging.StreamHandler()],  # Output to console; use FileHandler for files
+)
+
+# Override the default formatter
+for handler in logging.root.handlers:
+    handler.setFormatter(CustomFormatter())
 
 
 @activity.defn
@@ -57,7 +74,8 @@ async def consume(topic: str, consumer_group: str) -> dict:
         consumer.subscribe([topic])
         try:
             while True:
-                msg = consumer.poll(timeout=1.0)
+                msg = consumer.poll(timeout=300.0)
+                logging.info("Waiting for message from event bus.")
 
                 if msg is None:
                     continue
