@@ -1,0 +1,40 @@
+version: 1
+application: glauth
+is_chiselled: True
+description: |
+  Go-lang LDAP Authentication (GLAuth) is a secure, easy-to-use, LDAP server w/ configurable 
+  backends. Use it to centralize account management across your Linux servers, your OSX machines,
+  and your support applications (Jenkins, Apache/Nginx, Graylog2, and many more!).
+  * Centrally manage accounts across your infrastructure
+  * Centrally manage SSH keys, Linux accounts, and passwords for cloud servers.
+  * Lightweight alternative to OpenLDAP and Active Directory for development, or a homelab.
+  * Store your user directory in a file, local or in S3; SQL database; or proxy to existing LDAP servers.
+  * Two Factor Authentication (transparent to applications)
+  * Multiple backends can be chained to inject features
+docker:
+  parameters:
+    - -p 3893:3893  # ldap
+    - -p 3894:3894  # ldaps
+    - -p 5555:5555  # ui and prometheus metrics
+  access: Access the LDAP server on "ldap://localhost:3893"
+parameters:
+  - type: -p
+    value: '3893:3893'
+    description: LDAP port.
+  - type: -p
+    value: '3894:3894'
+    description: LDAPS port.
+  - type: -p
+    value: '5555:5555'
+    description: UI and metrics port.
+  - type: -v
+    value: '/path/to/glauth/config.cfg:/glauth.cfg'
+    description: >
+      GLAuth config contains all the information needed to successfully configure a basic LDAP
+      server, see https://github.com/glauth/glauth/blob/master/v2/sample-simple.cfg as a reference
+  - type: CMD
+    value: "glauth -c /glauth.cfg"
+    description: >
+      Launch GLAuth server with a set config.
+debug:
+  text: ""
