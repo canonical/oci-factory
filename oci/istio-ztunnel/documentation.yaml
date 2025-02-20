@@ -6,6 +6,24 @@ description: >
   to be used as the ztunnel component of Istio's ambient mesh.
   Read more on the [project repo](https://github.com/istio/ztunnel).
 
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 15020:15020
+  access: Access your Ztunnel instance at `http://localhost:15020`.
+
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone setting for the container.
+  - type: -p
+    value: '15020:15020'
+    description: Port mapping for the Ztunnel process.
+  - type: CMD
+    value: "ztunnel proxy"
+    description: >
+      Launch Ztunnel in proxy mode (default).
+
 debug:
   text: |
     ### Debugging
