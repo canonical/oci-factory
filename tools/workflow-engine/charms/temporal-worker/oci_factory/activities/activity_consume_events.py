@@ -74,8 +74,8 @@ async def consume(topic: str, consumer_group: str) -> dict:
         consumer.subscribe([topic])
         try:
             while True:
-                msg = consumer.poll(timeout=300.0)
                 logging.info("Waiting for message from event bus.")
+                msg = consumer.poll(timeout=300.0)
 
                 if msg is None:
                     continue
