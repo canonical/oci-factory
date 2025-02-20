@@ -37,12 +37,11 @@ class ConsumeEventsWorkflow:
             await workflow.execute_activity(
                 consume_events.consume,
                 args=[kafka_topic, consumer_group],
-                start_to_close_timeout=timedelta(seconds=1800),
-                # heartbeat_timeout=timedelta(seconds=2),
+                start_to_close_timeout=timedelta(days=365),
+                heartbeat_timeout=timedelta(seconds=400),
                 retry_policy=RetryPolicy(
                     backoff_coefficient=1.2,
                     maximum_interval=timedelta(seconds=30),
-                    maximum_attempts=100,
                 ),
             )
         except ActivityError:
