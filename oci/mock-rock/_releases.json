@@ -35,35 +35,71 @@
     "1.1-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "candidate": {
-            "target": "990"
+            "target": "1164"
         },
         "beta": {
-            "target": "990"
+            "target": "1164"
         },
         "edge": {
-            "target": "990"
+            "target": "1164"
         }
     },
     "1-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "candidate": {
-            "target": "990"
+            "target": "1164"
         },
         "beta": {
-            "target": "990"
+            "target": "1164"
         },
         "edge": {
-            "target": "990"
+            "target": "1164"
         }
     },
     "1.2-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "beta": {
-            "target": "991"
+            "target": "1165"
         },
         "edge": {
             "target": "1.2-22.04_beta"
         }
     },
-    "1.0.0-22.04": {}
+    "1.0.0-22.04": {},
+    "eol": {
+        "end-of-life": "2030-05-01T00:00:00Z",
+        "beta": {
+            "target": "1.0-22.04_beta"
+        },
+        "edge": {
+            "target": "eol_beta"
+        }
+    },
+    "eol-release": {
+        "end-of-life": "2000-05-01T00:00:00Z",
+        "beta": {
+            "target": "1.1-22.04_beta"
+        },
+        "edge": {
+            "target": "eol-release_beta"
+        }
+    },
+    "eol-upload": {
+        "end-of-life": "2030-05-01T00:00:00Z",
+        "beta": {
+            "target": "1.0-22.04_beta"
+        },
+        "edge": {
+            "target": "eol-upload_beta"
+        }
+    },
+    "eol-all": {
+        "end-of-life": "2000-05-01T00:00:00Z",
+        "beta": {
+            "target": "1.0-22.04_beta"
+        },
+        "edge": {
+            "target": "eol-all_beta"
+        }
+    }
 }

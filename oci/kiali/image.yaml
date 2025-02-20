@@ -1,0 +1,18 @@
+version: 1
+upload:
+  - source: canonical/kiali-rock
+    commit: 1659ef765b3e21dd1938a9d97df73cdab3b678ee
+    directory: 2.3.0
+    release:
+      2-24.04:
+        end-of-life: '2026-01-22T00:00:00Z'
+        risks:
+          - stable
+      2.3-24.04:
+        end-of-life: '2026-01-22T00:00:00Z'
+        risks:
+          - stable
+      2.3.0-24.04:
+        end-of-life: '2026-01-22T00:00:00Z'
+        risks:
+          - stable

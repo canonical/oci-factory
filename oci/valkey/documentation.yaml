@@ -1,0 +1,44 @@
+version: 1
+# --- OVERVIEW INFORMATION ---
+application: valkey
+is_chiselled: False
+description: |
+  This is an OCI image that bundles Valkey together with the metrics exporter.
+  Valkey is an open source, flexible distributed key-value datastore that is
+  optimized for caching and other realtime workloads.
+
+  # Quickstart:
+
+  To deploy a simple Valkey container:
+  ```bash
+  docker run --name valkey ubuntu/valkey:7.2.7-24.04_edge
+  ```
+
+  To connect to Valkey and check status:
+  ```bash
+  docker exec valkey valkey-cli ping
+  ```
+
+  To adjust the configuration of your Valkey container (e.g. disabling protected mode), create a config file and mount it into the container to this directory:
+  ```
+  /var/lib/valkey
+  ```
+  
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 6379:6379
+  access: Access your Valkey server at `http://localhost:6379`.
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+    ```bash
+    docker logs -f <valkey-container>
+    ```
+    
+    To get an interactive shell:
+    ```bash
+    docker exec -it <valkey-container> /bin/bash
+    ```
