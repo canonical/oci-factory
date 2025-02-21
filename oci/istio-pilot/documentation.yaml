@@ -1,0 +1,188 @@
+version: 1
+# --- OVERVIEW INFORMATION ---
+application: pilot
+description: >
+  Istio Pilot Discovery provides mesh-wide traffic management, security, and policy capabilities
+  within the Istio Service Mesh. It runs as the discovery service, configuring proxies and managing
+  service registries. For more details, see https://istio.io.
+
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 8080:8080
+    - -p 15017:15017
+    - -p 15010:15010
+    - -p 15012:15012
+    - -p 15014:15014
+  access: >
+    Access the Pilot Discovery service at:
+      • HTTP: http://localhost:8080
+      • HTTPS (Injection/Validation): https://localhost:15017
+      • gRPC (Insecure): localhost:15010
+      • gRPC (Secure): localhost:15012
+      • Monitoring: http://localhost:15014
+
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Set container timezone.
+
+  - type: CMD
+    value: "pilot-discovery discovery"
+    description: >
+      Launch the Istio Pilot Discovery service with default values.
+
+  - type: CMD
+    value: "--caCertFile /path/to/ca.pem"
+    description: "File containing the x509 Server CA Certificate. (Default: Not set)"
+
+  - type: CMD
+    value: "--clusterAliases key1=value1,key2=value2"
+    description: "Alias names for clusters, provided as comma-separated key=value pairs. (Default: [])"
+
+  - type: CMD
+    value: "--clusterID Kubernetes"
+    description: "The ID of the cluster that this Istiod instance resides in. (Default: Kubernetes)"
+
+  - type: CMD
+    value: "--clusterRegistriesNamespace istio-system"
+    description: "Namespace for the ConfigMap that stores cluster configurations. (Default: istio-system)"
+
+  - type: CMD
+    value: "--cniNamespace istio-system"
+    description: "Namespace where the istio-cni resides. Uses POD_NAMESPACE if not set. (Default: istio-system)"
+
+  - type: CMD
+    value: "--configDir /etc/istio/config"
+    description: "Directory to watch for updates to config YAML files, used as the config source instead of a CRD client. (Default: Not set)"
+
+  - type: CMD
+    value: "--ctrlz_address localhost"
+    description: "IP address for the ControlZ introspection facility; use '*' for all addresses. (Default: localhost)"
+
+  - type: CMD
+    value: "--ctrlz_port 9876"
+    description: "Port for the ControlZ introspection facility. (Default: 9876)"
+
+  - type: CMD
+    value: "--domain cluster.local"
+    description: "DNS domain suffix for the service mesh. (Default: cluster.local)"
+
+  - type: CMD
+    value: "--grpcAddr :15010"
+    description: "gRPC address for the discovery service. (Default: :15010)"
+
+  - type: CMD
+    value: "--httpAddr :8080"
+    description: "HTTP address for the discovery service. (Default: :8080)"
+
+  - type: CMD
+    value: "--httpsAddr :15017"
+    description: "HTTPS address for the injection and validation service. (Default: :15017)"
+
+  - type: CMD
+    value: "--keepaliveInterval 30s"
+    description: "Interval with no activity after which a keepalive ping is sent. (Default: 30s)"
+
+  - type: CMD
+    value: "--keepaliveMaxServerConnectionAge 2562047h47m16.854775807s"
+    description: "Maximum duration a connection is kept open on the server before a graceful close. (Default: 2562047h47m16.854775807s)"
+
+  - type: CMD
+    value: "--keepaliveTimeout 10s"
+    description: "Duration to wait after a keepalive ping before closing the connection if no activity is detected. (Default: 10s)"
+
+  - type: CMD
+    value: "--kubeconfig /path/to/kubeconfig"
+    description: "Path to a Kubernetes configuration file for out-of-cluster access. (Default: Not set)"
+
+  - type: CMD
+    value: "--kubernetesApiBurst 160"
+    description: "Maximum burst for throttling when communicating with the Kubernetes API. (Default: 160)"
+
+  - type: CMD
+    value: "--kubernetesApiQPS 80"
+    description: "Maximum QPS when communicating with the Kubernetes API. (Default: 80)"
+
+  - type: CMD
+    value: "--log_as_json"
+    description: "Format log output as JSON instead of plain text. (Default: false)"
+
+  - type: CMD
+    value: "--log_caller ads,adsc,all"
+    description: "List of scopes for which to include caller information in logs. (Default: Not set)"
+
+  - type: CMD
+    value: "--log_output_level default:info"
+    description: "Minimum logging level per scope for output, in the format <scope>:<level>. (Default: Not set)"
+
+  - type: CMD
+    value: "--log_stacktrace_level default:none"
+    description: "Minimum logging level per scope at which stack traces are captured. (Default: default:none)"
+
+  - type: CMD
+    value: "--log_target stdout"
+    description: "Paths where log output is sent (e.g., stdout, stderr, or file paths). (Default: [stdout])"
+
+  - type: CMD
+    value: "--meshConfig ./etc/istio/config/mesh"
+    description: "File name for the Istio mesh configuration. (Default: ./etc/istio/config/mesh)"
+
+  - type: CMD
+    value: "--monitoringAddr :15014"
+    description: "HTTP address for Pilot’s self-monitoring information. (Default: :15014)"
+
+  - type: CMD
+    value: "--namespace istio-system"
+    description: "Namespace where the controller resides; defaults to POD_NAMESPACE if not set. (Default: istio-system)"
+
+  - type: CMD
+    value: "--networksConfig ./etc/istio/config/meshNetworks"
+    description: "File name for the Istio mesh networks configuration. (Default: ./etc/istio/config/meshNetworks)"
+
+  - type: CMD
+    value: "--profile"
+    description: "Enable profiling via the web interface at /debug/pprof. (Default: true)"
+
+  - type: CMD
+    value: "--registries Kubernetes"
+    description: "Comma separated list of service registries to read from. (Default: [Kubernetes])"
+
+  - type: CMD
+    value: "--secureGRPCAddr :15012"
+    description: "Secured gRPC address for the discovery service. (Default: :15012)"
+
+  - type: CMD
+    value: "--shutdownDuration 10s"
+    description: "Duration the discovery server needs to terminate gracefully. (Default: 10s)"
+
+  - type: CMD
+    value: "--tls-cipher-suites TLS_AES_128_GCM_SHA256"
+    description: >
+      Comma-separated list of TLS cipher suites for the istiod TLS server.
+      (If omitted, the default Go cipher suites are used.) (Default: Not set)
+
+  - type: CMD
+    value: "--tlsCertFile /path/to/cert.pem"
+    description: "File containing the x509 Server Certificate. (Default: Not set)"
+
+  - type: CMD
+    value: "--tlsKeyFile /path/to/key.pem"
+    description: "File containing the x509 private key matching --tlsCertFile. (Default: Not set)"
+
+  - type: CMD
+    value: "--vklog 9"
+    description: "Global log verbosity level (similar to the -v flag). (Default: Not set)"
+
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+    ```bash
+    docker exec -it pilot-container pebble logs -f pilot
+    ```
+    To get an interactive shell:
+    ```bash
+    docker exec -it pilot-container /bin/bash
+    ```
