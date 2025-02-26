@@ -11,7 +11,7 @@ description: |
 
   To deploy a simple Valkey container:
   ```bash
-  docker run --name valkey ubuntu/valkey:7.2.7-24.04_edge
+  docker run --name valkey ubuntu/valkey:7.2.7-24.04
   ```
 
   To connect to Valkey and check status:
