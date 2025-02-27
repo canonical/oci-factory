@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Check if CLA signed
-        uses: canonical/has-signed-canonical-cla@v1
+        uses: canonical/has-signed-canonical-cla@v2
         with:
           # This is to avoid failing the checks for ROCKsBot
           accept-existing-contributors: true
