@@ -1,0 +1,5 @@
+notify:
+  emails:
+    - rocks-dev@lists.canonical.com
+  mattermost-channels:
+    - fbdezwkcxpfofpysjore1wpfoc
