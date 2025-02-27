@@ -1,0 +1,12 @@
+version: 1
+upload:
+  - source: "canonical/openfga-rock"
+    commit: 117cda6fa456c9fe3ce02879a716b9df5b9e3091
+    directory: .
+    release:
+      1-22.04:
+        risks:
+          - stable
+          - candidate
+          - edge
+        end-of-life: "2025-05-01T00:00:00Z"
