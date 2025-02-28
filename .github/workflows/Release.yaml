@@ -147,6 +147,7 @@ jobs:
       
       - run: git pull --quiet
 
+      # Commit with actor's GitHub noreply email to pass CLA and keep the privacy of the actor
       - name: Commit oci/${{ inputs.oci-image-name }}/_releases.json
         uses: actions-x/commit@v6
         with:
@@ -154,6 +155,7 @@ jobs:
           branch: ${{ github.ref }}
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: oci/${{ inputs.oci-image-name }}/_releases.json
+          email: '${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com'
 
       - name: Get commit SHA of _release.json update
         id: release-commit-sha
