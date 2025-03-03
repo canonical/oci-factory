@@ -1,0 +1,38 @@
+version: 1
+application: openfga
+is_chiselled: True
+description: |
+  A high-performance and flexible authorization/permission engine built for developers
+  and inspired by Google Zanzibar. OpenFGA is designed to make it easy for developers 
+  to model their application permissions and add and integrate fine-grained authorization
+  into their applications. It allows in-memory data storage for quick development, as 
+  well as pluggable database modules. 
+docker:
+  parameters:
+    - -p 8080:8080  # http
+    - -p 8081:8081  # grpc
+    - -p 3000:3000  # playground
+    - -p 2112:2112  # prometheus metrics
+  access: Access the API either on http via "http://localhost:8080" or grpc on "localhost:8081", UI playground on "http://localhost:3000" 
+parameters:
+  - type: -e
+    value: 'OPENFGA_DATASTORE_ENGINE=postgres'
+    description: Datastore type, currently supports postgresql, mysql and sqlite (beta).
+  - type: -e
+    value: 'OPENFGA_DATASTORE_URI=postgres://postgres:password@postgres:5432/postgres?sslmode=disable'
+    description: Database connection string.
+  - type: -e
+    value: 'OPENFGA_PLAYGROUND_ENABLED=true'
+    description: Allow playground UI.
+  - type: -p
+    value: '8080:8080'
+    description: HTTP API port.
+  - type: -p
+    value: '8081:8081'
+    description: gRPC API port.
+  - type: CMD
+    value: "openfga run"
+    description: >
+      Launch OpenFGA server(s) using a mix of environment variables.
+debug:
+  text: ""

@@ -12,6 +12,6 @@ IMAGE_NAME=$1
 # if it does not, emit an error
 # SWIFT_CONTAINER_NAME comes from env
 LOCKFILE="${IMAGE_NAME}/lockfile.lock"
-swift list $SWIFT_CONTAINER_NAME -p $IMAGE_NAME | grep "$LOCKFILE" && \
+swift list $SWIFT_CONTAINER_NAME -p $IMAGE_NAME/ | grep "$LOCKFILE" && \
     (swift delete $SWIFT_CONTAINER_NAME "$LOCKFILE" && echo "Lock file removed successfully.") || \
     echo "Lock file does not exist."

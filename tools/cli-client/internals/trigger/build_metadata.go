@@ -71,7 +71,8 @@ func InferBuildMetadata() BuildMetadata {
 		logger.Panicf("Subprocess `git rev-parse --show-prefix` failed: %v", err)
 	}
 	// remote the trailing newline
-	prefix := strings.TrimSpace(string(prefixBytes))
+	// also prepend a "./" to cope with empty prefixes
+	prefix := "./" + strings.TrimSpace(string(prefixBytes))
 	logger.Debugf("Directory: %s", prefix)
 
 	buildMetadata := BuildMetadata{

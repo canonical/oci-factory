@@ -5,6 +5,27 @@
 *Behind every great rock is a great quarry...*
 </div>
 
+## Index
+- [Before you get started](#-**Before-you-get-started**)
+  - [What is the OCI Factory?](#What-is-the-OCI-Factory?)
+  - [Why does it exist?](#Why-does-it-exist?)
+  - [Who is it for?](#Who-is-it-for?)
+  - [How to qualify as a Maintainer?](#How-to-qualify-as-a-Maintainer?)
+- [How to contribute](#-How-to-contribute)
+  - [As a developer](#As-a-developer)
+  - [As a Maintainer](#As-a-Maintainer--)
+- [Maintainer files](#-Maintainer-files)
+  - [Trigger files](#Trigger-files)
+    - [Image trigger file](#Image-trigger-file)
+    - [Documentation trigger file](#Documentation-trigger-file)
+  - [Other files](#Other-files)
+    - [Contacts](#Contacts)
+    - [Vulnerability Filtering](#Vulnerability-Filtering)
+- [Reusable workflows](#-Reusable-workflows)
+  - [Build-Rock Workflow](#Build-Rock-Workflow)
+  - [Test-Rock Workflow](#Test-Rock-Workflow)
+
+
 ## 🍿 **Before you get started**
 
 If you are planning on contributing to this repository, you **must** first
@@ -322,6 +343,7 @@ The `contacts.yaml` file has the following schema:
 | notify | False | Dict[str, List[str]] | Who and how to notify about the build progress. |
 | notify.emails | False | List[str] | List of emails that should receive notifications. |
 | notify.mattermost-channels | False | List[str] | Mattermost channel **IDs**. |
+| maintainers | False | List[str] | The maintainers' GitHub usernames who can trigger workflows against this image. |
 
 ##### Example: *contacts.yaml*
 
@@ -332,6 +354,9 @@ notify:
 
   mattermost-channels:
     - fbdezwkcxpfofpysjore1wpfoc
+
+maintainers:
+  - octocat
 ```
 
 #### Vulnerability Filtering
@@ -349,3 +374,111 @@ CVE-2024-0000
 # <justification>
 private-key
 ```
+
+## 📦 Reusable workflows
+
+The OCI Factory provides reusable GitHub workflows designed to support
+Rock-oriented CI/CD tasks in other repositories. Currently there are two
+reusable workflows available, Test-Rock and Build-Rock. As the name suggests,
+these workflows are capable of building and testing rocks, and use the same
+methods as the OCI Factory itself.
+
+
+### Build-Rock Workflow
+
+The [Build-Rock workflow](.github/workflows/Build-Rock.yaml)
+can create multi-architecture Rocks (OCI images) from a specified Rockcraft
+project file (rockcraft.yaml). This project file can be located in the
+repository initiating the workflow, an external repository hosted on GitHub, or
+a Git repository hosted elsewhere. The resulting image is uploaded as a build
+artifact in the GitHub workflow. Currently, multi-architecture builds support
+`amd64` and `arm64`, depending on the availability of GitHub runners for these
+architectures. Additional architectures, such as `ppc64el` and `s390x` are
+supported through Launchpad build services.
+
+**Samples:**
+- [Building an external Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/oci-factory_build_mock_rock.yaml) 
+  - Build the `mock-rock` located in `mock_rock/1.0`
+- [Build and Test EICAR Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/oci-factory_build_and_test_eicar_rock.yaml) 
+  - Build a Rock that includes the
+    [EICAR test file](https://en.wikipedia.org/wiki/EICAR_test_file) and run the
+    Test-Rock workflow on it. The workflow is expected to fail during the
+    malware scan for demonstration purposes.
+- [Building an external Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/oci-factory_build_external_rock.yaml) 
+  - Build a Chiseled-Python Rock from an external repository using a specified Git commit hash.
+
+
+**Note on Private Repositories** 
+When using reusable workflows with private repositories, one or more GitHub
+tokens must be provided. If the repository executing the workflow is private,
+the `host-github-token` is required. If the source repository containing the
+rockcraft.yaml file is private, the `source-github-token` must be provided. In
+many cases, these repositories are the same, meaning both `host-github-token` and
+`source-github-token` are required and should use the same token.
+
+**Workflow Inputs:**
+| Property | Required | Type | Description |
+|---|---|---|---|
+| `oci-archive-name` | True | str | Final filename of the rock OCI archive. |
+| `build-id` | False | str | Optional string for identifying workflow jobs in GitHub UI |
+| `rock-repo` | True | str | Public Git repo where to build the rock from. |
+| `rock-repo-commit` | True | str | Git ref from where to build the rock from. |
+| `rockfile-directory` | True | str | Directory in repository where to find the rockcraft.yaml file. |
+| `arch-map` | False | JSON str | JSON string mapping target architecture to runners. |
+| `lpci-fallback` | False | bool | Enable fallback to Launchpad build when runners for target arch are not available. |
+
+**Workflow Secrets:**
+
+_See Note on Private Repositories._
+| Property | Required | Description |
+|---|---|---|
+| `source-github-token` | False | GitHub token for pulling a Rockcraft project from a private repository. |
+| `host-github-token` | False | GitHub token from repository executing this workflow. |
+
+### Test-Rock Workflow
+
+The [Test-Rock workflow](.github/workflows/Test-Rock.yaml)
+runs a series of tests on a rock or an OCI image. The image can be sourced either
+from a local artifact or from an external location uploaded as an artifact. The
+workflow includes the following tests, which can be enabled or disabled as
+needed.
+
+- OCI compliance testing of images using [Umoci](https://umo.ci/). The image's
+  readability and layout are tested by unpacking and listing the image tags.
+- Black-box testing of images performed using Docker to create a container and
+  attempting to run the Pebble service manager. This test applies only to
+  images created with Rockcraft.
+- Testing image storage efficiency using [Dive](https://github.com/wagoodman/dive)
+- Scanning for vulnerabilities using [Trivy](https://trivy.dev/)
+- Scanning for malware using [ClamAV](https://www.clamav.net/)
+
+**Samples:**
+- [Build and Test EICAR Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/oci-factory_build_and_test_eicar_rock.yaml) 
+  - Build a Rock that includes the
+    [EICAR test file](https://en.wikipedia.org/wiki/EICAR_test_file) and run the
+    Test-Rock workflow on it. The workflow is expected to fail during the
+    malware scan for demonstration purposes.
+
+- [Test an External Image](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/oci-factory_test_external_rock.yaml) 
+  - Download and test the
+    [bkimminich/juice-shop](https://hub.docker.com/r/bkimminich/juice-shop)
+    image from Docker Hub. Note that we must skip the Black Box testing since
+    this is not a rock and does not include [Pebble](https://github.com/canonical/pebble).
+
+**Workflow Inputs:**
+| Property | Required | Type | Description |
+|---|---|---|---|
+|`oci-archive-name`| True | str | Artifact name to download for testing. |
+|`test-black-box`| False | bool | Enable rock black-box test. Enabled by default. |
+|`test-oci-compliance`| False | bool | Enable Umoci OCI Image compliance test. Enabled by default. |
+|`test-efficiency`| False | bool | Enable Dive image efficiency test. Enabled by default. |
+|`test-vulnerabilities`| False | bool | Enable Trivy vulnerability test. Enabled by default. |
+|`trivyignore-path`| False | str | Optional path to `.trivyignore` file used in vulnerability scan. |
+|`test-malware`| False | bool | Enable ClamAV malware test. Enabled by default. |
+
+**Workflow Secrets:**
+
+_See Note on Private Repositories._
+| Property | Required | Description |
+|---|---|---|
+| `host-github-token` | False  | GitHub token from repository executing this workflow. |

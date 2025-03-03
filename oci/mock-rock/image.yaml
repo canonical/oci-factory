@@ -2,10 +2,19 @@ version: 1
 
 release:
   latest:
-    end-of-life: "2025-05-01T00:00:00Z"
-    candidate: 1.0-22.04_candidate
+    end-of-life: "2030-05-01T00:00:00Z"
+    candidate: 1.2-22.04_beta
   test:
-    end-of-life: "2026-05-01T00:00:00Z"
+    end-of-life: "2030-05-01T00:00:00Z"
+    beta: 1.1-22.04_beta
+  eol-upload:
+    end-of-life: "2030-05-01T00:00:00Z"
+    beta: 1.0-22.04_beta
+  eol-release:
+    end-of-life: "2000-05-01T00:00:00Z"
+    beta: 1.1-22.04_beta
+  eol-all:
+    end-of-life: "2000-05-01T00:00:00Z"
     beta: 1.0-22.04_beta
 
 upload:
@@ -14,7 +23,7 @@ upload:
     directory: mock_rock/1.0
     release:
       1.0-22.04:
-        end-of-life: "2025-05-01T00:00:00Z"
+        end-of-life: "2024-05-01T00:00:00Z"
         risks:
           - candidate
           - edge
@@ -24,13 +33,13 @@ upload:
     directory: mock_rock/1.1
     release:
       1.1-22.04:
-        end-of-life: "2025-05-01T00:00:00Z"
+        end-of-life: "2030-05-01T00:00:00Z"
         risks:
           - candidate
           - edge
           - beta
       1-22.04:
-        end-of-life: "2025-05-01T00:00:00Z"
+        end-of-life: "2030-05-01T00:00:00Z"
         risks:
           - candidate
           - edge
@@ -40,6 +49,6 @@ upload:
     directory: mock_rock/1.2
     release:
       1.2-22.04:
-        end-of-life: "2025-05-01T00:00:00Z"
+        end-of-life: "2030-05-01T00:00:00Z"
         risks:
           - beta
