@@ -139,7 +139,7 @@ jobs:
   test-black-box:
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-20.04]
+        os: [ubuntu-22.04]
     runs-on: ${{ matrix.os }}
     name: "test-black-box ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
     needs: [configure-tests]
