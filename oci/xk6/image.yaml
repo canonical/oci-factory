@@ -1,0 +1,18 @@
+version: 1
+upload:
+  - source: canonical/xk6-rock
+    commit: fbcb2233cf389627a17f31401564f41d068f3723
+    directory: 0.57.0
+    release:
+      0-24.04:
+        end-of-life: '2025-05-06T00:00:00Z'
+        risks:
+          - stable
+      0.57-24.04:
+        end-of-life: '2025-03-06T00:00:00Z'
+        risks:
+          - stable
+      0.57.0-24.04:
+        end-of-life: '2025-03-06T00:00:00Z'
+        risks:
+          - stable
