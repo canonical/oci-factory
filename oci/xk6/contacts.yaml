@@ -1,0 +1,5 @@
+notify:
+  emails:
+    - zhijie.yang@canonical.com
+  mattermost-channels:
+    - yax1c3pmm7natd5ebw3cngyrpw

@@ -1,0 +1,32 @@
+version: 1
+# --- OVERVIEW INFORMATION ---
+application: xk6
+description: >
+  Grafana k6 is an open-source, developer-friendly, and extensible
+  load testing tool. k6 allows you to prevent performance issues and
+  proactively improve reliability.
+  Read more on the [official website](https://grafana.com/docs/k6/).
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 6565:6565
+  access: Access your k6 instance (while it's running) at `http://localhost:6565`.
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone.
+  - type: -p
+    value: '6565:6565'
+    description: Expose k6 on `localhost:6565`.
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+    ```bash
+    docker logs -f xk6-container
+    ```
+    To get an interactive shell:
+    ```bash
+    docker exec -it xk6-container /bin/bash
+    ```
