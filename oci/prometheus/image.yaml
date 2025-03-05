@@ -9,10 +9,10 @@ upload:
         risks:
           - stable
       2.55-24.04:
-        end-of-life: '2025-05-13T00:00:00Z'
+        end-of-life: '2025-03-05T00:00:00Z'
         risks:
           - stable
       2.55.1-24.04:
-        end-of-life: '2025-05-13T00:00:00Z'
+        end-of-life: '2025-03-05T00:00:00Z'
         risks:
           - stable
