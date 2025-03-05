@@ -106,7 +106,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.configure-build.outputs.runner-build-matrix) }}
-    runs-on: ${{ matrix.runner }}
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-22.04' || matrix.runner }}
     name: "runner-build | ${{ matrix.architecture }} ${{ inputs.build-id != '' && format('| {0}', inputs.build-id) || ' '}}"
     steps:
 
