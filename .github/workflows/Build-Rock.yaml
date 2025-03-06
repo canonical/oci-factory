@@ -27,10 +27,12 @@ on:
         required: true
 
       # parameters for multi-arch builds
+      # specifying the runners with size label to prevent from running on private/tiobe runners
       arch-map:
         description: "JSON string mapping target architecture to runners."
         type: string
-        default: '{"amd64": ["linux", "X64"], "arm64": ["linux", "ARM64"]}'
+        default: |
+          {amd64: [self-hosted, linux, X64, medium, jammy], arm64: [self-hosted, linux, ARM64, medium, jammy]}
       lpci-fallback:
         description: "Enable fallback to Launchpad build when runners for target arch are not available."
         type: boolean
