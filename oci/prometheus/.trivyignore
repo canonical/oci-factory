@@ -26,3 +26,5 @@ CVE-2024-41110
 CVE-2024-45337
 # stdlib - encoding/gob: golang: Calling Decoder.Decode on a message which contains deeply nested ...
 CVE-2024-34156
+# golang.org/x/net
+CVE-2024-45338
