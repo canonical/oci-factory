@@ -1,0 +1,10 @@
+version: 1
+upload:
+  - source: canonical/chiselled-nodejs
+    commit: 58d6a60e404b0073cf978fc9a275de83fa9d6515
+    directory: node18
+    release:
+      18.19.1-24.04:
+        end-of-life: "2025-05-01T00:00:00Z"
+        risks:
+          - edge
