@@ -1,0 +1,30 @@
+version: 1
+
+application: openjdk-jre
+is_chiselled: true
+description: |
+  Java is a high-level, general-purpose programming language.
+  OpenJDK is an open-source implementation of Oracle's
+  Java Standard Edition platform.
+  Read more on [openjdk.org](https://www.openjdk.org/).
+
+  This image is a chiselled Ubuntu rock that contains only the OpenJDK
+  runtime environment needed for executing non GUI Java programs.
+  It is production-ready and can also be used as a base if additional
+  application dependencies are needed.
+
+debug:
+  text: |
+    ### Debugging
+
+    To debug the container:
+
+    ```bash
+    docker logs -f openjdk-jre-container
+    ```
+
+    To inspect application logs:
+
+    ```bash
+    docker exec openjdk-jre-container pebble logs
+    ```
