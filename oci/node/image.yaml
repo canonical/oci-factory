@@ -1,7 +1,7 @@
 version: 1
 upload:
   - source: canonical/chiselled-nodejs
-    commit: 58d6a60e404b0073cf978fc9a275de83fa9d6515
+    commit: 0efa97ba7bf592d0a2350f0f92782b64fbf89dec
     directory: node18
     release:
       18.19.1-24.04:
