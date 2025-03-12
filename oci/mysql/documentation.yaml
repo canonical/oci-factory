@@ -1,0 +1,80 @@
+version: 1
+application: mysql
+is_chiselled: False
+description: |
+  Current MySQL™ software Docker Image [from Canonical](https://ubuntu.com/security/docker-images) based on Ubuntu.
+  Receives security updates and rolls to newer MySQL™ software or Ubuntu release.
+  This repository is free to use and exempted from per-user rate limits.
+
+  # About MySQL™
+  MySQL is a fast, stable and true multi-user, multi-threaded SQL database server.
+  SQL (Structured Query Language) is the most popular database query language in the world.
+  The main goals of MySQL are speed, robustness and ease of use.
+  Read more on the [MySQL website](https://dev.mysql.com/doc/refman/8.0/en/).
+
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -e TZ=UTC
+    - -e MYSQL_ROOT_PASSWORD=My:S3cr3t/
+    - -p 30306:3306
+  access: Access your MySQL server at `localhost:30306`.
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone.
+  - type: -e
+    value: 'MYSQL_ROOT_PASSWORD=secret_for_root'
+    description: Set the password for the root user. This option is mandatory and must not be empty.
+  - type: -e
+    value: 'MYSQL_PASSWORD=secret'
+    description: Set the password for the MYSQL_USER user.
+  - type: -e
+    value: 'MYSQL_USER=john'
+    description: Create a new user with the MYSQL_PASSWORD password. The user is created with superuser privileges.
+  - type: -e
+    value: 'MYSQL_DATABASE=db_test'
+    description: Set the name of the default database.
+  - type: -e
+    value: 'MYSQL_ALLOW_EMPTY_PASSWORD=yes'
+    description: Set up a blank password for the root user. This is not recommended to be used in production, make sure you know what you are doing.
+  - type: -e
+    value: 'MYSQL_RANDOM_ROOT_PASSWORD=yes'
+    description: Generate a random password for the root user. It will be printed in the logs, search for GENERATED ROOT PASSWORD.
+  - type: -e
+    value: 'MYSQL_ONETIME_PASSWORD=yes'
+    description: Set up a one time password for the root user as. A password change is required on first login.
+  - type: -e
+    value: 'MYSQL_INITSB_SKIP_TZINFO=yes'
+    description: Timezone data is automatically loaded via entrypoint script, set this variable to any non-empty value to disable it.
+  - type: -p
+    value: '30306:3306'
+    description: Expose MySQL server on localhost:30306.
+  - type: -v
+    value: "/path/to/data:/var/lib/mysql"
+    description: Persist data instead of initializing a new database every time you launch a new container.
+  - type: -v
+    value: "/path/to/config/files/:/etc/mysql/mysql.conf.d/"
+    description: Local [configuration files](https://dev.mysql.com/doc/refman/8.0/en/mysql-command-options.html).
+debug:
+  text: |
+    ### Testing / Debugging
+    
+    To debug the container:
+    ```bash 
+    docker logs -f mysql-container
+    ```
+    
+    To get an interactive shell:
+    ```bash 
+    docker exec -it mysql-container /bin/bash
+    ```
+    
+    This image also includes the mysql client for interactive container use:
+    ```bash 
+    docker network create mysql-network
+    docker network connect mysql-network mysql-container
+    docker run -it --rm --network mysql-network ubuntu/mysql:8.0-24.04 mysql -h mysql-container -u root -p
+    ```
+    
+    The password will be asked and you can enter My:S3cr3t/. Now, you are logged in and can enjoy your new instance.
