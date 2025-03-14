@@ -1,0 +1,14 @@
+version: 1
+
+upload:
+  - source: canonical/jre-rock
+    commit: 780f339ce89bc764d439acfb3b71d3f57bdfe14b
+    directory: jre/ubuntu-24.04-headless
+    release:
+      21-24.04:
+        end-of-life: "2031-09-30T00:00:00Z"
+        risks:
+          - stable
+          - candidate
+          - beta
+          - edge
