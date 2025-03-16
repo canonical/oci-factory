@@ -3,15 +3,117 @@ version: 1
 application: openjdk-jre
 is_chiselled: true
 description: |
-  Java is a high-level, general-purpose programming language.
-  OpenJDK is an open-source implementation of Oracle's
-  Java Standard Edition platform.
-  Read more on [openjdk.org](https://www.openjdk.org/).
+  # Chiselled Ubuntu for JRE
 
-  This image is a chiselled Ubuntu rock that contains only the OpenJDK
-  runtime environment needed for executing non GUI Java programs.
-  It is production-ready and can also be used as a base if additional
-  application dependencies are needed.
+  Current JRE Docker Image from
+  [Canonical](https://ubuntu.com/security/docker-images) based on Ubuntu.
+  Receives security updates and rolls to newer JRE or Ubuntu release.
+  This repository is free to use and exempted from per-user rate limits.
+
+  ## About JRE
+
+  This image packs the OpenJRE (Open Java Runtime Environment), coming
+  from the [OpenJDK project](https://www.openjdk.org/), a free and open
+  source implementation of the Java Platform, Standard Edition (Java SE).
+  OpenJDK is the official reference implementation of Java SE since
+  version 7. [Read more](https://openjdk.org/).
+  Java is a registered trademark of Oracle and/or its affiliates.
+
+  ## About Chiselled Ubuntu
+
+  This image does not include bash nor a package manager nor the OpenJDK.
+  Its purpose is to serve as a runtime, final-stage base image for
+  compatible Java applications.
+
+  Read more about chiselled Ubuntu for OpenJRE, a new class of OCI images,
+  on [the Ubuntu blog](https://ubuntu.com/blog/combining-distroless-and-ubuntu-chiselled-containers).
+  And remember, the best base image is FROM scratch: so you could also
+  [easily craft your own chiselled Ubuntu base](https://ubuntu.com/blog/craft-custom-chiselled-ubuntu-distroless)
+  for your app specific needs.
+
+  Please note that the images tagged 8 and 17 are Dockerfile-base images,
+  whereas from version 21 onward the images are now rocks. As such the
+  entrypoint is now Pebble. Read more on the
+  [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
+
+  Version 8 and 17 images have `java` as the entrypoint.
+  ```bash
+  $ docker run --rm ubuntu/jre:17_edge
+  Usage: java [options] <mainclass> [args...]
+  ```
+
+  Version 21 image has `pebble enter` as the entrypoint. You can
+  access the `java` with the following command:
+  ```bash
+  $ docker run --rm ubuntu/jre:21_edge exec java
+  Usage: java [options] <mainclass> [args...]
+  ...
+  ```
+
+  ## Usage
+
+  Launch this image locally:
+
+  For versions 8 and 17
+  ```bash
+  docker run -d --name jre-container -e TZ=UTC ubuntu/jre:17-22.04_edge
+  ```
+  For version 21
+  ```bash
+  docker run -d --name jre-container -e TZ=UTC ubuntu/jre:21-24.04_edge exec java
+  ```
+
+  The container logs will simply show the OpenJRE help message.
+  This is because the container expects a compiled Java application to be given.
+
+  Let's use the following Hello World application as an example:
+
+  ```java
+  // HelloWorld.java
+
+  class HelloWorld
+  {
+      public static void main(String args[])
+      {
+          System.out.println("Hello, World");
+      }
+  }
+  ```
+
+  You can build and package the above Hello World application with
+  chiselled Ubuntu 8 and 17 using the following example Dockerfile.
+
+  ```docker
+  FROM ubuntu:22.04 AS builder
+  RUN apt-get update && apt-get install -y openjdk-8-jdk
+  WORKDIR /app
+  ADD HelloWorld.java .
+
+  RUN javac -source 8 -target 8 HelloWorld.java -d .
+
+  FROM ubuntu/jre:8-22.04_edge
+
+  WORKDIR /
+  COPY --from=builder /app/HelloWorld.class .
+
+  CMD [ "HelloWorld" ]
+  ```
+
+  For version 21 please use
+  ```docker
+  FROM ubuntu:22.04 AS builder
+  RUN apt-get update && apt-get install -y openjdk-8-jdk
+  WORKDIR /app
+  ADD HelloWorld.java .
+
+  RUN javac -source 8 -target 8 HelloWorld.java -d .
+
+  FROM ubuntu/jre:21-24.04_edge
+
+  COPY --from=builder /app/HelloWorld.class .
+
+  CMD [ "exec", "java", "-cp", "/", "HelloWorld" ]
+  ```
 
 debug:
   text: |
@@ -23,7 +125,7 @@ debug:
     docker logs -f openjdk-jre-container
     ```
 
-    To inspect application logs:
+    From version 21 onwards, to inspect application logs:
 
     ```bash
     docker exec openjdk-jre-container pebble logs
