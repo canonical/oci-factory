@@ -263,7 +263,7 @@ class OCIDocumentationData:
             # i.e. something like 1.0-22.04_stable
             channel_tag = self.find_channel_tag(digest_tags)
             if channel_tag == "":
-                logging.warning(f"No channel tag found for digest {digest}")
+                logging.warning(f"No canonical tag found for digest {digest}")
                 continue
             track_base, release_data["risk"] = channel_tag.split("_")
             release_data["track"], release_data["base"] = track_base.split("-")
