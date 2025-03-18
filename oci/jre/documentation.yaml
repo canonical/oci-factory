@@ -3,8 +3,6 @@ version: 1
 application: openjdk-jre
 is_chiselled: true
 description: |
-  # Chiselled Ubuntu for JRE
-
   Current JRE Docker Image from
   [Canonical](https://ubuntu.com/security/docker-images) based on Ubuntu.
   Receives security updates and rolls to newer JRE or Ubuntu release.
@@ -37,6 +35,7 @@ description: |
   [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
 
   Version 8 and 17 images have `java` as the entrypoint.
+
   ```bash
   $ docker run --rm ubuntu/jre:17_edge
   Usage: java [options] <mainclass> [args...]
@@ -44,6 +43,7 @@ description: |
 
   Version 21 image has `pebble enter` as the entrypoint. You can
   access the `java` with the following command:
+
   ```bash
   $ docker run --rm ubuntu/jre:21_edge exec java
   Usage: java [options] <mainclass> [args...]
@@ -55,10 +55,12 @@ description: |
   Launch this image locally:
 
   For versions 8 and 17
+
   ```bash
   docker run -d --name jre-container -e TZ=UTC ubuntu/jre:17-22.04_edge
   ```
   For version 21
+
   ```bash
   docker run -d --name jre-container -e TZ=UTC ubuntu/jre:21-24.04_edge exec java
   ```
@@ -100,6 +102,7 @@ description: |
   ```
 
   For version 21 please use
+
   ```docker
   FROM ubuntu:22.04 AS builder
   RUN apt-get update && apt-get install -y openjdk-8-jdk
