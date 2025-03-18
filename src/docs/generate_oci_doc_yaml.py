@@ -205,6 +205,9 @@ class OCIDocumentationData:
             if re.match(pattern, tag):
                 channel_tags.append(tag)
 
+        if len(channel_tags) == 0:
+            return ""
+
         # Now that we have the list of channel tags, we want to choose the
         # most stable one
         most_stable_channel_tags = []
@@ -259,6 +262,9 @@ class OCIDocumentationData:
             # For each digest, we want to find the most stable OCI channel tag,
             # i.e. something like 1.0-22.04_stable
             channel_tag = self.find_channel_tag(digest_tags)
+            if channel_tag == "":
+                logging.warning(f"No channel tag found for digest {digest}")
+                continue
             track_base, release_data["risk"] = channel_tag.split("_")
             release_data["track"], release_data["base"] = track_base.split("-")
             release_data["tags"] = digest_tags.remove(channel_tag) or digest_tags
