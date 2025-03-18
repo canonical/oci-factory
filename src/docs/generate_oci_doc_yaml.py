@@ -358,9 +358,16 @@ class OCIDocumentationData:
         )
 
         # Get all the published OCI tags from ECR
-        all_ecr_tags = self.ecr_client.describe_image_tags(
+        all_ecr_tags = {"imageTagDetails": []}
+        desc_img_tags_resp = self.ecr_client.describe_image_tags(
             repositoryName=self.image_name
         )
+        all_ecr_tags["imageTagDetails"] = desc_img_tags_resp.get("imageTagDetails", [])
+        while next_token := desc_img_tags_resp.get("nextToken"):
+            desc_img_tags_resp = self.ecr_client.describe_image_tags(
+                repositoryName=self.image_name, nextToken=next_token
+            )
+            all_ecr_tags["imageTagDetails"].extend(desc_img_tags_resp.get("imageTagDetails", []))
 
         logging.info("Building releases section for doc data YAML file")
 
