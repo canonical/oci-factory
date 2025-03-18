@@ -1,16 +1,9 @@
 version: 1
 
-application: openjdk-jre
+application: jre
 is_chiselled: true
 description: |
-  Current JRE Docker Image from
-  [Canonical](https://ubuntu.com/security/docker-images) based on Ubuntu.
-  Receives security updates and rolls to newer JRE or Ubuntu release.
-  This repository is free to use and exempted from per-user rate limits.
-
-  ## About JRE
-
-  This image packs the OpenJRE (Open Java Runtime Environment), coming
+  This image packs the Java Runtime Environment, coming
   from the [OpenJDK project](https://www.openjdk.org/), a free and open
   source implementation of the Java Platform, Standard Edition (Java SE).
   OpenJDK is the official reference implementation of Java SE since
