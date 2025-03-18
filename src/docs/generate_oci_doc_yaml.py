@@ -180,6 +180,8 @@ class OCIDocumentationData:
         if "manifests" in manifest_list:
             arch_list = []
             for arch in manifest_list["manifests"]:
+                if arch["platform"]["architecture"] == "unknown":
+                    continue
                 arch_list.append(arch["platform"]["architecture"])
         else:
             arch_list = [
