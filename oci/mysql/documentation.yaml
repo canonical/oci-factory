@@ -61,20 +61,20 @@ debug:
     ### Testing / Debugging
     
     To debug the container:
-    ```bash 
+    ```bash
     docker logs -f mysql-container
     ```
     
     To get an interactive shell:
-    ```bash 
+    ```bash
     docker exec -it mysql-container /bin/bash
     ```
     
     This image also includes the mysql client for interactive container use:
-    ```bash 
+    ```bash
     docker network create mysql-network
     docker network connect mysql-network mysql-container
-    docker run -it --rm --network mysql-network ubuntu/mysql:8.0-24.04 mysql -h mysql-container -u root -p
+    docker run --detach --network mysql-network ubuntu/mysql:8.0-24.04
     ```
     
     The password will be asked and you can enter My:S3cr3t/. Now, you are logged in and can enjoy your new instance.
