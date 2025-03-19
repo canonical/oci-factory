@@ -180,6 +180,8 @@ class OCIDocumentationData:
         if "manifests" in manifest_list:
             arch_list = []
             for arch in manifest_list["manifests"]:
+                if arch["platform"]["architecture"] == "unknown":
+                    continue
                 arch_list.append(arch["platform"]["architecture"])
         else:
             arch_list = [
@@ -204,6 +206,9 @@ class OCIDocumentationData:
         for tag in tags:
             if re.match(pattern, tag):
                 channel_tags.append(tag)
+
+        if len(channel_tags) == 0:
+            return ""
 
         # Now that we have the list of channel tags, we want to choose the
         # most stable one
@@ -259,6 +264,9 @@ class OCIDocumentationData:
             # For each digest, we want to find the most stable OCI channel tag,
             # i.e. something like 1.0-22.04_stable
             channel_tag = self.find_channel_tag(digest_tags)
+            if channel_tag == "":
+                logging.warning(f"No canonical tag found for digest {digest}")
+                continue
             track_base, release_data["risk"] = channel_tag.split("_")
             release_data["track"], release_data["base"] = track_base.split("-")
             release_data["tags"] = digest_tags.remove(channel_tag) or digest_tags
@@ -352,9 +360,16 @@ class OCIDocumentationData:
         )
 
         # Get all the published OCI tags from ECR
-        all_ecr_tags = self.ecr_client.describe_image_tags(
+        all_ecr_tags = {"imageTagDetails": []}
+        desc_img_tags_resp = self.ecr_client.describe_image_tags(
             repositoryName=self.image_name
         )
+        all_ecr_tags["imageTagDetails"] = desc_img_tags_resp.get("imageTagDetails", [])
+        while next_token := desc_img_tags_resp.get("nextToken"):
+            desc_img_tags_resp = self.ecr_client.describe_image_tags(
+                repositoryName=self.image_name, nextToken=next_token
+            )
+            all_ecr_tags["imageTagDetails"].extend(desc_img_tags_resp.get("imageTagDetails", []))
 
         logging.info("Building releases section for doc data YAML file")
 
