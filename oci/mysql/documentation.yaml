@@ -11,12 +11,22 @@ description: |
   SQL (Structured Query Language) is the most popular database query language in the world.
   The main goals of MySQL are speed, robustness and ease of use.
   Read more on the [MySQL website](https://dev.mysql.com/doc/refman/8.0/en/).
+  
+  For versions before Ubuntu 24.04:
+  ```bash
+  docker run --detach --name mysql-container -p 30306:3306 -e TZ=UTC -e MYSQL_ROOT_PASSWORD=My:S3cr3t ubuntu/mysql:8.0-22.04_edge
+  ```
+  
+  For versions after Ubuntu 24.04:
+  ```bash
+  docker run --detach --name mysql-container -p 30306:3306 -e TZ=UTC -e MYSQL_ROOT_PASSWORD=My:S3cr3t ubuntu/mysql:8.0-24.04_edge --run
+  ```
 
 # --- USAGE INFORMATION ---
 docker:
   parameters:
     - -e TZ=UTC
-    - -e MYSQL_ROOT_PASSWORD=My:S3cr3t/
+    - -e MYSQL_ROOT_PASSWORD=My:S3cr3t
     - -p 30306:3306
   access: Access your MySQL server at `localhost:30306`.
 parameters:
@@ -69,12 +79,3 @@ debug:
     ```bash
     docker exec -it mysql-container /bin/bash
     ```
-    
-    This image also includes the mysql client for interactive container use:
-    ```bash
-    docker network create mysql-network
-    docker network connect mysql-network mysql-container
-    docker run --detach --network mysql-network ubuntu/mysql:8.0-24.04
-    ```
-    
-    The password will be asked and you can enter My:S3cr3t/. Now, you are logged in and can enjoy your new instance.
