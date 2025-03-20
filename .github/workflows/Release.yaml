@@ -26,7 +26,7 @@ on:
         description: 'Cache key (to fetch image trigger from cache)'
         required: false
         type: string
-           
+
 jobs:
   validate-push-release-request:
     runs-on: ubuntu-22.04
@@ -186,7 +186,15 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ matrix.canonical-tag }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: '*.sbom_preview.spdx.zip'
+          path: sbom_preview
       
+      - name: unzip sbom_preview
+        run: unzip sbom_preview/*.zip -d sbom_preview
+
       - uses: dev-drprasad/delete-tag-and-release@v1.0
         # We force delete an existing tag because otherwise we won't get
         # an email notification and the GH release will have the date from when
@@ -210,3 +218,4 @@ jobs:
           name: "${{ matrix.release-name }}"
           tag_name: "${{ matrix.release-name }}"
           token: "${{ secrets.ROCKSBOT_TOKEN }}"
+          files: "sbom_preview/*.sbom_preview.spdx.json"
