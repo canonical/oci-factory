@@ -192,8 +192,11 @@ jobs:
           pattern: '*.sbom_preview.spdx.zip'
           path: sbom_preview
       
-      - name: unzip sbom_preview
-        run: unzip sbom_preview/*.zip -d sbom_preview
+      - name: Unzip SBOM artifacts
+        run: |
+          unzip sbom_preview/*.zip.zip -d sbom_preview
+          unzip sbom_preview/*.spdx.zip -d sbom_preview
+
 
       - uses: dev-drprasad/delete-tag-and-release@v1.0
         # We force delete an existing tag because otherwise we won't get
