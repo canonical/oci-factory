@@ -194,6 +194,9 @@ jobs:
       
       - name: Unzip SBOM artifacts
         run: |
+          pwd
+          ls -l
+          ls sbom_preview
           unzip sbom_preview/*.zip.zip -d sbom_preview
           unzip sbom_preview/*.spdx.zip -d sbom_preview
 
