@@ -190,14 +190,15 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           pattern: '*.sbom_preview.spdx.zip'
-          path: sbom_preview
+          path: sbom
       
       - name: Unzip SBOM artifacts
         run: |
+          set -x
           pwd
           ls -l
           ls sbom_preview
-          unzip 'sbom_preview/*.spdx.zip' -d sbom_preview
+          unzip 'sbom/*.spdx.zip' -d sbom
 
 
       - uses: dev-drprasad/delete-tag-and-release@v1.0
