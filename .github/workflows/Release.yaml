@@ -197,7 +197,7 @@ jobs:
           set -x
           pwd
           ls -l
-          ls sbom_preview
+          ls sbom
           unzip 'sbom/*.spdx.zip' -d sbom
 
 
