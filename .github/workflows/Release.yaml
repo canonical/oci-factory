@@ -197,8 +197,8 @@ jobs:
           set -x
           pwd
           ls -l
-          ls sbom
-          unzip 'sbom/*.spdx.zip' -d sbom
+          ls -l sbom
+          unzip 'sbom/*.spdx.zip/*.zip' -d sbom
 
 
       - uses: dev-drprasad/delete-tag-and-release@v1.0
