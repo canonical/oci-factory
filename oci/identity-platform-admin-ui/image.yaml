@@ -1,12 +1,36 @@
-version: 1
 upload:
-  - source: "canonical/identity-platform-admin-ui"
-    commit: c46a9568f9be665f86aa5a274d8ac9d90054ba6b
-    directory: .
-    release:
-      1.19.0-22.04:
-        risks:
-          - stable
-          - candidate
-          - edge
-        end-of-life: "2025-03-01T00:00:00Z"
+- commit: c46a9568f9be665f86aa5a274d8ac9d90054ba6b
+  directory: .
+  source: canonical/identity-platform-admin-ui
+- commit: 6978657909ae0735d7d3a9d5a14fd1ed64504459
+  directory: ./
+  source: canonical/identity-platform-admin-ui
+- commit: eb0b7859f2210c9e2ce500e397ae3da688fef4de
+  directory: ./
+  source: canonical/identity-platform-admin-ui
+- commit: 6ddec745cd8011d630d7409cc6996bd1c5488a03
+  directory: ./
+  source: canonical/identity-platform-admin-ui
+- commit: ed4e5f4129513d72060178e87219f7823ed07281
+  directory: ./
+  release:
+    1-22.04:
+      end-of-life: '2025-09-11T00:00:00Z'
+      risks:
+      - stable
+      - candidate
+      - edge
+      - beta
+      - stable
+  source: canonical/identity-platform-admin-ui
+- commit: ed4e5f4129513d72060178e87219f7823ed07281
+  directory: ./
+  release:
+    1.23-22.04:
+      end-of-life: '2025-03-25T00:00:00Z'
+      risks:
+      - candidate
+      - beta
+      - edge
+  source: canonical/identity-platform-admin-ui
+version: 1

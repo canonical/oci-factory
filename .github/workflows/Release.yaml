@@ -195,10 +195,12 @@ jobs:
       - name: Unzip SBOM artifacts
         run: |
           set -x
-          pwd
-          ls -l
-          ls -l sbom
-          unzip 'sbom/*.spdx.zip/*.zip' -d sbom
+          sbom_target_dir="$(pwd)/sbom"
+          for dir in $(ls sbom); do
+            pushd sbom/$dir
+            unzip '*.zip' -d ${sbom_target_dir}
+            popd
+          done
 
 
       - uses: dev-drprasad/delete-tag-and-release@v1.0
@@ -224,4 +226,4 @@ jobs:
           name: "${{ matrix.release-name }}"
           tag_name: "${{ matrix.release-name }}"
           token: "${{ secrets.ROCKSBOT_TOKEN }}"
-          files: "sbom_preview/*.sbom_preview.spdx.json"
+          files: "sbom/*.sbom_preview.spdx.json"
