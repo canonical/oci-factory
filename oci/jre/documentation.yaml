@@ -52,7 +52,7 @@ description: |
   ```bash
   docker run -d --name jre-container -e TZ=UTC ubuntu/jre:17-22.04_edge
   ```
-  For version 11 and 21
+  For versions 11 and 21
 
   ```bash
   docker run -d --name jre-container -e TZ=UTC ubuntu/jre:21-24.04_edge exec java
