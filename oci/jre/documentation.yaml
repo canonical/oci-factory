@@ -94,7 +94,7 @@ description: |
   CMD [ "HelloWorld" ]
   ```
 
-  For version 11 and 21 please use
+  For versions 11 and 21 please use
 
   ```docker
   FROM ubuntu:24.04 AS builder
