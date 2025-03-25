@@ -121,7 +121,7 @@ debug:
     docker logs -f openjdk-jre-container
     ```
 
-    For version 11 and 21, to inspect application logs:
+    For versions 11 and 21, to inspect application logs:
 
     ```bash
     docker exec openjdk-jre-container pebble logs
