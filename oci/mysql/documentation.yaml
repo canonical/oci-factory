@@ -12,14 +12,8 @@ description: |
   The main goals of MySQL are speed, robustness and ease of use.
   Read more on the [MySQL website](https://dev.mysql.com/doc/refman/8.0/en/).
   
-  For versions before Ubuntu 24.04:
   ```bash
   docker run --detach --name mysql-container -p 30306:3306 -e TZ=UTC -e MYSQL_ROOT_PASSWORD=My:S3cr3t ubuntu/mysql:8.0-22.04_edge
-  ```
-  
-  For versions after Ubuntu 24.04:
-  ```bash
-  docker run --detach --name mysql-container -p 30306:3306 -e TZ=UTC -e MYSQL_ROOT_PASSWORD=My:S3cr3t ubuntu/mysql:8.0-24.04_edge --run
   ```
 
 # --- USAGE INFORMATION ---
