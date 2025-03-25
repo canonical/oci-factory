@@ -202,7 +202,6 @@ jobs:
             popd
           done
 
-
       - uses: dev-drprasad/delete-tag-and-release@v1.0
         # We force delete an existing tag because otherwise we won't get
         # an email notification and the GH release will have the date from when
