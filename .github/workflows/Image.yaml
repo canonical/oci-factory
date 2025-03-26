@@ -392,25 +392,14 @@ jobs:
 
       - name: Upload to GHCR
         id: upload-image
-        env:
-          GHCR_REPO: ghcr.io/${{ github.repository_owner }}/oci-factory
-          GHCR_USERNAME: ${{ github.actor }}
-          GHCR_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          oci_images="${PWD}/images-oci"
-          rm -fr $oci_images
-          mkdir -p $oci_images
-
-          tar -xf ${{ steps.rename-oci-archive.outputs.name }} -C $oci_images
-
-          source="oci:${oci_images}"
-
-          digest="$(skopeo inspect $source | jq -r .Digest)"
-          echo "digest=$digest" >> $GITHUB_OUTPUT
-
-          ./src/image/tag_and_publish.sh "${source}" \
-            ${{ matrix.name }} \
-            ${{ steps.rename-oci-archive.outputs.canonical-tag }}
+        uses: ./.github/actions/upload-rock
+        with:
+          artifact_name: ${{ env.OCI_ARCHIVE_NAME }}
+          name: ${{ github.repository_owner }}/oci-factory/${{ matrix.name }}
+          tags: ${{ matrix.track }}_${{ matrix.revision }}
+          registry: ghcr.io
+          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ github.actor }}
 
       - name: Upload build metadata to Swift
         env:
