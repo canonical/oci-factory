@@ -38,6 +38,7 @@ runs:
 
     - name: Get Metadata
       id: meta
+      shell: bash
       run: |
         docker run --rm \
           -v $PWD:/workdir -w /workdir \
@@ -48,6 +49,7 @@ runs:
         echo "digest=$digest" >> $GITHUB_OUTPUT
 
     - name: Upload Rock to Registry
+      shell: bash
       run: |
         for tag in ${{ inputs.tags }}; do
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
