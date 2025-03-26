@@ -346,11 +346,11 @@ jobs:
 
             syft oci-archive:${{ steps.rename-oci-archive.outputs.name }}.${arch} \
               -o spdx-json \
-              --file ${{ steps.rename-oci-archive.outputs.name }}.${arch}.sbom.spdx.json
+              --file ${{ steps.rename-oci-archive.outputs.name }}.${arch}.sbom_preview.spdx.json
           done
 
-          all_sboms_zip="${{ steps.rename-oci-archive.outputs.name }}.sbom.spdx.zip"
-          zip "${all_sboms_zip}" ${{ steps.rename-oci-archive.outputs.name }}.*.sbom.spdx.json
+          all_sboms_zip="${{ steps.rename-oci-archive.outputs.name }}.sbom_preview.spdx.zip"
+          zip "${all_sboms_zip}" ${{ steps.rename-oci-archive.outputs.name }}.*.sbom_preview.spdx.json
 
           echo "sboms=${all_sboms_zip}" >> "$GITHUB_OUTPUT"
 
