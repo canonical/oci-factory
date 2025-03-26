@@ -34,7 +34,7 @@ description: |
   Usage: java [options] <mainclass> [args...]
   ```
 
-  Version 21 image has `pebble enter` as the entrypoint. You can
+  Version 11 and 21 images have `pebble enter` as the entrypoint. You can
   access the `java` with the following command:
 
   ```bash
@@ -52,7 +52,7 @@ description: |
   ```bash
   docker run -d --name jre-container -e TZ=UTC ubuntu/jre:17-22.04_edge
   ```
-  For version 21
+  For versions 11 and 21
 
   ```bash
   docker run -d --name jre-container -e TZ=UTC ubuntu/jre:21-24.04_edge exec java
@@ -94,10 +94,10 @@ description: |
   CMD [ "HelloWorld" ]
   ```
 
-  For version 21 please use
+  For versions 11 and 21 please use
 
   ```docker
-  FROM ubuntu:22.04 AS builder
+  FROM ubuntu:24.04 AS builder
   RUN apt-get update && apt-get install -y openjdk-8-jdk
   WORKDIR /app
   ADD HelloWorld.java .
@@ -121,7 +121,7 @@ debug:
     docker logs -f openjdk-jre-container
     ```
 
-    For version 21, to inspect application logs:
+    For versions 11 and 21, to inspect application logs:
 
     ```bash
     docker exec openjdk-jre-container pebble logs
