@@ -196,11 +196,7 @@ jobs:
         run: |
           set -x
           sbom_target_dir="$(pwd)/sbom"
-          for dir in $(ls sbom); do
-            pushd sbom/$dir
-            unzip '*.zip' -d ${sbom_target_dir}
-            popd
-          done
+          find sbom -type f -name '*.spdx.zip' -exec unzip {} -d ${sbom_target_dir} \;
 
       - uses: dev-drprasad/delete-tag-and-release@v1.0
         # We force delete an existing tag because otherwise we won't get
