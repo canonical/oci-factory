@@ -1,0 +1,32 @@
+{
+    "21-24.04": {
+        "end-of-life": "2031-09-30T00:00:00Z",
+        "stable": {
+            "target": "3"
+        },
+        "candidate": {
+            "target": "3"
+        },
+        "beta": {
+            "target": "3"
+        },
+        "edge": {
+            "target": "3"
+        }
+    },
+    "11-24.04": {
+        "end-of-life": "2026-09-30T00:00:00Z",
+        "stable": {
+            "target": "4"
+        },
+        "candidate": {
+            "target": "4"
+        },
+        "beta": {
+            "target": "4"
+        },
+        "edge": {
+            "target": "4"
+        }
+    }
+}

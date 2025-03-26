@@ -61,7 +61,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Infer number of image triggers
-        uses: tj-actions/changed-files@v35
+        uses: tj-actions/changed-files@531f5f7d163941f0c1c04e0ff4d8bb243ac4366f
         id: changed-files
         if: github.event_name != 'workflow_dispatch' && github.event_name != 'workflow_call'
         with:
