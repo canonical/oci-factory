@@ -17,7 +17,7 @@ upload:
     directory: jre/ubuntu-24.04-headless
     release:
       11-24.04:
-        end-of-life: "2031-09-30T00:00:00Z"
+        end-of-life: "2026-09-30T00:00:00Z"
         risks:
           - stable
           - candidate
