@@ -56,8 +56,8 @@ runs:
           -v $PWD:/workdir -w /workdir \
           "quay.io/skopeo/stable:v1.15.1" \
           copy \
-          --dest-username "${{ inputs.password }}" \
-          --dest-password "${{ inputs.username }}" \
+          --dest-username "${{ inputs.username }}" \
+          --dest-password "${{ inputs.password }}" \
           --multi-arch all \
           oci-archive:${{ inputs.artifact_name }} \
           docker://${{ inputs.registry }}/${{ inputs.name }}:$tag
