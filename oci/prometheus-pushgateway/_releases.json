@@ -133,5 +133,38 @@
         "edge": {
             "target": "104"
         }
+    },
+    "1-24.04": {
+        "end-of-life": "2025-07-03T00:00:00Z",
+        "stable": {
+            "target": "105"
+        },
+        "candidate": {
+            "target": "1-24.04_stable"
+        },
+        "beta": {
+            "target": "1-24.04_candidate"
+        },
+        "edge": {
+            "target": "1-24.04_beta"
+        }
+    },
+    "1.11-24.04": {
+        "end-of-life": "2025-07-03T00:00:00Z",
+        "stable": {
+            "target": "105"
+        },
+        "candidate": {
+            "target": "1.11-24.04_stable"
+        },
+        "beta": {
+            "target": "1.11-24.04_candidate"
+        },
+        "edge": {
+            "target": "1.11-24.04_beta"
+        }
+    },
+    "1.11.0-24.04": {
+        "end-of-life": "2025-04-02T00:00:00Z"
     }
 }
