@@ -155,7 +155,7 @@ def main():
 
     # update EOL dates from upload dictionary
     for upload in image_trigger["upload"] or []:
-        for track, upload_release_dict in (upload["release"] or {}).items():
+        for track, upload_release_dict in upload.get("release", {}).items():
             if track not in all_releases:
                 print(f"Track {track} will be created for the 1st time")
                 all_releases[track] = {}
