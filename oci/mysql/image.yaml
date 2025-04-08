@@ -1,0 +1,11 @@
+version: 1
+
+upload:
+  - source: "canonical/mysql-rock"
+    commit: c590d2e261b6b0421069a6f3ee7c370bf8f00226
+    directory: .
+    release:
+      8.0-24.04:
+        end-of-life: "2025-01-01T00:00:00Z"
+        risks:
+          - edge
