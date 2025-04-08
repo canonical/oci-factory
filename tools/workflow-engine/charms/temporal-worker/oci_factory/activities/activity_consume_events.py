@@ -107,6 +107,8 @@ async def consume(topic: str, consumer_group: str) -> dict:
         ["python3", script_full_path, "{}".format(value.get("release"))],
         stderr=subprocess.PIPE,
     )
+    for line in proc.stderr.readlines():
+        logging.info(line.decode("utf-8").strip())
     success = proc.wait() == 0
     activity.heartbeat("Updating Mattermost message")
     status = "Success" if success else "Failed"
