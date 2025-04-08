@@ -202,11 +202,30 @@ jobs:
       # https://github.com/yuichielectric/dive-action/issues/581
       - name: Dive efficiency test
         run: |
+          tempdir=$(mktemp -d)
           docker run -e CI=true --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            -v $PWD/src/tests/.dive-ci.yaml:/.dive-ci.yaml \
+            -v $tempdir:/out \
             ${{ env.DIVE_IMAGE }} \
-            ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} --ci-config /.dive-ci.yaml
+            ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
+            --json /out/dive.json
+
+          efficiency=$(jq -r '.image.efficiencyScore' $tempdir/dive.json)
+          wastedPercent=$(jq -r '.image.inefficientBytes / .image.sizeBytes' $tempdir/dive.json)
+
+          lowestEfficiency=$(yq -r '.rules.lowestEfficiency' $PWD/src/tests/.dive-ci.yaml)
+          highestUserWastedPercent=$(yq -r '.rules.highestUserWastedPercent' $PWD/src/tests/.dive-ci.yaml)
+
+          if (( $(echo "$efficiency < $lowestEfficiency" | bc -l) )); then
+            echo "FAIL: lowestEfficiency: image efficiency is too low (efficiency=$efficiency < threshold=$lowestEfficiency)"
+            exit 1
+          fi
+          if (( $(echo "$wastedPercent > $highestUserWastedPercent" | bc -l) )); then
+            echo "FAIL: highestUserWastedPercent: too many bytes wasted, relative to the user bytes added (%-user-wasted-bytes=$wastedPercent > threshold=$highestUserWastedPercent)"
+            exit 1
+          fi
+          echo "Efficiency score: $efficiency"
+          echo "Wasted percent: $wastedPercent"
 
   test-vulnerabilities:
     runs-on: ubuntu-22.04
