@@ -177,6 +177,7 @@ jobs:
     with:
       oci-archive-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}"
       trivyignore-path: "oci/${{ matrix.name }}/.trivyignore"
+      is-rock-baseless: ${{ matrix.is-baseless == 'true' }}
     secrets: inherit
 
   prepare-upload:

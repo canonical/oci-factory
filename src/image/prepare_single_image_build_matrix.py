@@ -205,6 +205,7 @@ def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: 
         base_release, track = get_base_and_track(rockcraft_yaml)
         build["track"] = track
         build["base"] = f"ubuntu:{base_release}"
+        build["is-baseless"] = str(rockcraft_yaml["base"] == "bare").lower()
 
     return _builds
 
