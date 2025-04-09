@@ -116,6 +116,9 @@ if __name__ == "__main__":
                 )
             )
 
+            # Sort the objects by revision number
+            img_objs.sort(key=lambda o: int(o["name"].split("/")[2]))
+
             # If this image's build metadata isn't yet in Swift, continue
             if not img_objs:
                 logging.warning(f"There's no build data for {image} in Swift yet!")
@@ -228,6 +231,10 @@ if __name__ == "__main__":
                 triplet = trigger_triplet(build_and_upload_data)
 
                 if triplet in uploads:
+                    # Since img_objs is sorted by revision number, we can safely
+                    # assume "release_to" is always newer than uploads[triplet]["release"]
+                    # and therefore we can merge them with "release_to" overwriting
+                    # the duplicated entries.
                     uploads[triplet]["release"] = (
                         uploads[triplet].get("release", {}) | release_to
                     )
