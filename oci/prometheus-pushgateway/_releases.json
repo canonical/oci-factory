@@ -137,31 +137,31 @@
     "1-24.04": {
         "end-of-life": "2025-07-03T00:00:00Z",
         "stable": {
-            "target": "105"
+            "target": "106"
         },
         "candidate": {
-            "target": "1-24.04_stable"
+            "target": "106"
         },
         "beta": {
-            "target": "1-24.04_candidate"
+            "target": "106"
         },
         "edge": {
-            "target": "1-24.04_beta"
+            "target": "106"
         }
     },
     "1.11-24.04": {
         "end-of-life": "2025-07-03T00:00:00Z",
         "stable": {
-            "target": "105"
+            "target": "106"
         },
         "candidate": {
-            "target": "1.11-24.04_stable"
+            "target": "106"
         },
         "beta": {
-            "target": "1.11-24.04_candidate"
+            "target": "106"
         },
         "edge": {
-            "target": "1.11-24.04_beta"
+            "target": "106"
         }
     },
     "1.11.0-24.04": {

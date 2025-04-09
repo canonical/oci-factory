@@ -1,7 +1,7 @@
 version: 1
 upload:
   - source: canonical/opentelemetry-collector-rock
-    commit: e00cb5cc3441ac8345896c99d80c81feb22b9a08
+    commit: b5d7e3143733051d512bb5b3ab32f8578bdff56e
     directory: 0.120.0
     release:
       0-24.04:
