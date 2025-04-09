@@ -1,0 +1,6 @@
+# Upstream CVEs
+
+# github.com/expr-lang/expr
+CVE-2025-29786
+# github.com/golang-jwt/jwt/v5 - golang-jwt is a Go implementation of JSON Web Tokens ...
+CVE-2025-30204
