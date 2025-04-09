@@ -66,6 +66,10 @@ if __name__ == "__main__":
 
         return released_revisions
 
+    def trigger_triplet(trigger: dict) -> str:
+        """Given a trigger, return the triplet of source, directory and commit"""
+        return f"{trigger['source']}_{trigger['commit']}_{trigger['directory']}"
+
     # Get the new Ubuntu release from the CLI args
     ubuntu_release = str(sys.argv[1])
     logging.info(f"Ubuntu release: {ubuntu_release}")
@@ -112,6 +116,9 @@ if __name__ == "__main__":
                 )
             )
 
+            # Sort the objects by revision number
+            img_objs.sort(key=lambda o: int(o["name"].split("/")[2]))
+
             # If this image's build metadata isn't yet in Swift, continue
             if not img_objs:
                 logging.warning(f"There's no build data for {image} in Swift yet!")
@@ -119,6 +126,7 @@ if __name__ == "__main__":
 
             # Let's use an uber image trigger file to trigger the CI rebuilds
             uber_img_trigger = {"version": 1, "upload": []}
+            uploads = {} # key: trigger triplet, value: uber_image_trigger["upload"] entry
             # We'll also need to find which tags (channels) to release the new
             # rebuilds to
             # TODO: Get rid of this once we have a proper DB where to store all the
@@ -219,10 +227,25 @@ if __name__ == "__main__":
                         logging.warning(
                             f"Track {to_track} is missing its end-of-" "life field"
                         )
-                if release_to:
-                    build_and_upload_data["release"] = release_to
 
-                uber_img_trigger["upload"].append(build_and_upload_data)
+                triplet = trigger_triplet(build_and_upload_data)
+
+                if triplet in uploads:
+                    # Since img_objs is sorted by revision number, we can safely
+                    # assume "release_to" is always newer than uploads[triplet]["release"]
+                    # and therefore we can merge them with "release_to" overwriting
+                    # the duplicated entries.
+                    uploads[triplet]["release"] = (
+                        uploads[triplet].get("release", {}) | release_to
+                    )
+                else:
+                    if release_to:
+                        build_and_upload_data["release"] = release_to
+                    uploads[triplet] = build_and_upload_data
+
+            uber_img_trigger["upload"] = [
+                trigger for trigger in uploads.values()
+            ]
 
             if not uber_img_trigger["upload"]:
                 # Nothing to rebuild here
