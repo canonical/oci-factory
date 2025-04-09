@@ -3,7 +3,7 @@
 name: temporal-worker
 summary: Temporal worker app
 description: OCI image for Temporal worker app
-version: "1.2"
+version: "1.2.1"
 base: ubuntu@22.04
 build-base: ubuntu@22.04
 license: Apache-2.0
