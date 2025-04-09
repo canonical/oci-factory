@@ -18,7 +18,7 @@ import sys
 from datetime import datetime, timezone
 import docker
 
-SKOPEO_IMAGE = os.getenv("SKOPEO_IMAGE", "quay.io/skopeo/stable:v1.13")
+SKOPEO_IMAGE = os.getenv("SKOPEO_IMAGE", "quay.io/skopeo/stable:v1.15.1")
 REGISTRY = "ghcr.io/canonical/oci-factory"
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -94,11 +94,11 @@ if __name__ == "__main__":
                 )
                 continue
             elif not risks.get("end-of-life"):
-                logging.warning(
-                    f"Track {track} is missing its end-of-life field"
-                )
+                logging.warning(f"Track {track} is missing its end-of-life field")
 
-            for targets in risks.values():
+            for key, targets in risks.items():
+                if key == "end-of-life":
+                    continue
                 try:
                     if int(targets["target"]) in released_revisions[img]:
                         continue

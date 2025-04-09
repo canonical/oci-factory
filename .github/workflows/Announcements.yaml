@@ -33,6 +33,14 @@ jobs:
             fi
           done
 
+      - name: Validate access to triggered image
+        uses: ./.github/actions/validate-actor
+        if: ${{ github.repository == 'canonical/oci-factory' }}
+        with:
+          admin-only: true
+          image-path: "oci/${{ steps.get-image-name.outputs.img-name }}"
+          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+
       - name: Get contacts for ${{ steps.get-image-name.outputs.img-name }}
         id: get-contacts
         working-directory: oci/${{ steps.get-image-name.outputs.img-name }}
@@ -104,4 +112,3 @@ jobs:
           do
             MM_CHANNEL_ID="${channel}" ./src/notifications/send_to_mattermost.sh
           done
-

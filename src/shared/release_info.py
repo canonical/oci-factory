@@ -5,8 +5,11 @@ This module provides functions for parsing and processing
 data related to _release.json and revision tags.
 """
 
+import argparse
 import json
-from src.image.utils.schema.triggers import KNOWN_RISKS_ORDERED
+from collections import defaultdict
+
+from ..image.utils.schema.triggers import KNOWN_RISKS_ORDERED
 
 
 class BadChannel(Exception):
@@ -71,13 +74,76 @@ def get_revision_to_track(all_revisions_tags: list) -> dict:
     revision_track = {}
     for track_revision in all_revisions_tags:
         track, revision = track_revision.rsplit("_", 1)
+        revision = int(revision)
         if revision in revision_track:
             msg = (
                 "Each revision can only have 1 canonical tag, "
                 f"but revision {revision} is associated with tracks "
-                f"{track} and {revision_track['revision']}!"
+                f"{track} and {revision_track[revision]}!"
             )
             raise BadChannel(msg)
 
-        revision_track[int(revision)] = track
+        revision_track[revision] = track
     return revision_track
+
+
+def _find_alias_revision(tag_mapping_from_all_releases: dict, rev: str, visited: set, tag: str) -> str:
+    if rev in visited:
+        raise BadChannel(
+            f"Tag {tag} was caught in a circular dependency, "
+            "following tags that follow themselves. Cannot pin a revision."
+        )
+    visited.add(rev)
+    if not rev.isdigit():
+        return _find_alias_revision(
+            tag_mapping_from_all_releases, tag_mapping_from_all_releases[rev], visited, tag
+        )
+    return rev
+
+def get_revision_to_released_tags(all_releases: dict) -> dict:
+    """
+    Iterates over the provided dictionary with all the releases
+    and extracts the revision numbers and their corresponding
+    released tags. The resulting dictionary maps each revision
+    number to a list of released tags.
+    """
+    revision_to_released_tags = defaultdict(list)
+    tag_mapping_from_all_releases = get_tag_mapping_from_all_releases(all_releases)
+    for tag, revision in tag_mapping_from_all_releases.items():
+        if not revision.isdigit():
+            visited = set()
+            revision = _find_alias_revision(tag_mapping_from_all_releases, revision, visited, tag)
+        revision = int(revision)
+        revision_to_released_tags[revision].append(tag)
+
+    for revision, tags in revision_to_released_tags.items():
+        revision_to_released_tags[revision] = sorted(tags)
+
+    return dict(revision_to_released_tags)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "function",
+        help="The function to run",
+        choices=["get_revision_to_released_tags"],
+    )
+
+    parser.add_argument(
+        "--all-releases",
+        help="Path to the _releases.json file",
+    )
+
+    args = parser.parse_args()
+
+    if args.function == "get_revision_to_released_tags":
+        print(
+            json.dumps(
+                (get_revision_to_released_tags(read_json_file(args.all_releases)))
+            )
+        )
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,27 @@
+version: 1
+
+application: Nodejs
+is_chiselled: true
+description: |
+  Node.js is a free, open-source, cross-platform JavaScript runtime
+  environment that lets developers create servers, web apps, command line
+  tools and scripts.
+  This image is a chiselled Node.js rock that only contains the Node.js
+  runtime.
+  needed.
+
+debug:
+  text: |
+    ### Debugging
+
+    To debug the container:
+
+    ```bash
+    docker logs -f nodejs-container
+    ```
+
+    To get an interactive nodejs interpreter:
+
+    ```bash
+    docker exec -it nodejs-container node
+    ```

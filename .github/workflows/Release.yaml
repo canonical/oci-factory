@@ -11,7 +11,7 @@ on:
         description: 'Cache key (to fetch image trigger from cache)'
         required: false
         type: string
-      external_ref_id: #(1)
+      external_ref_id:  # (1)
         description: 'Optional ID for unique run detection'
         required: false
         type: string
@@ -26,7 +26,7 @@ on:
         description: 'Cache key (to fetch image trigger from cache)'
         required: false
         type: string
-           
+
 jobs:
   validate-push-release-request:
     runs-on: ubuntu-22.04
@@ -34,13 +34,21 @@ jobs:
     outputs:
       oci-image-name: ${{ steps.get-image-name.outputs.img-name }}
     steps:
-      - name: ${{ inputs.external_ref_id }} #(2)
+      - name: ${{ inputs.external_ref_id }}  # (2)
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
         
       - uses: actions/checkout@v4
 
+      - name: Validate access to triggered image
+        uses: ./.github/actions/validate-actor
+        if: ${{ github.repository == 'canonical/oci-factory' }}
+        with:
+          admin-only: true
+          image-path: "oci/${{ inputs.oci-image-name }}"
+          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+
       - name: Infer number of image triggers
-        uses: tj-actions/changed-files@v35
+        uses: tj-actions/changed-files@531f5f7d163941f0c1c04e0ff4d8bb243ac4366f
         id: changed-files
         with:
           dir_names: "true"
@@ -67,6 +75,7 @@ jobs:
     needs: [validate-push-release-request]
     outputs:
       gh-releases-matrix: ${{ steps.release-image.outputs.gh-releases-matrix }}
+      release-commit-sha: ${{ steps.release-commit-sha.outputs.release-commit-sha }}
     env:
       IS_PROD: ${{ ! startsWith(inputs.oci-image-name, 'mock-') }}
     steps:
@@ -138,13 +147,21 @@ jobs:
       
       - run: git pull --quiet
 
+      # Commit with actor's GitHub noreply email to pass CLA and keep the privacy of the actor
       - name: Commit oci/${{ inputs.oci-image-name }}/_releases.json
         uses: actions-x/commit@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.ROCKSBOT_TOKEN }}
           branch: ${{ github.ref }}
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: oci/${{ inputs.oci-image-name }}/_releases.json
+          email: '${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com'
+
+      - name: Get commit SHA of _release.json update
+        id: release-commit-sha
+        run: |
+          set -ex
+          echo "release-commit-sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
 
   update-documentation:
@@ -153,6 +170,7 @@ jobs:
     uses: ./.github/workflows/Documentation.yaml
     with:
       oci-image-name: "${{ inputs.oci-image-name }}"
+      release-commit-sha: "${{ needs.do-releases.outputs.release-commit-sha }}"
     secrets: inherit
 
 
@@ -166,9 +184,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-            fetch-depth: 0
-            ref: ${{ matrix.canonical-tag }}
+          fetch-depth: 0
+          ref: ${{ matrix.canonical-tag }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: '*.sbom_preview.spdx.zip'
+          path: sbom
       
+      - name: Unzip SBOM artifacts
+        run: |
+          set -x
+          sbom_target_dir="$(pwd)/sbom"
+          find sbom -type f -name '*.spdx.zip' -exec unzip {} -d ${sbom_target_dir} \;
+
       - uses: dev-drprasad/delete-tag-and-release@v1.0
         # We force delete an existing tag because otherwise we won't get
         # an email notification and the GH release will have the date from when
@@ -192,3 +221,4 @@ jobs:
           name: "${{ matrix.release-name }}"
           tag_name: "${{ matrix.release-name }}"
           token: "${{ secrets.ROCKSBOT_TOKEN }}"
+          files: "sbom/*.sbom_preview.spdx.json"

@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Get updated filenames
-        uses: tj-actions/changed-files@v35
+        uses: tj-actions/changed-files@531f5f7d163941f0c1c04e0ff4d8bb243ac4366f
         id: changed-files
         with:
           json: true
@@ -48,11 +48,11 @@ jobs:
 
       - name: Install dependencies
         continue-on-error: true
-        working-directory: src/workflow-engine/charms/temporal-worker
+        working-directory: tools/workflow-engine/charms/temporal-worker
         run: poetry install
 
       - name: Trigger auto-updates
-        working-directory: src/workflow-engine/charms/temporal-worker/oci_factory/activities/
+        working-directory: tools/workflow-engine/charms/temporal-worker/oci_factory/activities/
         env:
           OS_AUTH_URL: ${{ secrets.SWIFT_OS_AUTH_URL }}
           OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}

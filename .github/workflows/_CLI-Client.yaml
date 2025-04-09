@@ -1,0 +1,37 @@
+name: CLI-Client
+on:
+  push:
+    paths:
+      - "tools/cli-client/**"
+  pull_request:
+    paths:
+      - "tools/cli-client/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go 1.22
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.22
+      - name: Test
+        working-directory: tools/cli-client
+        run: |
+          go test ./...
+
+  build:
+    runs-on: ubuntu-latest
+    name: Snap build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: snapcore/action-build@v1
+        id: snapcraft
+        with:
+          path: tools/cli-client
+      - uses: actions/upload-artifact@v4
+        with:
+          name: snap
+          path: ${{ steps.snapcraft.outputs.snap }}

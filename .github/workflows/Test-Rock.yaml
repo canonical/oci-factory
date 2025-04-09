@@ -1,0 +1,347 @@
+name: Test rock
+run-name: "Test rock - ${{ inputs.oci-image-name }} - ${{ github.ref }}"
+
+on:
+  workflow_call:
+    inputs:
+      # Workflow Parameters
+      oci-archive-name:
+        description: "OCI image artifact name."
+        required: true
+        type: string
+
+      # Individual Test Parameters:
+
+      ## OCI Compliance Test
+      test-oci-compliance:
+        description: "Enable compliance test."
+        default: true
+        type: boolean
+
+      ## Rock black-box Test
+      test-black-box:
+        description: "Enable rock black-box test."
+        default: true
+        type: boolean
+
+      ## Image Efficiency Test
+      test-efficiency:
+        description: "Enable image efficiency test."
+        default: true
+        type: boolean
+
+      ## Vulnerability Test
+      test-vulnerabilities:
+        description: "Enable vulnerability test."
+        default: true
+        type: boolean
+      trivyignore-path:
+        description: "Optional path to .trivyignore file."
+        type: string
+
+      ## Malware Test
+      test-malware:
+        description: "Enable malware test."
+        default: true
+        type: boolean
+
+    secrets:
+      # authentication parameters
+      host-github-token:
+        description: "GitHub token from repository executing this workflow."
+
+env:
+  VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"  # TODO: inherit string from caller
+  TEST_IMAGE_NAME: "test-img"
+  TEST_IMAGE_TAG: "test"
+  SKOPEO_IMAGE: "quay.io/skopeo/stable:v1.15.1"
+  UMOCI_VERSION: "v0.4.7"
+  UMOCI_BINARY: "umoci.amd64"
+  DIVE_IMAGE: "wagoodman/dive:v0.12"
+  TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db,aquasec/trivy-db,ghcr.io/aquasecurity/trivy-db
+  TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db,aquasec/trivy-java-db,ghcr.io/aquasecurity/trivy-java-db
+
+jobs:
+  configure-tests:
+    runs-on: ubuntu-22.04
+    outputs:
+      oci-factory-ref: ${{ steps.workflow-version.outputs.sha }}
+      cache-key: ${{ steps.set-cache.outputs.key }}
+    name: "configure-tests ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
+
+    steps:
+      - name: Get Workflow Version
+        id: workflow-version
+        uses: canonical/get-workflow-version-action@v1
+        with:
+          repository-name: canonical/oci-factory
+          file-name: Test-Rock.yaml
+          github-token: ${{ secrets.host-github-token }}
+
+      - name: Cloning OCI Factory
+        uses: actions/checkout@v4
+        with:
+          repository: canonical/oci-factory
+          ref: ${{ steps.workflow-version.outputs.sha }}
+          fetch-depth: 1
+
+      # download and unpack the image under test, then store it under a common cache key. 
+      # This unpacked image is used in test-oci-compliance, test-black-box and test-malware jobs
+      - name: Download Rock
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.oci-archive-name }}
+
+      - name: Unpack Rock
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $PWD:/workdir -w /workdir \
+            ${{ env.SKOPEO_IMAGE }} \
+            copy oci-archive:${{ inputs.oci-archive-name }} \
+            oci:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}
+
+      - name: Set Cache Key
+        id: set-cache
+        run: |
+          echo "key=${{ github.run_id }}-${{ inputs.oci-archive-name }}"  >> $GITHUB_OUTPUT
+
+      - name: Cache Rock
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.TEST_IMAGE_NAME }}
+          key: ${{ steps.set-cache.outputs.key }}
+
+  test-oci-compliance:
+    runs-on: ubuntu-22.04
+    name: "test-oci-compliance ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
+    needs: [configure-tests]
+    if: inputs.test-oci-compliance
+    steps:
+      - uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.TEST_IMAGE_NAME }}
+          key: ${{ needs.configure-tests.outputs.cache-key }}
+
+      - name: Install Umoci
+        run: |
+          wget https://github.com/opencontainers/umoci/releases/download/${UMOCI_VERSION}/${UMOCI_BINARY}
+          sudo mv ${UMOCI_BINARY} /usr/bin/umoci
+          sudo chmod +x /usr/bin/umoci
+
+      - name: Run Umoci tests
+        run: |
+          sudo umoci unpack --keep-dirlinks \
+            --image ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
+            bundle
+
+          umoci list --layout ${{ env.TEST_IMAGE_NAME }} | grep -w -c ${{ env.TEST_IMAGE_TAG }}
+
+  test-black-box:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04]
+    runs-on: ${{ matrix.os }}
+    name: "test-black-box ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
+    needs: [configure-tests]
+    if: inputs.test-black-box
+    steps:
+      - uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.TEST_IMAGE_NAME }}
+          key: ${{ needs.configure-tests.outputs.cache-key }}
+
+      - name: Copy image to Docker daemon
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $PWD:/workdir -w /workdir \
+            ${{ env.SKOPEO_IMAGE }} \
+            copy oci:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
+            docker-daemon:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}
+
+      - name: Create container
+        run: |
+          docker create ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}
+
+      - name: Test rock
+        run: |
+          set -ex
+          docker run --rm --entrypoint pebble ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
+            help | grep Pebble
+
+  test-efficiency:
+    runs-on: ubuntu-22.04
+    name: "test-efficiency ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
+    needs: [configure-tests]
+    # TODO: remove once https://chat.charmhub.io/charmhub/pl/o5wxpb65ffbfzy7bcmi8kzftzy is fixed
+    continue-on-error: true
+    if: inputs.test-efficiency
+    steps:
+
+      - name: Cloning OCI Factory
+        uses: actions/checkout@v4
+        with:
+          repository: canonical/oci-factory
+          ref: ${{ needs.configure-tests.outputs.oci-factory-ref }}
+          fetch-depth: 1
+
+      - uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.TEST_IMAGE_NAME }}
+          key: ${{ needs.configure-tests.outputs.cache-key }}
+
+      - name: Copy image to Docker daemon
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $PWD:/workdir -w /workdir \
+            ${{ env.SKOPEO_IMAGE }} \
+            copy oci:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
+            docker-daemon:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}
+
+      # The existing Dive GH actions are outdated:
+      # https://github.com/MartinHeinz/dive-action/issues/1
+      # https://github.com/yuichielectric/dive-action/issues/581
+      - name: Dive efficiency test
+        run: |
+          docker run -e CI=true --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $PWD/src/tests/.dive-ci.yaml:/.dive-ci.yaml \
+            ${{ env.DIVE_IMAGE }} \
+            ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} --ci-config /.dive-ci.yaml
+
+  test-vulnerabilities:
+    runs-on: ubuntu-22.04
+    name: "test-vulnerabilities ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
+    needs: [configure-tests]
+    if: inputs.test-vulnerabilities
+    steps:
+
+      - name: Cloning OCI Factory
+        uses: actions/checkout@v4
+        with:
+          repository: canonical/oci-factory
+          ref: ${{ needs.configure-tests.outputs.oci-factory-ref }}
+          fetch-depth: 1
+
+      - name: Download Rock
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.oci-archive-name }}
+
+      - name: Configure Trivy
+        id: configure-trivy
+        run: |
+
+          docker_image="${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}"
+          echo "docker-image=$docker_image" >> "$GITHUB_OUTPUT"
+          source=oci-archive:${{ env.TEST_IMAGE_NAME }} 
+
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $PWD:/workdir -w /workdir \
+            ${{ env.SKOPEO_IMAGE }} \
+            copy oci-archive:${{ inputs.oci-archive-name }} \
+            docker-daemon:$docker_image
+
+          if [ -n "${{ inputs.trivyignore-path }}" ] && [ -f "${{ inputs.trivyignore-path }}" ]
+          then
+            trivyignore_path="${{ inputs.trivyignore-path }}"
+          else
+            # dummy .trivyignore file
+            trivyignore_path=.trivyignore
+            touch $trivyignore_path
+          fi
+          echo "trivyignore-path=$trivyignore_path" >> "$GITHUB_OUTPUT"
+
+          echo "report-name=${{ inputs.oci-archive-name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}" >> "$GITHUB_OUTPUT"
+
+      - name: Scan for vulnerabilities
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          # NOTE: we're allowing images with vulnerabilities to be published
+          ignore-unfixed: true
+          trivyignores: ${{ steps.configure-trivy.outputs.trivyignore-path }}
+          format: "cosign-vuln"
+          severity: "HIGH,CRITICAL"
+          exit-code: "1"
+          # NOTE: pebble is flagged with a HIGH vuln because of golang.org/x/crypto and encoding/gob
+          # CVE-2021-43565, CVE-2022-27191, CVE-2024-34156
+          skip-files: "/bin/pebble,/usr/bin/pebble"
+          # missing ${{ runner.arch }}
+          output: "${{ steps.configure-trivy.outputs.report-name }}"
+          image-ref: "${{ steps.configure-trivy.outputs.docker-image }}"
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: ${{ steps.configure-trivy.outputs.report-name }}
+          path: ${{ steps.configure-trivy.outputs.report-name}}
+
+
+      # We have to walk through the vulnerabilities since trivy does not support outputting the results as Markdown
+      - name: Create markdown content
+        id: create-markdown
+        if: ${{ !cancelled() }}
+        run: |
+          set -x
+
+          vulnerabilities="$(jq -r -c '[
+            try(.scanner.result.Results[])
+            | .Target as $target
+            | .Vulnerabilities
+            | select(. != null)
+            | .[]
+            | {Target: $target, LastModifiedDate: .LastModifiedDate, VulnerabilityID: .VulnerabilityID,
+              PkgName: .PkgName, Severity: .Severity}
+                  ]' < ${{ steps.configure-trivy.outputs.report-name }})"
+
+          num_vulns=$(echo "$vulnerabilities" | jq -r 'length')
+          
+          if [[ $num_vulns -gt 0 ]]; then
+            echo "# Vulnerabilities found for ${{ inputs.oci-archive-name }}" >> $GITHUB_STEP_SUMMARY
+            title="Vulnerabilities found for ${{ inputs.oci-archive-name }}"
+            echo "## $title" >> $GITHUB_STEP_SUMMARY
+            echo "| ID | Target | Severity | Package |" >> $GITHUB_STEP_SUMMARY
+            echo "| -- | ----- | -------- | ------- |" >> $GITHUB_STEP_SUMMARY
+            echo "$vulnerabilities" | jq -r '.[] | "| \(.VulnerabilityID) | /\(.Target) | \(.Severity) | \(.PkgName) |"' >> $GITHUB_STEP_SUMMARY
+          fi
+          
+
+  test-malware:
+    runs-on: ubuntu-22.04
+    name: "test-malware ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
+    needs: [configure-tests]
+    if: inputs.test-malware
+    steps:
+      - name: Cloning OCI Factory
+        uses: actions/checkout@v4
+        with:
+          repository: canonical/oci-factory
+          ref: ${{ needs.configure-tests.outputs.oci-factory-ref }}
+          fetch-depth: 1
+
+      - uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.TEST_IMAGE_NAME }}
+          key: ${{ needs.configure-tests.outputs.cache-key }}
+
+      - name: Install Umoci
+        run: |
+          wget https://github.com/opencontainers/umoci/releases/download/${UMOCI_VERSION}/${UMOCI_BINARY}
+          sudo mv ${UMOCI_BINARY} /usr/bin/umoci
+          sudo chmod +x /usr/bin/umoci
+
+      - name: Unpack image
+        run: |
+          set -ex
+          umoci unpack \
+            --image ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
+            --rootless raw
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - run: pip install -r src/tests/requirements.txt
+
+      - name: Scan for malware
+        run: |
+          ./src/tests/malware_scan.py --filesystem ./raw/rootfs

@@ -16,3 +16,5 @@ CVE-2023-49568
 CVE-2023-49569
 # github.com/cloudflare/circl - CIRCL's Kyber: timing side-channel (kyberslash2)
 GHSA-9763-4f94-gfch
+# golang.org/x/crypto - Applications and libraries which misuse the ServerConfig.PublicKeyCall ...
+CVE-2024-45337

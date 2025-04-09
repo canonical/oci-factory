@@ -16,3 +16,5 @@ CVE-2023-49568
 GHSA-9763-4f94-gfch
 # github.com/opencontainers/runc - runc: file descriptor leak
 CVE-2024-21626
+# golang.org/x/crypto - Applications and libraries which misuse the ServerConfig.PublicKeyCall ...
+CVE-2024-45337

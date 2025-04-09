@@ -6,3 +6,25 @@ CVE-2023-45142
 CVE-2023-39325
 # google.golang.org/grpc - gRPC-Go HTTP/2 Rapid Reset vulnerability
 GHSA-m425-mq94-257g
+# github.com/docker/distribution - distribution/distribution: DoS from malicious API request
+CVE-2023-2253
+# github.com/docker/docker - moby: Encrypted overlay network may be unauthenticated
+CVE-2023-28840
+# github.com/emicklei/go-restful - go-restful: Authorization Bypass Through User-Controlled Key
+CVE-2022-1996
+# golang.org/x/net - golang: net/http: handle server errors after sending GOAWAY
+CVE-2022-27664
+# golang.org/x/net - x/net/http2/h2c: request smuggling
+CVE-2022-41721
+# golang.org/x/net - net/http, golang.org/x/net/http2: avoid quadratic complexity in HPACK decoding
+CVE-2022-41723
+# golang.org/x/text - golang: golang.org/x/text/language: ParseAcceptLanguage takes a long time to parse complex tags
+CVE-2022-32149
+# github.com/docker/docker - moby: Authz zero length regression
+CVE-2024-41110
+# golang.org/x/crypto - Applications and libraries which misuse the ServerConfig.PublicKeyCall ...
+CVE-2024-45337
+# stdlib - encoding/gob: golang: Calling Decoder.Decode on a message which contains deeply nested ...
+CVE-2024-34156
+# golang.org/x/net
+CVE-2024-45338

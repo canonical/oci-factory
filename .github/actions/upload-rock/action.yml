@@ -1,0 +1,64 @@
+name: "Upload Rock"
+description: "Uploads an OCI artifact to a container registry"
+inputs:
+  artifact_name:
+    description: "The name of the artifact to download"
+    required: true
+    type: string
+  name:
+    description: "The name of the image to upload. This should include the namespace if applicable."
+    required: true
+    type: string
+  tags:
+    description: "The tags to use for the image"
+    required: true
+    type: string
+  registry:
+    description: "The container registry URL"
+    required: true
+    type: string
+  username:
+    description: "The username for the container registry"
+    required: true
+  password:
+    description: "The password for the container registry"
+    required: true
+outputs:
+  digest:
+    description: "The digest of the uploaded image"
+    value: ${{ steps.meta.outputs.digest }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download Rock
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.artifact_name }}
+
+    - name: Get Metadata
+      id: meta
+      shell: bash
+      run: |
+        docker run --rm \
+          -v $PWD:/workdir -w /workdir \
+          "quay.io/skopeo/stable:v1.15.1" \
+          inspect oci-archive:${{ inputs.artifact_name }} > metadata.json
+
+        digest="$(cat metadata.json | jq -r .Digest)"
+        echo "digest=$digest" >> $GITHUB_OUTPUT
+
+    - name: Upload Rock to Registry
+      shell: bash
+      run: |
+        for tag in ${{ inputs.tags }}; do
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+          -v $PWD:/workdir -w /workdir \
+          "quay.io/skopeo/stable:v1.15.1" \
+          copy \
+          --dest-username "${{ inputs.username }}" \
+          --dest-password "${{ inputs.password }}" \
+          --multi-arch all \
+          oci-archive:${{ inputs.artifact_name }} \
+          docker://${{ inputs.registry }}/${{ inputs.name }}:$tag
+        done

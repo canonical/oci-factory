@@ -19,8 +19,8 @@ import argparse
 import json
 import yaml
 
-from utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
-from utils.schema.revision_data import RevisionDataSchema
+from .utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
+from .utils.schema.revision_data import RevisionDataSchema
 
 
 def backfill_higher_risks(channels: dict) -> None:

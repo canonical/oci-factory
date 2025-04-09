@@ -5,12 +5,14 @@ on:
   push:
     paths:
       - "oci/*/documentation.y*ml"
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       oci-image-name:
         description: 'OCI image to generate the documentation for'
         required: true
-      external_ref_id: #(1)
+      external_ref_id:  # (1)
         description: 'Optional ID for unique run detection'
         required: false
         type: string
@@ -19,6 +21,10 @@ on:
     inputs:
       oci-image-name:
         description: 'OCI image to generate the documentation for'
+        required: true
+        type: string
+      release-commit-sha:
+        description: 'Commit SHA containing the updated _releases.json'
         required: true
         type: string
 
@@ -30,14 +36,22 @@ jobs:
       oci-img-path: ${{ steps.validate-image.outputs.img-path }}
       oci-img-name: ${{ steps.validate-image.outputs.img-name }}
     steps:
-      - name: ${{ inputs.external_ref_id }} #(2)
+      - name: ${{ inputs.external_ref_id }}  # (2)
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/checkout@v4
 
+      - name: Validate access to triggered image
+        uses: ./.github/actions/validate-actor
+        if: ${{ github.repository == 'canonical/oci-factory' }}
+        with:
+          admin-only: true
+          image-path: "oci/${{ inputs.oci-image-name }}"
+          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+
       - name: Infer images to document
-        uses: tj-actions/changed-files@v35
+        uses: tj-actions/changed-files@531f5f7d163941f0c1c04e0ff4d8bb243ac4366f
         id: changed-files
         if: github.event_name != 'workflow_dispatch' && github.event_name != 'workflow_call'
         with:
@@ -78,6 +92,8 @@ jobs:
       IS_PROD: ${{ ! startsWith(needs.validate-documentation-request.outputs.oci-img-name, 'mock-') }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release-commit-sha }}
       
       - uses: actions/setup-python@v5
         with:
@@ -143,7 +159,7 @@ jobs:
     runs-on: ubuntu-22.04
     name: Notify on failure
     needs: [validate-documentation-request, do-documentation]
-    if: ${{ always() && contains(needs.*.result, 'failure') && github.event_name != 'workflow_dispatch' }}
+    if: ${{ !cancelled() && contains(needs.*.result, 'failure') && github.event_name != 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@v4
 

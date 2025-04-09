@@ -1,4 +1,4 @@
-from utils.schema.triggers import ImageUploadSchema
+from .triggers import ImageUploadSchema
 
 
 class RevisionDataSchema(ImageUploadSchema):
@@ -7,3 +7,4 @@ class RevisionDataSchema(ImageUploadSchema):
     name: str
     path: str
     revision: int
+    track: str

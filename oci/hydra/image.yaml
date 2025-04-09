@@ -1,0 +1,12 @@
+version: 1
+upload:
+  - source: "canonical/hydra-rock"
+    commit: 3c27fb428fad0a339c39355b2f8cd5a477d32014
+    directory: .
+    release:
+      2.2.0-22.04:
+        risks:
+          - stable
+          - candidate
+          - edge
+        end-of-life: "2025-05-01T00:00:00Z"

@@ -1,0 +1,3 @@
+pytest==8.3.5
+-r ../../src/build_rock/configure/requirements.txt
+-r ../../src/image/requirements.txt
