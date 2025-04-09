@@ -200,7 +200,7 @@ jobs:
       # The existing Dive GH actions are outdated:
       # https://github.com/MartinHeinz/dive-action/issues/1
       # https://github.com/yuichielectric/dive-action/issues/581
-      - name: Dive efficiency test
+      - name: Dive lowestEfficiency test
         run: |
           docker run -e CI=true --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
@@ -210,7 +210,7 @@ jobs:
             --ci-config /.dive-ci.yaml \
             --highestUserWastedPercent disabled
 
-      - name: Dive userWastedPercent test
+      - name: Dive highestUserWastedPercent test
         continue-on-error: true
         run: |
           docker run -e CI=true --rm \
