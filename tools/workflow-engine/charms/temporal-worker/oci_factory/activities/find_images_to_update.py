@@ -274,12 +274,6 @@ if __name__ == "__main__":
     ubuntu_release = args.ubuntu_release
     image = args.image_name
 
-    if ubuntu_release == "*" and image == "*":
-        logging.error(
-            "You need to provide either an Ubuntu release or an image name"
-        )
-        sys.exit(1)
-
     logging.info(f"Checking for image {image} to update for release {ubuntu_release}")
 
     # Make sure we can connect to Swift
