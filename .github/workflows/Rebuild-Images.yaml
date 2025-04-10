@@ -29,15 +29,6 @@ jobs:
           continue-on-error: true
           working-directory: tools/workflow-engine/charms/temporal-worker
           run: poetry install
-        
-        - id: image-to-rebuild
-          run: |
-            if [ "${{ github.event.inputs.image-name }}" == "" ]; then
-              echo "No image name provided, skipping rebuild."
-              echo "image-name=*" >> "$GITHUB_OUTPUT"
-            else
-              echo "image-name=${{ github.event.inputs.image-name }}" >> "$GITHUB_OUTPUT"
-            fi
 
         - name: Trigger auto-updates
           working-directory: tools/workflow-engine/charms/temporal-worker/oci_factory/activities/
@@ -48,5 +39,6 @@ jobs:
             OS_PROJECT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
             OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
             GITHUB_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
-          run: poetry run python3 find_images_to_update.py --image-name mock-rock
+          # TODO change the 'mock-rock' to the '*'
+          run: poetry run python3 find_images_to_update.py --image-name ${{ inputs.image-name || 'mock-rock' }}
   
