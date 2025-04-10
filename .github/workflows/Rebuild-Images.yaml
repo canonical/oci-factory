@@ -1,0 +1,51 @@
+# Reuild images daily
+name: Rebuild images
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+    inputs:
+      image-name:
+        description: "Name of the image to rebuild"
+        required: true
+    
+jobs:
+    rebuild-images:
+        runs-on: ubuntu-latest
+        name: Rebuild images
+        steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+    
+        - uses: actions/setup-python@v5
+          with:
+            python-version: "3.x"
+  
+        - name: Setup Poetry
+          uses: abatilo/actions-poetry@v2
+  
+        - name: Install dependencies
+          continue-on-error: true
+          working-directory: tools/workflow-engine/charms/temporal-worker
+          run: poetry install
+        
+        - id: image-to-rebuild
+          run: |
+            if [ "${{ github.event.inputs.image-name }}" == "" ]; then
+              echo "No image name provided, skipping rebuild."
+              echo "image-name=*" >> "$GITHUB_OUTPUT"
+            else
+              echo "image-name=${{ github.event.inputs.image-name }}" >> "$GITHUB_OUTPUT"
+            fi
+
+        - name: Trigger auto-updates
+          working-directory: tools/workflow-engine/charms/temporal-worker/oci_factory/activities/
+          env:
+            OS_AUTH_URL: ${{ secrets.SWIFT_OS_AUTH_URL }}
+            OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+            OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+            OS_PROJECT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
+            OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+            GITHUB_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
+          run: poetry run python3 find_images_to_update.py --image-name mock-rock
+  
