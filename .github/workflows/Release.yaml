@@ -145,7 +145,17 @@ jobs:
             --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
             --ghcr-repo "${{ github.repository_owner }}/oci-factory"
       
-      - run: git stash --quiet && git pull --quiet && git stash pop --quiet
+      # Pull the latest changes to prevent conflicts merging _releases.json
+      - run: git pull --quiet
+
+      - name: Update _releases.json
+        run: |
+          python3 -m src.image.release \
+            --image-trigger oci/${{ inputs.oci-image-name }}/image.yaml \
+            --image-name ${{ inputs.oci-image-name }} \
+            --all-releases oci/${{ inputs.oci-image-name }}/_releases.json \
+            --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
+            --update-releases-json
 
       # Commit with actor's GitHub noreply email to pass CLA and keep the privacy of the actor
       - name: Commit oci/${{ inputs.oci-image-name }}/_releases.json
