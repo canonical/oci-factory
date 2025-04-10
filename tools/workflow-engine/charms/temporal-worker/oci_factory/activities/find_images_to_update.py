@@ -241,7 +241,7 @@ if __name__ == "__main__":
                 else:
                     if release_to:
                         build_and_upload_data["release"] = release_to
-                    uploads[triplet] = build_and_upload_data
+                        uploads[triplet] = build_and_upload_data
 
             uber_img_trigger["upload"] = [
                 trigger for trigger in uploads.values()
