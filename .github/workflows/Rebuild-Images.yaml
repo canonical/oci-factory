@@ -8,6 +8,7 @@ on:
       image-name:
         description: "Name of the image to rebuild"
         required: true
+  push:
     
 jobs:
     rebuild-images:
