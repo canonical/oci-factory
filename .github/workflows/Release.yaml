@@ -145,7 +145,7 @@ jobs:
             --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
             --ghcr-repo "${{ github.repository_owner }}/oci-factory"
       
-      - run: git pull --quiet
+      - run: git stash --quiet && git pull --quiet && git stash pop --quiet
 
       # Commit with actor's GitHub noreply email to pass CLA and keep the privacy of the actor
       - name: Commit oci/${{ inputs.oci-image-name }}/_releases.json
