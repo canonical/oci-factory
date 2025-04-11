@@ -251,6 +251,7 @@ def trigger_image_rebuild():
         return
 
     logging.info(f"Dispatched image rebuild workflow for {image}")
+    time.sleep(2)
 
 
 if __name__ == "__main__":
