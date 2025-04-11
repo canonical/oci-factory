@@ -1,0 +1,42 @@
+version: 1
+# --- OVERVIEW INFORMATION ---
+application: blackbox-exporter
+description: >
+  Blackbox exporter is a Prometheus exporter that allows to perform blackbox
+  probes using a multitude of protocols, including HTTP(s), DNS, TCP and ICMP.
+
+  Read more in the [official documentation](https://github.com/prometheus/blackbox_exporter)
+
+  Please note that this repository holds a rock instead of a Dockerfile-based image.
+  As such, the entrypoint is Pebble.
+  Read more in the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 9115:9115
+  access: Access your Blackbox Exporter instance at `http://localhost:9115` 
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone.
+  - type: -p
+    value: '9115:9115'
+    description: Expose Blackbox Exporter on `localhost:9115`.
+  - type: -v 
+    value: "/path/to/config.yaml:/etc/blackbox_exporter/config.yml"
+    description: Local configuration file `config.yaml`.
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+
+    ```bash
+    docker logs -f blackbox-exporter-container
+    ```
+
+    To get an interactive shell:
+
+    ```bash
+    docker exec -it blackbox-exporter-container /bin/bash
+    ```
