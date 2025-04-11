@@ -23,7 +23,7 @@ parameters:
     value: '9115:9115'
     description: Expose Blackbox Exporter on `localhost:9115`.
   - type: -v 
-    value: "/path/to/config.yaml:/etc/blackbox_exporter/config.yaml"
+    value: "/path/to/config.yaml:/etc/blackbox_exporter/config.yml"
     description: Local configuration file `config.yaml`.
 debug:
   text: |
