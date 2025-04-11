@@ -4,11 +4,11 @@ application: litestream
 description: >
   Litestream is a standalone disaster recovery tool for SQLite. It runs as a background
   process and safely replicates changes incrementally to another file or S3.
-  Read more on the [official documentation](https://litestream.io/)
+  Read more in the [official documentation](https://litestream.io/)
 
-  Please note that this repository is now holding a rock, not a
-  Dockerfile-based image. As such the entrypoint is now Pebble. Read more on
-  the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
+  Please note that this repository holds a rock instead of a Dockerfile-based image.
+  As such, the entrypoint is Pebble.
+  Read more in the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
 # --- USAGE INFORMATION ---
 docker:
 - type: -e
