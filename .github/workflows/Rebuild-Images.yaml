@@ -1,4 +1,4 @@
-# Reuild images daily
+# Rebuild images daily
 name: Rebuild images
 on:
   schedule:

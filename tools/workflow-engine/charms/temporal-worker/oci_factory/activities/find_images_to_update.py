@@ -311,10 +311,10 @@ if __name__ == "__main__":
 
         # Get the extracted repo's path
         repo = glob.glob(str(temp_dir).rstrip("/") + "/*")[0].rstrip("/")
-        logging.info(f"Extrated OCI Factory repo to {repo}")
+        logging.info(f"Extracted OCI Factory repo to {repo}")
         oci_imgs_path = repo + "/oci"
 
-        images_to_check = [os.listdir(oci_imgs_path) if image == "*" else image]
+        images_to_check = os.listdir(oci_imgs_path) if image == "*" else [image]
 
         for image in images_to_check:
             logging.info(f"#### Checking if {image} depends on release {ubuntu_release}")
