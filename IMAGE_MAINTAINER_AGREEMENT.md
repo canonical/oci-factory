@@ -171,6 +171,8 @@ and stating:
 - **if** the Ubuntu Rock is based on other upstream source code, it **must** also include a security manifest. Currently, there is no convention for what this security manifest should look like. You **must** reach out to the Security team and discuss this on a case per case basis. As an example, the (now deprecated) [ubuntu/cortex](https://hub.docker.com/r/ubuntu/cortex) image [produces](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/utils/tree/golang-manifest-builder.py) this custom security
 [manifest](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/cortex/tree/oci/Dockerfile.ubuntu?h=1.7-21.04#n58).
 
+Finally, for security monitoring to become fully enabled, revisions/tags must exist for the Rock on https://hub.docker.com/u/ubuntu.
+
 ### Disable security monitoring
 
 To disable security monitoring for an Ubuntu Rock, the Maintainer must:
