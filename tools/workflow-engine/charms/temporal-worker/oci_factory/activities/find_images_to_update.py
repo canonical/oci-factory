@@ -27,7 +27,8 @@ import requests
 import swiftclient
 import yaml
 
-
+# TODO: 
+# - Future improvement: merge the functions below with similar code in temporal worker into its own module.
 def find_released_revisions(releases_json: dict) -> list:
     """Given the contents of a _release.json file,
     find the image revision number that are currently released"""
