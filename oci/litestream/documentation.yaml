@@ -10,13 +10,13 @@ description: >
   As such, the entrypoint is Pebble.
   Read more in the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
 # --- USAGE INFORMATION ---
-docker:
-- type: -e
-  value: 'TZ=UTC'
-  description: Timezone.
-- type: -v
-  value: "/path/to/config.yaml:/etc/litestream.yml"
-  description: Local configuration file `config.yaml`.
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone.
+  - type: -v
+    value: "/path/to/config.yaml:/etc/litestream.yml"
+    description: Local configuration file `config.yaml`.
 debug:
   text: |
     ### Debugging
