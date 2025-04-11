@@ -1,0 +1,18 @@
+version: 1
+upload:
+  - source: canonical/litestream
+    commit: 8a4d9a148edf925579a83323a1eafd8ca98fb12c
+    directory: 0.3.13
+    release:
+      0-24.04:
+        end-of-life: '2025-07-11T00:00:00Z'
+        risks:
+          - stable
+      0.3-24.04:
+        end-of-life: '2025-07-11T00:00:00Z'
+        risks:
+          - stable
+      0.3.13-24.04:
+        end-of-life: '2025-04-10T00:00:00Z'
+        risks:
+          - stable
