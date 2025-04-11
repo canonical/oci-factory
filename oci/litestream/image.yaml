@@ -12,7 +12,4 @@ upload:
         end-of-life: '2025-07-11T00:00:00Z'
         risks:
           - stable
-      0.3.13-24.04:
-        end-of-life: '2025-04-10T00:00:00Z'
-        risks:
-          - stable
+
