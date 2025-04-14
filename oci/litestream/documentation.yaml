@@ -10,6 +10,7 @@ description: >
   As such, the entrypoint is Pebble.
   Read more in the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
 # --- USAGE INFORMATION ---
+docker:
 parameters:
   - type: -e
     value: 'TZ=UTC'
