@@ -42,7 +42,7 @@ runs:
       run: |
         docker run --rm \
           -v $PWD:/workdir -w /workdir \
-          "quay.io/skopeo/stable:v1.15.1" \
+          "quay.io/skopeo/stable:v1.18.0" \
           inspect oci-archive:${{ inputs.artifact_name }} > metadata.json
 
         digest="$(cat metadata.json | jq -r .Digest)"
@@ -54,7 +54,7 @@ runs:
         for tag in ${{ inputs.tags }}; do
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
           -v $PWD:/workdir -w /workdir \
-          "quay.io/skopeo/stable:v1.15.1" \
+          "quay.io/skopeo/stable:v1.18.0" \
           copy \
           --dest-username "${{ inputs.username }}" \
           --dest-password "${{ inputs.password }}" \
