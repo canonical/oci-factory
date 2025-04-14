@@ -1,0 +1,34 @@
+version: 1
+# --- OVERVIEW INFORMATION ---
+application: litestream
+description: >
+  Litestream is a standalone disaster recovery tool for SQLite. It runs as a background
+  process and safely replicates changes incrementally to another file or S3.
+  Read more in the [official documentation](https://litestream.io/)
+
+  Please note that this repository holds a rock instead of a Dockerfile-based image.
+  As such, the entrypoint is Pebble.
+  Read more in the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
+# --- USAGE INFORMATION ---
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone.
+  - type: -v
+    value: "/path/to/config.yaml:/etc/litestream.yml"
+    description: Local configuration file `config.yaml`.
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+
+    ```bash
+    docker logs-f <litestream-container>
+    ```
+
+    To get an interactive shell:
+
+    ```bash
+    docker exec -it <litestream-container> /bin/bash
+    ```

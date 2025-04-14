@@ -1,0 +1,10 @@
+version: 1
+upload:
+  - source: canonical/litestream-rock
+    commit: c45ee0f4d67638311aafa9671a87fbbc2b8ae369
+    directory: 0.4.0-beta.2
+    release:
+      0.4.0-beta.2-24.04:
+        end-of-life: '2025-04-13T00:00:00Z'
+        risks:
+          - stable
