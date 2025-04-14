@@ -13,6 +13,6 @@ upload:
         risks:
           - stable
       4.4.0-24.04:
-        end-of-life: '2025-04-13T00:00:00Z'
+        end-of-life: '2025-04-16T00:00:00Z'
         risks:
           - stable
