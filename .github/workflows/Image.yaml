@@ -575,9 +575,8 @@ jobs:
     runs-on: ubuntu-22.04
     name: Notify
     needs:
-      [prepare-build, build-rock, test-rock, prepare-upload, upload,
-      prepare-releases, release, generate-provenance]
-    if: ${{ always() && contains(needs.*.result, 'failure') && github.event_name != 'pull_request' }}
+      [prepare-build, build-rock, test-rock, upload, prepare-releases, generate-provenance]
+    if: ${{ always() && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) && github.event_name != 'pull_request' }}
     steps:
       - uses: actions/checkout@v4
 
