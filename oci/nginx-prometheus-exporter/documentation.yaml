@@ -11,14 +11,14 @@ description: >
 docker:
   parameters:
     - -p 9113:9113
-  access: The metrics endpoint is available at `http://localhost:9113/metrics` 
+  access: Expose the metrics endpoint at `http://localhost:9113/metrics` 
 parameters:
   - type: -e
     value: 'TZ=UTC'
     description: Timezone.
   - type: -p
     value: '9113:9113'
-    description: Expose the metrics endpoint on `localhost:9113/metrics`.
+    description: Expose the metrics endpoint at `http://localhost:9113/metrics`.
 debug:
   text: |
     ### Debugging
