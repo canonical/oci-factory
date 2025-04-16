@@ -31,4 +31,3 @@ debug:
     ```bash
     docker exec -it node-exporter-container /bin/bash
     ```
-
