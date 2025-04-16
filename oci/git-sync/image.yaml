@@ -1,7 +1,7 @@
 version: 1
 upload:
   - source: canonical/git-sync-rock
-    commit: 41c4a2798ee043bb2b2946ce95815f8abc75bd51
+    commit: e87e36a96b36d40a15af35451d96fd748d9896cb
     directory: 4.4.0
     release:
       4-24.04:
