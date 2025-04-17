@@ -4,3 +4,6 @@ notify:
     - data-platform@lists.launchpad.net
   mattermost-channels:
     - wxppdtg4obdg9csp9wxnqs1wqw  # alerts on DataPlatform OCI channel
+
+maintainers:
+  -  canonical-data-platform-bot
