@@ -6,4 +6,4 @@ notify:
     - wxppdtg4obdg9csp9wxnqs1wqw  # alerts on DataPlatform OCI channel
 
 maintainers:
-  -  canonical-data-platform-bot
+  - canonical-data-platform-bot
