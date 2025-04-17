@@ -1,7 +1,0 @@
-# Upstream CVEs
-
-
-github.com/golang-jwt/jwt/v4 - jwt-go allows excessive memory allocation during header parsing
-# no code path in v4.4.0 calls this vulnerability
-CVE-2025-30204	
-
