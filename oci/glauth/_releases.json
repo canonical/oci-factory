@@ -1,8 +1,8 @@
 {
     "2-22.04": {
-        "end-of-life": "2025-07-15T00:00:00Z",
+        "end-of-life": "2025-07-22T00:00:00Z",
         "stable": {
-            "target": "25"
+            "target": "26"
         },
         "candidate": {
             "target": "2-22.04_stable"
