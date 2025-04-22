@@ -25,7 +25,7 @@ debug:
     
     To debug the container:
     ```bash
-    docker logs -f node-exporter-container
+    docker exec node-exporter-container pebble logs node-exporter
     ```
     To get an interactive shell:
     ```bash
