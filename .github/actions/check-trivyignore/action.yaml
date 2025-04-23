@@ -35,5 +35,5 @@ runs:
               then
               echo "::notice file=${{ inputs.trivyignores }},line=${line}::$CVE not present anymore, can be safely removed."
               fi
-            done < .trivyignore
+            done < ${{ inputs.trivyignores }}
           fi
