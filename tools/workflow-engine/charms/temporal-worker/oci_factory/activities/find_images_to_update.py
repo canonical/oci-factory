@@ -235,7 +235,7 @@ def trigger_image_rebuild():
             "oci-image-name": image,
             "b64-image-trigger": uber_img_trigger_b64.decode(),
             "upload": True,
-            "external_ref_id": f"workflow-engine-{image}-{int(time.time())}",
+            "external_ref_id": f"{external_ref_id_prefix}-{image}-{int(time.time())}",
         },
     }
     wf_dispatch_url = str(
@@ -272,9 +272,15 @@ if __name__ == "__main__":
         help="The image name to check for updates",
         default="*",
     )
+    parser.add_argument(
+        "--ext-ref-prefix",
+        help="The prefix to use for the external reference ID",
+        default="workflow-engine",
+    )
     args = parser.parse_args()
     ubuntu_release = args.ubuntu_release
     image = args.image_name
+    external_ref_id_prefix = args.ext_ref_prefix
 
     logging.info(f"Checking for image {image} to update for release {ubuntu_release}")
 

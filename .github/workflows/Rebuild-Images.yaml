@@ -39,5 +39,7 @@ jobs:
             OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
             GITHUB_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
           # TODO change the 'mock-rock' to the '*'
-          run: poetry run python3 find_images_to_update.py --image-name ${{ inputs.image-name || 'mock-rock' }}
+          run: |
+            poetry run python3 find_images_to_update.py --image-name ${{ inputs.image-name || 'mock-rock' }} \
+                                                        --ext-ref-prefix daily-rebuild
   
