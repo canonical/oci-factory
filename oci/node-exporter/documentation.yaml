@@ -1,0 +1,33 @@
+version: 1
+# --- OVERVIEW INFORMATION ---
+application: node-exporter
+description: >
+  Node-exporter exposes machine metrics in Prometheus format.
+  Read more in the [official documentation](https://github.com/prometheus/node_exporter)
+  Please note that this repository holds a rock instead of a Dockerfile-based image.
+  As such, the entrypoint is Pebble.
+  Read more in the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 9100:9100
+  access: The metrics endpoint is available at `http://localhost:9100/metrics` 
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone.
+  - type: -p
+    value: '9100:9100'
+    description: Expose the metrics endpoint on `localhost:9100/metrics`.
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+    ```bash
+    docker exec node-exporter-container pebble logs node-exporter
+    ```
+    To get an interactive shell:
+    ```bash
+    docker exec -it node-exporter-container /bin/bash
+    ```
