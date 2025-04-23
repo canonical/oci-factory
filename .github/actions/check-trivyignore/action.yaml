@@ -1,6 +1,7 @@
 name: Check Trivyignore
 description: 'Check if the trivyignore file is up to date'
 # This action assumes that trivy is already set up in the previous steps
+# Reference https://github.com/canonical/operator-workflows/blob/c68a31ba2c953765654b2c04b6a760b65f9bfe83/.github/workflows/integration_test.yaml#L305
 
 inputs:
   image-ref:
@@ -32,7 +33,7 @@ runs:
               line=$(( line + 1 ))
               if [[ "$output" != *"$CVE"* ]] && [[ ! "$CVE" =~ ^#.* ]]
               then
-              echo "::notice file=.trivyignore,line=${line}::$CVE not present anymore, can be safely removed."
+              echo "::notice file=${{ inputs.trivyignores }},line=${line}::$CVE not present anymore, can be safely removed."
               fi
             done < .trivyignore
           fi
