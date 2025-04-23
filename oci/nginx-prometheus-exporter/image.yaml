@@ -1,0 +1,18 @@
+version: 1
+upload:
+  - source: canonical/nginx-prometheus-exporter-rock
+    commit: 52932167227c9e4b6441b0777625f19db517d17a
+    directory: 1.4.1
+    release:
+      1-24.04:
+        end-of-life: '2025-07-14T00:00:00Z'
+        risks:
+          - stable
+      1.4-24.04:
+        end-of-life: '2025-07-14T00:00:00Z'
+        risks:
+          - stable
+      1.4.1-24.04:
+        end-of-life: '2025-04-16T00:00:00Z'
+        risks:
+          - stable
