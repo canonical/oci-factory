@@ -22,7 +22,7 @@ runs:
     - name: "Check unnecessary trivyignore entries"
       shell: bash
       run: |
-        if [ -f "${{ inputs.trivyignores }}"" ]
+        if [ -f "${{ inputs.trivyignores }}" ]
           then
             output=$(trivy image ${{ inputs.image-ref }} --severity ${{ inputs.severity }} -q -f json --ignorefile "" --skip-files ${{ inputs.skip-files }} \
                       | jq -r '.Results[].Vulnerabilities[].VulnerabilityID' 2>/dev/null || echo "No vulnerabilities found")
