@@ -1,7 +1,7 @@
 name: Check Trivyignore
 description: 'Check if the trivyignore file is up to date'
 # This action assumes that trivy is already set up in the previous steps
-# Reference https://github.com/canonical/operator-workflows/blob/c68a31ba2c953765654b2c04b6a760b65f9bfe83/.github/workflows/integration_test.yaml#L305
+# Reference: https://github.com/canonical/operator-workflows/blob/c68a31ba2c953765654b2c04b6a760b65f9bfe83/.github/workflows/integration_test.yaml#L305
 
 inputs:
   image-ref:
