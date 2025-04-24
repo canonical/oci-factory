@@ -25,7 +25,7 @@ debug:
     
     To debug the container:
     ```bash
-    docker logs -f git-sync-container
+    docker exec git-sync-container pebble logs git-sync
     ```
     To get an interactive shell:
     ```bash
