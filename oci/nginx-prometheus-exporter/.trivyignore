@@ -1,0 +1,5 @@
+# Upstream CVEs
+
+# Potential denial of service in golang.org/x/crypto
+# only applies to ssh module, which is not in use as shown by govulncheck 
+CVE-2025-22869
