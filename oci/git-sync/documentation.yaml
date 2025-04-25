@@ -1,0 +1,33 @@
+version: 1
+# --- OVERVIEW INFORMATION ---
+application: git-sync
+description: >
+  Git-sync is a go binary that synchronizes a local clone of a git repository.
+  Read more in the [official documentation](https://github.com/kubernetes/git-sync)
+  Please note that this repository holds a rock instead of a Dockerfile-based image.
+  As such, the entrypoint is Pebble.
+  Read more in the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 1234:1234
+  access: The HTTP API is available at `http://localhost:1234` 
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone.
+  - type: -p
+    value: '1234:1234'
+    description: Expose the git sync HTTP API on `localhost:1234`.
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+    ```bash
+    docker exec git-sync-container pebble logs git-sync
+    ```
+    To get an interactive shell:
+    ```bash
+    docker exec -it git-sync-container /bin/bash
+    ```
