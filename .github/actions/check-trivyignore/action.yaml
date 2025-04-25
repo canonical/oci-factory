@@ -1,0 +1,58 @@
+name: Check Trivyignore
+description: 'Check if the trivyignore file is up to date'
+# Reference: https://github.com/canonical/operator-workflows/blob/c68a31ba2c953765654b2c04b6a760b65f9bfe83/.github/workflows/integration_test.yaml#L305
+
+inputs:
+  image-ref:
+    description: 'The image to be scanned'
+    required: true
+  trivyignores:
+    description: 'The path to the trivyignore file'
+    required: true
+  severity:
+    description: 'The severity level to be scanned'
+    default: 'HIGH,CRITICAL'
+  skip-files:
+    description: 'The files to be skipped'
+    default: '/bin/pebble,/usr/bin/pebble'
+
+runs:
+  using: "composite" 
+  steps:
+    - name: "Detect trivy installation"
+      id: detect-trivy
+      shell: bash
+      run: |
+        if ! command -v trivy &> /dev/null
+        then
+          echo "trivy-installed=false" >> $GITHUB_OUTPUT
+        else
+          echo "trivy-installed=true" >> $GITHUB_OUTPUT
+        fi
+
+    - name: "Install trivy if not present"
+      if: ${{ steps.detect-trivy.outputs.trivy-installed == 'false' }}
+      uses: aquasecurity/setup-trivy@v0.2.1
+
+    - name: "Check unnecessary trivyignore entries"
+      shell: bash
+      run: |
+        if [ -f "${{ inputs.trivyignores }}" ]
+          then
+            json_output=$(trivy image ${{ inputs.image-ref }} --severity ${{ inputs.severity }} -q \
+                      -f json --ignorefile "" --skip-files ${{ inputs.skip-files }} --exit-code 0)
+            output=$(echo $json_output | jq -r '.Results[].Vulnerabilities[].VulnerabilityID' \
+                    2>/dev/null \
+                    || echo "No vulnerabilities found")
+            line=0
+            while read CVE;
+            do
+              line=$(( line + 1 ))
+              if [[ "$output" != *"$CVE"* && ! "$CVE" =~ ^#.* ]]
+              then
+              echo "::notice file=${{ inputs.trivyignores }},line=${line}::$CVE not present anymore, can be safely removed."
+              fi
+            done < ${{ inputs.trivyignores }}
+          else
+            echo "::warning::File ${{ inputs.trivyignores }} not found."
+          fi

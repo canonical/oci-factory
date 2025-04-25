@@ -318,6 +318,12 @@ jobs:
             echo "$vulnerabilities" | jq -r '.[] | "| \(.VulnerabilityID) | /\(.Target) | \(.Severity) | \(.PkgName) |"' >> $GITHUB_STEP_SUMMARY
           fi
           
+      - name: Identify unncessary trivyignore entries
+        if: ${{ !cancelled() }}
+        uses: ./.github/actions/check-trivyignore
+        with:
+          image-ref: "${{ steps.configure-trivy.outputs.docker-image }}"
+          trivyignores: ${{ steps.configure-trivy.outputs.trivyignore-path }}
 
   test-malware:
     runs-on: ubuntu-22.04
