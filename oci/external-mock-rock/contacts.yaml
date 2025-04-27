@@ -1,0 +1,18 @@
+# Who and how to notify about the build progress.
+# opt, type: Dict[str, List[str]]
+notify:
+  # opt, type: List[str]
+  emails:
+    - rocks-dev@lists.canonical.com
+
+  # These are channel IDs and not names.
+  # opt, type: List[str]
+  mattermost-channels:
+    - fbdezwkcxpfofpysjore1wpfoc
+
+maintainers:
+  - cjdcordeiro
+  - clay-lake
+  - rebornplusplus
+  - zhijie-yang
+  - renovate[bot]
