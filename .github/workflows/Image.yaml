@@ -132,7 +132,7 @@ jobs:
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     steps:
       - name: Clone GitHub image repository
-        uses: actions/checkout@v4
+        uses: ./.github/actions/checkout
         with:
           repository: ${{ matrix.source }}
           ref: ${{ matrix.commit }}
