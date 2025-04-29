@@ -94,6 +94,39 @@ jobs:
           OCIDoc.OCIDocumentationData.read_documentation_yaml("${{ matrix.filename }}")
           '
 
+  validate-registry-has-repo:
+    runs-on: ubuntu-latest
+    name: Validate registry has repo
+    needs: [get-submitted-files]
+    permissions:
+      pull-requests: write
+    env:
+      IS_PROD: ${{ ! startsWith(needs.get-submitted-files.outputs.image-name, 'mock-') }}
+      COMMENT_TAG: "repo-not-exist"
+    steps:
+      - name: Validate registry has repo
+        id: validate-registry-has-repo
+        env:
+          NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu' || 'rocksdev' }}
+        run: |
+          DOCKER_REPO_EXISTS='true'
+          if curl -s https://hub.docker.com/v2/repositories/$NAMESPACE/$(basename ${{ needs.get-submitted-files.outputs.image-name }}) \
+            | grep "httperror 404" ; then
+            DOCKER_REPO_EXISTS='false'
+          fi
+          echo "docker-repo-exists=${DOCKER_REPO_EXISTS}" >> "$GITHUB_OUTPUT"
+
+      - name: Comment PR if repo does not exist
+        if: ${{ steps.validate-registry-has-repo.outputs.docker-repo-exists == 'false' }}
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            The Docker repository for this image does not exist yet. Merging of this repo is blocked.
+            _Run ID: **${{ github.run_id }}** ; Attempt: **${{ github.run_attempt }}**_
+
+            See [logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          reactions: eyes
+          comment_tag: ${{ env.COMMENT_TAG }}
 
   update-pr:
     runs-on: ubuntu-22.04
