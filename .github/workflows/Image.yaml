@@ -326,6 +326,10 @@ jobs:
           echo "Detected architectures: ${arches}"
           echo "arches='${arches}'" >> "$GITHUB_OUTPUT"
 
+      - name: Setup SSBOM
+        run: |
+          go install github.com/canonical/ssbom/cmd/ssbom@latest
+
       - name: Generate SBOMs
         id: generate-sboms
         run: |
@@ -342,11 +346,17 @@ jobs:
 
             skopeo --override-arch $arch copy \
               oci-archive:${{ steps.rename-oci-archive.outputs.name }} \
-              oci-archive:${{ steps.rename-oci-archive.outputs.name }}.${arch}
+              oci:${{ steps.rename-oci-archive.outputs.name }}.${arch}
 
-            syft oci-archive:${{ steps.rename-oci-archive.outputs.name }}.${arch} \
+            syft oci-dir:${{ steps.rename-oci-archive.outputs.name }}.${arch} \
               -o spdx-json \
               --file ${{ steps.rename-oci-archive.outputs.name }}.${arch}.sbom_preview.spdx.json
+
+            if [[ -f  "${{ steps.rename-oci-archive.outputs.name }}.${arch}/var/lib/chisel/manifest.wall" ]]; then
+              ssbom ${{ steps.rename-oci-archive.outputs.name }}.${arch} \
+                    ${{ steps.rename-oci-archive.outputs.name }}.${arch}.chiselled.sbom_preview.spdx.json
+            fi
+
           done
 
           all_sboms_zip="${{ steps.rename-oci-archive.outputs.name }}.sbom_preview.spdx.zip"
