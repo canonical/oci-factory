@@ -18,9 +18,9 @@ release:
     beta: 1.0-22.04_beta
 
 upload:
-  - source: "https://codeberg.org/clay-lake/rocks-toolbox.git"
+  - source: "https://codeberg.org/clay-lake/external-mock-rock.git"
     commit: 06863a443519f644272eddfc45e013de8dbe0cb2
-    directory: mock_rock/1.0
+    directory: external_mock_rock/1.0
     release:
       1.0-22.04:
         end-of-life: "2024-05-01T00:00:00Z"
@@ -28,9 +28,9 @@ upload:
           - candidate
           - edge
           - beta
-  - source: "https://codeberg.org/clay-lake/rocks-toolbox.git"
+  - source: "https://codeberg.org/clay-lake/external-mock-rock.git"
     commit: 06863a443519f644272eddfc45e013de8dbe0cb2
-    directory: mock_rock/1.1
+    directory: external_mock_rock/1.1
     release:
       1.1-22.04:
         end-of-life: "2030-05-01T00:00:00Z"
@@ -44,9 +44,9 @@ upload:
           - candidate
           - edge
           - beta
-  - source: "https://codeberg.org/clay-lake/rocks-toolbox.git"
+  - source: "https://codeberg.org/clay-lake/external-mock-rock.git"
     commit: 06863a443519f644272eddfc45e013de8dbe0cb2
-    directory: mock_rock/1.2
+    directory: external_mock_rock/1.2
     release:
       1.2-22.04:
         end-of-life: "2030-05-01T00:00:00Z"
