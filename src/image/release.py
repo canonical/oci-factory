@@ -17,7 +17,12 @@ import yaml
 
 import src.shared.release_info as shared
 
+from ..shared.github_output import GithubStepSummary
 from .utils.encoders import DateTimeEncoder
+from .utils.eol_utils import (
+    generate_base_eol_exceed_warning,
+    track_eol_exceeds_base_eol,
+)
 from .utils.schema.triggers import KNOWN_RISKS_ORDERED, ImageSchema
 
 # generate single date for consistent EOL checking
@@ -104,6 +109,26 @@ def remove_eol_tags(tag_to_revision, all_releases):
             tag = all_releases[track][risk]["target"]
 
     return filtered_tag_to_revision
+
+
+def find_tracks_has_eol_exceeding_base_eol(all_releases):
+    """Finds all tracks that have EOL dates exceeding the base EOL date."""
+    pattern = r".+-\d{2}\.\d{2}$"
+
+    tracks = []
+
+    # find all tracks with EOL dates
+    tracks_with_eol = {
+        track: release["end-of-life"]
+        for track, release in all_releases.items()
+        if "end-of-life" in release and re.match(pattern, track)
+    }
+
+    for track, track_eol in tracks_with_eol.items():
+        if eols := track_eol_exceeds_base_eol(track, track_eol):
+            tracks.append(eols)
+
+    return tracks
 
 
 def main():
@@ -241,6 +266,13 @@ def main():
     # remove all EOL tags to be released
     filtered_tag_to_revision = remove_eol_tags(tag_to_revision, all_releases)
 
+    tracks_eol_exceeding_base_eol = find_tracks_has_eol_exceeding_base_eol(all_releases)
+    if tracks_eol_exceeding_base_eol:
+        title, text = generate_base_eol_exceed_warning(tracks_eol_exceeding_base_eol)
+        title = f"## Release: {title}"
+        with GithubStepSummary() as summary:
+            summary.write(title, text)
+
     # we now need to add tag aliases
     release_tags = filtered_tag_to_revision.copy()
     for base_tag, revision in tag_to_revision.items():
@@ -287,13 +319,15 @@ def main():
 
             for tag in tags:
                 gh_release_info = {}
-                gh_release_info["canonical-tag"] = f"{img_name}_{revision_track}_{revision}"
+                gh_release_info["canonical-tag"] = (
+                    f"{img_name}_{revision_track}_{revision}"
+                )
                 gh_release_info["release-name"] = f"{img_name}_{tag}"
                 gh_release_info["name"] = f"{img_name}"
                 gh_release_info["revision"] = f"{revision}"
                 gh_release_info["channel"] = f"{tag}"
                 github_tags.append(gh_release_info)
-        
+
         matrix = {"include": github_tags}
 
         with open(os.environ["GITHUB_OUTPUT"], "a", encoding="UTF-8") as gh_out:
@@ -307,6 +341,7 @@ def main():
 
         with open(args.all_releases, "w", encoding="UTF-8") as fd:
             json.dump(all_releases, fd, indent=4, cls=DateTimeEncoder)
+
 
 if __name__ == "__main__":
     main()

@@ -14,8 +14,14 @@ import pydantic
 import yaml
 from git import Repo
 
-from ..shared.github_output import GithubOutput
+from ..shared.github_output import GithubOutput, GithubStepSummary
 from ..uploads.infer_image_track import get_base_and_track
+from .utils.eol_utils import (
+    calculate_base_eol,
+    generate_base_eol_exceed_warning,
+    is_track_eol,
+    track_eol_exceeds_base_eol,
+)
 from .utils.schema.revision_data import RevisionDataSchema
 from .utils.schema.triggers import ImageSchema
 
@@ -45,6 +51,13 @@ parser.add_argument(
 parser.add_argument(
     "--infer-image-track",
     help="Infer the track corresponding to the releases",
+    action="store_true",
+    default=False,
+)
+
+parser.add_argument(
+    "--warn-image-eol-exceeds-base-eol",
+    help="Warn if the end-of-life date exceeds the LTS date",
     action="store_true",
     default=False,
 )
@@ -79,20 +92,6 @@ def validate_image_trigger(data: dict) -> None:
         raise TypeError("image.yaml data cannot be loaded into a dictionary")
 
     _ = ImageSchema(**data)
-
-
-def is_track_eol(track_value: str, track_name: str | None = None) -> bool:
-    """Test if track is EOL, or still valid. Log warning if track_name is provided."""
-    eol_date = datetime.strptime(
-        track_value["end-of-life"],
-        "%Y-%m-%dT%H:%M:%SZ",
-    ).replace(tzinfo=timezone.utc)
-    is_eol = eol_date < datetime.now(timezone.utc)
-
-    if is_eol and track_name is not None:
-        logging.warning(f'Removing EOL track "{track_name}", EOL: {eol_date}')
-
-    return is_eol
 
 
 def filter_eol_tracks(build: dict[str, Any]) -> dict[str, Any]:
@@ -209,6 +208,19 @@ def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: 
     return _builds
 
 
+def find_eol_exceed_base_eol(builds: list[dict[str, Any]]):
+    """Check if any of the builds have an EOL date that exceeds the EOL date of the base image."""
+    tracks_eol_exceed_base_eol = []
+    for build in builds:
+        if "release" in build:
+            for track, track_value in build["release"].items():
+                if eols := track_eol_exceeds_base_eol(
+                    track, track_value["end-of-life"]
+                ):
+                    tracks_eol_exceed_base_eol.append(eols)
+    return tracks_eol_exceed_base_eol
+
+
 def main():
     """Executed when script is called directly."""
     args = parser.parse_args()
@@ -221,6 +233,17 @@ def main():
 
     # inject additional meta data into builds
     builds = inject_metadata(builds, args.next_revision, args.oci_path)
+
+    # check if any of the builds have an EOL date that exceeds the EOL date of the base image
+    if args.warn_image_eol_exceeds_base_eol:
+        tracks_eol_exceed_base_eol = find_eol_exceed_base_eol(builds)
+        if tracks_eol_exceed_base_eol:
+            title, text = generate_base_eol_exceed_warning(
+                tracks_eol_exceed_base_eol
+            )
+            title = f"## Image: {title}"
+            with GithubStepSummary() as summary:
+                summary.write(title, text)
 
     # remove any builds without valid tracks
     builds = filter_eol_builds(builds)
