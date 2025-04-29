@@ -14,7 +14,7 @@ import pydantic
 import yaml
 from git import Repo
 
-from ..shared.github_output import GithubOutput
+from ..shared.github_output import GithubOutput, GithubStepSummary
 from ..uploads.infer_image_track import get_base_and_track
 from .utils.schema.revision_data import RevisionDataSchema
 from .utils.schema.triggers import ImageSchema
@@ -49,6 +49,12 @@ parser.add_argument(
     default=False,
 )
 
+parser.add_argument(
+    "--warn-image-eol-exceeds-base-eol",
+    help="Warn if the end-of-life date exceeds the LTS date",
+    action="store_true",
+    default=False,
+)
 
 class RevisionDataSchemaFilter(RevisionDataSchema):
     """A subclass of RevisionDataSchema to prepare data for serialization."""
@@ -209,6 +215,65 @@ def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: 
     return _builds
 
 
+def calculate_eol_date(base_year: int, base_month: int):
+    if base_year // 2 == 0 and base_month == 4: # LTS
+        eol_date = datetime(
+            year=base_year + 5,
+            month=base_month,
+            day=1,
+            tzinfo=timezone.utc,
+        )
+    else:
+        return datetime(
+            year=base_year + 1,
+            month=(base_month + 9) % 12,
+            day=1,
+            tzinfo=timezone.utc,
+        )
+
+def find_eol_exceed_base_eol(builds: list[dict[str, Any]]):
+    """Check if any of the builds have an EOL date that exceeds the EOL date of the base image."""
+    tracks_eol_exceed_base_eol = []
+    for build in builds:
+        if "release" in build:
+            base_version_id = build["base"].split(":")[-1]
+            base_year, base_month = (int(i) for i in base_version_id.split("."))
+            # base_eol: for lts versions, the eol date is 5 years after the base version
+            # for non-lts versions, the eol date is 9 months after the base version
+            base_eol = calculate_eol_date(
+                base_year=base_year,
+                base_month=base_month,
+            )
+            for track, track_value in build["release"].items():
+                eol_date = datetime.strptime(
+                    track_value["end-of-life"],
+                    "%Y-%m-%dT%H:%M:%SZ",
+                ).replace(tzinfo=timezone.utc)
+                if eol_date > base_eol:
+                    logging.warning(
+                        f"Track {track} has an EOL date {eol_date} that exceeds the base image EOL date {base_eol}"
+                    )
+                    tracks_eol_exceed_base_eol.append(
+                        {
+                            "track": track,
+                            "base": build["base"],
+                            "eol_date": eol_date,
+                            "base_eol": base_eol,
+                        }
+                    )
+    return tracks_eol_exceed_base_eol
+
+def generate_base_eol_exceed_warning(tracks_eol_exceed_base_eol: list[dict[str, Any]]):
+    """Generates markdown table for the tracks that exceed the base image EOL date."""
+    title = "Found tracks with EOL date exceeding base image's EOL date\n"
+    text = "Following tracks have an EOL date that exceeds the base image's EOL date:\n"
+    text += "Please check the EOL date of the base image and the track.\n"
+    table = "| Track | Base | EOL Date | Base Image EOL Date |\n"
+    table += "|-------|------|----------|---------------------|\n"
+    for build in tracks_eol_exceed_base_eol:
+        table += f"| {build['track']} | {build['base']} | {build['eol_date']} | {build['base_eol']} |\n"
+    return title, text + table
+
 def main():
     """Executed when script is called directly."""
     args = parser.parse_args()
@@ -221,6 +286,14 @@ def main():
 
     # inject additional meta data into builds
     builds = inject_metadata(builds, args.next_revision, args.oci_path)
+
+    # check if any of the builds have an EOL date that exceeds the EOL date of the base image
+    if args.warn_image_eol_exceeds_base_eol:
+        tracks_eol_exceed_base_eol = find_eol_exceed_base_eol(builds)
+        if tracks_eol_exceed_base_eol:
+            title, warning = generate_base_eol_exceed_warning(tracks_eol_exceed_base_eol)
+            with GithubStepSummary() as summary:
+                summary.write(title=title, text=warning)
 
     # remove any builds without valid tracks
     builds = filter_eol_builds(builds)

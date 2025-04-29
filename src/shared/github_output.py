@@ -7,6 +7,7 @@ from os import environ
 
 # locate
 GITHUB_OUTPUT = environ.get("GITHUB_OUTPUT", None)
+GITHUB_STEP_SUMMARY = environ.get("GITHUB_STEP_SUMMARY", None)
 
 # TODO: write custom json serializer to handle pathlib.Path
 
@@ -15,7 +16,7 @@ class GithubOutput:
 
     def __init__(self):
 
-        self.output_path = environ["GITHUB_OUTPUT"]
+        self.output_path = GITHUB_OUTPUT
 
     def __enter__(self):
 
@@ -52,3 +53,10 @@ class GithubOutput:
         else:
             json_value = json.dumps(value)
             return json_value
+
+
+class GithubStepSummary(GithubOutput):
+    """Write to the GITHUB_SUMMARY file"""
+
+    def __init__(self):
+        self.output_path = GITHUB_STEP_SUMMARY
