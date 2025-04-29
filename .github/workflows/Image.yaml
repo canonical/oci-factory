@@ -43,6 +43,7 @@ on:
 
 env:
   VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"
+  ROCK_REPO_DIR: rock-repo
 
 jobs:
   prepare-build:
@@ -131,6 +132,13 @@ jobs:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     steps:
+
+      - name: Cloning OCI Factory
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+
       - name: Clone GitHub image repository
         uses: ./.github/actions/checkout
         with:
@@ -138,14 +146,15 @@ jobs:
           ref: ${{ matrix.commit }}
           submodules: "recursive"
           fetch-depth: 1
+          path: ${{ env.ROCK_REPO_DIR }}
 
       - name: Installing yq
         run: sudo snap install yq --channel=v4/stable
 
       - name: Validate image naming and base
         run: |
-          rock_name=`cat "${{ matrix.directory }}"/rockcraft.y*ml | yq -r .name`
-          folder_name="${{ matrix.path }}"
+          rock_name=`cat "${{ env.ROCK_REPO_DIR }}/${{ matrix.directory }}"/rockcraft.y*ml | yq -r .name`
+          folder_name="${{ env.ROCK_REPO_DIR }}/${{ matrix.path }}"
           if [[ "${folder_name}" != *"${rock_name}"* ]]
           then
             echo "ERROR: the OCI folder name '${folder_name}', must contain the rock's name '${rock_name}'."
