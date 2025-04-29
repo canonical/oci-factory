@@ -4,11 +4,13 @@ import argparse
 import glob
 import json
 import logging
+import re
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 from tempfile import TemporaryDirectory as tempdir
 from typing import Any
+from urllib.parse import urlparse
 
 import pydantic
 import yaml
@@ -173,6 +175,25 @@ def write_github_output(
         github_output.write(**outputs)
 
 
+def get_source_url(source: str) -> str:
+    """Get the source URL from the source dict."""
+    if urlparse(source).scheme in (  # match url with scheme
+        "http",
+        "https",
+        "ssh",
+        "git",
+    ):
+        return source
+    elif re.match(  # match and format GitHub <owner>/<repo>
+        r"^[\w.-]+/[\w_.-]+$", source
+    ):
+        return f"https://github.com/{source}.git"
+    else:
+        raise ValueError(
+            f"Invalid source format: {source}.\n Must be url to git repo or GitHub <owner>/<repo> format."
+        )
+
+
 def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: Path):
     """Inject additional metadata (name, path, revision, directory, dir_identifier,
     track, base) into build dicts.
@@ -192,7 +213,7 @@ def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: 
         build["dir_identifier"] = build["directory"].rstrip("/").replace("/", "_")
 
         with tempdir() as d:
-            url = f"https://github.com/{build['source']}.git"
+            url = get_source_url(build["source"])
             repo = Repo.clone_from(url, d)
             repo.git.checkout(build["commit"])
             # get the base image from the rockcraft.yaml file
