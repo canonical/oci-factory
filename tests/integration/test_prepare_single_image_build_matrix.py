@@ -9,8 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from src.image.prepare_single_image_build_matrix import \
-    main as prepare_build_matrix
+from src.image.prepare_single_image_build_matrix import main as prepare_build_matrix
 
 from .. import DATA_DIR
 
@@ -23,6 +22,9 @@ def prep_execution(tmpdir, monkeypatch, request):
     # configure files/env requried for the test
     github_output = tmpdir / "github_output"
     monkeypatch.setenv("GITHUB_OUTPUT", str(github_output))
+
+    github_step_summary = tmpdir / "github_step_summary"
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(github_step_summary))
 
     revision_data_dir = tmpdir / "revision-data"
     revision_data_dir.mkdir()
@@ -42,7 +44,7 @@ def prep_execution(tmpdir, monkeypatch, request):
     )
     monkeypatch.setattr(sys, "argv", ["script.py"] + args)
 
-    return revision_data_dir, github_output
+    return revision_data_dir, github_output, github_step_summary
 
 
 @pytest.mark.parametrize(
@@ -59,7 +61,7 @@ def prep_execution(tmpdir, monkeypatch, request):
 )
 def test_release_to(prep_execution, expected_release_to, expected_release_count):
     """Test state of release-to in github output after running prepare_single_image_build_matrix"""
-    revision_data_dir, github_output = prep_execution
+    revision_data_dir, github_output, _ = prep_execution
 
     # run main from prepare_single_image_build_matrix
     prepare_build_matrix()

@@ -1,11 +1,11 @@
+from glob import glob
 from pathlib import Path
+
 import pytest
+import yaml
 
 import src.image.prepare_single_image_build_matrix as prep_matrix
 from src.image.utils.schema.triggers import ImageTriggerValidationError
-import yaml
-from glob import glob
-from pathlib import Path
 
 
 def test_is_track_eol():
@@ -39,6 +39,25 @@ def test_filter_eol_tracks():
     filtered_build = prep_matrix.filter_eol_tracks(build)
 
     assert len(filtered_build["release"]) == 1
+
+
+def test_find_eol_exceed_base_eol():
+    build = [
+        {
+            "release": {
+                "1.0.0-22.04": {
+                    "end-of-life": "2024-05-01T00:00:00Z",
+                },
+                "1.0-22.04": {
+                    "end-of-life": "2124-05-01T00:00:00Z",
+                },
+            },
+        }
+    ]
+    eol_exceed = prep_matrix.find_eol_exceed_base_eol(build)
+    assert len(eol_exceed) == 1
+    assert eol_exceed[0]["track"] == "1.0-22.04"
+    assert eol_exceed[0]["base"] == "ubuntu:22.04"
 
 
 def test_filter_eol_builds():
