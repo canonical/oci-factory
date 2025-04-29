@@ -107,7 +107,7 @@ jobs:
       - name: Validate registry has repo
         id: validate-registry-has-repo
         run: |
-          NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu' || 'rocksdev' }}
+          NAMESPACE=${{ env.IS_PROD == 'true' && 'ubuntu' || 'rocksdev' }}
           DOCKER_REPO_EXISTS='true'
           if curl -s https://hub.docker.com/v2/repositories/$NAMESPACE/${{ needs.get-submitted-files.outputs.image-name }} | grep "httperror 404" ; then
             DOCKER_REPO_EXISTS='false'
