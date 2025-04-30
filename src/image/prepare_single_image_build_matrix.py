@@ -4,22 +4,22 @@ import argparse
 import glob
 import json
 import logging
-import re
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 from tempfile import TemporaryDirectory as tempdir
 from typing import Any
-from urllib.parse import urlparse
 
 import pydantic
 import yaml
 from git import Repo
 
 from ..shared.github_output import GithubOutput
+from ..shared.source_url import get_source_url
 from ..uploads.infer_image_track import get_base_and_track
 from .utils.schema.revision_data import RevisionDataSchema
 from .utils.schema.triggers import ImageSchema
+
 
 # TODO:
 # - inject_metadata uses a static github url, does this break builds that are sourced
@@ -173,25 +173,6 @@ def write_github_output(
     }
     with GithubOutput() as github_output:
         github_output.write(**outputs)
-
-
-def get_source_url(source: str) -> str:
-    """Get the source URL from the source dict."""
-    if urlparse(source).scheme in (  # match url with scheme
-        "http",
-        "https",
-        "ssh",
-        "git",
-    ):
-        return source
-    elif re.match(  # match and format GitHub <owner>/<repo>
-        r"^[\w.-]+/[\w_.-]+$", source
-    ):
-        return f"https://github.com/{source}.git"
-    else:
-        raise ValueError(
-            f"Invalid source format: {source}.\n Must be url to git repo or GitHub <owner>/<repo> format."
-        )
 
 
 def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: Path):
