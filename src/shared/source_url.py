@@ -12,6 +12,7 @@ def get_source_url(source: str) -> str:
         "https",
         "ssh",
         "git",
+        "git+ssh",
     ):
         return source
     elif re.match(  # match and format GitHub <owner>/<repo>

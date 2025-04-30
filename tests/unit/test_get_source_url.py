@@ -5,7 +5,7 @@ from src.shared.source_url import get_source_url
 
 @pytest.mark.parametrize(
     "schema",
-    ["http", "https", "ssh", "git"],
+    ["http", "https", "ssh", "git", "git+ssh"],
 )
 def test_get_source_url_valid_schemas(schema):
     """Ensure valid URL schemas are returned w/o modification."""
