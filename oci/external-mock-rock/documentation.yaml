@@ -1,0 +1,7 @@
+version: 1
+
+application: External Mock Rock
+is_chiselled: true
+description: |
+  This is a long description for a mock rock that is only used for **testing**
+  and **demonstration** purposes.
