@@ -138,14 +138,12 @@ jobs:
         with:
           fetch-depth: 1
 
-
       - name: Clone GitHub image repository
         uses: ./.github/actions/checkout
         with:
           repository: ${{ matrix.source }}
           ref: ${{ matrix.commit }}
           submodules: "recursive"
-          fetch-depth: 1
           path: ${{ env.ROCK_REPO_DIR }}
 
       - name: Installing yq
