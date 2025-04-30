@@ -19,7 +19,7 @@ release:
 
 upload:
   - source: "https://codeberg.org/clay-lake/external-mock-rock.git"
-    commit: 06863a443519f644272eddfc45e013de8dbe0cb2
+    commit: c5a13b1a33168f5d50416875b5e671ede7301074
     directory: external_mock_rock/1.0
     release:
       1.0-22.04:
@@ -29,7 +29,7 @@ upload:
           - edge
           - beta
   - source: "https://codeberg.org/clay-lake/external-mock-rock.git"
-    commit: 06863a443519f644272eddfc45e013de8dbe0cb2
+    commit: c5a13b1a33168f5d50416875b5e671ede7301074
     directory: external_mock_rock/1.1
     release:
       1.1-22.04:
@@ -45,7 +45,7 @@ upload:
           - edge
           - beta
   - source: "https://codeberg.org/clay-lake/external-mock-rock.git"
-    commit: 06863a443519f644272eddfc45e013de8dbe0cb2
+    commit: c5a13b1a33168f5d50416875b5e671ede7301074
     directory: external_mock_rock/1.2
     release:
       1.2-22.04:
