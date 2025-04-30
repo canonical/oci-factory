@@ -117,16 +117,18 @@ jobs:
     needs: [configure-tests]
     if: inputs.test-oci-compliance
     steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/cache/restore@v4
         with:
           path: ${{ env.TEST_IMAGE_NAME }}
           key: ${{ needs.configure-tests.outputs.cache-key }}
 
       - name: Install Umoci
-        run: |
-          wget https://github.com/opencontainers/umoci/releases/download/${UMOCI_VERSION}/${UMOCI_BINARY}
-          sudo mv ${UMOCI_BINARY} /usr/bin/umoci
-          sudo chmod +x /usr/bin/umoci
+        uses: ./.github/actions/install-umoci
+        with:
+          umoci-version: ${{ env.UMOCI_VERSION }}
+          umoci-binary: ${{ env.UMOCI_BINARY }}
 
       - name: Run Umoci tests
         run: |
@@ -344,10 +346,10 @@ jobs:
           key: ${{ needs.configure-tests.outputs.cache-key }}
 
       - name: Install Umoci
-        run: |
-          wget https://github.com/opencontainers/umoci/releases/download/${UMOCI_VERSION}/${UMOCI_BINARY}
-          sudo mv ${UMOCI_BINARY} /usr/bin/umoci
-          sudo chmod +x /usr/bin/umoci
+        uses: ./.github/actions/install-umoci
+        with:
+          umoci-version: ${{ env.UMOCI_VERSION }}
+          umoci-binary: ${{ env.UMOCI_BINARY }}
 
       - name: Unpack image
         run: |

@@ -267,6 +267,8 @@ jobs:
       matrix: ${{ fromJSON(needs.prepare-upload.outputs.build-matrix) }}
     env:
       OCI_ARCHIVE_NAME: ${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}
+      UMOCI_VERSION: "v0.4.7"
+      UMOCI_BINARY: "umoci.amd64"
     outputs:
       artefacts-hashes: ${{ steps.artefacts-hashes.outputs.hashes }}
     steps:
@@ -330,6 +332,12 @@ jobs:
         run: |
           go install github.com/canonical/ssbom/cmd/ssbom@latest
 
+      - name: Setup umoci
+        uses: ./.github/actions/install-umoci
+        with:
+          umoci-version: ${{ env.UMOCI_VERSION }}
+          umoci-binary: ${{ env.UMOCI_BINARY }}
+
       - name: Generate SBOMs
         id: generate-sboms
         run: |
@@ -346,14 +354,19 @@ jobs:
 
             skopeo --override-arch $arch copy \
               oci-archive:${{ steps.rename-oci-archive.outputs.name }} \
-              oci:${{ steps.rename-oci-archive.outputs.name }}.${arch}
+              oci:${{ steps.rename-oci-archive.outputs.name }}.${arch}:${{ steps.rename-oci-archive.outputs.canonical-tag }} \
 
             syft oci-dir:${{ steps.rename-oci-archive.outputs.name }}.${arch} \
               -o spdx-json \
               --file ${{ steps.rename-oci-archive.outputs.name }}.${arch}.sbom_preview.spdx.json
 
-            if [[ -f  "${{ steps.rename-oci-archive.outputs.name }}.${arch}/var/lib/chisel/manifest.wall" ]]; then
-              ssbom ${{ steps.rename-oci-archive.outputs.name }}.${arch} \
+            umoci unpack \
+              --keep-dirlinks --rootless \
+              --image ${{ steps.rename-oci-archive.outputs.name }}.${arch}:${{ steps.rename-oci-archive.outputs.canonical-tag }} \
+              ${{ steps.rename-oci-archive.outputs.name }}.${arch}-bundle
+
+            if [[ -f  "${{ steps.rename-oci-archive.outputs.name }}.${arch}-bundle/rootfs/var/lib/chisel/manifest.wall" ]]; then
+              ssbom ${{ steps.rename-oci-archive.outputs.name }}.${arch}-bundle/rootfs \
                     ${{ steps.rename-oci-archive.outputs.name }}.${arch}.chiselled.sbom_preview.spdx.json
             fi
 
