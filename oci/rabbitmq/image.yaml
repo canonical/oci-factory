@@ -1,0 +1,14 @@
+version: 1
+upload:
+  - source: canonical/rabbitmq-rock
+    commit: 45ffe2a96edf7e4020656cc30eb903bbe4ed55b4
+    directory: 3.12-24.04
+    release:
+      3.12-24.04:
+        end-of-life: '2029-05-01T00:00:00Z'
+        risks:
+          - edge
+      3-22.04:
+        end-of-life: '2029-05-01T00:00:00Z'
+        risks:
+          - edge

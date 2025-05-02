@@ -50,5 +50,4 @@ do
     buildah manifest add multi-arch-rock oci-archive:$rock
 done
 
-buildah manifest push --all multi-arch-rock "oci-archive:$ARCHIVE_NAME"
-
+buildah manifest push --format oci --all multi-arch-rock "oci-archive:$ARCHIVE_NAME"

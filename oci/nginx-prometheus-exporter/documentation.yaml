@@ -1,0 +1,33 @@
+version: 1
+# --- OVERVIEW INFORMATION ---
+application: nginx-prometheus-exporter
+description: >
+  Nginx prometheus-exporter is a Prometheus exporter for Nginx.
+  Read more in the [official documentation](https://github.com/nginx/nginx-prometheus-exporter)
+  Please note that this repository holds a rock instead of a Dockerfile-based image.
+  As such, the entrypoint is Pebble.
+  Read more in the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 9113:9113
+  access: Expose the metrics endpoint at `http://localhost:9113/metrics` 
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone.
+  - type: -p
+    value: '9113:9113'
+    description: Expose the metrics endpoint at `http://localhost:9113/metrics`.
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+    ```bash
+    docker logs -f nginx-prometheus-exporter-container
+    ```
+    To get an interactive shell:
+    ```bash
+    docker exec -it nginx-prometheus-exporter-container /bin/bash
+    ```

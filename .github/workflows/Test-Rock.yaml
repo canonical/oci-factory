@@ -200,13 +200,27 @@ jobs:
       # The existing Dive GH actions are outdated:
       # https://github.com/MartinHeinz/dive-action/issues/1
       # https://github.com/yuichielectric/dive-action/issues/581
-      - name: Dive efficiency test
+      - name: Dive lowestEfficiency test
         run: |
           docker run -e CI=true --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v $PWD/src/tests/.dive-ci.yaml:/.dive-ci.yaml \
             ${{ env.DIVE_IMAGE }} \
-            ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} --ci-config /.dive-ci.yaml
+            ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
+            --ci-config /.dive-ci.yaml \
+            --highestUserWastedPercent disabled
+
+      - name: Dive highestUserWastedPercent test
+        continue-on-error: true
+        run: |
+          docker run -e CI=true --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $PWD/src/tests/.dive-ci.yaml:/.dive-ci.yaml \
+            ${{ env.DIVE_IMAGE }} \
+            ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
+            --ci-config /.dive-ci.yaml \
+            --lowestEfficiency disabled
+
 
   test-vulnerabilities:
     runs-on: ubuntu-22.04
@@ -304,6 +318,12 @@ jobs:
             echo "$vulnerabilities" | jq -r '.[] | "| \(.VulnerabilityID) | /\(.Target) | \(.Severity) | \(.PkgName) |"' >> $GITHUB_STEP_SUMMARY
           fi
           
+      - name: Identify unncessary trivyignore entries
+        if: ${{ !cancelled() }}
+        uses: ./.github/actions/check-trivyignore
+        with:
+          image-ref: "${{ steps.configure-trivy.outputs.docker-image }}"
+          trivyignores: ${{ steps.configure-trivy.outputs.trivyignore-path }}
 
   test-malware:
     runs-on: ubuntu-22.04

@@ -47,7 +47,13 @@ parser.add_argument(
 parser.add_argument(
     "--ghcr-repo",
     help="GHCR repo where the image was originally uploaded.",
-    required=True,
+    required=False,
+)
+parser.add_argument(
+    "--update-releases-json",
+    help="Update the releases JSON file.",
+    action="store_true",
+    default=False,
 )
 
 
@@ -102,6 +108,10 @@ def remove_eol_tags(tag_to_revision, all_releases):
 
 def main():
     args = parser.parse_args()
+    if not args.update_releases_json and not args.ghcr_repo:
+        parser.error(
+            "If not updating the releases JSON, --ghcr-repo must be specified."
+        )
     img_name = (
         args.image_name
         if args.image_name
@@ -155,7 +165,7 @@ def main():
 
     # update EOL dates from upload dictionary
     for upload in image_trigger["upload"] or []:
-        for track, upload_release_dict in (upload["release"] or {}).items():
+        for track, upload_release_dict in upload.get("release", {}).items():
             if track not in all_releases:
                 print(f"Track {track} will be created for the 1st time")
                 all_releases[track] = {}
@@ -256,46 +266,47 @@ def main():
     for tag, revision in sorted(release_tags.items()):
         group_by_revision[revision].append(tag)
 
-    print(
-        "Processed tag aliases and ready to release the following revisions:\n"
-        f"{json.dumps(group_by_revision, indent=2)}"
-    )
-
-    github_tags = []
-    for revision, tags in group_by_revision.items():
-        revision_track = revision_to_track[revision]
-        source_img = (
-            "docker://ghcr.io/"
-            f"{args.ghcr_repo}/{img_name}:{revision_track}_{revision}"
-        )
-        this_dir = os.path.dirname(__file__)
-        print(f"Releasing {source_img} with tags:\n{tags}")
-        subprocess.check_call(
-            [f"{this_dir}/tag_and_publish.sh", source_img, img_name] + tags
+    if not args.update_releases_json:
+        print(
+            "Processed tag aliases and ready to release the following revisions:\n"
+            f"{json.dumps(group_by_revision, indent=2)}"
         )
 
-        for tag in tags:
-            gh_release_info = {}
-            gh_release_info["canonical-tag"] = f"{img_name}_{revision_track}_{revision}"
-            gh_release_info["release-name"] = f"{img_name}_{tag}"
-            gh_release_info["name"] = f"{img_name}"
-            gh_release_info["revision"] = f"{revision}"
-            gh_release_info["channel"] = f"{tag}"
-            github_tags.append(gh_release_info)
+        github_tags = []
+        for revision, tags in group_by_revision.items():
+            revision_track = revision_to_track[revision]
+            source_img = (
+                "docker://ghcr.io/"
+                f"{args.ghcr_repo}/{img_name}:{revision_track}_{revision}"
+            )
+            this_dir = os.path.dirname(__file__)
+            print(f"Releasing {source_img} with tags:\n{tags}")
+            subprocess.check_call(
+                [f"{this_dir}/tag_and_publish.sh", source_img, img_name] + tags
+            )
 
-    print(
-        f"Updating {args.all_releases} file with:\n"
-        f"{json.dumps(all_releases, indent=2, cls=DateTimeEncoder)}"
-    )
+            for tag in tags:
+                gh_release_info = {}
+                gh_release_info["canonical-tag"] = f"{img_name}_{revision_track}_{revision}"
+                gh_release_info["release-name"] = f"{img_name}_{tag}"
+                gh_release_info["name"] = f"{img_name}"
+                gh_release_info["revision"] = f"{revision}"
+                gh_release_info["channel"] = f"{tag}"
+                github_tags.append(gh_release_info)
+        
+        matrix = {"include": github_tags}
 
-    with open(args.all_releases, "w", encoding="UTF-8") as fd:
-        json.dump(all_releases, fd, indent=4, cls=DateTimeEncoder)
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="UTF-8") as gh_out:
+            print(f"gh-releases-matrix={matrix}", file=gh_out)
 
-    matrix = {"include": github_tags}
+    else:
+        print(
+            f"Updating {args.all_releases} file with:\n"
+            f"{json.dumps(all_releases, indent=2, cls=DateTimeEncoder)}"
+        )
 
-    with open(os.environ["GITHUB_OUTPUT"], "a", encoding="UTF-8") as gh_out:
-        print(f"gh-releases-matrix={matrix}", file=gh_out)
-
+        with open(args.all_releases, "w", encoding="UTF-8") as fd:
+            json.dump(all_releases, fd, indent=4, cls=DateTimeEncoder)
 
 if __name__ == "__main__":
     main()
