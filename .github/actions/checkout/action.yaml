@@ -28,13 +28,12 @@ runs:
       with:
         python-version: "3.x"
 
-
     - name: Checkout
       shell: bash
       run: |
         
         # If URL lacks the protocol, assume it is a github repo 
-        git_url="$(python3 -m source_url "${{ inputs.repository }}")"
+        git_url="$(python3 ./src/shared/source_url.py "${{ inputs.repository }}")"
 
         # if a token is provided, use it
         if ! [[ -z "${{ inputs.token }}" ]]; then
