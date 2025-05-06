@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-source $(dirname $0)/../configs/swift.public.novarc
+source $(dirname $0)/../shared/logs.sh
 
 # SUITE="{{ suite }}"
 # RELEASE="{{ release }}"
