@@ -8,7 +8,9 @@ ssh-keyscan -H git.launchpad.net | tee $HOME/.ssh/known_hosts
 
 echo "${ROCKS_DEV_LP_SSH_PRIVATE}" >$HOME/.ssh/id_rsa
 
-set -x
+if [[ "$RUNNER_DEBUG" == "1" ]]; then
+  set -x
+fi
 chmod 600 $HOME/.ssh/id_rsa
 
 ## To avoid installing Snaps, just take the needed Python script

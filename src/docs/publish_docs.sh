@@ -11,7 +11,9 @@ trace_suspend() {
 trace_resume() {
     if [ "${__resume_trace:-0}" = 1 ]; then
         unset __resume_trace
-        set -x
+        if [[ "$RUNNER_DEBUG" == "1" ]]; then
+          set -x
+        fi
     fi
 }
 

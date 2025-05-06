@@ -73,7 +73,10 @@ jobs:
       - name: Validate image from dispatch
         id: validate-image
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
 
           # check if this is coming from a workflow dispatch/call
           # as checking github.event_name isn't reliable here
@@ -225,7 +228,10 @@ jobs:
       - name: Prepare builds matrix for upload
         id: prepare-matrix
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
 
           mkdir ${{ env.DATA_DIR }}
 
@@ -317,7 +323,10 @@ jobs:
       - name: Infer architectures
         id: get-arches
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
           arches=$(skopeo inspect --raw \
             oci-archive:${{ steps.rename-oci-archive.outputs.name }} \
             | jq -r 'if has("manifests") then .manifests[].platform.architecture else "${{ runner.arch }}" end' \
@@ -329,7 +338,10 @@ jobs:
       - name: Generate SBOMs
         id: generate-sboms
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
           echo "Generating SBOMs for ${{ steps.get-arches.outputs.arches }}"
 
           IFS=',' read -ra arch_list <<< ${{ steps.get-arches.outputs.arches }}
@@ -366,7 +378,10 @@ jobs:
           SBOMS: ${{ steps.generate-sboms.outputs.sboms }}
           OCI_IMAGE_ARCHIVE: ${{ steps.rename-oci-archive.outputs.name }}
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
           echo "hashes=$(sha256sum ${{ env.VULN_REPORT }} ${{ env.OCI_IMAGE_ARCHIVE }} ${{ env.SBOMS }} | base64 -w0)"
 
       - name: Login to GHCR
@@ -469,7 +484,10 @@ jobs:
         env:
           PYTHONUNBUFFERED: 1
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
           for revision_file in `ls ${{ env.REVISION_DATA_DIR }}`
           do
             ret=0

@@ -58,7 +58,10 @@ jobs:
       - name: Fail if more than one image
         id: get-image-name
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
           img_dir="${{ steps.changed-files.outputs.all_changed_files }}"
           occurrences="${img_dir//[^,]}"
           if [ ${#occurrences} -ne 0 ]
@@ -135,7 +138,10 @@ jobs:
 
           PYTHONUNBUFFERED: 1
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
           echo "Running in production?  ${{ env.IS_PROD == 'true' && 'YES' || 'NO' }}"
           
           python3 -m src.image.release \
@@ -170,7 +176,10 @@ jobs:
       - name: Get commit SHA of _release.json update
         id: release-commit-sha
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
           echo "release-commit-sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
 
@@ -204,7 +213,9 @@ jobs:
       
       - name: Unzip SBOM artifacts
         run: |
-          set -x
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
           sbom_target_dir="$(pwd)/sbom"
           find sbom -type f -name '*.spdx.zip' -exec unzip {} -d ${sbom_target_dir} \;
 
