@@ -364,4 +364,4 @@ jobs:
 
       - name: Scan for malware
         run: |
-          ./src/tests/malware_scan.py --filesystem ./raw/rootfs
+          python3 -m src.tests.malware_scan --filesystem ./raw/rootfs

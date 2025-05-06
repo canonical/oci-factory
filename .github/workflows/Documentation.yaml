@@ -171,7 +171,7 @@ jobs:
         id: get-summary
         run: |
           echo '${{ toJson(needs) }}' > jobs.json
-          ./src/notifications/summarize_workflow_results.py --jobs-file jobs.json
+          python3 -m src.notifications.summarize_workflow_results --jobs-file jobs.json
 
       - name: Get contacts for ${{ needs.validate-documentation-request.outputs.oci-img-name }}
         id: get-contacts
