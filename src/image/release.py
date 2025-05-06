@@ -21,7 +21,7 @@ from ..shared.logs import get_logger
 from .utils.encoders import DateTimeEncoder
 from .utils.schema.triggers import KNOWN_RISKS_ORDERED, ImageSchema
 
-logger = get_logger(__package__)
+logger = get_logger()
 
 # generate single date for consistent EOL checking
 execution_timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")

@@ -8,7 +8,7 @@ import yaml
 
 from ..shared.logs import get_logger
 
-logger = get_logger(__package__)
+logger = get_logger()
 
 
 def get_release_from_codename(codename: str) -> str:

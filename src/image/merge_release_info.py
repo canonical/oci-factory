@@ -24,7 +24,7 @@ from ..shared.logs import get_logger
 from .utils.schema.revision_data import RevisionDataSchema
 from .utils.schema.triggers import KNOWN_RISKS_ORDERED, ImageSchema
 
-logger = get_logger(__package__)
+logger = get_logger()
 
 
 def backfill_higher_risks(channels: dict) -> None:

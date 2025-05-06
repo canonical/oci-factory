@@ -23,7 +23,7 @@ from .utils.schema.triggers import ImageSchema
 # - inject_metadata uses a static github url, does this break builds that are sourced
 #   from non-gh repos?
 
-logger = get_logger(__package__)
+logger = get_logger()
 
 parser = argparse.ArgumentParser()
 parser.add_argument(

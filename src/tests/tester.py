@@ -9,7 +9,7 @@ from pydantic import BaseModel, PrivateAttr
 
 from ..shared.logs import get_logger
 
-logger = get_logger(__package__)
+logger = get_logger()
 
 
 class TestingError(Exception):

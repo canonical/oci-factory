@@ -25,7 +25,7 @@ from src.docs.schema.triggers import DocSchema
 
 from ..shared.logs import get_logger
 
-logger = get_logger(__package__)
+logger = get_logger()
 
 
 def cli_args() -> argparse.ArgumentParser:

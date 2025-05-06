@@ -13,9 +13,10 @@ LOG_COLORS = {
 }
 RESET_COLOR = "\033[0m"
 RUNNER_LOG_LEVELS = {
-    '0': logging.INFO,
-    '1': logging.DEBUG,
+    "0": logging.INFO,
+    "1": logging.DEBUG,
 }
+
 
 class ColorFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
@@ -31,13 +32,20 @@ class ColorFormatter(logging.Formatter):
         return result
 
 
+def get_caller_package() -> str:
+    return inspect.getmodule(inspect.currentframe().f_back).__package__
+
+
 def get_logger(
-        name: str,
-        log_file: str | None = None,
-        level: int | str = None,
-        fmt: str = "[%(asctime)s] [%(name)s.%(module)s.%(funcName)s] [%(levelname)s] %(message)s",
-        stream: str | object | None = "stdout",
+    name: str | None = None,
+    log_file: str | None = None,
+    level: int | str = None,
+    fmt: str = "[%(asctime)s] [%(name)s.%(module)s.%(funcName)s] [%(levelname)s] %(message)s",
+    stream: str | object | None = "stdout",
 ) -> logging.Logger:
+
+    if not name:
+        name = get_caller_package()
 
     if name in logging.root.manager.loggerDict:
         return logging.getLogger(name)
@@ -54,9 +62,7 @@ def get_logger(
 
     if stream:
         color_formatter = ColorFormatter(fmt, datefmt="%Y-%m-%d %H:%M:%S")
-        stream_obj = {"stdout": sys.stdout, "stderr": sys.stderr}.get(
-            stream, stream
-        )
+        stream_obj = {"stdout": sys.stdout, "stderr": sys.stderr}.get(stream, stream)
         sh = logging.StreamHandler(stream_obj)
         sh.setFormatter(color_formatter)
         logger.addHandler(sh)
