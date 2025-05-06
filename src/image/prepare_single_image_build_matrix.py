@@ -3,7 +3,6 @@
 import argparse
 import glob
 import json
-import logging
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
@@ -15,6 +14,7 @@ import yaml
 from git import Repo
 
 from ..shared.github_output import GithubOutput
+from ..shared.logs import Logger
 from ..uploads.infer_image_track import get_base_and_track
 from .utils.schema.revision_data import RevisionDataSchema
 from .utils.schema.triggers import ImageSchema
@@ -22,6 +22,8 @@ from .utils.schema.triggers import ImageSchema
 # TODO:
 # - inject_metadata uses a static github url, does this break builds that are sourced
 #   from non-gh repos?
+
+logger = Logger().get_logger()
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -58,7 +60,7 @@ class RevisionDataSchemaFilter(RevisionDataSchema):
     @pydantic.model_validator(mode="before")
     def _warn_extra_fields(cls, data: Any) -> Any:
         for extra_field in data.keys() - cls.model_fields.keys():
-            logging.warning(
+            logger.warning(
                 f'Field "{extra_field}" removed from {data["name"]} revision data'
             )
 
@@ -90,7 +92,7 @@ def is_track_eol(track_value: str, track_name: str | None = None) -> bool:
     is_eol = eol_date < datetime.now(timezone.utc)
 
     if is_eol and track_name is not None:
-        logging.warning(f'Removing EOL track "{track_name}", EOL: {eol_date}')
+        logger.warning(f'Removing EOL track "{track_name}", EOL: {eol_date}')
 
     return is_eol
 
@@ -226,7 +228,7 @@ def main():
     builds = filter_eol_builds(builds)
 
     # pretty print builds
-    logging.info(
+    logger.info(
         f"Generating matrix for following builds: \n {json.dumps(builds, indent=4)}"
     )
 

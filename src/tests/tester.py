@@ -1,12 +1,15 @@
 # pylint: disable=no-name-in-module
 # pylint: disable=no-self-argument
-import docker
-import logging
 import os
 import subprocess
 from typing import Literal
 
+import docker
 from pydantic import BaseModel, PrivateAttr
+
+from ..shared.logs import Logger
+
+logger = Logger().get_logger()
 
 
 class TestingError(Exception):
@@ -49,7 +52,7 @@ class Test(BaseModel):
     def convert(
         self, origin: str, origin_format: str, dest: str, dest_format: str
     ) -> None:
-        logging.info(f"Copying from {origin_format}:{origin} to {dest_format}:{dest}")
+        logger.info(f"Copying from {origin_format}:{origin} to {dest_format}:{dest}")
         try:
             if not origin_format.startswith("docker"):
                 mounted_origin = f"/rootfs{os.path.abspath(origin)}"
@@ -70,14 +73,14 @@ class Test(BaseModel):
                 detach=True,
             )
             skopeo.wait()
-            logging.info(skopeo.logs().decode())
+            logger.info(skopeo.logs().decode())
         except Exception as skopeoerror:
-            logging.warning(f"Failed to run Skopeo as a container: {skopeoerror}")
-            logging.info("Attempting to run Skopeo from the underlying system...")
+            logger.warning(f"Failed to run Skopeo as a container: {skopeoerror}")
+            logger.info("Attempting to run Skopeo from the underlying system...")
             copy_cmd = f"skopeo copy {origin_format}:{origin} {dest_format}:{dest}"
             output = subprocess.check_output(
                 copy_cmd.split((" ")), universal_newlines=True
             )
-            logging.info(output)
+            logger.info(output)
 
         return dest

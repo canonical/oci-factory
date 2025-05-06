@@ -2,12 +2,13 @@
 
 import argparse
 import os
-import logging
 import subprocess
+
 import yaml
 
+from ..shared.logs import Logger
 
-logging.basicConfig()
+logger = Logger().get_logger()
 
 
 def get_release_from_codename(codename: str) -> str:
@@ -31,7 +32,7 @@ def get_base_and_track(rockcraft_yaml) -> tuple[str, str]:
     try:
         base_release = float(rock_base.replace(":", "@").split("@")[-1])
     except ValueError:
-        logging.warning(
+        logger.warning(
             f"Could not infer ROCK's base release from {rock_base}. Trying with codename."
         )
         base_release = float(

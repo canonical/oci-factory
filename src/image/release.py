@@ -17,8 +17,11 @@ import yaml
 
 import src.shared.release_info as shared
 
+from ..shared.logs import Logger
 from .utils.encoders import DateTimeEncoder
 from .utils.schema.triggers import KNOWN_RISKS_ORDERED, ImageSchema
+
+logger = Logger().get_logger()
 
 # generate single date for consistent EOL checking
 execution_timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -287,13 +290,15 @@ def main():
 
             for tag in tags:
                 gh_release_info = {}
-                gh_release_info["canonical-tag"] = f"{img_name}_{revision_track}_{revision}"
+                gh_release_info["canonical-tag"] = (
+                    f"{img_name}_{revision_track}_{revision}"
+                )
                 gh_release_info["release-name"] = f"{img_name}_{tag}"
                 gh_release_info["name"] = f"{img_name}"
                 gh_release_info["revision"] = f"{revision}"
                 gh_release_info["channel"] = f"{tag}"
                 github_tags.append(gh_release_info)
-        
+
         matrix = {"include": github_tags}
 
         with open(os.environ["GITHUB_OUTPUT"], "a", encoding="UTF-8") as gh_out:
@@ -307,6 +312,7 @@ def main():
 
         with open(args.all_releases, "w", encoding="UTF-8") as fd:
             json.dump(all_releases, fd, indent=4, cls=DateTimeEncoder)
+
 
 if __name__ == "__main__":
     main()

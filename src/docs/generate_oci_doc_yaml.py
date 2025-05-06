@@ -7,24 +7,25 @@ for OCI images within the oci-factory
 import argparse
 import base64
 import json
-import logging
 import os
 import re
 import subprocess
 import sys
 import tempfile
-from typing import Any, Dict, List
 from datetime import datetime, timezone
-from dateutil import parser
+from typing import Any, Dict, List
 
 import boto3
 import pydantic
 import yaml
+from dateutil import parser
 
 import src.shared.release_info as shared
 from src.docs.schema.triggers import DocSchema
 
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+from ..shared.logs import Logger
+
+logger = Logger().get_logger()
 
 
 def cli_args() -> argparse.ArgumentParser:
@@ -133,7 +134,7 @@ class OCIDocumentationData:
     @staticmethod
     def process_run(command: List[str], **kwargs) -> str:
         """Run a command and handle its output."""
-        logging.info("Execute process: %s, kwargs=%s", repr(command), repr(kwargs))
+        logger.info("Execute process: %s, kwargs=%s", repr(command), repr(kwargs))
         try:
             out = subprocess.run(
                 command,
@@ -171,7 +172,7 @@ class OCIDocumentationData:
         """
         Permit to get the arches associated with the tag
         """
-        logging.info("Getting the arches for %s", tag)
+        logger.info("Getting the arches for %s", tag)
 
         manifest_list = self.run_skopeo_command(
             "inspect", [f"docker://{self.registry_url}:" + tag, "--raw"]
@@ -234,7 +235,7 @@ class OCIDocumentationData:
         all_ecr_tags: Dict[str, Any],
     ) -> List[Dict]:
         """Build the releases info data structure"""
-        logging.info(f"All available tracks:\n{list(all_tracks.keys())}")
+        logger.info(f"All available tracks:\n{list(all_tracks.keys())}")
 
         ecr_tag_details = all_ecr_tags["imageTagDetails"]
         ecr_tag_names = []
@@ -255,8 +256,8 @@ class OCIDocumentationData:
             tags_by_digest.setdefault(digest, []).append(tag)
 
         ecr_tag_names.sort()
-        logging.info(f"All available OCI tags in ECR:\n{ecr_tag_names}")
-        logging.info(f"{len(ecr_digests)} available digests in ECR")
+        logger.info(f"All available OCI tags in ECR:\n{ecr_tag_names}")
+        logger.info(f"{len(ecr_digests)} available digests in ECR")
 
         releases = []  # section to be added to the final YAML file
         for digest, digest_tags in tags_by_digest.items():
@@ -265,7 +266,7 @@ class OCIDocumentationData:
             # i.e. something like 1.0-22.04_stable
             channel_tag = self.find_channel_tag(digest_tags)
             if channel_tag == "":
-                logging.warning(f"No canonical tag found for digest {digest}")
+                logger.warning(f"No canonical tag found for digest {digest}")
                 continue
             track_base, release_data["risk"] = channel_tag.split("_")
             release_data["track"], release_data["base"] = track_base.split("-")
@@ -278,9 +279,7 @@ class OCIDocumentationData:
                 release_data["support"] = {"until": eol.strftime("%m/%Y")}
 
                 if eol < datetime.now(timezone.utc):
-                    release_data["deprecated"] = {
-                        "date": eol.strftime("%m/%Y")
-                    }
+                    release_data["deprecated"] = {"date": eol.strftime("%m/%Y")}
 
             releases.append(release_data)
 
@@ -289,7 +288,7 @@ class OCIDocumentationData:
     @staticmethod
     def read_documentation_yaml(doc_file: str) -> Dict:
         """Reads and parses the YAML contents of the documentation trigger file"""
-        logging.info("Opening file %s", doc_file)
+        logger.info("Opening file %s", doc_file)
         with open(doc_file, "r", encoding="UTF-8") as file:
             try:
                 base_doc_data = DocSchema(
@@ -304,7 +303,7 @@ class OCIDocumentationData:
     def create_data_dir(path: str) -> None:
         """Create doc data dir if it doesn't exist"""
         if not os.path.exists(path):
-            logging.info("Creating the '%s' docs data folder", path)
+            logger.info("Creating the '%s' docs data folder", path)
 
             os.makedirs(path)
 
@@ -312,7 +311,7 @@ class OCIDocumentationData:
     def write_data_file(file_path: str, content: Dict) -> None:
         """Write the YAML content into the output file path"""
         with open(file_path, "w", encoding="UTF-8") as fp:
-            logging.info("Create the doc data YAML file '%s'", file_path)
+            logger.info("Create the doc data YAML file '%s'", file_path)
             yaml.dump(content, fp, sort_keys=False)
 
     @staticmethod
@@ -334,7 +333,7 @@ class OCIDocumentationData:
                 with open(releases_file) as rf:
                     _releases = json.load(rf)
             except FileNotFoundError:
-                logging.warning(f"Unable to load _releases.json and EOL dates")
+                logger.warning(f"Unable to load _releases.json and EOL dates")
                 pass
 
         all_tracks = {}
@@ -346,7 +345,7 @@ class OCIDocumentationData:
     def main(self, doc_data_dir: str) -> None:
         """Main function for generating the documentation data YAML file"""
 
-        logging.info("Opening the documentation.yaml file")
+        logger.info("Opening the documentation.yaml file")
         base_doc_yaml = self.read_documentation_yaml(
             f"{self.image_path}/documentation.yaml"
         )
@@ -369,9 +368,11 @@ class OCIDocumentationData:
             desc_img_tags_resp = self.ecr_client.describe_image_tags(
                 repositoryName=self.image_name, nextToken=next_token
             )
-            all_ecr_tags["imageTagDetails"].extend(desc_img_tags_resp.get("imageTagDetails", []))
+            all_ecr_tags["imageTagDetails"].extend(
+                desc_img_tags_resp.get("imageTagDetails", [])
+            )
 
-        logging.info("Building releases section for doc data YAML file")
+        logger.info("Building releases section for doc data YAML file")
 
         releases = self.build_releases_data(all_tracks, all_ecr_tags)
 
