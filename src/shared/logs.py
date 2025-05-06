@@ -30,7 +30,7 @@ class ColorFormatter(logging.Formatter):
 class Logger:
     _instances = {}
 
-    def __new__(cls, name: str = __name__):
+    def __new__(cls, name: str = __name__, *args, **kwargs):
         if name not in cls._instances:
             cls._instances[name] = super(Logger, cls).__new__(cls)
             cls._instances[name]._initialized = False
