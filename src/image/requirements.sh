@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -e
 
 # LP configurations
 mkdir -p $HOME/.ssh

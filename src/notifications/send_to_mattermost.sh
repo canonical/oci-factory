@@ -1,7 +1,12 @@
-#!/bin/bash -eux
+#!/bin/bash -e
 #
 # Send custom notifications to a Mattermost channel.
 #
+
+if [[ "$RUNNER_DEBUG" == "1" ]]; then
+  set -x
+fi
+set -u
 
 set -o pipefail
 

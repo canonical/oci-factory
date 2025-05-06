@@ -32,7 +32,11 @@ jobs:
 
       - name: Only 1 image can be changed per PR
         run: |
-          set -eux
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
+          set -u
           dir_names="${{ steps.changed-files-dir-names.outputs.all_changed_files }}"
           echo "Can only modify 1 image per PR"
           (( $(echo "${dir_names}" | wc -w) == 1 ))
@@ -80,7 +84,11 @@ jobs:
 
       - name: Validate YAML format
         run: |
-          set -eux
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
+          set -u
           pip install yamllint
           yamllint -c .yamllint.yaml ${{ matrix.filename }}
 
