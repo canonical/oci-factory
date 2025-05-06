@@ -17,10 +17,14 @@ analysis.
 
 import argparse
 import json
+
 import yaml
 
-from .utils.schema.triggers import ImageSchema, KNOWN_RISKS_ORDERED
+from ..shared.logs import Logger
 from .utils.schema.revision_data import RevisionDataSchema
+from .utils.schema.triggers import KNOWN_RISKS_ORDERED, ImageSchema
+
+logger = Logger().get_logger()
 
 
 def backfill_higher_risks(channels: dict) -> None:
@@ -55,7 +59,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    print(f"Getting existing image trigger from {args.image_trigger}")
+    logger.info(f"Getting existing image trigger from {args.image_trigger}")
     with open(args.image_trigger, encoding="UTF-8") as trigger:
         image_trigger = yaml.load(trigger, Loader=yaml.BaseLoader)
 
@@ -63,7 +67,7 @@ if __name__ == "__main__":
 
     user_releases = image_trigger.get("release", {})
 
-    print(f"Getting pre-release from {args.revision_data_file}")
+    logger.info(f"Getting pre-release from {args.revision_data_file}")
     with open(args.revision_data_file, encoding="UTF-8") as revision_data_f:
         revision_data = json.load(revision_data_f)
 
@@ -89,8 +93,8 @@ if __name__ == "__main__":
     # Overwrite the image trigger with the new release value
     image_trigger["release"] = user_releases
 
-    print(f"Finished merging pre releases:\n{json.dumps(image_trigger)}")
-    print(f"Overwriting {args.image_trigger}...")
+    logger.info(f"Finished merging pre releases:\n{json.dumps(image_trigger)}")
+    logger.info(f"Overwriting {args.image_trigger}...")
     with open(args.image_trigger, "w") as trigger:
         yaml.dump(
             image_trigger,

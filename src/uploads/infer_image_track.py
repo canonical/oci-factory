@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
     base_release, track = get_base_and_track(rockcraft_yaml)
 
-    print(f"rock track: {track}")
+    logger.info(f"rock track: {track}")
 
     with open(os.environ["GITHUB_OUTPUT"], "a") as gh_out:
         print(f"track={track}", file=gh_out)
