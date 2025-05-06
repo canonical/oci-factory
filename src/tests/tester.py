@@ -7,9 +7,9 @@ from typing import Literal
 import docker
 from pydantic import BaseModel, PrivateAttr
 
-from ..shared.logs import Logger
+from ..shared.logs import get_logger
 
-logger = Logger().get_logger()
+logger = get_logger(__package__)
 
 
 class TestingError(Exception):

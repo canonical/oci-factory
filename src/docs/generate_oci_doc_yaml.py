@@ -23,9 +23,9 @@ from dateutil import parser
 import src.shared.release_info as shared
 from src.docs.schema.triggers import DocSchema
 
-from ..shared.logs import Logger
+from ..shared.logs import get_logger
 
-logger = Logger().get_logger()
+logger = get_logger(__package__)
 
 
 def cli_args() -> argparse.ArgumentParser:

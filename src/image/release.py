@@ -17,11 +17,11 @@ import yaml
 
 import src.shared.release_info as shared
 
-from ..shared.logs import Logger
+from ..shared.logs import get_logger
 from .utils.encoders import DateTimeEncoder
 from .utils.schema.triggers import KNOWN_RISKS_ORDERED, ImageSchema
 
-logger = Logger().get_logger()
+logger = get_logger(__package__)
 
 # generate single date for consistent EOL checking
 execution_timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")

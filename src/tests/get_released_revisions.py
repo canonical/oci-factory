@@ -18,12 +18,12 @@ from datetime import datetime, timezone
 
 import docker
 
-from ..shared.logs import Logger
+from ..shared.logs import get_logger
 
 SKOPEO_IMAGE = os.getenv("SKOPEO_IMAGE", "quay.io/skopeo/stable:v1.15.1")
 REGISTRY = "ghcr.io/canonical/oci-factory"
 
-logger = Logger(stream=sys.stdout, level="INFO").get_logger()
+logger = get_logger(stream=sys.stdout, level="INFO")
 
 
 def get_image_name_in_registry(img_name: str, revision: str) -> str:

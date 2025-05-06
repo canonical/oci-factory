@@ -14,7 +14,7 @@ import yaml
 from git import Repo
 
 from ..shared.github_output import GithubOutput
-from ..shared.logs import Logger
+from ..shared.logs import get_logger
 from ..uploads.infer_image_track import get_base_and_track
 from .utils.schema.revision_data import RevisionDataSchema
 from .utils.schema.triggers import ImageSchema
@@ -23,7 +23,7 @@ from .utils.schema.triggers import ImageSchema
 # - inject_metadata uses a static github url, does this break builds that are sourced
 #   from non-gh repos?
 
-logger = Logger().get_logger()
+logger = get_logger(__package__)
 
 parser = argparse.ArgumentParser()
 parser.add_argument(

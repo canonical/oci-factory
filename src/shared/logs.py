@@ -1,3 +1,4 @@
+import inspect
 import logging
 import os
 import sys
@@ -30,51 +31,40 @@ class ColorFormatter(logging.Formatter):
         return result
 
 
-class Logger:
-    _instances = {}
-
-    def __new__(cls, name: str = __name__, *args, **kwargs):
-        if name not in cls._instances:
-            cls._instances[name] = super(Logger, cls).__new__(cls)
-            cls._instances[name]._initialized = False
-        return cls._instances[name]
-
-    def __init__(
-        self,
-        name: str = __name__,
+def get_logger(
+        name: str,
         log_file: str | None = None,
-        level: int | str | None = None,
-        fmt: str = "[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s",
+        level: int | str = None,
+        fmt: str = "[%(asctime)s] [%(name)s.%(module)s.%(funcName)s] [%(levelname)s] %(message)s",
         stream: str | object | None = "stdout",
-    ):
-        if self._initialized:
-            return
-        self.logger = logging.getLogger(name)
+) -> logging.Logger:
 
-        if not level:
-            level = RUNNER_LOG_LEVELS[os.environ.get("RUNNER_DEBUG", "0")]
+    if name in logging.root.manager.loggerDict:
+        return logging.getLogger(name)
 
-        if isinstance(level, str):
-            level = getattr(logging, level.upper(), logging.INFO)
+    logger = logging.getLogger(name)
 
-        self.logger.setLevel(level)
+    if not level:
+        level = RUNNER_LOG_LEVELS[os.environ.get("RUNNER_DEBUG", "0")]
 
-        formatter = ColorFormatter(fmt, datefmt="%Y-%m-%d %H:%M:%S")
+    if isinstance(level, str):
+        level = getattr(logging, level.upper(), logging.INFO)
 
-        if stream:
-            stream_obj = {"stdout": sys.stdout, "stderr": sys.stderr}.get(
-                stream, stream
-            )
-            sh = logging.StreamHandler(stream_obj)
-            sh.setFormatter(formatter)
-            self.logger.addHandler(sh)
+    logger.setLevel(level)
 
-        if log_file:
-            fh = logging.FileHandler(log_file)
-            fh.setFormatter(formatter)
-            self.logger.addHandler(fh)
+    if stream:
+        color_formatter = ColorFormatter(fmt, datefmt="%Y-%m-%d %H:%M:%S")
+        stream_obj = {"stdout": sys.stdout, "stderr": sys.stderr}.get(
+            stream, stream
+        )
+        sh = logging.StreamHandler(stream_obj)
+        sh.setFormatter(color_formatter)
+        logger.addHandler(sh)
 
-        self._initialized = True
+    if log_file:
+        formatter = logging.Formatter(fmt, datefmt="%Y-%m-%d %H:%M:%S")
+        fh = logging.FileHandler(log_file)
+        fh.setFormatter(formatter)
+        logger.addHandler(fh)
 
-    def get_logger(self) -> logging.Logger:
-        return self.logger
+    return logger
