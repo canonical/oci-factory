@@ -1,5 +1,7 @@
 #!/bin/bash -ex
 
+source $(dirname $0)/../configs/swift.public.novarc
+
 # SUITE="{{ suite }}"
 # RELEASE="{{ release }}"
 
@@ -25,10 +27,10 @@ publish_with_auth_token()
 {
     local token=$1 name=$2
     shift 2
-    echo "Publishing to Docker registry repository $name ..."
+    log_info "Publishing to Docker registry repository $name ..."
     REGISTRY_AUTH=$token cpc-build-tools.oci-registry-upload \
         "${source_img}" "$name" "$@"
-    echo "Publishing to Docker registry repository $name finished"
+    log_info "Publishing to Docker registry repository $name finished"
 }
 
 publish_with_username_password()
@@ -45,7 +47,7 @@ publish_to_aws_ecr_public()
     local key_id=$1 key=$2 name="public.ecr.aws/$3"
     shift 3
 
-    echo "Getting credentials for AWS Public ECR repository $name"
+    log_info "Getting credentials for AWS Public ECR repository $name"
     local token
     token=$(
         AWS_ACCESS_KEY_ID=$key_id AWS_SECRET_ACCESS_KEY=$key \
@@ -93,7 +95,7 @@ acr_repo_name="${ACR_NAMESPACE}/${image_name}"
 ecr_repo_name="${ECR_NAMESPACE}/${image_name}"
 # ecr_lts_repo_name="${ECR_LTS_NAMESPACE}/${image_name}"
 
-echo "Publishing ${image_name} to registries with tags: ${tag_names[@]}"
+log_info "Publishing ${image_name} to registries with tags: ${tag_names[@]}"
 
 trace_suspend
 if [ ! -z $GHCR_REPO ]; then

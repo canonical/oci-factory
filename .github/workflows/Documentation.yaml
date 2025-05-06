@@ -67,6 +67,7 @@ jobs:
           if [[ "$RUNNER_DEBUG" == "1" ]]; then
             set -x
           fi
+          source src/shared/logs.sh
 
           # check if this is coming from a workflow dispatch/call
           # as checking github.event_name isn't reliable here
@@ -78,7 +79,7 @@ jobs:
             occurrences="${img_path//[^,]}"
             if [ ${#occurrences} -ne 0 ]
             then
-              echo "ERR: can only build documentation for 1 image at a time, but trying to document ${img_path}"
+              log_error "can only build documentation for 1 image at a time, but trying to document ${img_path}"
               exit 1
             fi
           fi

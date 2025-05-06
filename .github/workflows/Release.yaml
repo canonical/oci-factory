@@ -62,11 +62,12 @@ jobs:
           if [[ "$RUNNER_DEBUG" == "1" ]]; then
             set -x
           fi
+          source src/shared/logs.sh
           img_dir="${{ steps.changed-files.outputs.all_changed_files }}"
           occurrences="${img_dir//[^,]}"
           if [ ${#occurrences} -ne 0 ]
           then
-            echo "ERR: can only release 1 image at a time, but trying to release ${img_dir}"
+            log_error "can only release 1 image at a time, but trying to release ${img_dir}"
             exit 1
           fi
           echo "img-name=$(basename ${img_dir})" >> "$GITHUB_OUTPUT"
@@ -142,7 +143,8 @@ jobs:
           if [[ "$RUNNER_DEBUG" == "1" ]]; then
             set -x
           fi
-          echo "Running in production?  ${{ env.IS_PROD == 'true' && 'YES' || 'NO' }}"
+          source src/shared/logs.sh
+          log_info "Running in production?  ${{ env.IS_PROD == 'true' && 'YES' || 'NO' }}"
           
           python3 -m src.image.release \
             --image-trigger oci/${{ inputs.oci-image-name }}/image.yaml \

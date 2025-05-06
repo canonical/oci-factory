@@ -3,8 +3,10 @@
 # Send custom notifications to a Mattermost channel.
 #
 
+source $(dirname $0)/../shared/logs.sh
+
 if [[ "$RUNNER_DEBUG" == "1" ]]; then
-  set -x
+    set -x
 fi
 set -u
 
@@ -17,7 +19,7 @@ MM_SERVER=${MM_SERVER:-}
 
 if [ -z "$MM_CHANNEL_ID" ] || [ -z "$MM_BOT_TOKEN" ] || [ -z "$MM_SERVER" ]
 then
-    echo "ERROR: \$MM_CHANNEL_ID, \$MM_BOT_TOKEN and \$MM_SERVER must be provided"
+    log_error "\$MM_CHANNEL_ID, \$MM_BOT_TOKEN and \$MM_SERVER must be provided"
     exit 1
 fi
 
@@ -55,7 +57,7 @@ cat>${PAYLOAD_FILE} <<EOF
 }
 EOF
 
-echo "Posting message to Mattermost's channel ${MM_CHANNEL_ID}"
+log_info "Posting message to Mattermost's channel ${MM_CHANNEL_ID}"
 
 curl_out=$(mktemp)
 HTTP_CODE=$(curl -i -o ${curl_out} --write-out "%{http_code}" \
@@ -65,7 +67,7 @@ HTTP_CODE=$(curl -i -o ${curl_out} --write-out "%{http_code}" \
     -d @${PAYLOAD_FILE})
 
 if [[ ${HTTP_CODE} -lt 200 || ${HTTP_CODE} -gt 299 ]] ; then
-    echo "ERROR: unable to post message into Mattermost channel"
+    log_error "unable to post message into Mattermost channel"
     cat $curl_out
     exit 22
 fi

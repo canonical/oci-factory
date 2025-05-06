@@ -2,6 +2,7 @@
 
 # Source Swift config
 source $(dirname $0)/../configs/swift.public.novarc
+source $(dirname $0)/../shared/logs.sh
 
 if [[ "$RUNNER_DEBUG" == "1" ]]; then
   set -x
@@ -31,7 +32,7 @@ while [ $TIMEOUT -gt 0 ]; do
     swift list $SWIFT_CONTAINER_NAME -p $IMAGE_NAME/ | grep "lockfile.lock" && sleep $SLEEP_TIME || break
     TIMEOUT=$(( $TIMEOUT - $SLEEP_TIME ))
     if [ $TIMEOUT -lt 1 ]; then
-        echo "Timeout reached while waiting to write lockfile into the Swift container for ${IMAGE_NAME}."
+        log_error "Timeout reached while waiting to write lockfile into the Swift container for ${IMAGE_NAME}."
         exit 1
     fi
 done
