@@ -1,6 +1,6 @@
 import logging
+import os
 import sys
-from typing import Optional, Union
 
 # ANSI escape codes for colors
 LOG_COLORS = {
@@ -11,7 +11,10 @@ LOG_COLORS = {
     "CRITICAL": "\033[91m",  # Red
 }
 RESET_COLOR = "\033[0m"
-
+RUNNER_LOG_LEVELS = {
+    '0': logging.INFO,
+    '1': logging.DEBUG,
+}
 
 class ColorFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
@@ -39,14 +42,17 @@ class Logger:
     def __init__(
         self,
         name: str = __name__,
-        log_file: Optional[str] = None,
-        level: Union[int, str] = logging.INFO,
+        log_file: str | None = None,
+        level: int | str | None = None,
         fmt: str = "[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s",
-        stream: Union[None, str, object] = "stdout",
+        stream: str | object | None = "stdout",
     ):
         if self._initialized:
             return
         self.logger = logging.getLogger(name)
+
+        if not level:
+            level = RUNNER_LOG_LEVELS[os.environ.get("RUNNER_DEBUG", "0")]
 
         if isinstance(level, str):
             level = getattr(logging, level.upper(), logging.INFO)
