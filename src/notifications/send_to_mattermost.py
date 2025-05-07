@@ -54,7 +54,7 @@ def main():
     }
 
     logger.debug(
-        f"Message to be sent to Mattermost: {json.dumps(payload["props"], indent=2)}"
+        f"Message to be sent to Mattermost: {json.dumps(payload['props'], indent=2)}"
     )
 
     with tempfile.NamedTemporaryFile("w+", delete=False) as f:
