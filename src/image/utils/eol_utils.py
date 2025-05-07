@@ -1,10 +1,13 @@
 import csv
-import logging
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
+from ...shared.logs import get_logger
+
 UBUNTU_DISTRO_INFO = "/usr/share/distro-info/ubuntu.csv"
+
+logger = get_logger()
 
 
 def is_track_eol(track_value: str, track_name: str | None = None) -> bool:
@@ -23,7 +26,7 @@ def is_track_eol(track_value: str, track_name: str | None = None) -> bool:
     is_eol = eol_date < datetime.now(timezone.utc)
 
     if is_eol and track_name is not None:
-        logging.warning(f'Removing EOL track "{track_name}", EOL: {eol_date}')
+        logger.warning(f'Removing EOL track "{track_name}", EOL: {eol_date}')
 
     return is_eol
 
@@ -90,7 +93,7 @@ def track_eol_exceeds_base_eol(track: str, track_eol: str) -> Optional[dict[str,
     ).replace(tzinfo=timezone.utc)
 
     if eol_date > base_eol:
-        logging.warning(
+        logger.warning(
             f"Track {track} has an EOL date {eol_date} that exceeds the base image EOL date {base_eol}"
         )
 
