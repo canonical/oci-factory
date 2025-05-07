@@ -40,3 +40,6 @@ docker run -v $PWD:/src -w /src -e DISABLE_DOCS=1 \
 sudo mv bin/skopeo /usr/local/bin/
 sudo chmod +x /usr/local/bin/skopeo
 popd
+
+sudo apt update
+sudo apt install -y distro-info

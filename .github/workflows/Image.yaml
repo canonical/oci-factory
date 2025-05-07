@@ -127,7 +127,8 @@ jobs:
 
           python3 -m src.image.prepare_single_image_build_matrix \
             --oci-path ${{ steps.validate-image.outputs.img-path }} \
-            --revision-data-dir ${{ env.DATA_DIR }}
+            --revision-data-dir ${{ env.DATA_DIR }} \
+            --warn-image-eol-exceeds-base-eol
 
   validate-matrix:
     # validate matrix prepared in previous job before running Build-Rock workflow.

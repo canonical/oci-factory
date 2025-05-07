@@ -17,8 +17,13 @@ import yaml
 
 import src.shared.release_info as shared
 
+from ..shared.github_output import GithubStepSummary
 from ..shared.logs import get_logger
 from .utils.encoders import DateTimeEncoder
+from .utils.eol_utils import (
+    generate_base_eol_exceed_warning,
+    track_eol_exceeds_base_eol,
+)
 from .utils.schema.triggers import KNOWN_RISKS_ORDERED, ImageSchema
 
 logger = get_logger()
@@ -109,6 +114,26 @@ def remove_eol_tags(tag_to_revision, all_releases):
             tag = all_releases[track][risk]["target"]
 
     return filtered_tag_to_revision
+
+
+def find_tracks_has_eol_exceeding_base_eol(all_releases):
+    """Finds all tracks that have EOL dates exceeding the base EOL date."""
+    pattern = r".+-\d{2}\.\d{2}$"
+
+    tracks = []
+
+    # find all tracks with EOL dates
+    tracks_with_eol = {
+        track: release["end-of-life"]
+        for track, release in all_releases.items()
+        if "end-of-life" in release and re.match(pattern, track)
+    }
+
+    for track, track_eol in tracks_with_eol.items():
+        if eols := track_eol_exceeds_base_eol(track, track_eol):
+            tracks.append(eols)
+
+    return tracks
 
 
 def main():
@@ -307,6 +332,14 @@ def main():
             print(f"gh-releases-matrix={matrix}", file=gh_out)
 
     else:
+        # Write warnings to the summary
+        tracks_eol_exceeding_base_eol = find_tracks_has_eol_exceeding_base_eol(all_releases)
+        if tracks_eol_exceeding_base_eol:
+            title, text = generate_base_eol_exceed_warning(tracks_eol_exceeding_base_eol)
+            title = f"## Release: {title}"
+            with GithubStepSummary() as summary:
+                summary.write(title, text)
+
         logger.info(
             f"Updating {args.all_releases} file with:\n"
             f"{json.dumps(all_releases, indent=2, cls=DateTimeEncoder)}"
