@@ -641,5 +641,5 @@ jobs:
         run: |
           for channel in $(echo ${{ steps.get-contacts.outputs.mattermost-channels }} | tr ',' ' ')
           do
-            MM_CHANNEL_ID="${channel}" ./src/notifications/send_to_mattermost.sh
+            MM_CHANNEL_ID="${channel}" python3 -m src.notifications.send_to_mattermost
           done
