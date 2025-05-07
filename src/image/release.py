@@ -17,8 +17,11 @@ import yaml
 
 import src.shared.release_info as shared
 
+from ..shared.logs import get_logger
 from .utils.encoders import DateTimeEncoder
 from .utils.schema.triggers import KNOWN_RISKS_ORDERED, ImageSchema
+
+logger = get_logger()
 
 # generate single date for consistent EOL checking
 execution_timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -97,7 +100,9 @@ def remove_eol_tags(tag_to_revision, all_releases):
                 < execution_timestamp
                 and base_tag in filtered_tag_to_revision
             ):
-                print(f"Warning: Removing EOL tag {repr(base_tag)}, date: {eol_date}")
+                logger.warning(
+                    f"Warning: Removing EOL tag {repr(base_tag)}, date: {eol_date}"
+                )
                 filtered_tag_to_revision.pop(base_tag)
 
             # prep next iteration
@@ -118,23 +123,23 @@ def main():
         else os.path.abspath(args.image_trigger).split("/")[-2]
     )
 
-    print(f"Preparing to release revision tags for {img_name}")
+    logger.info(f"Preparing to release revision tags for {img_name}")
     all_revision_tags = shared.get_all_revision_tags(args.all_revision_tags)
     revision_to_track = shared.get_revision_to_track(all_revision_tags)
 
-    print(
+    logger.debug(
         "Revision (aka 'canonical') tags grouped by revision:\n"
         f"{json.dumps(revision_to_track, indent=2)}"
     )
 
-    print(f"Reading all previous releases from {args.all_releases}...")
+    logger.info(f"Reading all previous releases from {args.all_releases}...")
 
     all_releases = shared.read_json_file(args.all_releases)
     tag_mapping_from_all_releases = shared.get_tag_mapping_from_all_releases(
         all_releases
     )
 
-    print(f"Parsing image trigger {args.image_trigger}")
+    logger.info(f"Parsing image trigger {args.image_trigger}")
     with open(args.image_trigger, encoding="UTF-8") as trigger:
         image_trigger = yaml.load(trigger, Loader=yaml.BaseLoader)
 
@@ -143,7 +148,7 @@ def main():
     tag_mapping_from_trigger = {}
     for track, risks in image_trigger["release"].items():
         if track not in all_releases:
-            print(f"Track {track} will be created for the 1st time")
+            logger.info(f"Track {track} will be created for the 1st time")
             all_releases[track] = {}
 
         for risk, value in risks.items():
@@ -155,19 +160,19 @@ def main():
                 continue
 
             if risk not in KNOWN_RISKS_ORDERED:
-                print(f"Skipping unknown risk {risk} in track {track}")
+                logger.warning(f"Skipping unknown risk {risk} in track {track}")
                 continue
 
             all_releases[track][risk] = {"target": value}
             tag = f"{track}_{risk}"
-            print(f"Channel {tag} points to {value}")
+            logger.info(f"Channel {tag} points to {value}")
             tag_mapping_from_trigger[tag] = value
 
     # update EOL dates from upload dictionary
     for upload in image_trigger["upload"] or []:
         for track, upload_release_dict in upload.get("release", {}).items():
             if track not in all_releases:
-                print(f"Track {track} will be created for the 1st time")
+                logger.info(f"Track {track} will be created for the 1st time")
                 all_releases[track] = {}
 
             if (
@@ -176,7 +181,7 @@ def main():
             ):
                 all_releases[track]["end-of-life"] = upload_release_dict["end-of-life"]
 
-    print(
+    logger.info(
         "Going to update channels according to the following:\n"
         f"{json.dumps(tag_mapping_from_trigger, indent=2)}"
     )
@@ -224,7 +229,7 @@ def main():
             # follow the parent tag until it is a digit (ie. revision number)
             parent_tag = all_tags_mapping[follow_tag]
 
-            print(f"Tag {follow_tag} is following tag {parent_tag}.")
+            logger.info(f"Tag {follow_tag} is following tag {parent_tag}.")
             follow_tag = parent_tag
 
         if int(follow_tag) not in revision_to_track:
@@ -250,14 +255,14 @@ def main():
             base_tag,
         ):
             latest_alias = base_tag.split("_")[-1]
-            print(f"Exceptionally converting tag {base_tag} to {latest_alias}.")
+            logger.info(f"Exceptionally converting tag {base_tag} to {latest_alias}.")
             release_tags[latest_alias] = revision
             release_tags.pop(base_tag)
 
         # stable risks have an alias with any risk string
         if base_tag.endswith("_stable"):
             stable_alias = "_".join(base_tag.split("_")[:-1])
-            print(f"Adding stable tag alias {stable_alias} for {base_tag}")
+            logger.info(f"Adding stable tag alias {stable_alias} for {base_tag}")
             release_tags[stable_alias] = revision
 
     # we finally have all the OCI tags to be released,
@@ -267,7 +272,7 @@ def main():
         group_by_revision[revision].append(tag)
 
     if not args.update_releases_json:
-        print(
+        logger.info(
             "Processed tag aliases and ready to release the following revisions:\n"
             f"{json.dumps(group_by_revision, indent=2)}"
         )
@@ -280,33 +285,36 @@ def main():
                 f"{args.ghcr_repo}/{img_name}:{revision_track}_{revision}"
             )
             this_dir = os.path.dirname(__file__)
-            print(f"Releasing {source_img} with tags:\n{tags}")
+            logger.info(f"Releasing {source_img} with tags:\n{tags}")
             subprocess.check_call(
                 [f"{this_dir}/tag_and_publish.sh", source_img, img_name] + tags
             )
 
             for tag in tags:
                 gh_release_info = {}
-                gh_release_info["canonical-tag"] = f"{img_name}_{revision_track}_{revision}"
+                gh_release_info["canonical-tag"] = (
+                    f"{img_name}_{revision_track}_{revision}"
+                )
                 gh_release_info["release-name"] = f"{img_name}_{tag}"
                 gh_release_info["name"] = f"{img_name}"
                 gh_release_info["revision"] = f"{revision}"
                 gh_release_info["channel"] = f"{tag}"
                 github_tags.append(gh_release_info)
-        
+
         matrix = {"include": github_tags}
 
         with open(os.environ["GITHUB_OUTPUT"], "a", encoding="UTF-8") as gh_out:
             print(f"gh-releases-matrix={matrix}", file=gh_out)
 
     else:
-        print(
+        logger.info(
             f"Updating {args.all_releases} file with:\n"
             f"{json.dumps(all_releases, indent=2, cls=DateTimeEncoder)}"
         )
 
         with open(args.all_releases, "w", encoding="UTF-8") as fd:
             json.dump(all_releases, fd, indent=4, cls=DateTimeEncoder)
+
 
 if __name__ == "__main__":
     main()

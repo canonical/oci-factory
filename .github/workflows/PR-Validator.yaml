@@ -32,15 +32,21 @@ jobs:
 
       - name: Only 1 image can be changed per PR
         run: |
-          set -eux
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
+          source src/shared/logs.sh
+          set -u
           dir_names="${{ steps.changed-files-dir-names.outputs.all_changed_files }}"
-          echo "Can only modify 1 image per PR"
+          log_error "Can only modify 1 image per PR"
           (( $(echo "${dir_names}" | wc -w) == 1 ))
 
       - name: Save matrix layout for file validation
         id: changed-files-matrix
         run: |
-          echo 'Changed files are: ${{ steps.changed-files.outputs.all_changed_files }}'
+          source src/shared/logs.sh
+          log_info 'Changed files are: ${{ steps.changed-files.outputs.all_changed_files }}'
           echo "matrix={\"filename\":${{ steps.changed-files.outputs.all_changed_files }}}" >> "$GITHUB_OUTPUT"
 
   check-missing-files:
@@ -80,7 +86,11 @@ jobs:
 
       - name: Validate YAML format
         run: |
-          set -eux
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
+          set -u
           pip install yamllint
           yamllint -c .yamllint.yaml ${{ matrix.filename }}
 

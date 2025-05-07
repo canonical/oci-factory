@@ -20,14 +20,17 @@ jobs:
 
       - name: Prepare test matrix
         id: prepare-test-matrix
-        run: ./src/tests/get_released_revisions.py --oci-images-path $PWD/oci
+        run: python3 -m src.tests.get_released_revisions --oci-images-path $PWD/oci
 
       - name: Infer date of last scan
         id: last-scan
         run: |
           # This is scheduled to run every day, so let's look at the previous
           # 26 hours, roughly
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
           last_scan="$(date --date='26 hours ago' +'%Y-%m-%dT%H:%M:00Z')"
           echo "date=$last_scan" >> "$GITHUB_OUTPUT"
 

@@ -34,5 +34,6 @@ runs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        echo "The workflow is not triggered by a permitted user. Cancelling the workflow."
+        source src/shared/logs.sh
+        log_error "The workflow is not triggered by a permitted user. Cancelling the workflow."
         gh run cancel ${{ github.run_id }}
