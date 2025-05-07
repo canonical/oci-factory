@@ -15,6 +15,7 @@ import yaml
 from git import Repo
 
 from ..shared.github_output import GithubOutput, GithubStepSummary
+from ..shared.source_url import get_source_url
 from ..uploads.infer_image_track import get_base_and_track
 from .utils.eol_utils import (
     generate_base_eol_exceed_warning,
@@ -23,6 +24,7 @@ from .utils.eol_utils import (
 )
 from .utils.schema.revision_data import RevisionDataSchema
 from .utils.schema.triggers import ImageSchema
+
 
 # TODO:
 # - inject_metadata uses a static github url, does this break builds that are sourced
@@ -190,7 +192,7 @@ def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: 
         build["dir_identifier"] = build["directory"].rstrip("/").replace("/", "_")
 
         with tempdir() as d:
-            url = f"https://github.com/{build['source']}.git"
+            url = get_source_url(build["source"])
             repo = Repo.clone_from(url, d)
             repo.git.checkout(build["commit"])
             # get the base image from the rockcraft.yaml file
