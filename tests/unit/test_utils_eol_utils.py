@@ -3,29 +3,22 @@ from datetime import datetime, timezone
 import pytest
 
 from src.image.utils.eol_utils import (
-    calculate_base_eol,
     generate_base_eol_exceed_warning,
+    get_base_eol,
     track_eol_exceeds_base_eol,
 )
 
 
 def test_calculate_base_eol():
     # Test for LTS base image
-    base_year = 2022
-    base_month = 4
-    expected_eol = datetime(year=2027, month=4, day=1, tzinfo=timezone.utc)
-    assert calculate_base_eol(base_year, base_month) == expected_eol
+    base = "24.04"
+    expected_eol = datetime(year=2029, month=5, day=31, tzinfo=timezone.utc)
+    assert get_base_eol(base) == expected_eol
 
     # Test for non-LTS base image
-    base_year = 2023
-    base_month = 5
-    expected_eol = datetime(year=2024, month=2, day=1, tzinfo=timezone.utc)
-    assert calculate_base_eol(base_year, base_month) == expected_eol
-
-    base_year = 24
-    base_month = 4
-    expected_eol = datetime(year=2029, month=4, day=1, tzinfo=timezone.utc)
-    assert calculate_base_eol(base_year, base_month) == expected_eol
+    base = "24.10"
+    expected_eol = datetime(year=2025, month=7, day=10, tzinfo=timezone.utc)
+    assert get_base_eol(base) == expected_eol
 
 
 def test_generate_base_eol_exceed_warning():
@@ -58,7 +51,7 @@ def test_generate_base_eol_exceed_warning():
 def test_track_eol_exceeds_base_eol():
     track = "1.0-22.04"
     track_eol = "2028-05-01T00:00:00Z"
-    base_eol = "2027-04-01T00:00:00Z"
+    base_eol = "2027-06-01T00:00:00Z"
     result = track_eol_exceeds_base_eol(track, track_eol)
     assert result == {
         "track": track,
@@ -70,6 +63,6 @@ def test_track_eol_exceeds_base_eol():
 
 def test_track_eol_no_exceeds_base_eol_no_exceed():
     track = "1.0-22.04"
-    track_eol = "2026-05-01T00:00:00Z"
+    track_eol = "2026-06-01T00:00:00Z"
     result = track_eol_exceeds_base_eol(track, track_eol)
     assert result is None

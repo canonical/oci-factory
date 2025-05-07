@@ -1,6 +1,10 @@
+import csv
 import logging
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Optional
+
+UBUNTU_DISTRO_INFO = "/usr/share/distro-info/ubuntu.csv"
 
 
 def is_track_eol(track_value: str, track_name: str | None = None) -> bool:
@@ -24,30 +28,27 @@ def is_track_eol(track_value: str, track_name: str | None = None) -> bool:
     return is_eol
 
 
-def calculate_base_eol(base_year: int, base_month: int) -> datetime:
-    """Calculate the end-of-life date of the base image.
+def get_base_eol(base: str) -> datetime:
+    """Find the EOL of the Ubuntu base image by reading /usr/share/distro-info/ubuntu.csv.
 
     Args:
-        base_year (int): The year of the base image.
-        base_month (int): The month of the base image.
+        base (str): The version ID of the base image, e.g., "22.04".
     Returns:
         datetime: The end-of-life date of the base image.
+    Raises:
+        ValueError: If the base image is not found in the CSV file.
     """
-    if base_year < 2000:
-        base_year += 2000
-    if base_year % 2 == 0 and base_month == 4:  # LTS
-        year = base_year + 5
-        month = base_month
-    else:
-        year = base_year + 1
-        month = (base_month + 9) % 12
+    ubuntu_distros = Path(UBUNTU_DISTRO_INFO).read_text(encoding="UTF-8")
+    reader = csv.DictReader(ubuntu_distros.splitlines(), delimiter=",")
+    for row in reader:
+        if row["version"].rstrip("LTS").strip() == base:
+            eol_date = datetime.strptime(
+                row["eol"],
+                "%Y-%m-%d",
+            ).replace(tzinfo=timezone.utc)
+            return eol_date
 
-    return datetime(
-        year=year,
-        month=month,
-        day=1,
-        tzinfo=timezone.utc,
-    )
+    raise ValueError(f"Base image {base} not found in {UBUNTU_DISTRO_INFO}")
 
 
 def generate_base_eol_exceed_warning(tracks_eol_exceed_base_eol: list[dict[str, Any]]):
@@ -82,8 +83,7 @@ def track_eol_exceeds_base_eol(track: str, track_eol: str) -> Optional[dict[str,
         None: If the track EOL date does not exceed the base image EOL date.
     """
     base_version_id = track.split("-")[-1]
-    base_year, base_month = map(int, base_version_id.split("."))
-    base_eol = calculate_base_eol(base_year, base_month)
+    base_eol = get_base_eol(base_version_id)
     eol_date = datetime.strptime(
         track_eol,
         "%Y-%m-%dT%H:%M:%SZ",

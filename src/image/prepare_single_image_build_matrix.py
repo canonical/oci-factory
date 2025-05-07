@@ -17,8 +17,8 @@ from git import Repo
 from ..shared.github_output import GithubOutput, GithubStepSummary
 from ..uploads.infer_image_track import get_base_and_track
 from .utils.eol_utils import (
-    calculate_base_eol,
     generate_base_eol_exceed_warning,
+    get_base_eol,
     is_track_eol,
     track_eol_exceeds_base_eol,
 )
@@ -238,9 +238,7 @@ def main():
     if args.warn_image_eol_exceeds_base_eol:
         tracks_eol_exceed_base_eol = find_eol_exceed_base_eol(builds)
         if tracks_eol_exceed_base_eol:
-            title, text = generate_base_eol_exceed_warning(
-                tracks_eol_exceed_base_eol
-            )
+            title, text = generate_base_eol_exceed_warning(tracks_eol_exceed_base_eol)
             title = f"## Image: {title}"
             with GithubStepSummary() as summary:
                 summary.write(title, text)
