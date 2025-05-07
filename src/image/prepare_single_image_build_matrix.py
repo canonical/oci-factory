@@ -3,7 +3,6 @@
 import argparse
 import glob
 import json
-import logging
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
@@ -15,6 +14,7 @@ import yaml
 from git import Repo
 
 from ..shared.github_output import GithubOutput, GithubStepSummary
+from ..shared.logs import get_logger
 from ..shared.source_url import get_source_url
 from ..uploads.infer_image_track import get_base_and_track
 from .utils.eol_utils import (
@@ -29,6 +29,8 @@ from .utils.schema.triggers import ImageSchema
 # TODO:
 # - inject_metadata uses a static github url, does this break builds that are sourced
 #   from non-gh repos?
+
+logger = get_logger()
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -72,7 +74,7 @@ class RevisionDataSchemaFilter(RevisionDataSchema):
     @pydantic.model_validator(mode="before")
     def _warn_extra_fields(cls, data: Any) -> Any:
         for extra_field in data.keys() - cls.model_fields.keys():
-            logging.warning(
+            logger.warning(
                 f'Field "{extra_field}" removed from {data["name"]} revision data'
             )
 
@@ -247,7 +249,7 @@ def main():
     builds = filter_eol_builds(builds)
 
     # pretty print builds
-    logging.info(
+    logger.info(
         f"Generating matrix for following builds: \n {json.dumps(builds, indent=4)}"
     )
 

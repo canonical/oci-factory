@@ -3,6 +3,7 @@
 
 set -e
 
+source $(dirname $0)/../../shared/logs.sh
 
 function usage(){
     echo
@@ -32,14 +33,14 @@ done
 
 if [ -z "$ROCKCRAFT_DIR" ]
 then
-    echo "Error: Missing rockcraft project directory argument (-d)"
+    log_error "Missing rockcraft project directory argument (-d)"
     usage
     exit 1
 fi
 
 if [ -z "$LP_CREDENTIALS_B64" ]
 then
-    echo "Error: Missing launchpad credentials argument (-c)"
+    log_error "Missing launchpad credentials argument (-c)"
     usage
     exit 1
 fi

@@ -11,9 +11,13 @@ trace_suspend() {
 trace_resume() {
     if [ "${__resume_trace:-0}" = 1 ]; then
         unset __resume_trace
-        set -x
+        if [[ "$RUNNER_DEBUG" == "1" ]]; then
+          set -x
+        fi
     fi
 }
+
+source $(dirname $0)/../shared/logs.sh
 
 DOCS_GIT_URL='https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/templates'
 image_name="${1}"
@@ -107,6 +111,6 @@ aws --region us-east-1 ecr-public put-repository-catalog-data \
 # Check for error
 if [ -n "${err}" ]
 then
-   echo "Failed to publish docs for ${image_name} in the following registries: ${err}"
+   log_error "Failed to publish docs for ${image_name} in the following registries: ${err}"
    exit 1
 fi

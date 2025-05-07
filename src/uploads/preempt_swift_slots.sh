@@ -3,7 +3,9 @@
 # Source Swift config
 source $(dirname $0)/../configs/swift.public.novarc
 
-set -x
+if [[ "$RUNNER_DEBUG" == "1" ]]; then
+  set -x
+fi
 
 REVISION_DATA_DIR=$1
 

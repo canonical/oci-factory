@@ -3,7 +3,9 @@
 # Source Swift config
 source $(dirname $0)/../configs/swift.public.novarc
 
-set -x
+if [[ "$RUNNER_DEBUG" == "1" ]]; then
+  set -x
+fi
 
 # Does image already exist in Swift?
 # If not, then this is immediately revision number 1
