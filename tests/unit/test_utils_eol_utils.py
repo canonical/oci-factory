@@ -26,24 +26,24 @@ def test_generate_base_eol_exceed_warning():
         {
             "track": "1.0-22.04",
             "base": "22.04",
-            "eol_date": "2024-05-01T00:00:00Z",
-            "base_eol": "2027-04-01T00:00:00Z",
+            "track_eol": "2024-05-01",
+            "base_eol": "2027-04-01",
         },
         {
             "track": "1.0-22.10",
             "base": "22.10",
-            "eol_date": "2024-05-01T00:00:00Z",
-            "base_eol": "2027-04-01T00:00:00Z",
+            "track_eol": "2024-05-01",
+            "base_eol": "2027-04-01",
         },
     ]
     title, text = generate_base_eol_exceed_warning(tracks_eol_exceed_base_eol)
     assert title == ("Found tracks with EOL date exceeding base image's EOL date\n")
     assert text == (
         "Following tracks have an EOL date that exceeds the base image's EOL date:\n"
-        "| Track | Base | EOL Date | Base Image EOL Date |\n"
-        "|-------|------|----------|---------------------|\n"
-        "| 1.0-22.04 | 22.04 | 2024-05-01T00:00:00Z | 2027-04-01T00:00:00Z |\n"
-        "| 1.0-22.10 | 22.10 | 2024-05-01T00:00:00Z | 2027-04-01T00:00:00Z |\n"
+        "| Track | Base | Track EOL Date | Base EOL Date |\n"
+        "|-------|------|----------------|---------------|\n"
+        "| 1.0-22.04 | 22.04 | 2024-05-01 | 2027-04-01 |\n"
+        "| 1.0-22.10 | 22.10 | 2024-05-01 | 2027-04-01 |\n"
         "\nPlease check the EOL date of the base image and the track.\n"
     )
 
@@ -51,13 +51,13 @@ def test_generate_base_eol_exceed_warning():
 def test_track_eol_exceeds_base_eol():
     track = "1.0-22.04"
     track_eol = "2028-05-01T00:00:00Z"
-    base_eol = "2027-06-01T00:00:00Z"
+    base_eol = "2027-06-01"
     result = track_eol_exceeds_base_eol(track, track_eol)
     assert result == {
         "track": track,
         "base": "ubuntu:22.04",
-        "eol_date": datetime.fromisoformat(track_eol),
-        "base_eol": datetime.fromisoformat(base_eol),
+        "track_eol": track_eol[:10],
+        "base_eol": base_eol,
     }
 
 

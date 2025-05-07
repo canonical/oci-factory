@@ -56,16 +56,16 @@ def generate_base_eol_exceed_warning(tracks_eol_exceed_base_eol: list[dict[str, 
 
     Args:
         tracks_eol_exceed_base_eol (list[dict[str, Any]]): List of tracks with EOL date exceeding base image's EOL date.
-            This list contains dictionaries with keys: 'track', 'base', 'eol_date', and 'base_eol'.
+            This list contains dictionaries with keys: 'track', 'base', 'track_eol', and 'base_eol'.
     Returns:
         tuple: A tuple containing the title and text for the warning.
     """
     title = "Found tracks with EOL date exceeding base image's EOL date\n"
     text = "Following tracks have an EOL date that exceeds the base image's EOL date:\n"
-    table = "| Track | Base | EOL Date | Base Image EOL Date |\n"
-    table += "|-------|------|----------|---------------------|\n"
+    table = "| Track | Base | Track EOL Date | Base EOL Date |\n"
+    table += "|-------|------|----------------|---------------|\n"
     for build in tracks_eol_exceed_base_eol:
-        table += f"| {build['track']} | {build['base']} | {build['eol_date']} | {build['base_eol']} |\n"
+        table += f"| {build['track']} | {build['base']} | {build['track_eol']} | {build['base_eol']} |\n"
     text += table
     text += "\nPlease check the EOL date of the base image and the track.\n"
     return title, text
@@ -97,8 +97,8 @@ def track_eol_exceeds_base_eol(track: str, track_eol: str) -> Optional[dict[str,
         return {
             "track": track,
             "base": f"ubuntu:{base_version_id}",
-            "eol_date": eol_date,
-            "base_eol": base_eol,
+            "track_eol": eol_date.strftime("%Y-%m-%d"),
+            "base_eol": base_eol.strftime("%Y-%m-%d"),
         }
 
     return None
