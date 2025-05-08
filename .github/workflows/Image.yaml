@@ -328,6 +328,10 @@ jobs:
           echo "Detected architectures: ${arches}"
           echo "arches='${arches}'" >> "$GITHUB_OUTPUT"
 
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+    
       - name: Setup SSBOM
         run: |
           go install github.com/canonical/ssbom/cmd/ssbom@latest
