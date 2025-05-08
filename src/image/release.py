@@ -118,15 +118,13 @@ def remove_eol_tags(tag_to_revision, all_releases):
 
 def find_tracks_has_eol_exceeding_base_eol(all_releases):
     """Finds all tracks that have EOL dates exceeding the base EOL date."""
-    pattern = r".+-\d{2}\.\d{2}$"
-
     tracks = []
 
     # find all tracks with EOL dates
     tracks_with_eol = {
         track: release["end-of-life"]
         for track, release in all_releases.items()
-        if "end-of-life" in release and re.match(pattern, track)
+        if "end-of-life" in release
     }
 
     for track, track_eol in tracks_with_eol.items():
