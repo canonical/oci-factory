@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import sys
@@ -5,7 +6,9 @@ import tempfile
 
 import requests
 
+from ..shared.github_output import GithubOutput
 from ..shared.logs import get_logger
+
 
 COLOR_MAP = {
     "unknown": "#B0B0B0",
@@ -15,8 +18,32 @@ COLOR_MAP = {
 
 logger = get_logger()
 
+def summarize(jobs_file: str) -> None:
+    """Summarize the jobs results and return a summary string."""
+    with open(jobs_file, encoding="UTF-8") as jf:
+        previous_jobs = json.load(jf)
 
-def main():
+    summary = []
+    for job, details in previous_jobs.items():
+        if "fail" in details["result"]:
+            icon = ":gh-failure-octicon-xcirclefillicon:"
+        elif "skip" in details["result"]:
+            icon = ":gh-skip-octicon-skipicon:"
+        elif "cancel" in details["result"]:
+            icon = ":gh-cancelled-octicon-stopicon:"
+        elif "succe" in details["result"]:
+            icon = ":gh-success-octicon-checkcirclefillicon:"
+        else:
+            icon = ":grey_question:"
+
+        summary.append(f"{icon} {job}")
+
+    with GithubOutput() as github_output:
+        github_output.write(
+            summary=" | ".join(summary),
+        )
+
+def send() -> None:
     env_vars = {
         "MM_CHANNEL_ID": None,
         "MM_BOT_TOKEN": None,
@@ -78,6 +105,34 @@ def main():
         logger.error(response.text, file=sys.stderr)
         sys.exit(22)
 
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Send a message to Mattermost or summarize the jobs results."
+    )
+    subparsers = parser.add_subparsers(dest="command")
+    subparsers.required = True
+    summarize_parser = subparsers.add_parser(
+        "summarize",
+        help="Summarize the jobs results.",
+    )
+    summarize_parser.add_argument(
+        "jobs_file",
+        help="Path to a file where the jobs, in JSON format, are described.",
+    )
+    _ = subparsers.add_parser(
+        "send",
+        help="Send a message to Mattermost.",
+    )
+    args = parser.parse_args()
+
+    if args.command == "summarize":
+        summarize(args.jobs_file)
+    elif args.command == "send":
+        send()
+    else:
+        parser.print_help()
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

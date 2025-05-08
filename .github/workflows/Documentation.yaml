@@ -181,7 +181,7 @@ jobs:
         id: get-summary
         run: |
           echo '${{ toJson(needs) }}' > jobs.json
-          python3 -m src.notifications.summarize_workflow_results --jobs-file jobs.json
+          python3 -m src.notifications.mattermost_notifier summarize jobs.json
 
       - name: Get contacts for ${{ needs.validate-documentation-request.outputs.oci-img-name }}
         id: get-contacts
@@ -202,5 +202,5 @@ jobs:
         run: |
           for channel in $(echo ${{ steps.get-contacts.outputs.mattermost-channels }} | tr ',' ' ')
           do
-            MM_CHANNEL_ID="${channel}" python3 -m src.notifications.send_to_mattermost
+            MM_CHANNEL_ID="${channel}" python3 -m src.notifications.mattermost_notifier send
           done
