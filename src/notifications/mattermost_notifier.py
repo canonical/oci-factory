@@ -89,13 +89,13 @@ def send() -> None:
         f.flush()
         payload_file = f.name
 
-    logger.info(f"Posting message to Mattermost's channel {env_vars["MM_CHANNEL_ID"]}")
+    logger.info(f"Posting message to Mattermost's channel {env_vars['MM_CHANNEL_ID']}")
 
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {env_vars["MM_BOT_TOKEN"]}",
+        "Authorization": f"Bearer {env_vars['MM_BOT_TOKEN']}",
     }
-    url = f"{env_vars["MM_SERVER"]}/api/v4/posts"
+    url = f"{env_vars['MM_SERVER']}/api/v4/posts"
 
     with open(payload_file, "r") as f:
         response = requests.post(url, headers=headers, data=f.read())
