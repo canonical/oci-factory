@@ -43,6 +43,7 @@ on:
 
 env:
   VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"
+  ROCK_REPO_DIR: rock-repo
 
 jobs:
   prepare-build:
@@ -73,7 +74,12 @@ jobs:
       - name: Validate image from dispatch
         id: validate-image
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
+
+          source src/shared/logs.sh
 
           # check if this is coming from a workflow dispatch/call
           # as checking github.event_name isn't reliable here
@@ -85,7 +91,7 @@ jobs:
             occurrences="${img_path//[^,]}"
             if [ ${#occurrences} -ne 0 ]
             then
-              echo "ERR: can only build 1 image at a time, but trying to trigger ${img_path}"
+              log_error "can only build 1 image at a time, but trying to trigger ${img_path}"
               exit 1
             fi
           fi
@@ -121,7 +127,8 @@ jobs:
 
           python3 -m src.image.prepare_single_image_build_matrix \
             --oci-path ${{ steps.validate-image.outputs.img-path }} \
-            --revision-data-dir ${{ env.DATA_DIR }}
+            --revision-data-dir ${{ env.DATA_DIR }} \
+            --warn-image-eol-exceeds-base-eol
 
   validate-matrix:
     # validate matrix prepared in previous job before running Build-Rock workflow.
@@ -131,24 +138,31 @@ jobs:
       fail-fast: true
       matrix: ${{ fromJSON(needs.prepare-build.outputs.build-matrix) }}
     steps:
-      - name: Clone GitHub image repository
+
+      - name: Cloning OCI Factory
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Clone GitHub image repository
+        uses: ./.github/actions/checkout
         with:
           repository: ${{ matrix.source }}
           ref: ${{ matrix.commit }}
           submodules: "recursive"
-          fetch-depth: 1
+          path: ${{ env.ROCK_REPO_DIR }}
 
       - name: Installing yq
         run: sudo snap install yq --channel=v4/stable
 
       - name: Validate image naming and base
         run: |
-          rock_name=`cat "${{ matrix.directory }}"/rockcraft.y*ml | yq -r .name`
-          folder_name="${{ matrix.path }}"
+          source src/shared/logs.sh
+          rock_name=`cat "${{ env.ROCK_REPO_DIR }}/${{ matrix.directory }}"/rockcraft.y*ml | yq -r .name`
+          folder_name="${{ env.ROCK_REPO_DIR }}/${{ matrix.path }}"
           if [[ "${folder_name}" != *"${rock_name}"* ]]
           then
-            echo "ERROR: the OCI folder name '${folder_name}', must contain the rock's name '${rock_name}'."
+            log_error "the OCI folder name '${folder_name}', must contain the rock's name '${rock_name}'."
             exit 1
           fi
 
@@ -225,7 +239,10 @@ jobs:
       - name: Prepare builds matrix for upload
         id: prepare-matrix
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
 
           mkdir ${{ env.DATA_DIR }}
 
@@ -319,13 +336,17 @@ jobs:
       - name: Infer architectures
         id: get-arches
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
+          source src/shared/logs.sh
           arches=$(skopeo inspect --raw \
             oci-archive:${{ steps.rename-oci-archive.outputs.name }} \
             | jq -r 'if has("manifests") then .manifests[].platform.architecture else "${{ runner.arch }}" end' \
             | jq -nRcr '[inputs] | join(",")')
 
-          echo "Detected architectures: ${arches}"
+          log_info "Detected architectures: ${arches}"
           echo "arches='${arches}'" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-go@v5
@@ -345,8 +366,12 @@ jobs:
       - name: Generate SBOMs
         id: generate-sboms
         run: |
-          set -ex
-          echo "Generating SBOMs for ${{ steps.get-arches.outputs.arches }}"
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
+          source src/shared/logs.sh
+          log_info "Generating SBOMs for ${{ steps.get-arches.outputs.arches }}"
 
           IFS=',' read -ra arch_list <<< ${{ steps.get-arches.outputs.arches }}
           for arch in "${arch_list[@]}"; do
@@ -354,7 +379,7 @@ jobs:
               continue
             fi
 
-            echo "Generate SBOM for ${arch}"
+            log_info "Generate SBOM for ${arch}"
 
             skopeo --override-arch $arch copy \
               oci-archive:${{ steps.rename-oci-archive.outputs.name }} \
@@ -393,7 +418,10 @@ jobs:
           SBOMS: ${{ steps.generate-sboms.outputs.sboms }}
           OCI_IMAGE_ARCHIVE: ${{ steps.rename-oci-archive.outputs.name }}
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
           echo "hashes=$(sha256sum ${{ env.VULN_REPORT }} ${{ env.OCI_IMAGE_ARCHIVE }} ${{ env.SBOMS }} | base64 -w0)"
 
       - name: Login to GHCR
@@ -496,7 +524,11 @@ jobs:
         env:
           PYTHONUNBUFFERED: 1
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
+          source src/shared/logs.sh
           for revision_file in `ls ${{ env.REVISION_DATA_DIR }}`
           do
             ret=0
@@ -504,11 +536,11 @@ jobs:
 
             if [ $ret -eq 1 ]
             then
-              echo "Revision $revision_file not marked for release"
+              log_info "Revision $revision_file not marked for release"
               continue
             fi
 
-            echo "Merge revision $revision_file with requested releases"
+            log_info "Merge revision $revision_file with requested releases"
 
             python3 -m src.image.merge_release_info \
               --image-trigger "${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml" \

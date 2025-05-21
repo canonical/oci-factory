@@ -166,7 +166,10 @@ jobs:
 
       - name: Test rock
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
           docker run --rm --entrypoint pebble ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
             help | grep Pebble
 
@@ -297,7 +300,9 @@ jobs:
         id: create-markdown
         if: ${{ !cancelled() }}
         run: |
-          set -x
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
 
           vulnerabilities="$(jq -r -c '[
             try(.scanner.result.Results[])
@@ -353,7 +358,10 @@ jobs:
 
       - name: Unpack image
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
           umoci unpack \
             --image ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
             --rootless raw
@@ -366,4 +374,4 @@ jobs:
 
       - name: Scan for malware
         run: |
-          ./src/tests/malware_scan.py --filesystem ./raw/rootfs
+          python3 -m src.tests.malware_scan --filesystem ./raw/rootfs

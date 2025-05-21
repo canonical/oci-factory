@@ -2,6 +2,7 @@
 
 set -e
 
+source $(dirname $0)/../../shared/logs.sh
 
 function usage(){
     echo
@@ -31,14 +32,14 @@ done
 
 if [ -z "$ROCK_DIR" ]
 then
-    echo "Error: Missing rock search directory argument (-d)"
+    log_error "Missing rock search directory argument (-d)"
     usage
     exit 1
 fi
 
 if [ -z "$ARCHIVE_NAME" ]
 then
-    echo "Error: Missing final archive name (-n)"
+    log_error "Missing final archive name (-n)"
     usage
     exit 1
 fi
