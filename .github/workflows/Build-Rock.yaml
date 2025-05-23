@@ -90,15 +90,27 @@ jobs:
 
       - name: Installing Python requirements
         run: pip install -r src/build_rock/configure/requirements.txt
-
+        
+      - uses: canonical/oci-factory-internal/actions/infer-runner-type@main
+        id: runner-type
+        with:
+          rockfile-directory: ${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}
+      
       # Configure matrices for each *-build job
       - name: Configuring Jobs
         id: configure
+        env:
+          # TEMPORARY: If steps.runner-type.outputs.use-private-runner is true, 
+          # we need to use the private runner for the build jobs and thus ignore
+          # whatever was configured in the arch-map input.
+          PRIVATE_RUNNER: '{"amd64": ["self-hosted", "self-hosted-linux-amd64-jammy-private-endpoint-medium"]}'
+          BYPASSED_ARCH_MAP: ${{ steps.runner-type.outputs.use-private-runner == 'true' && env.PRIVATE_RUNNER || inputs.arch-map }}
         run: |
           python3 -m src.build_rock.configure.generate_build_matrix \
             --rockfile-directory "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}" \
             --lpci-fallback "${{ toJSON(inputs.lpci-fallback) }}" \
-            --config ${{ toJSON(inputs.arch-map) }} # important: do not use quotes here
+            --config ${{ toJSON(env.BYPASSED_ARCH_MAP) }} # important: do not use quotes here
+
 
   runner-build:
     # runner-build builds rocks per target architecture using pre configured runner images.
@@ -127,12 +139,20 @@ jobs:
           submodules: "recursive"
           token: ${{ secrets.source-github-token }}
 
+      - name: Preparing environment for Rockcraft
+        id: init-craft-env
+        uses: canonical/oci-factory-internal/actions/init-craft-env@main
+        with:
+          rockfile-directory: ${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}
+          
       - name: Building Target
         id: rockcraft
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
           verbosity: debug
+          rockcraft-channel: "${{ steps.init-craft-env.outputs.rockcraft-channel }}"
+          env-file: "${{ steps.init-craft-env.outputs.env-file }}"
 
       - name: Collecting Artifacts
         id: collect-artifacts
