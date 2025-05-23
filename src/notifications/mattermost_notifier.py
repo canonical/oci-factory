@@ -89,7 +89,7 @@ def send() -> None:
         f.flush()
         payload_file = f.name
 
-    logger.info(f"Posting message to Mattermost's channel {env_vars['MM_CHANNEL_ID']}")
+    logger.info("Posting message to Mattermost")
 
     headers = {
         "Content-Type": "application/json",
