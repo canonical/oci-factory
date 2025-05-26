@@ -117,7 +117,12 @@ jobs:
     needs: [configure-tests]
     if: inputs.test-oci-compliance
     steps:
-      - uses: actions/checkout@v4
+      - name: Cloning OCI Factory
+        uses: actions/checkout@v4
+        with:
+          repository: canonical/oci-factory
+          ref: ${{ needs.configure-tests.outputs.oci-factory-ref }}
+          fetch-depth: 1
 
       - uses: actions/cache/restore@v4
         with:
