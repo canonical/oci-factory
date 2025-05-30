@@ -2,16 +2,16 @@
     "7.2.7-24.04": {
         "end-of-life": "2029-04-01T00:00:00Z",
         "edge": {
-            "target": "8"
+            "target": "9"
         },
         "stable": {
-            "target": "8"
+            "target": "9"
         },
         "candidate": {
-            "target": "8"
+            "target": "9"
         },
         "beta": {
-            "target": "8"
+            "target": "9"
         }
     }
 }
