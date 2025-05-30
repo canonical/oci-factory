@@ -68,12 +68,30 @@ class ChannelsSchema(pydantic.BaseModel):
         return values
 
 
+class ImagePushRepositorySchema(pydantic.BaseModel):
+
+    registry: str
+    namespace: str
+
+    model_config = pydantic.ConfigDict(extra="forbid")
+
+class ImagePushSchema(pydantic.BaseModel):
+
+    directory: str
+    tag: str
+    repository: List[ImagePushRepositorySchema]
+    risks: List[Literal["stable", "candidate", "beta", "edge"]]
+
+    model_config = pydantic.ConfigDict(extra="forbid")
+
+
 class ImageSchema(pydantic.BaseModel):
     """Validates the schema of the image.yaml files."""
 
     version: str
     upload: Optional[List[ImageUploadSchema]] = None
     release: Optional[Dict[str, ChannelsSchema]] = None
+    push: Optional[List[ImagePushSchema]] = None
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
@@ -97,4 +115,21 @@ class ImageSchema(pydantic.BaseModel):
                     f"Image trigger {trigger} is not unique."
                 )
             unique_triggers.add(trigger)
+        return v
+
+    @pydantic.field_validator("push")
+    def _ensure_unique_push_dirs(
+        cls, v: Optional[List[ImagePushSchema]]
+    ) -> Optional[List[ImagePushSchema]]:
+        """Ensure that the push directories are unique."""
+        if not v:
+            return v
+        unique_dirs = set()
+        for push in v:
+            dir = push.directory.strip("/")
+            if dir in unique_dirs:
+                raise ImageTriggerValidationError(
+                    f"Push directory {dir} is not unique."
+                )
+            unique_dirs.add(dir)
         return v
