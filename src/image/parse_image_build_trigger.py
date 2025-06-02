@@ -59,8 +59,6 @@ def prepare_image_build_matrix(image_trigger: ImageSchema, image_dirs_to_process
 
     for image in image_trigger.get("build", []):
         image_dir = Path(image["directory"])
-        print(image_dirs_to_process)
-        print(image_dir)
         if image_dirs_to_process and image_dir not in image_dirs_to_process:
             continue
 
@@ -114,6 +112,10 @@ def main():
         # prepare_single_image_build_matrix(image_build_trigger, rockcraft_metadata)
     if not builds:
         logger.warning("No builds found in the image trigger.")
+
+    logger.debug(
+        f"Generating matrix for following builds: \n {json.dumps(builds, indent=4)}"
+    )
 
     build_matrix = {"include": builds}
 
