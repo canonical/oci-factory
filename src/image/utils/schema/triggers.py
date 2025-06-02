@@ -1,11 +1,19 @@
 import pydantic
 
 from datetime import datetime
-from typing import Dict, List, Literal, Optional, Any
+from typing import Dict, List, Literal, Optional, Any, get_args
 
 
 LATEST_SCHEMA_VERSION = 1
-KNOWN_RISKS_ORDERED = ["stable", "candidate", "beta", "edge"]
+KNOWN_RISKS_ORDERED_LITERAL = Literal["stable", "candidate", "beta", "edge"]
+KNOWN_RISKS_ORDERED = list(get_args(KNOWN_RISKS_ORDERED_LITERAL))
+KNOWN_PRO_SERVICES = Literal[
+    "esm-apps",
+    "esm-infra",
+    "fips",
+    "fips-preview",
+    "fips-updates",
+]
 
 
 class ImageTriggerValidationError(Exception):
@@ -23,7 +31,7 @@ class ImageUploadReleaseSchema(pydantic.BaseModel):
     # Unpack operator in subscript requires Python 3.11 or newer
     # TODO: when upgrading to 24.04, switch to the following line
     # risks: List[Literal[*KNOWN_RISKS_ORDERED]]
-    risks: List[Literal["stable", "candidate", "beta", "edge"]]
+    risks: List[KNOWN_RISKS_ORDERED_LITERAL]
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
@@ -67,20 +75,25 @@ class ChannelsSchema(pydantic.BaseModel):
 
         return values
 
-
-class ImagePushRepositorySchema(pydantic.BaseModel):
+class ImageDeployRepoSchema(pydantic.BaseModel):
 
     registry: str
     namespace: str
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
-class ImagePushSchema(pydantic.BaseModel):
+
+class ImageBuildDeploySchema(pydantic.BaseModel):
+
+    repositories: List[ImageDeployRepoSchema]
+    risks: List[KNOWN_RISKS_ORDERED_LITERAL]
+
+class ImageBuildSchema(pydantic.BaseModel):
 
     directory: str
     tag: str
-    repository: List[ImagePushRepositorySchema]
-    risks: List[Literal["stable", "candidate", "beta", "edge"]]
+    pro: Optional[List[KNOWN_PRO_SERVICES]] = None
+    deploy: Optional[ImageBuildDeploySchema]
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
@@ -91,7 +104,7 @@ class ImageSchema(pydantic.BaseModel):
     version: str
     upload: Optional[List[ImageUploadSchema]] = None
     release: Optional[Dict[str, ChannelsSchema]] = None
-    push: Optional[List[ImagePushSchema]] = None
+    build: Optional[List[ImageBuildSchema]] = None
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
@@ -117,19 +130,28 @@ class ImageSchema(pydantic.BaseModel):
             unique_triggers.add(trigger)
         return v
 
-    @pydantic.field_validator("push")
-    def _ensure_unique_push_dirs(
-        cls, v: Optional[List[ImagePushSchema]]
-    ) -> Optional[List[ImagePushSchema]]:
-        """Ensure that the push directories are unique."""
+    @pydantic.field_validator("build")
+    def _ensure_unique_build_dirs(
+        cls, v: Optional[List[ImageBuildSchema]]
+    ) -> Optional[List[ImageBuildSchema]]:
+        """Ensure that the build directories are unique."""
         if not v:
             return v
         unique_dirs = set()
-        for push in v:
-            dir = push.directory.strip("/")
+        for build in v:
+            dir = build.directory.strip("/")
             if dir in unique_dirs:
                 raise ImageTriggerValidationError(
-                    f"Push directory {dir} is not unique."
+                    f"Build directory {dir} is not unique."
                 )
             unique_dirs.add(dir)
         return v
+
+    @pydantic.model_validator(mode="before")
+    def _ensure_mutually_exclusive_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Ensure that 'build' is mutually exclusive with 'upload' and 'release'."""
+        if "build" in values and ("upload" in values or "release" in values):
+            raise ImageTriggerValidationError(
+                "'build' cannot be used with 'upload' or 'release'."
+            )
+        return values
