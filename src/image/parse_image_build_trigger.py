@@ -118,7 +118,7 @@ def main():
     build_matrix = {"include": builds}
 
     with GithubOutput() as gh_output:
-        gh_output.write("build-matrix", build_matrix)
+        gh_output.write(**{"build-matrix": build_matrix})
 
 
 if __name__ == "__main__":
