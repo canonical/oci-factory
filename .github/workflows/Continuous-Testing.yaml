@@ -44,6 +44,7 @@ jobs:
     with:
       oci-image-name: "${{ matrix.source-image }}"
       oci-image-path: "oci/${{ matrix.name }}"
+      trivyignore-path: "oci/${{ matrix.name }}/.trivyignore"
       date-last-scan: ${{ needs.prepare-test-matrix.outputs.last-scan }}
       create-issue: true
     secrets: inherit
