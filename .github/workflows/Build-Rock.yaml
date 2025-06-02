@@ -133,7 +133,6 @@ jobs:
         with:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
           verbosity: debug
-          pro: ${{ input.pro }}
 
       - name: Collecting Artifacts
         id: collect-artifacts
