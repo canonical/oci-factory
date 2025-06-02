@@ -26,7 +26,7 @@ runs:
       with:
         repository-name: canonical/oci-factory
         file-name: Test-Rock.yaml
-        github-token: ${{ secrets.host-github-token }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Cloning OCI Factory
       uses: actions/checkout@v4
@@ -38,6 +38,11 @@ runs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.x'
+    - name: List files
+      shell: bash
+      run: |
+        echo "Files in the current directory:"
+        ls -la
     - name: Parse Build Trigger
       id: parse-build-trigger
       shell: bash
