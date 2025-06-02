@@ -92,17 +92,16 @@ def main():
         required=True,
     )
     parser.add_argument(
-        "--image-dir",
-        help="Path to the image directory containing rockcraft.yaml to be build."
-        " With same format of `directory` in image triggers. Can be called multiple times.",
-        action="append",
-        default=[],
+        "--image-dirs",
+        help="Comma-separated paths to the image directory containing rockcraft.yaml to be built.",
+        type=str,
+        required=False,
     )
     args = parser.parse_args()
 
     image_trigger = load_image_trigger(Path(args.image_trigger))
 
-    image_dirs_to_process = {Path(d) for d in args.image_dir}
+    image_dirs_to_process = {Path(d) for d in args.image_dirs.split(",")} if args.image_dirs else set()
     if not image_dirs_to_process:
         logger.info("Processing all image directories from the trigger.")
 

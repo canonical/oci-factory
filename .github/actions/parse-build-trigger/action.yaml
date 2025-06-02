@@ -1,0 +1,33 @@
+name: Parse Build Trigger
+description: |
+  Parses the build trigger file and sets the output variables.
+
+inputs:
+  build-trigger-file:
+    description: The path to the build trigger file.
+    required: true
+  image-dirs:
+    description: Comma-separated directories where the images are to be built.
+    required: false
+    default: ""
+    # For example: "mock-rock/1.0,mock-rock/1.2"
+
+outputs:
+  build_matrix:
+    description: The build matrix as a JSON string.
+    value: ${{ steps.parse-build-trigger.outputs.build-matrix }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    - name: Parse Build Trigger
+      id: parse-build-trigger
+      shell: bash
+      run: |
+        python3 -m src.image.parse_image_build_trigger \
+          --image-trigger "${{ inputs.build-trigger_file }}" \
+          --image-dirs "${{ inputs.image-dirs }}"
