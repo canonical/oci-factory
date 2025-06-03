@@ -138,13 +138,12 @@ def main():
     logger.debug(f"Generating matrix for following builds: \n {builds}")
 
     build_matrix = {"include": builds}
-    publish_matrix = {"include": prepare_publish_matrix(builds)}
 
     with GithubOutput() as gh_output:
         gh_output.write(
             **{
                 "build-matrix": build_matrix,
-                "publish-matrix": publish_matrix,
+                "publish-matrix": prepare_publish_matrix(builds),
             }
         )
 

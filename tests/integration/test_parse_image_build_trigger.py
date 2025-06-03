@@ -68,7 +68,7 @@ def test_prepare_image_build_matrix(image_trigger, rockcraft_yaml):
 
     build_12 = builds[0]
     assert build_12["location"] == "mock_rock/1.2"
-    assert build_12["name"] == "mock_rock"
+    assert build_12["image-name"] == "mock_rock"
     assert build_12["tag"] == "1.2-22.04"
     assert build_12["pro"] == "pro1,pro2"
     assert build_12["repositories"] == [
@@ -85,7 +85,7 @@ def test_prepare_image_build_matrix(image_trigger, rockcraft_yaml):
 
     build_20 = builds[1]
     assert build_20["location"] == "mock_rock/2.0"
-    assert build_20["name"] == "mock_rock"
+    assert build_20["image-name"] == "mock_rock"
     assert build_20["tag"] == "2.0-22.04"
     assert build_20["pro"] == ""
 

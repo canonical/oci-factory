@@ -33,7 +33,7 @@ def test_prepare_publish_matrix():
     builds = [
         {
             "location": "mock_rock/1.2",
-            "name": "mock_rock",
+            "image-name": "mock_rock",
             "artifact-name": "mock_rock_1.2-22.04",
             "tag": "1.2-22.04",
             "pro": "pro1,pro2",
@@ -50,7 +50,7 @@ def test_prepare_publish_matrix():
     assert len(publish_matrix["include"]) == 2
     assert publish_matrix["include"] == [
         {
-            "name": "mock_rock",
+            "image-name": "mock_rock",
             "tags": "1.2-22.04_candidate 1.2-22.04_beta 1.2-22.04_edge",
             "artifact-name": "mock_rock_1.2-22.04",
             "registry": "registry1.com",
@@ -58,7 +58,7 @@ def test_prepare_publish_matrix():
             "secret-prefix": "REGISTRY1_COM_CRED_",
         },
         {
-            "name": "mock_rock",
+            "image-name": "mock_rock",
             "tags": "1.2-22.04_candidate 1.2-22.04_beta 1.2-22.04_edge",
             "artifact-name": "mock_rock_1.2-22.04",
             "registry": "registry2.azurecr.io",
