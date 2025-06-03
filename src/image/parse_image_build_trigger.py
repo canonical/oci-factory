@@ -114,7 +114,7 @@ def main():
         logger.warning("No builds found in the image trigger.")
 
     logger.debug(
-        f"Generating matrix for following builds: \n {json.dumps(builds, indent=4)}"
+        f"Generating matrix for following builds: \n {builds}"
     )
 
     build_matrix = {"include": builds}
