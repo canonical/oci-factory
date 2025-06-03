@@ -54,7 +54,9 @@ def backfill_higher_risks(risks: list[str]) -> list[str]:
     return sorted(risks, key=lambda x: KNOWN_RISKS_ORDERED.index(x))
 
 
-def prepare_image_build_matrix(image_trigger: ImageSchema, image_dirs_to_process: set[Path]) -> list[dict[str, Any]]:
+def prepare_image_build_matrix(
+    image_trigger: ImageSchema, image_dirs_to_process: set[Path]
+) -> list[dict[str, Any]]:
     builds = []
 
     for image in image_trigger.get("build", []):
@@ -69,8 +71,9 @@ def prepare_image_build_matrix(image_trigger: ImageSchema, image_dirs_to_process
 
         build = {
             "location": str(image_dir),
-            "name": image_metadata["name"],
+            "image-name": image_metadata["name"],
             "tag": image["tag"],
+            "artifact-name": f"{image_metadata['name']}_{image["tag"]}",
             "pro": ",".join(image.get("pro", [])),
             "repositories": image.get("deploy", {}).get("repositories", []),
             "risks": backfill_higher_risks(image.get("deploy", {}).get("risks", [])),
@@ -78,6 +81,25 @@ def prepare_image_build_matrix(image_trigger: ImageSchema, image_dirs_to_process
         builds.append(build)
 
     return builds
+
+
+def prepare_publish_matrix(builds: list[dict[str, Any]]) -> dict[str, Any]:
+    """Prepare the publish matrix with additional information from the builds."""
+    publish_matrix = {"include": []}
+    for build in builds:
+        for repo in build["repositories"]:
+            publish_entry = {
+                "image-name": build["image-name"],
+                "tags": " ".join([f"{build['tag']}_{risk}" for risk in build["risks"]]),
+                "artifact-name": build["artifact-name"],
+                "registry": repo["registry"],
+                "namespace": repo["namespace"],
+                "secret-prefix": f"{'_'.join(repo['registry'].upper().split('.'))}_CRED_",
+            }
+            publish_matrix["include"].append(publish_entry)
+
+    return publish_matrix
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -99,28 +121,32 @@ def main():
 
     image_trigger = load_image_trigger(Path(args.image_trigger))
 
-    image_dirs_to_process = {Path(d) for d in args.image_dirs.split(",")} if args.image_dirs else set()
+    image_dirs_to_process = (
+        {Path(d) for d in args.image_dirs.split(",")} if args.image_dirs else set()
+    )
     if not image_dirs_to_process:
         logger.info("Processing all image directories from the trigger.")
 
-    builds = prepare_image_build_matrix(
-        image_trigger, image_dirs_to_process
-    )
+    builds = prepare_image_build_matrix(image_trigger, image_dirs_to_process)
 
-        # Here you would typically call the function to prepare the build matrix
-        # and write revision data, e.g.:
-        # prepare_single_image_build_matrix(image_build_trigger, rockcraft_metadata)
+    # Here you would typically call the function to prepare the build matrix
+    # and write revision data, e.g.:
+    # prepare_single_image_build_matrix(image_build_trigger, rockcraft_metadata)
     if not builds:
         logger.warning("No builds found in the image trigger.")
 
-    logger.debug(
-        f"Generating matrix for following builds: \n {builds}"
-    )
+    logger.debug(f"Generating matrix for following builds: \n {builds}")
 
     build_matrix = {"include": builds}
+    publish_matrix = {"include": prepare_publish_matrix(builds)}
 
     with GithubOutput() as gh_output:
-        gh_output.write(**{"build-matrix": build_matrix})
+        gh_output.write(
+            **{
+                "build-matrix": build_matrix,
+                "publish-matrix": publish_matrix,
+            }
+        )
 
 
 if __name__ == "__main__":
