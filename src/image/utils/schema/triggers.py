@@ -93,7 +93,7 @@ class ImageBuildSchema(pydantic.BaseModel):
     directory: str
     tag: str
     pro: Optional[List[KNOWN_PRO_SERVICES]] = None
-    deploy: Optional[ImageBuildDeploySchema]
+    deploy: Optional[ImageBuildDeploySchema] = None
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
