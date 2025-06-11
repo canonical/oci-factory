@@ -77,6 +77,10 @@ def artifact_name(image_metadata: dict[str, str]) -> str:
 
 def generate_tags(tagging: dict[str, Any], rockcraft_base: str) -> list[str]:
     """Generate tags based on the tagging configuration."""
+
+    if not tagging:
+        return []
+
     base = tagging.get("base", "")
     versions = tagging.get("versions", [])
     risks = tagging.get("risks", [])
@@ -108,7 +112,9 @@ def prepare_image_build_matrix(
 
 
     all_registries = get_all_repositories(image_trigger)
+    logger.debug(f"Found registries: {all_registries}")
     all_tests = get_all_tests(image_trigger)
+    logger.debug(f"Found tests: {all_tests}")
 
     for image in image_trigger.get("build", []):
         image_dir = Path(image["directory"])
