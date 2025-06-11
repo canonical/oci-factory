@@ -128,7 +128,9 @@ def prepare_image_build_matrix(
         tags = set(generate_tags(image.get("tagging", {}), image_metadata["base"]))
         tags.update(image.get("aliases", []))
 
-        tests = all_tests | image.get("tests", {})
+        image_tests = {k: v for k, v in ImageTestConfigSchema(**(image.get("tests", {}))).model_dump(by_alias=True).items() if k in image.get("tests", {})}
+        logger.debug(f"Image tests for {image_metadata['name']}: {image_tests}")
+        tests = all_tests | image_tests
 
         repositories = []
         for repo in image.get("deploy", {}).get("repositories", []):
