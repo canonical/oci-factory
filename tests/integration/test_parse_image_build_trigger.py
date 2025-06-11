@@ -127,7 +127,8 @@ def test_prepare_image_build_matrix(image_trigger, rockcraft_yaml):
         "efficiency": True,
         "malware": True,
         "oci-compliance": True,
-        "vulnerability": True
+        "vulnerability": True,
+        "black-box": True,
     }
 
     build_20 = builds[1]
@@ -147,7 +148,8 @@ def test_prepare_image_build_matrix(image_trigger, rockcraft_yaml):
         "efficiency": False,
         "malware": True,
         "oci-compliance": True,
-        "vulnerability": True
+        "vulnerability": True,
+        "black-box": True,
     }
 
 def test_prepare_image_build_matrix_with_filter(image_trigger, rockcraft_yaml):

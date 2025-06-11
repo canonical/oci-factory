@@ -101,6 +101,11 @@ class ImageTestConfigSchema(pydantic.BaseModel):
         alias="oci-compliance",
         description="Run OCI compliance tests"
     )
+    black_box: bool = pydantic.Field(
+        default=True,
+        alias="black-box",
+        description="Run black box tests"
+    )
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
@@ -124,7 +129,6 @@ class ImageRegistrySchema(pydantic.BaseModel):
 class ImageBuildDeploySchema(pydantic.BaseModel):
 
     repositories: List[str]
-    risks: List[KNOWN_RISKS_ORDERED_LITERAL]
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
