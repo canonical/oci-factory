@@ -1,4 +1,5 @@
 import argparse
+from itertools import product
 from pathlib import Path
 from typing import Any
 
@@ -8,16 +9,16 @@ from ..shared.github_output import GithubOutput
 from ..shared.logs import get_logger
 from ..uploads.infer_image_track import get_base_and_track
 from .prepare_single_image_build_matrix import validate_image_trigger
-from .utils.schema.triggers import KNOWN_RISKS_ORDERED, ImageSchema
+from .utils.schema.triggers import KNOWN_RISKS_ORDERED, ExternalImageTriggerSchema, ImageTestConfigSchema
 
 logger = get_logger()
 
 
-def load_image_trigger(image_yaml_path: Path) -> ImageSchema:
-    """Load the image trigger YAML file and return an ImageSchema object."""
+def load_image_trigger(image_yaml_path: Path) -> ExternalImageTriggerSchema:
+    """Load the image trigger YAML file and return an ExternalImageTriggerSchema object."""
     with open(image_yaml_path, encoding="UTF-8") as bf:
         image_trigger = yaml.load(bf, Loader=yaml.BaseLoader)
-    validate_image_trigger(image_trigger)
+    _ = ExternalImageTriggerSchema(**image_trigger)
     assert "build" in image_trigger, "Image trigger must contain 'build' key"
     return image_trigger
 
@@ -51,13 +52,63 @@ def backfill_higher_risks(risks: list[str]) -> list[str]:
             elif KNOWN_RISKS_ORDERED[i - 1] in risks:
                 risks.append(risk)
 
-    return sorted(risks, key=lambda x: KNOWN_RISKS_ORDERED.index(x))
+    return sorted(risks, key=KNOWN_RISKS_ORDERED.index)
+
+
+def get_all_repositories(image_trigger: dict[str, Any]) -> list[dict[str, str]]:
+    """Extract repository information from the image trigger."""
+    repositories = {}
+    for registry, registry_info in image_trigger.get("registries", {}).items():
+        domain, namespace = registry_info.get("uri", "").split("/", 1)
+        repositories[registry] = {
+            "domain": domain,
+            "namespace": namespace,
+            "username": registry_info.get("use-secret", {}).get("username", ""),
+            "password": registry_info.get("use-secret", {}).get("password", ""),
+        }
+
+    return repositories
+
+
+def artifact_name(image_metadata: dict[str, str]) -> str:
+    """Generate the artifact name based on image metadata."""
+    return f"{image_metadata['name']}_{image_metadata['version']}"
+
+
+def generate_tags(tagging: dict[str, Any], rockcraft_base: str) -> list[str]:
+    """Generate tags based on the tagging configuration."""
+    base = tagging.get("base", "")
+    versions = tagging.get("versions", [])
+    risks = tagging.get("risks", [])
+
+    if not versions:
+        raise ValueError("Tagging must contain at least one version.")
+    
+    if base != rockcraft_base:
+        raise ValueError(
+            f"Base '{base}' in tagging does not match rockcraft (build-)base '{rockcraft_base}'."
+        )
+    if risks:
+        risks = backfill_higher_risks(risks)
+        return [f"{version}-{base}_{risk}" for version, risk in product(versions, risks)]
+    else:
+        return [f"{version}-{base}" for version in versions]
+
+
+def get_all_tests(image_trigger: dict[str, Any]) -> list[str]:
+    """Extract all test names from the image trigger."""
+    tests = ImageTestConfigSchema(**(image_trigger.get("tests", {}))).model_dump(by_alias=True)
+    return {name: enabled for name, enabled in tests.items()}
 
 
 def prepare_image_build_matrix(
-    image_trigger: ImageSchema, image_dirs_to_process: set[Path]
+    image_trigger: dict[str, Any], image_dirs_to_process: set[Path]
 ) -> list[dict[str, Any]]:
     builds = []
+
+
+    all_registries = get_all_repositories(image_trigger)
+    all_tests = get_all_tests(image_trigger)
 
     for image in image_trigger.get("build", []):
         image_dir = Path(image["directory"])
@@ -68,37 +119,55 @@ def prepare_image_build_matrix(
             raise FileNotFoundError(f"Image directory {image_dir} does not exist.")
 
         image_metadata = get_image_rockcraft_metadata(image_dir)
+        tags = set(generate_tags(image.get("tagging", {}), image_metadata["base"]))
+        tags.update(image.get("aliases", []))
+
+        tests = all_tests | image.get("tests", {})
+
+        repositories = []
+        for repo in image.get("deploy", {}).get("repositories", []):
+            repo_info =  all_registries.get(repo)
+            if not repo_info:
+                logger.warning(f"Repository {repo['registry']} not found in image trigger.")
+                continue
+            repositories.append({
+                "domain": repo_info["domain"],
+                "namespace": repo_info["namespace"],
+                "username": f"{repo_info['username']}",
+                "password": f"{repo_info['password']}",
+            })
 
         build = {
             "location": str(image_dir),
             "image-name": image_metadata["name"],
-            "tag": image["tag"],
-            "artifact-name": f"{image_metadata['name']}_{image["tag"]}",
+            "tags": " ".join(tags),
+            "artifact-name": artifact_name(image_metadata),
             "pro": ",".join(image.get("pro", [])),
-            "repositories": image.get("deploy", {}).get("repositories", []),
-            "risks": backfill_higher_risks(image.get("deploy", {}).get("risks", [])),
+            "repos": repositories,
+            "tests": tests,
         }
         builds.append(build)
 
     return builds
 
 
-def prepare_publish_matrix(builds: list[dict[str, Any]]) -> dict[str, Any]:
-    """Prepare the publish matrix with additional information from the builds."""
-    publish_matrix = {"include": []}
+def unfold_publish_matrix(
+    builds: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Unfold the publish matrix to include all combinations of tags and repositories."""
+    unfolded_builds = []
     for build in builds:
-        for repo in build["repositories"]:
-            publish_entry = {
+        for repo in build["repos"]:
+            unfolded_builds.append({
                 "image-name": build["image-name"],
-                "tags": " ".join([f"{build['tag']}_{risk}" for risk in build["risks"]]),
+                "tags": build["tags"],
                 "artifact-name": build["artifact-name"],
-                "registry": repo["registry"],
+                "registry": repo["domain"],
                 "namespace": repo["namespace"],
-                "secret-prefix": f"{'_'.join(repo['registry'].upper().split('.'))}_CRED_",
-            }
-            publish_matrix["include"].append(publish_entry)
-
-    return publish_matrix
+                "username": repo["username"],
+                "password": repo["password"],
+            })
+    return unfolded_builds
 
 
 def main():
@@ -137,13 +206,11 @@ def main():
 
     logger.debug(f"Generating matrix for following builds: \n {builds}")
 
-    build_matrix = {"include": builds}
-
     with GithubOutput() as gh_output:
         gh_output.write(
             **{
-                "build-matrix": build_matrix,
-                "publish-matrix": prepare_publish_matrix(builds),
+                "build-matrix": {"include": [{k: v for k, v in build.items() if k != "repos"} for build in builds]},
+                "publish-matrix": {"include": unfold_publish_matrix(builds)},
             }
         )
 

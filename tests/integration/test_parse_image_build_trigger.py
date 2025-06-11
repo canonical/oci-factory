@@ -10,40 +10,73 @@ def image_trigger(tmpdir):
         "version": 1,
         "build": [
             {
-                "directory": "mock_rock/1.2",
-                "tag": "1.2-22.04",
-                "pro": ["pro1", "pro2"],
+                "directory": "mock-rock/1.2",
+                "tagging": {
+                    "base": "22.04",
+                    "versions": ["1.2"],
+                    "risks": ["candidate"]
+                },
                 "deploy": {
-                    "repositories": [
-                        {
-                            "registry": "registry1",
-                            "namespace": "namespace1",
-                        },
-                        {
-                            "registry": "registry2",
-                            "namespace": "namespace2",
-                        },
-                    ],
-                    "risks": ["candidate", "beta"],
-                }
+                    "repositories": ["registry1", "registry2"]
+                },
+                "aliases": ["mock-rock_alias"],
+                "tests": {
+                    "efficiency": True,
+                },
             },
             {
-                "directory": "mock_rock/2.0",
-                "tag": "2.0-22.04",
-                "pro": [],
+                "directory": "mock-rock/2.0",
+                "tagging": {
+                    "base": "24.04",
+                    "versions": ["2.0"],
+                    "risks": []
+                },
+                "deploy": {
+                    "repositories": ["registry3"]
+                }
+            }
+        ],
+        "registries": {
+            "registry1": {
+                "uri": "docker.io/namespace1",
+                "use-secret": {
+                    "username": "REGISTRY1_USERNAME",
+                    "password": "REGISTRY1_PASSWORD"
+                }
             },
-        ]
+            "registry2": {
+                "uri": "registry2.azurecr.io/namespace2",
+                "use-secret": {
+                    "username": "REGISTRY2_USERNAME",
+                    "password": "REGISTRY2_PASSWORD"
+                }
+            },
+            # Additional registries are not included
+            "registry3": {
+                "uri": "registry3.azurecr.io/namespace3",
+                "use-secret": {
+                    "username": "REGISTRY2_USERNAME",
+                    "password": "REGISTRY2_PASSWORD"
+                }
+            }
+        },
+        "tests": {
+            "rockcraft-test": True,
+            "efficiency": False,
+        },
     }
+    
+
     with open(image_trigger_file, "w", encoding="UTF-8") as f:
         yaml.dump(trigger, f)
     return image_trigger_file
 
 @pytest.fixture
 def rockcraft_yaml(tmpdir):
-    mock_rock_dir = tmpdir.mkdir("mock_rock")
+    mock_rock_dir = tmpdir.mkdir("mock-rock")
     rockcraft_file_12 = mock_rock_dir.mkdir("1.2").join("rockcraft.yaml")
     rockcraft_content = """
-name: mock_rock
+name: mock-rock
 version: 1.2
 base: bare
 build-base: ubuntu@22.04
@@ -52,7 +85,7 @@ build-base: ubuntu@22.04
 
     rockcraft_file_20 = mock_rock_dir.mkdir("2.0").join("rockcraft.yaml")
     rockcraft_content_20 = """
-name: mock_rock
+name: mock-rock
 version: 2.0
 base: ubuntu@24.04
 """
@@ -67,34 +100,62 @@ def test_prepare_image_build_matrix(image_trigger, rockcraft_yaml):
     assert len(builds) == 2
 
     build_12 = builds[0]
-    assert build_12["location"] == "mock_rock/1.2"
-    assert build_12["image-name"] == "mock_rock"
-    assert build_12["tag"] == "1.2-22.04"
-    assert build_12["pro"] == "pro1,pro2"
-    assert build_12["repositories"] == [
+    assert build_12["location"] == "mock-rock/1.2"
+    assert build_12["image-name"] == "mock-rock"
+    assert sorted(build_12["tags"].split(" ")) == [
+        "1.2-22.04_beta",
+        "1.2-22.04_candidate",
+        "1.2-22.04_edge",
+        "mock-rock_alias"
+    ]
+    assert build_12["repos"] == [
         {
-            "registry": "registry1",
-            "namespace": "namespace1"
+            "domain": "docker.io",
+            "namespace": "namespace1",
+            "username": "REGISTRY1_USERNAME",
+            "password": "REGISTRY1_PASSWORD"
         },
         {
-            "registry": "registry2",
-            "namespace": "namespace2"
+            "domain": "registry2.azurecr.io",
+            "namespace": "namespace2",
+            "username": "REGISTRY2_USERNAME",
+            "password": "REGISTRY2_PASSWORD"
         }
     ]
-    assert build_12["risks"] == ["candidate", "beta", "edge"]
+    assert build_12["tests"] == {
+        "rockcraft-test": True,
+        "efficiency": True,
+        "malware": True,
+        "oci-compliance": True,
+        "vulnerability": True
+    }
 
     build_20 = builds[1]
-    assert build_20["location"] == "mock_rock/2.0"
-    assert build_20["image-name"] == "mock_rock"
-    assert build_20["tag"] == "2.0-22.04"
-    assert build_20["pro"] == ""
+    assert build_20["location"] == "mock-rock/2.0"
+    assert build_20["image-name"] == "mock-rock"
+    assert build_20["tags"] == "2.0-24.04"
+    assert build_20["repos"] == [
+        {
+            "domain": "registry3.azurecr.io",
+            "namespace": "namespace3",
+            "username": "REGISTRY2_USERNAME",
+            "password": "REGISTRY2_PASSWORD"
+        }
+    ]
+    assert build_20["tests"] == {
+        "rockcraft-test": True,
+        "efficiency": False,
+        "malware": True,
+        "oci-compliance": True,
+        "vulnerability": True
+    }
 
 def test_prepare_image_build_matrix_with_filter(image_trigger, rockcraft_yaml):
     # Only process the 1.2 directory
-    image_dirs_to_process = {Path("mock_rock/1.2")}
+    image_dirs_to_process = {Path("mock-rock/1.2")}
     os.chdir(rockcraft_yaml.dirname)
     builds = prepare_image_build_matrix(yaml.safe_load(image_trigger.read()), image_dirs_to_process)
 
     assert len(builds) == 1
 
-    assert builds[0]["location"] == "mock_rock/1.2"
+    assert builds[0]["location"] == "mock-rock/1.2"

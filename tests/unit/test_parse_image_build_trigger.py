@@ -6,7 +6,7 @@ def rockcraft_yaml(tmpdir):
     rockcraft_file = tmpdir.join("rockcraft.yaml")
     rockcraft_file.write(
         """
-name: mock_rock
+name: mock-rock
 version: 1.2
 base: bare
 build-base: ubuntu@22.04
@@ -24,45 +24,56 @@ def test_backfill_higher_risks():
 def test_get_image_rockcraft_metadata(rockcraft_yaml):
     rockcraft_metadata = get_image_rockcraft_metadata(Path(rockcraft_yaml.dirname))
     
-    assert rockcraft_metadata["name"] == "mock_rock"
+    assert rockcraft_metadata["name"] == "mock-rock"
     assert rockcraft_metadata["version"] == "1.2"
     assert rockcraft_metadata["base"] == "22.04"
 
 
-def test_prepare_publish_matrix():
+def test_unfold_publish_matrix():
     builds = [
         {
-            "location": "mock_rock/1.2",
-            "image-name": "mock_rock",
-            "artifact-name": "mock_rock_1.2-22.04",
-            "tag": "1.2-22.04",
+            "location": "mock-rock/1.2",
+            "image-name": "mock-rock",
+            "artifact-name": "mock-rock_1.2",
+            "tags": '1.2-22.04_candidate 1.2-22.04_beta 1.2-22.04_edge',
             "pro": "pro1,pro2",
-            "repositories": [
-                {"registry": "registry1.com", "namespace": "namespace1"},
-                {"registry": "registry2.azurecr.io", "namespace": "namespace2"}
-            ],
-            "risks": ["candidate", "beta", "edge"]
+            "repos": [
+                {
+                    "domain": "registry1.com",
+                    "namespace": "namespace1",
+                    "username": "REGISTRY1_USERNAME",
+                    "password": "REGISTRY1_PASSWORD"
+                },
+                {
+                    "domain": "registry2.azurecr.io",
+                    "namespace": "namespace2",
+                    "username": "REGISTRY2_USERNAME",
+                    "password": "REGISTRY2_PASSWORD"
+                }
+            ]
         }
     ]
     
-    publish_matrix = prepare_publish_matrix(builds)
+    publish_matrix = unfold_publish_matrix(builds)
     
-    assert len(publish_matrix["include"]) == 2
-    assert publish_matrix["include"] == [
+    assert len(publish_matrix) == 2
+    assert publish_matrix == [
         {
-            "image-name": "mock_rock",
+            "image-name": "mock-rock",
             "tags": "1.2-22.04_candidate 1.2-22.04_beta 1.2-22.04_edge",
-            "artifact-name": "mock_rock_1.2-22.04",
+            "artifact-name": "mock-rock_1.2",
             "registry": "registry1.com",
             "namespace": "namespace1",
-            "secret-prefix": "REGISTRY1_COM_CRED_",
+            "username": "REGISTRY1_USERNAME",
+            "password": "REGISTRY1_PASSWORD"
         },
         {
-            "image-name": "mock_rock",
+            "image-name": "mock-rock",
             "tags": "1.2-22.04_candidate 1.2-22.04_beta 1.2-22.04_edge",
-            "artifact-name": "mock_rock_1.2-22.04",
+            "artifact-name": "mock-rock_1.2",
             "registry": "registry2.azurecr.io",
             "namespace": "namespace2",
-            "secret-prefix": "REGISTRY2_AZURECR_IO_CRED_",
+            "username": "REGISTRY2_USERNAME",
+            "password": "REGISTRY2_PASSWORD"
         }
     ]

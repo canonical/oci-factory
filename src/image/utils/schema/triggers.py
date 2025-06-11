@@ -75,27 +75,120 @@ class ChannelsSchema(pydantic.BaseModel):
 
         return values
 
-class ImageDeployRepoSchema(pydantic.BaseModel):
 
-    registry: str
-    namespace: str
+class ImageTestConfigSchema(pydantic.BaseModel):
+    """Schema of the 'test' configuration within the image.yaml file."""
+
+    vulnerability: bool = pydantic.Field(
+        default=True,
+        description="Run vulnerability tests"
+    )
+    rockcraft_test: bool = pydantic.Field(
+        default=True,
+        alias="rockcraft-test",
+        description="Run rockcraft tests"
+    )
+    efficiency: bool = pydantic.Field(
+        default=True,
+        description="Run efficiency tests"
+    )
+    malware: bool = pydantic.Field(
+        default=True,
+        description="Run malware tests"
+    )
+    oci_compliance: bool = pydantic.Field(
+        default=True,
+        alias="oci-compliance",
+        description="Run OCI compliance tests"
+    )
+
+    model_config = pydantic.ConfigDict(extra="forbid")
+
+
+class ImageRegistrySecretSchema(pydantic.BaseModel):
+
+    username: str
+    password: str
+
+    model_config = pydantic.ConfigDict(extra="forbid")
+
+class ImageRegistrySchema(pydantic.BaseModel):
+    """Schema of the 'registry' configuration within the image.yaml file."""
+
+    uri: str
+    use_secret: ImageRegistrySecretSchema = pydantic.Field(alias="use-secret")
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
 
 class ImageBuildDeploySchema(pydantic.BaseModel):
 
-    repositories: List[ImageDeployRepoSchema]
+    repositories: List[str]
     risks: List[KNOWN_RISKS_ORDERED_LITERAL]
 
-class ImageBuildSchema(pydantic.BaseModel):
+    model_config = pydantic.ConfigDict(extra="forbid")
 
-    directory: str
-    tag: str
-    pro: Optional[List[KNOWN_PRO_SERVICES]] = None
-    deploy: Optional[ImageBuildDeploySchema] = None
+class ImageTaggingSchema(pydantic.BaseModel):
+    """Schema of the 'tagging' configuration within the image.yaml file."""
+
+    base: str
+    versions: List[str]
+    risks: List[KNOWN_RISKS_ORDERED_LITERAL] = []
 
     model_config = pydantic.ConfigDict(extra="forbid")
+
+
+class ImageBuildSchema(pydantic.BaseModel):
+    """Validates the schema of the build trigger"""
+
+
+    directory: str
+    pro: Optional[List[KNOWN_PRO_SERVICES]] = None
+    deploy: Optional[ImageBuildDeploySchema] = None
+    tagging: Optional[ImageTaggingSchema] = None
+    aliases: Optional[List[str]] = None
+    tests: Optional[ImageTestConfigSchema] = None
+
+    model_config = pydantic.ConfigDict(extra="forbid")
+
+    @pydantic.model_validator(mode="before")
+    def _ensure_existance_tagging_and_aliases(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        if not values.get("tagging") and not values.get("aliases"):
+            raise ImageTriggerValidationError(
+                "Image trigger must contain at least one from tagging and aliases"
+            )
+        return values
+
+
+
+class ExternalImageTriggerSchema(pydantic.BaseModel):
+    version: str
+    tests: Optional[ImageTestConfigSchema] = None
+    registries: Optional[Dict[str, ImageRegistrySchema]] = None
+    build: List[ImageBuildSchema]
+
+
+    @pydantic.field_validator("version", mode="before")
+    def _ensure_version_is_str(cls, value: Any):
+        """Ensure that version is always cast to str."""
+        return str(value)
+
+    @pydantic.field_validator("build")
+    def _ensure_unique_build_dirs(
+        cls, v: Optional[List[ImageBuildSchema]]
+    ) -> Optional[List[ImageBuildSchema]]:
+        """Ensure that the build directories are unique."""
+        if not v:
+            return v
+        unique_dirs = set()
+        for build in v:
+            dir = build.directory.strip("/")
+            if dir in unique_dirs:
+                raise ImageTriggerValidationError(
+                    f"Build directory {dir} is not unique."
+                )
+            unique_dirs.add(dir)
+        return v
 
 
 class ImageSchema(pydantic.BaseModel):
@@ -104,7 +197,6 @@ class ImageSchema(pydantic.BaseModel):
     version: str
     upload: Optional[List[ImageUploadSchema]] = None
     release: Optional[Dict[str, ChannelsSchema]] = None
-    build: Optional[List[ImageBuildSchema]] = None
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
@@ -129,29 +221,3 @@ class ImageSchema(pydantic.BaseModel):
                 )
             unique_triggers.add(trigger)
         return v
-
-    @pydantic.field_validator("build")
-    def _ensure_unique_build_dirs(
-        cls, v: Optional[List[ImageBuildSchema]]
-    ) -> Optional[List[ImageBuildSchema]]:
-        """Ensure that the build directories are unique."""
-        if not v:
-            return v
-        unique_dirs = set()
-        for build in v:
-            dir = build.directory.strip("/")
-            if dir in unique_dirs:
-                raise ImageTriggerValidationError(
-                    f"Build directory {dir} is not unique."
-                )
-            unique_dirs.add(dir)
-        return v
-
-    @pydantic.model_validator(mode="before")
-    def _ensure_mutually_exclusive_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        """Ensure that 'build' is mutually exclusive with 'upload' and 'release'."""
-        if "build" in values and ("upload" in values or "release" in values):
-            raise ImageTriggerValidationError(
-                "'build' cannot be used with 'upload' or 'release'."
-            )
-        return values
