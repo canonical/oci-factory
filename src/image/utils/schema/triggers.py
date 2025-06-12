@@ -117,11 +117,11 @@ class ImageRegistrySecretSchema(pydantic.BaseModel):
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
-class ImageRegistrySchema(pydantic.BaseModel):
+class ImageRepositorySchema(pydantic.BaseModel):
     """Schema of the 'registry' configuration within the image.yaml file."""
 
     uri: str
-    use_secret: ImageRegistrySecretSchema = pydantic.Field(alias="use-secret")
+    use_secrets: ImageRegistrySecretSchema = pydantic.Field(alias="use-secrets")
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
@@ -168,9 +168,10 @@ class ImageBuildSchema(pydantic.BaseModel):
 class ExternalImageTriggerSchema(pydantic.BaseModel):
     version: str
     tests: Optional[ImageTestConfigSchema] = None
-    registries: Optional[Dict[str, ImageRegistrySchema]] = None
+    repositories: Optional[Dict[str, ImageRepositorySchema]] = None
     build: List[ImageBuildSchema]
 
+    model_config = pydantic.ConfigDict(extra="forbid")
 
     @pydantic.field_validator("version", mode="before")
     def _ensure_version_is_str(cls, value: Any):

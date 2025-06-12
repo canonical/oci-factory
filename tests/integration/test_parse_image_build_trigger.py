@@ -1,7 +1,10 @@
-import pytest
-from src.image.parse_image_build_trigger import *
-import yaml
 import os
+
+import pytest
+import yaml
+
+from src.image.parse_image_build_trigger import *
+
 
 @pytest.fixture
 def image_trigger(tmpdir):
@@ -14,11 +17,9 @@ def image_trigger(tmpdir):
                 "tagging": {
                     "base": "22.04",
                     "versions": ["1.2"],
-                    "risks": ["candidate"]
+                    "risks": ["candidate"],
                 },
-                "deploy": {
-                    "repositories": ["registry1", "registry2"]
-                },
+                "deploy": {"repositories": ["registry1", "registry2"]},
                 "aliases": ["mock-rock_alias"],
                 "tests": {
                     "efficiency": True,
@@ -26,50 +27,44 @@ def image_trigger(tmpdir):
             },
             {
                 "directory": "mock-rock/2.0",
-                "tagging": {
-                    "base": "24.04",
-                    "versions": ["2.0"],
-                    "risks": []
-                },
-                "deploy": {
-                    "repositories": ["registry3"]
-                }
-            }
+                "tagging": {"base": "24.04", "versions": ["2.0"], "risks": []},
+                "deploy": {"repositories": ["registry3"]},
+            },
         ],
-        "registries": {
+        "repositories": {
             "registry1": {
                 "uri": "docker.io/namespace1",
-                "use-secret": {
+                "use-secrets": {
                     "username": "REGISTRY1_USERNAME",
-                    "password": "REGISTRY1_PASSWORD"
-                }
+                    "password": "REGISTRY1_PASSWORD",
+                },
             },
             "registry2": {
                 "uri": "registry2.azurecr.io/namespace2",
-                "use-secret": {
+                "use-secrets": {
                     "username": "REGISTRY2_USERNAME",
-                    "password": "REGISTRY2_PASSWORD"
-                }
+                    "password": "REGISTRY2_PASSWORD",
+                },
             },
             # Additional registries are not included
             "registry3": {
                 "uri": "registry3.azurecr.io/namespace3",
-                "use-secret": {
+                "use-secrets": {
                     "username": "REGISTRY2_USERNAME",
-                    "password": "REGISTRY2_PASSWORD"
-                }
-            }
+                    "password": "REGISTRY2_PASSWORD",
+                },
+            },
         },
         "tests": {
             "rockcraft-test": True,
             "efficiency": False,
         },
     }
-    
 
     with open(image_trigger_file, "w", encoding="UTF-8") as f:
         yaml.dump(trigger, f)
     return image_trigger_file
+
 
 @pytest.fixture
 def rockcraft_yaml(tmpdir):
@@ -93,9 +88,11 @@ base: ubuntu@24.04
 
     return mock_rock_dir
 
+
 def test_prepare_image_build_matrix(image_trigger, rockcraft_yaml):
     os.chdir(rockcraft_yaml.dirname)
-    builds = prepare_image_build_matrix(yaml.safe_load(image_trigger.read()), {})
+    image_trigger = load_image_trigger(image_trigger)
+    builds = prepare_image_build_matrix(image_trigger, {})
 
     assert len(builds) == 2
 
@@ -106,21 +103,21 @@ def test_prepare_image_build_matrix(image_trigger, rockcraft_yaml):
         "1.2-22.04_beta",
         "1.2-22.04_candidate",
         "1.2-22.04_edge",
-        "mock-rock_alias"
+        "mock-rock_alias",
     ]
     assert build_12["repos"] == [
         {
             "domain": "docker.io",
             "namespace": "namespace1",
             "username": "REGISTRY1_USERNAME",
-            "password": "REGISTRY1_PASSWORD"
+            "password": "REGISTRY1_PASSWORD",
         },
         {
             "domain": "registry2.azurecr.io",
             "namespace": "namespace2",
             "username": "REGISTRY2_USERNAME",
-            "password": "REGISTRY2_PASSWORD"
-        }
+            "password": "REGISTRY2_PASSWORD",
+        },
     ]
     assert build_12["tests"] == {
         "rockcraft-test": True,
@@ -140,7 +137,7 @@ def test_prepare_image_build_matrix(image_trigger, rockcraft_yaml):
             "domain": "registry3.azurecr.io",
             "namespace": "namespace3",
             "username": "REGISTRY2_USERNAME",
-            "password": "REGISTRY2_PASSWORD"
+            "password": "REGISTRY2_PASSWORD",
         }
     ]
     assert build_20["tests"] == {
@@ -152,11 +149,14 @@ def test_prepare_image_build_matrix(image_trigger, rockcraft_yaml):
         "black-box": True,
     }
 
+
 def test_prepare_image_build_matrix_with_filter(image_trigger, rockcraft_yaml):
     # Only process the 1.2 directory
     image_dirs_to_process = {Path("mock-rock/1.2")}
     os.chdir(rockcraft_yaml.dirname)
-    builds = prepare_image_build_matrix(yaml.safe_load(image_trigger.read()), image_dirs_to_process)
+    builds = prepare_image_build_matrix(
+        yaml.safe_load(image_trigger.read()), image_dirs_to_process
+    )
 
     assert len(builds) == 1
 
