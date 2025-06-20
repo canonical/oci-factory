@@ -40,7 +40,7 @@ description: |
   Finally, deploy the Kafka service
   
   ```
-  docker run --detach --name kafka --network kafka-network -p 9092:9092 ubuntu/kafka:3.6-22.04_edge
+  docker run --detach --name kafka --network kafka-network -p 9092:9092 ubuntu/kafka:3.9.0-22.04_edge
   ```
 
 # --- USAGE INFORMATION ---
