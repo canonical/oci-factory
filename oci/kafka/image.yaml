@@ -2,7 +2,7 @@ version: 1
     
 upload:  
   - source: "canonical/kafka-rock"
-    commit: 3a143191931e5bc240bbfcfb6fb2dddb67076a4a
+    commit: 728311b40b55e13ada3112e10a59cd3aaabab048
     directory: .
     release:
       3.9.1-22.04:
