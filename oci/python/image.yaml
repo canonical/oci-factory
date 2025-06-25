@@ -2,7 +2,7 @@ version: 1
 
 upload:
   - source: canonical/chiselled-python
-    commit: 4f4d52540d7be7902bc4232ef51a16f42ec7d60a
+    commit: f2b623d83eeb07882512821e0fd5ec703a602313
     directory: python3.8/
     release:
       3.8-20.04:
@@ -13,7 +13,7 @@ upload:
           - beta
           - edge
   - source: canonical/chiselled-python
-    commit: 4f4d52540d7be7902bc4232ef51a16f42ec7d60a
+    commit: f2b623d83eeb07882512821e0fd5ec703a602313
     directory: python3.10/
     release:
       3.10-22.04:
@@ -24,7 +24,7 @@ upload:
           - beta
           - edge
   - source: canonical/chiselled-python
-    commit: 4f4d52540d7be7902bc4232ef51a16f42ec7d60a
+    commit: f2b623d83eeb07882512821e0fd5ec703a602313
     directory: python3.12/
     release:
       3.12-24.04:
@@ -34,3 +34,15 @@ upload:
           - candidate
           - beta
           - edge
+  - source: canonical/chiselled-python
+    commit: f2b623d83eeb07882512821e0fd5ec703a602313
+    directory: python3.13/
+    release:
+      3.13-25.04:
+        end-of-life: "2026-01-31T00:00:00Z"
+        risks:
+          - stable
+          - candidate
+          - beta
+          - edge
+
