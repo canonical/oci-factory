@@ -3,7 +3,6 @@
 import argparse
 import glob
 import json
-import logging
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
@@ -14,14 +13,24 @@ import pydantic
 import yaml
 from git import Repo
 
-from ..shared.github_output import GithubOutput
+from ..shared.github_output import GithubOutput, GithubStepSummary
+from ..shared.logs import get_logger
+from ..shared.source_url import get_source_url
 from ..uploads.infer_image_track import get_base_and_track
+from .utils.eol_utils import (
+    generate_base_eol_exceed_warning,
+    is_track_eol,
+    track_eol_exceeds_base_eol,
+)
 from .utils.schema.revision_data import RevisionDataSchema
 from .utils.schema.triggers import ImageSchema
+
 
 # TODO:
 # - inject_metadata uses a static github url, does this break builds that are sourced
 #   from non-gh repos?
+
+logger = get_logger()
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -49,6 +58,13 @@ parser.add_argument(
     default=False,
 )
 
+parser.add_argument(
+    "--warn-image-eol-exceeds-base-eol",
+    help="Warn if the end-of-life date exceeds the LTS date",
+    action="store_true",
+    default=False,
+)
+
 
 class RevisionDataSchemaFilter(RevisionDataSchema):
     """A subclass of RevisionDataSchema to prepare data for serialization."""
@@ -58,7 +74,7 @@ class RevisionDataSchemaFilter(RevisionDataSchema):
     @pydantic.model_validator(mode="before")
     def _warn_extra_fields(cls, data: Any) -> Any:
         for extra_field in data.keys() - cls.model_fields.keys():
-            logging.warning(
+            logger.warning(
                 f'Field "{extra_field}" removed from {data["name"]} revision data'
             )
 
@@ -79,20 +95,6 @@ def validate_image_trigger(data: dict) -> None:
         raise TypeError("image.yaml data cannot be loaded into a dictionary")
 
     _ = ImageSchema(**data)
-
-
-def is_track_eol(track_value: str, track_name: str | None = None) -> bool:
-    """Test if track is EOL, or still valid. Log warning if track_name is provided."""
-    eol_date = datetime.strptime(
-        track_value["end-of-life"],
-        "%Y-%m-%dT%H:%M:%SZ",
-    ).replace(tzinfo=timezone.utc)
-    is_eol = eol_date < datetime.now(timezone.utc)
-
-    if is_eol and track_name is not None:
-        logging.warning(f'Removing EOL track "{track_name}", EOL: {eol_date}')
-
-    return is_eol
 
 
 def filter_eol_tracks(build: dict[str, Any]) -> dict[str, Any]:
@@ -192,7 +194,7 @@ def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: 
         build["dir_identifier"] = build["directory"].rstrip("/").replace("/", "_")
 
         with tempdir() as d:
-            url = f"https://github.com/{build['source']}.git"
+            url = get_source_url(build["source"])
             repo = Repo.clone_from(url, d)
             repo.git.checkout(build["commit"])
             # get the base image from the rockcraft.yaml file
@@ -209,6 +211,19 @@ def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: 
     return _builds
 
 
+def find_eol_exceed_base_eol(builds: list[dict[str, Any]]):
+    """Check if any of the builds have an EOL date that exceeds the EOL date of the base image."""
+    tracks_eol_exceed_base_eol = []
+    for build in builds:
+        if "release" in build:
+            for track, track_value, in build["release"].items():
+                if eols := track_eol_exceeds_base_eol(
+                    track, track_value["end-of-life"], build["base"] if "base" in build else None
+                ):
+                    tracks_eol_exceed_base_eol.append(eols)
+    return tracks_eol_exceed_base_eol
+
+
 def main():
     """Executed when script is called directly."""
     args = parser.parse_args()
@@ -222,11 +237,19 @@ def main():
     # inject additional meta data into builds
     builds = inject_metadata(builds, args.next_revision, args.oci_path)
 
+    # check if any of the builds have an EOL date that exceeds the EOL date of the base image
+    if args.warn_image_eol_exceeds_base_eol:
+        if tracks_eol_exceed_base_eol := find_eol_exceed_base_eol(builds):
+            title, text = generate_base_eol_exceed_warning(tracks_eol_exceed_base_eol)
+            title = f"## Image: {title}"
+            with GithubStepSummary() as summary:
+                summary.write(title, text)
+
     # remove any builds without valid tracks
     builds = filter_eol_builds(builds)
 
     # pretty print builds
-    logging.info(
+    logger.info(
         f"Generating matrix for following builds: \n {json.dumps(builds, indent=4)}"
     )
 

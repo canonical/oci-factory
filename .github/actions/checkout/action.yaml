@@ -15,9 +15,6 @@ inputs:
   submodules: 
     description: 'Whether to checkout submodules. true|false|recursive according to actions/checkout@v4'
     default: 'false'
-  github-server-url: 
-    description: 'The base URL for the GitHub instance that you are trying to clone from'
-    default: 'https://github.com'
   token:
     description: "Github token for pulling from private repositories"
     default: ''
@@ -26,17 +23,17 @@ inputs:
 runs:
   using: "composite" 
   steps:
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+
     - name: Checkout
       shell: bash
       run: |
         
         # If URL lacks the protocol, assume it is a github repo 
-        if [[ "${{ inputs.repository }}" =~ https?:// ]]
-        then
-          git_url="${{ inputs.repository }}"
-        else
-          git_url="${{ inputs.github-server-url }}/${{ inputs.repository }}.git"
-        fi
+        git_url="$(python3 ./src/shared/source_url.py "${{ inputs.repository }}")"
 
         # if a token is provided, use it
         if ! [[ -z "${{ inputs.token }}" ]]; then

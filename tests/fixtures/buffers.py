@@ -1,7 +1,8 @@
-import pytest
-from io import StringIO
 import os
+from io import StringIO
 from pathlib import Path
+
+import pytest
 
 
 @pytest.fixture
@@ -18,5 +19,16 @@ def github_output(monkeypatch, tmp_path):
     env_path.touch()
 
     monkeypatch.setitem(os.environ, "GITHUB_OUTPUT", str(env_path))
+
+    yield env_path
+
+
+@pytest.fixture
+def github_step_summary(monkeypatch, tmp_path):
+
+    env_path = tmp_path / "env-step-summary"
+    env_path.touch()
+
+    monkeypatch.setitem(os.environ, "GITHUB_STEP_SUMMARY", str(env_path))
 
     yield env_path

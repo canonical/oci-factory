@@ -3,7 +3,9 @@
 # Source Swift config
 source $(dirname $0)/../configs/swift.public.novarc
 
-set -x
+if [[ "$RUNNER_DEBUG" == "1" ]]; then
+  set -x
+fi
 
 canonical_tags=$(swift list $SWIFT_CONTAINER_NAME -p $IMAGE_NAME/ \
     | awk -F '/' '{print $2"_"$3}' | uniq | sort | tr '\n' ',')

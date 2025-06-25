@@ -2,8 +2,11 @@
 
 # Source Swift config
 source $(dirname $0)/../configs/swift.public.novarc
+source $(dirname $0)/../shared/logs.sh
 
-set -x
+if [[ "$RUNNER_DEBUG" == "1" ]]; then
+  set -x
+fi
 
 IMAGE_NAME=$1
 
@@ -14,4 +17,4 @@ IMAGE_NAME=$1
 LOCKFILE="${IMAGE_NAME}/lockfile.lock"
 swift list $SWIFT_CONTAINER_NAME -p $IMAGE_NAME/ | grep "$LOCKFILE" && \
     (swift delete $SWIFT_CONTAINER_NAME "$LOCKFILE" && echo "Lock file removed successfully.") || \
-    echo "Lock file does not exist."
+    log_error "Lock file does not exist."

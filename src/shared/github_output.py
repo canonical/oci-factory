@@ -5,9 +5,6 @@ from os import environ
 
 """This module provides support for writing Github Outputs."""
 
-# locate
-GITHUB_OUTPUT = environ.get("GITHUB_OUTPUT", None)
-
 # TODO: write custom json serializer to handle pathlib.Path
 
 
@@ -52,3 +49,20 @@ class GithubOutput:
         else:
             json_value = json.dumps(value)
             return json_value
+
+
+class GithubStepSummary(GithubOutput):
+    """Write to the GITHUB_STEP_SUMMARY file"""
+
+    def __init__(self):
+        self.output_path = environ["GITHUB_STEP_SUMMARY"]
+
+    def write(self, *args):
+        """Write contents in args to `output` File Object"""
+
+        if not getattr(self, "file_handler", None):
+            raise AttributeError(
+                "file_handler not available. Please use in context block."
+            )
+        for content in args:
+            print(content, file=self.file_handler)

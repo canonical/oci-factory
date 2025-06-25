@@ -117,16 +117,23 @@ jobs:
     needs: [configure-tests]
     if: inputs.test-oci-compliance
     steps:
+      - name: Cloning OCI Factory
+        uses: actions/checkout@v4
+        with:
+          repository: canonical/oci-factory
+          ref: ${{ needs.configure-tests.outputs.oci-factory-ref }}
+          fetch-depth: 1
+
       - uses: actions/cache/restore@v4
         with:
           path: ${{ env.TEST_IMAGE_NAME }}
           key: ${{ needs.configure-tests.outputs.cache-key }}
 
       - name: Install Umoci
-        run: |
-          wget https://github.com/opencontainers/umoci/releases/download/${UMOCI_VERSION}/${UMOCI_BINARY}
-          sudo mv ${UMOCI_BINARY} /usr/bin/umoci
-          sudo chmod +x /usr/bin/umoci
+        uses: ./.github/actions/install-umoci
+        with:
+          umoci-version: ${{ env.UMOCI_VERSION }}
+          umoci-binary: ${{ env.UMOCI_BINARY }}
 
       - name: Run Umoci tests
         run: |
@@ -164,7 +171,10 @@ jobs:
 
       - name: Test rock
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
           docker run --rm --entrypoint pebble ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
             help | grep Pebble
 
@@ -200,13 +210,27 @@ jobs:
       # The existing Dive GH actions are outdated:
       # https://github.com/MartinHeinz/dive-action/issues/1
       # https://github.com/yuichielectric/dive-action/issues/581
-      - name: Dive efficiency test
+      - name: Dive lowestEfficiency test
         run: |
           docker run -e CI=true --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v $PWD/src/tests/.dive-ci.yaml:/.dive-ci.yaml \
             ${{ env.DIVE_IMAGE }} \
-            ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} --ci-config /.dive-ci.yaml
+            ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
+            --ci-config /.dive-ci.yaml \
+            --highestUserWastedPercent disabled
+
+      - name: Dive highestUserWastedPercent test
+        continue-on-error: true
+        run: |
+          docker run -e CI=true --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $PWD/src/tests/.dive-ci.yaml:/.dive-ci.yaml \
+            ${{ env.DIVE_IMAGE }} \
+            ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
+            --ci-config /.dive-ci.yaml \
+            --lowestEfficiency disabled
+
 
   test-vulnerabilities:
     runs-on: ubuntu-22.04
@@ -281,7 +305,9 @@ jobs:
         id: create-markdown
         if: ${{ !cancelled() }}
         run: |
-          set -x
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
 
           vulnerabilities="$(jq -r -c '[
             try(.scanner.result.Results[])
@@ -304,6 +330,12 @@ jobs:
             echo "$vulnerabilities" | jq -r '.[] | "| \(.VulnerabilityID) | /\(.Target) | \(.Severity) | \(.PkgName) |"' >> $GITHUB_STEP_SUMMARY
           fi
           
+      - name: Identify unncessary trivyignore entries
+        if: ${{ !cancelled() }}
+        uses: ./.github/actions/check-trivyignore
+        with:
+          image-ref: "${{ steps.configure-trivy.outputs.docker-image }}"
+          trivyignores: ${{ steps.configure-trivy.outputs.trivyignore-path }}
 
   test-malware:
     runs-on: ubuntu-22.04
@@ -324,14 +356,17 @@ jobs:
           key: ${{ needs.configure-tests.outputs.cache-key }}
 
       - name: Install Umoci
-        run: |
-          wget https://github.com/opencontainers/umoci/releases/download/${UMOCI_VERSION}/${UMOCI_BINARY}
-          sudo mv ${UMOCI_BINARY} /usr/bin/umoci
-          sudo chmod +x /usr/bin/umoci
+        uses: ./.github/actions/install-umoci
+        with:
+          umoci-version: ${{ env.UMOCI_VERSION }}
+          umoci-binary: ${{ env.UMOCI_BINARY }}
 
       - name: Unpack image
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
           umoci unpack \
             --image ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
             --rootless raw
@@ -344,4 +379,4 @@ jobs:
 
       - name: Scan for malware
         run: |
-          ./src/tests/malware_scan.py --filesystem ./raw/rootfs
+          python3 -m src.tests.malware_scan --filesystem ./raw/rootfs
