@@ -39,7 +39,7 @@ upload:
     directory: python3.13/
     release:
       3.13-25.04:
-        end-of-life: "2026-01-31T00:00:00Z"
+        end-of-life: "2026-01-15T00:00:00Z"
         risks:
           - stable
           - candidate
