@@ -1,0 +1,42 @@
+version: 1
+# --- OVERVIEW INFORMATION ---
+application: pyroscope
+description: >
+  Grafana Pyroscope is an open source continuous profiling database that provides fast, scalable, 
+  highly available, and efficient storage and querying. This helps you get a better understanding 
+  of resource usage in your applications down to the line number.
+  Read more on the [official documentation](https://grafana.com/oss/pyroscope/)
+
+  Please note that this repository is now holding a rock, not a
+  Dockerfile-based image. As such the entrypoint is now Pebble. Read more on
+  the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 4040:4040
+  access: Access your Pyroscope instance at `http://localhost:4040`.
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone.
+  - type: -p
+    value: '4040:4040'
+    description: Expose Pyroscope on `localhost:4040`.
+  - type: -v
+    value: "/path/to/pyroscope/config.yaml:/etc/pyroscope/pyroscope.yaml"
+    description: Local configuration file `pyroscope.yaml`.
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+
+    ```bash
+    docker exec -it pyroscope-container pebble logs -f pyroscope
+    ```
+
+    To get an interactive shell:
+
+    ```bash
+    docker exec -it pyroscope-container /bin/bash
+    ```
