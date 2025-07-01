@@ -11,6 +11,10 @@ on:
       build-id:
         description: "Optional string for identifying workflow jobs in GitHub UI"
         type: string
+      rockcraft-test:
+        description: "Whether to run rockcraft test when packing the rock"
+        type: boolean
+        default: false
 
       # source parameters
       rock-repo:
@@ -132,6 +136,7 @@ jobs:
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
+          test: "${{ inputs.rockcraft-test }}"
           verbosity: debug
 
       - name: Collecting Artifacts
