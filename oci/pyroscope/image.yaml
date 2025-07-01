@@ -7,12 +7,12 @@ upload:
       1-24.04:
         end-of-life: '2025-09-27T00:00:00Z'
         risks:
-          - stable
+          - edge
       1.14-24.04:
         end-of-life: '2025-09-27T00:00:00Z'
         risks:
-          - stable
+          - edge
       1.14.0-24.04:
         end-of-life: '2025-07-10T00:00:00Z'
         risks:
-          - stable
+          - edge
