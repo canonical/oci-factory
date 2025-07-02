@@ -3,7 +3,7 @@ import os
 import pytest
 import yaml
 
-from src.image.parse_image_build_trigger import *
+from src.image.parse_external_ci_config import *
 
 
 @pytest.fixture
@@ -11,37 +11,30 @@ def image_trigger(tmpdir):
     image_trigger_file = tmpdir.join("image.yaml")
     trigger = {
         "version": 1,
-        "build": [
+        "ghcr": {
+            "upload": True,
+            "enable-continuous-security-scanning": True,
+        },
+        "images": [
             {
                 "directory": "mock-rock/1.2",
-                "tagging": {
-                    "base": "22.04",
-                    "versions": ["1.2"],
-                    "risks": ["candidate"],
-                },
-                "deploy": {"repositories": ["registry1", "registry2"]},
-                "aliases": ["mock-rock_alias"],
-                "tests": {
-                    "efficiency": True,
-                },
+                "registries": ["registry1", "registry2"],
             },
             {
                 "directory": "mock-rock/2.0",
-                "tagging": {"base": "24.04", "versions": ["2.0"], "risks": []},
-                "deploy": {"repositories": ["registry3"]},
             },
         ],
-        "repositories": {
+        "registries": {
             "registry1": {
                 "uri": "docker.io/namespace1",
-                "use-secrets": {
+                "action-secrets": {
                     "username": "REGISTRY1_USERNAME",
                     "password": "REGISTRY1_PASSWORD",
                 },
             },
             "registry2": {
                 "uri": "registry2.azurecr.io/namespace2",
-                "use-secrets": {
+                "action-secrets": {
                     "username": "REGISTRY2_USERNAME",
                     "password": "REGISTRY2_PASSWORD",
                 },
@@ -49,15 +42,11 @@ def image_trigger(tmpdir):
             # Additional registries are not included
             "registry3": {
                 "uri": "registry3.azurecr.io/namespace3",
-                "use-secrets": {
+                "action-secrets": {
                     "username": "REGISTRY2_USERNAME",
                     "password": "REGISTRY2_PASSWORD",
                 },
             },
-        },
-        "tests": {
-            "rockcraft-test": True,
-            "efficiency": False,
         },
     }
 
@@ -99,13 +88,8 @@ def test_prepare_image_build_matrix(image_trigger, rockcraft_yaml):
     build_12 = builds[0]
     assert build_12["location"] == "mock-rock/1.2"
     assert build_12["image-name"] == "mock-rock"
-    assert sorted(build_12["tags"].split(" ")) == [
-        "1.2-22.04_beta",
-        "1.2-22.04_candidate",
-        "1.2-22.04_edge",
-        "mock-rock_alias",
-    ]
-    assert build_12["repos"] == [
+    assert build_12["tags"]== "1.2-22.04_edge"
+    assert build_12["registries"] == [
         {
             "domain": "docker.io",
             "namespace": "namespace1",
@@ -119,35 +103,31 @@ def test_prepare_image_build_matrix(image_trigger, rockcraft_yaml):
             "password": "REGISTRY2_PASSWORD",
         },
     ]
-    assert build_12["tests"] == {
-        "rockcraft-test": True,
-        "efficiency": True,
-        "malware": True,
-        "oci-compliance": True,
-        "vulnerability": True,
-        "black-box": True,
-    }
+    assert build_12["artifact-name"] == "mock-rock_1.2"
+    assert build_12["pro"] == ""
+    assert list(build_12.keys()) == [
+        "location",
+        "image-name",
+        "tags",
+        "artifact-name",
+        "pro",
+        "registries",
+    ]
 
     build_20 = builds[1]
     assert build_20["location"] == "mock-rock/2.0"
     assert build_20["image-name"] == "mock-rock"
-    assert build_20["tags"] == "2.0-24.04"
-    assert build_20["repos"] == [
-        {
-            "domain": "registry3.azurecr.io",
-            "namespace": "namespace3",
-            "username": "REGISTRY2_USERNAME",
-            "password": "REGISTRY2_PASSWORD",
-        }
-    ]
-    assert build_20["tests"] == {
-        "rockcraft-test": True,
-        "efficiency": False,
-        "malware": True,
-        "oci-compliance": True,
-        "vulnerability": True,
-        "black-box": True,
-    }
+    assert build_20["tags"] == "2.0-24.04_edge"
+    assert build_20["registries"] == []
+    assert build_20["artifact-name"] == "mock-rock_2.0"
+    assert build_20["pro"] == ""
+    assert list(build_20.keys()) == [
+        "location",
+        "image-name",
+        "tags",
+        "artifact-name",
+        "pro",
+        "registries",]
 
 
 def test_prepare_image_build_matrix_with_filter(image_trigger, rockcraft_yaml):

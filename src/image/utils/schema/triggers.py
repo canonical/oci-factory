@@ -117,59 +117,44 @@ class ImageRegistrySecretSchema(pydantic.BaseModel):
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
-class ImageRepositorySchema(pydantic.BaseModel):
-    """Schema of the 'registry' configuration within the image.yaml file."""
+class ImageRegistrySchema(pydantic.BaseModel):
+    """Schema of the 'registries' configuration within the image.yaml file."""
 
     uri: str
-    use_secrets: ImageRegistrySecretSchema = pydantic.Field(alias="use-secrets")
+    action_secrets: ImageRegistrySecretSchema = pydantic.Field(alias="action-secrets")
 
     model_config = pydantic.ConfigDict(extra="forbid")
-
-
-class ImageBuildDeploySchema(pydantic.BaseModel):
-
-    repositories: List[str]
-
-    model_config = pydantic.ConfigDict(extra="forbid")
-
-class ImageTaggingSchema(pydantic.BaseModel):
-    """Schema of the 'tagging' configuration within the image.yaml file."""
-
-    base: str
-    versions: List[str]
-    risks: List[KNOWN_RISKS_ORDERED_LITERAL] = []
-
-    model_config = pydantic.ConfigDict(extra="forbid")
-
 
 class ImageBuildSchema(pydantic.BaseModel):
     """Validates the schema of the build trigger"""
 
-
     directory: str
     pro: Optional[List[KNOWN_PRO_SERVICES]] = None
-    deploy: Optional[ImageBuildDeploySchema] = None
-    tagging: Optional[ImageTaggingSchema] = None
-    aliases: Optional[List[str]] = None
-    tests: Optional[ImageTestConfigSchema] = None
+    registries: List[str] = None
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
-    @pydantic.model_validator(mode="before")
-    def _ensure_existance_tagging_and_aliases(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        if not values.get("tagging") and not values.get("aliases"):
-            raise ImageTriggerValidationError(
-                "Image trigger must contain at least one from tagging and aliases"
-            )
-        return values
 
+class ImageGhcrConfigSchema(pydantic.BaseModel):
+    """Schema of the 'ghcr' configuration within the image.yaml file."""
 
+    upload: bool = pydantic.Field(
+        default=True,
+        description="Enable upload to GitHub Container Registry"
+    )
+    enable_continuous_security_scanning: bool = pydantic.Field(
+        default=True,
+        alias="enable-continuous-security-scanning",
+        description="Enable continuous security scanning on GitHub Container Registry"
+    )
 
-class ExternalImageTriggerSchema(pydantic.BaseModel):
+    model_config = pydantic.ConfigDict(extra="forbid")
+
+class ExternalCiConfigSchema(pydantic.BaseModel):
     version: str
-    tests: Optional[ImageTestConfigSchema] = None
-    repositories: Optional[Dict[str, ImageRepositorySchema]] = None
-    build: List[ImageBuildSchema]
+    ghcr: ImageGhcrConfigSchema
+    registries: Optional[Dict[str, ImageRegistrySchema]] = None
+    images: List[ImageBuildSchema]
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
@@ -178,7 +163,7 @@ class ExternalImageTriggerSchema(pydantic.BaseModel):
         """Ensure that version is always cast to str."""
         return str(value)
 
-    @pydantic.field_validator("build")
+    @pydantic.field_validator("images")
     def _ensure_unique_build_dirs(
         cls, v: Optional[List[ImageBuildSchema]]
     ) -> Optional[List[ImageBuildSchema]]:
