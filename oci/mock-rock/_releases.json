@@ -69,10 +69,10 @@
     "eol": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "beta": {
-            "target": "1765"
+            "target": "1766"
         },
         "edge": {
-            "target": "1765"
+            "target": "1766"
         }
     },
     "eol-release": {
