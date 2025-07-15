@@ -1,0 +1,35 @@
+version: 1
+
+application: temporal-ui
+description: >
+  The Temporal UI provides a browser-based user interface for Temporal, allowing users to view Workflow Execution state, metadata, and debug their Temporal applications.
+
+docker:
+  parameters:
+    - -p 8081:8081
+  access: Access the Temporal UI at localhost:8081
+
+parameters:
+  - type: -e
+    value: 'TEMPORAL_ROOT=/home/ui-server'
+    description: Root directory of execution environment
+  - type: -e
+    value: 'TEMPORAL_CONFIG_DIR=config'
+    description: Config directory path relative to the root
+  - type: -e
+    value: 'TEMPORAL_ENVIRONMENT=development'
+    description: Runtime environment
+
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+    ```bash
+    docker logs -f temporal-ui-container
+    ```
+
+    To get an interactive shell:
+    ```bash
+    docker exec -it temporal-ui-container /bin/bash
+    ```
