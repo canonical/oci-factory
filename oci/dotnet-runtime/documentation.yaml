@@ -145,3 +145,9 @@ debug:
     ```bash
     docker logs -f dotnet-runtime-container
     ```
+
+    For versions 9.0-25.04 and onward, to inspect application logs:
+
+    ```bash
+    docker exec -it dotnet-runtime-container pebble logs
+    ```
