@@ -1,0 +1,147 @@
+version: 1
+
+application: dotnet-runtime
+is_chiselled: true
+description: |
+  # Chiselled Ubuntu for Chiselled .NET
+
+  Current Chiselled .NET Docker Image [from Canonical](https://ubuntu.com/security/docker-images), based on Ubuntu. Receives security updates and rolls to newer Chiselled .NET or Ubuntu release. **This repository is free to use and exempted from per-user rate limits.**
+
+
+  ## About Chiselled .NET
+
+  .NET is a free, cross-platform, open source developer platform for building many different types of applications. With .NET, you can use multiple languages, editors, and libraries to build for web, mobile, desktop, games, IoT, and more.
+  Read [the .NET documentation](https://docs.microsoft.com/en-us/dotnet/core/deploying/) to learn how to deploy your .NET application with container images.
+
+  ### About Chiselled Ubuntu
+
+  **This image does not include bash nor a package manager nor the .NET SDK.**
+  Read more about Chiselled Ubuntu for .NET, a new class of OCI images, on [the Ubuntu blog](https://ubuntu.com/blog/install-dotnet-on-ubuntu); reading how Canonical and Microsoft partner together to deliver and support .NET on Ubuntu.
+
+  If you're looking to publish a self-contained .NET app, please have a look at the `ubuntu/dotnet-deps` repository.
+  If you're looking to publish an ASP.NET app, please then look at the `ubuntu/dotnet-aspnet` repository.
+
+  Please note that the images tagged 6.0, 8.0 and 9.0-24.10 are Dockerfile-based images,
+  whereas from version 9.0-25.04 onward the images are now rocks. As such the
+  entrypoint is now Pebble. Read more on the
+  [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
+
+  Versions 6.0, 8.0 and 9.0-24.10 images have `dotnet` as the entrypoint.
+
+  ```sh
+  $ docker run --rm ubuntu/dotnet-runtime:8.0-24.04_stable 
+  Host:
+  Version:      8.0.16
+  ...
+  ```
+
+  Versions 9.0-25.04 and later images have `pebble enter` as the entrypoint. You can
+  access the `dotnet` with the following command:
+  ```sh
+  $ docker run --rm ubuntu/dotnet-runtime:9.0-25.04_edge exec dotnet
+  Usage: dotnet [options]
+  ...
+  ```
+
+  ## Usage
+
+  Launch this image locally:
+
+  For versions 6.0, 8.0 and 9.0-24.10:
+
+  ```sh
+  docker run -d --name dotnet-runtime-container -e TZ=UTC ubuntu/dotnet-runtime:8.0-24.04_stable
+  ```
+
+  The container logs will simply show the .NET Runtime help message.
+  This is because the container expects a .NET application to be given.
+
+  Let's use the following HelloWorld application as an example:
+
+  ```bash
+  $ # Create a HelloWorld.csproj file with the following content
+  $ cat HelloWorld.csproj
+  <Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+      <OutputType>Exe</OutputType>
+      <TargetFramework>net8.0</TargetFramework>
+      <ImplicitUsings>enable</ImplicitUsings>
+      <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+  </Project>
+  $
+  $ # Create a Program.cs file with the following code
+  $ cat Program.cs
+  Console.WriteLine("Hello, World!");
+  $
+  $ # Publish the .NET application (you need the "dotnet8" package)
+  $ dotnet publish -c Release -o app
+  MSBuild version 17.8.27+3ab07f0cf for .NET
+    Determining projects to restore...
+    Restored /tmp/demo/HelloWorld.csproj (in 59 ms).
+    HelloWorld -> /tmp/demo/bin/Release/net8.0/HelloWorld.dll
+    HelloWorld -> /tmp/demo/bin/Release/net6.0/publish/
+  $
+  $ # Now you can run the app with "ubuntu/dotnet-runtime:8.0-24.04_stable"
+  $ docker run --rm -v $PWD/app:/app ubuntu/dotnet-runtime:8.0-24.04_stable /app/HelloWorld.dll
+  Hello, World!
+  ```
+
+  Here's the same example as above, but for building your own .NET application image, by building the .NET 8 HelloWorld app on Ubuntu 24.04 and packaging it on top of ubuntu/dotnet-runtime:8.0-24.04_stable:
+
+  ```Dockerfile
+  FROM ubuntu:24.04 AS builder
+
+  # install the .NET 8 SDK from the Ubuntu archive
+  # (no need to clean the apt cache as this is an unpublished stage)
+  RUN apt-get update && apt-get install -y dotnet8 ca-certificates
+
+  # add your application code (the HelloWorld example from above)
+  WORKDIR /source
+  COPY . .
+
+  # publish your .NET app
+  RUN dotnet publish -c Release -o /app
+
+  FROM ubuntu/dotnet-runtime:8.0-24.04_beta
+
+  WORKDIR /app
+  COPY --from=builder /app ./
+
+  ENTRYPOINT ["dotnet", "/app/HelloWorld.dll"]
+  ```
+
+  For versions 9.0-25.04 and onward, please use
+
+  ```docker
+  FROM ubuntu:25.04 AS builder
+
+  RUN apt-get update && apt-get install -y dotnet9 ca-certificates
+
+  # add your application code (the HelloWorld example from above),
+  # and change the TargetFramework to net9.0 in the HelloWorld.csproj
+  WORKDIR /source
+  COPY . .
+
+  # publish your .NET app
+  RUN dotnet publish -c Release -o /app
+
+  FROM ubuntu/dotnet-runtime:9.0-25.04_edge
+
+  WORKDIR /app
+  COPY --from=builder /app ./
+
+  ENTRYPOINT ["exec", "dotnet", "/app/HelloWorld.dll"]
+  ```
+
+debug:
+  text: |
+    ### Debugging
+
+    To debug the container:
+
+    ```bash
+    docker logs -f dotnet-runtime-container
+    ```
