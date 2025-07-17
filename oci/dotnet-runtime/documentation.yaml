@@ -20,6 +20,8 @@ docker:
   parameters:
     - -e TZ=UTC
   access: |
+    ### New entrypoint `pebble`
+
     Please note that the images tagged 6.0, 8.0 and 9.0-24.10 are Dockerfile-based images,
     whereas from version 9.0-25.04 onward the images are now rocks. As such the
     entrypoint is now Pebble. Read more on the
@@ -42,18 +44,14 @@ docker:
     ...
     ```
 
-    Launch this image tagged with versions 6.0, 8.0 and 9.0-24.10 locally:
-
-    ```sh
-    docker run -d --name dotnet-runtime-container -e TZ=UTC ubuntu/dotnet-runtime:8.0-24.04_stable
-    ```
-
-    The container logs will simply show the .NET Runtime help message.
+    The container logs simply show the .NET help message.
     This is because the container expects a .NET application to be given.
+
+    ### Run a .NET application
 
     Let's use the following HelloWorld application as an example:
 
-    ### Using the images tagged with versions 6.0, 8.0 and 9.0-24.10
+    #### Using the images tagged with versions 6.0, 8.0 and 9.0-24.10
 
     ```bash
     $ # Create a HelloWorld.csproj file with the following content
@@ -68,20 +66,20 @@ docker:
       </PropertyGroup>
 
     </Project>
-    $
-    $ # Create a Program.cs file with the following code
+
+    # Create a Program.cs file with the following code
     $ cat Program.cs
     Console.WriteLine("Hello, World!");
-    $
-    $ # Publish the .NET application (you need the "dotnet8" package)
+
+    # Publish the .NET application (you need the "dotnet8" package)
     $ dotnet publish -c Release -o app
     MSBuild version 17.8.27+3ab07f0cf for .NET
       Determining projects to restore...
       Restored /tmp/demo/HelloWorld.csproj (in 59 ms).
       HelloWorld -> /tmp/demo/bin/Release/net8.0/HelloWorld.dll
       HelloWorld -> /tmp/demo/bin/Release/net8.0/publish/
-    $
-    $ # Now you can run the app with "ubuntu/dotnet-runtime:8.0-24.04_stable"
+
+    # Now you can run the app with "ubuntu/dotnet-runtime:8.0-24.04_stable"
     $ docker run --rm -v $PWD/app:/app ubuntu/dotnet-runtime:8.0-24.04_stable /app/HelloWorld.dll
     Hello, World!
     ```
@@ -98,7 +96,9 @@ docker:
     Hello, World!
     ```
 
-    ### Build your own .NET application image
+    ### Build a .NET application image
+
+    #### Using the images tagged 6.0, 8.0 and 9.0-24.10
 
     Here's the same example as above, but for building your own .NET application image, by building the .NET 8 HelloWorld app on Ubuntu 24.04 and packaging it on top of ubuntu/dotnet-runtime:8.0-24.04_stable:
 
@@ -124,7 +124,9 @@ docker:
     ENTRYPOINT ["dotnet", "/app/HelloWorld.dll"]
     ```
 
-    For versions 9.0-25.04 and onward, please use
+    #### Using the images tagged 9.0-25.04 and later
+
+    Here is the example Dockerfile to build your own .NET application image on top of `ubuntu/dotnet-runtime:9.0-25.04_edge`. You need to replace the `net8.0` in the `HelloWorld.csproj` file with `net9.0`:
 
     ```docker
     FROM ubuntu:25.04 AS builder
@@ -147,11 +149,11 @@ docker:
     CMD ["exec", "dotnet", "/app/HelloWorld.dll"]
     ```
 
-# Debug docs will be automatically generated for the rock-based images.
-debug:
-  text: |
-    To debug the container for versions 9.0-25.04 and later:
+    # Debug docs will be automatically generated for the rock-based images.
+    debug:
+      text: |
+        To debug the container for versions 9.0-25.04 and later:
 
-    ```bash
-    docker exec -it dotnet-runtime-container pebble logs
-    ```
+        ```bash
+        docker exec -it dotnet-runtime-container pebble logs
+        ```
