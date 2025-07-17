@@ -35,31 +35,31 @@
     "1.1-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "candidate": {
-            "target": "1750"
+            "target": "1773"
         },
         "beta": {
-            "target": "1750"
+            "target": "1773"
         },
         "edge": {
-            "target": "1750"
+            "target": "1773"
         }
     },
     "1-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "candidate": {
-            "target": "1750"
+            "target": "1773"
         },
         "beta": {
-            "target": "1750"
+            "target": "1773"
         },
         "edge": {
-            "target": "1750"
+            "target": "1773"
         }
     },
     "1.2-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "beta": {
-            "target": "1751"
+            "target": "1774"
         },
         "edge": {
             "target": "1.2-22.04_beta"
@@ -69,10 +69,10 @@
     "eol": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "beta": {
-            "target": "1768"
+            "target": "1771"
         },
         "edge": {
-            "target": "1768"
+            "target": "1771"
         }
     },
     "eol-release": {
