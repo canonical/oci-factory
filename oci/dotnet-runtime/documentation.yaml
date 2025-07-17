@@ -3,13 +3,6 @@ version: 1
 application: dotnet-runtime
 is_chiselled: true
 description: |
-  # Chiselled Ubuntu for Chiselled .NET
-
-  Current Chiselled .NET Docker Image [from Canonical](https://ubuntu.com/security/docker-images), based on Ubuntu. Receives security updates and rolls to newer Chiselled .NET or Ubuntu release. **This repository is free to use and exempted from per-user rate limits.**
-
-
-  ## About Chiselled .NET
-
   .NET is a free, cross-platform, open source developer platform for building many different types of applications. With .NET, you can use multiple languages, editors, and libraries to build for web, mobile, desktop, games, IoT, and more.
   Read [the .NET documentation](https://docs.microsoft.com/en-us/dotnet/core/deploying/) to learn how to deploy your .NET application with container images.
 
