@@ -1,0 +1,155 @@
+version: 1
+
+application: dotnet-aspnet
+is_chiselled: true
+description: |
+  ASP.NET is an open source web framework, created by Microsoft, for building modern web apps and services with .NET.
+  Read [the .NET documentation](https://docs.microsoft.com/en-us/dotnet/core/deploying/) to learn how to deploy your .NET application with container images.     
+
+  ### About Chiselled Ubuntu
+
+  **This image does not include bash nor a package manager nor the .NET SDK.**
+  Read more about Chiselled Ubuntu for .NET, a new class of OCI images, on [the Ubuntu blog](https://ubuntu.com/blog/install-dotnet-on-ubuntu); reading how Canonical and Microsoft partner together to deliver and support .NET on Ubuntu.
+
+  If you're looking to publish a self-contained .NET app, please have a look at the `ubuntu/dotnet-deps` repository.
+  If you're looking for the .NET runtime (without ASP.NET), please then look at the `ubuntu/dotnet-runtime` repository.
+
+# "Launch the image locally" section is automatically generated for the rock-based images.
+# For the Dockerfile-based images, it is manually written.
+docker:
+  parameters:
+    - -e TZ=UTC
+  access: |
+    ### New entrypoint `pebble`
+
+    Please note that the images tagged 6.0, 8.0 and 9.0-24.10 are Dockerfile-based images,
+    whereas from version 9.0-25.04 onward the images are now rocks. As such the
+    entrypoint is now Pebble. Read more on the
+    [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
+
+    Versions 6.0, 8.0 and 9.0-24.10 images have `dotnet` as the entrypoint.
+
+    ```sh
+    $ docker run -d --name dotnet-aspnet-container -e TZ=UTC ubuntu/dotnet-aspnet:8.0-24.04_stable
+    Host:
+    Version:      8.0.16
+    ...
+    ```
+    The container logs will simply show the .NET help message.
+    This is because the container expects an application to be given.
+
+    Versions 9.0-25.04 and later images have `pebble enter` as the entrypoint. You can
+    access the `dotnet` with the following command:
+    ```sh
+    $ docker run --rm ubuntu/dotnet-aspnet:9.0-25.04_edge exec dotnet
+    Usage: dotnet [options]
+    ...
+    ```
+
+    ### Run an ASP.NET application
+
+    Let's use the following HelloWorld web application as an example:
+
+    #### Using the images tagged 6.0, 8.0 and 9.0-24.10
+
+    ```bash
+    # Clone an existing sample of a .NET Core MVC web app 
+    $ git clone https://github.com/Azure-Samples/dotnetcore-docs-hello-world
+    $ cd dotnetcore-docs-hello-world
+
+    # Let's make sure we use a commit that was designed to work with .NET8.0 
+    $ git checkout 95b862ca3580c82835322d9eb45eb9ecfd731370
+
+    # Publish the application (you need the "dotnet8" package)
+    $ dotnet publish -c Release -o /app --self-contained false
+
+    # Now you can run the app with "ubuntu/dotnet-aspnet:8.0-24.04_stable"
+    $ docker run --rm -v $PWD/app:/app -p 8080:8080 ubuntu/dotnet-aspnet:8.0-24.04_stable /app/HelloWorld.dll 
+    ```
+    Access your web app at `localhost:8080`.
+
+    #### Using the images tagged 9.0-25.04 and later
+
+    To run the same application with .NET 9 and package it on top of `ubuntu/dotnet-aspnet:9.0-25.04_edge`, you can use the following commands:
+
+    ```bash
+    # Clone an existing sample of a .NET Core MVC web app 
+    $ git clone https://github.com/Azure-Samples/dotnetcore-docs-hello-world
+    $ cd dotnetcore-docs-hello-world
+
+    # Let's make sure we use a commit that was designed to work with .NET8.0 
+    $ git checkout 95b862ca3580c82835322d9eb45eb9ecfd731370
+    # Change the target framework in the project file to .NET 9
+    $ sed -i 's/net8.0/net9.0/' dotnetcoresample.csproj
+
+    # Publish the application (you need the "dotnet9" package)
+    $ dotnet publish -c Release -o /app --self-contained false
+
+    # Now you can run the app with "ubuntu/dotnet-aspnet:9.0-25.04_edge"
+    $ docker run --rm -v $PWD/app:/app -p 8080:8080 ubuntu/dotnet-aspnet:9.0-25.04_edge /app/HelloWorld.dll 
+    ```
+    Access your web app at `localhost:8080`.
+
+    ### Build an ASP.NET application image
+
+    #### Using the images tagged 6.0, 8.0 and 9.0-24.10
+
+    Here's the same example as above, but for building your own ASP.NET application image, by building the same web app
+    on Ubuntu 24.04 and packaging it on top of `ubuntu/dotnet-aspnet:8.0-24.04_stable`:
+
+    ```Dockerfile
+    FROM ubuntu:24.04 AS builder
+
+    # install the .NET 8 SDK from the Ubuntu archive
+    # (no need to clean the apt cache as this is an unpublished stage)
+    RUN apt-get update && apt-get install -y dotnet8 ca-certificates
+
+    # add your application code
+    WORKDIR /source
+    # using https://github.com/Azure-Samples/dotnetcore-docs-hello-world
+    COPY . .
+
+    # publish your ASP.NET app
+    RUN dotnet publish -c Release -o /app --self-contained false
+
+    FROM ubuntu.azurecr.io/dotnet-aspnet:8.0-24.04_stable
+
+    WORKDIR /app
+    COPY --from=builder /app ./
+
+    ENV PORT 8080
+    EXPOSE 8080
+
+    ENTRYPOINT ["dotnet", "/app/dotnetcoresample.dll"]
+    ```
+
+    #### Using the images tagged 9.0-25.04 and later
+
+    To build such an application with .NET 9 and and package it on top of 
+    `ubuntu/dotnet-aspnet:9.0-25.04_edge`, you can use the following Dockerfile:
+
+    ```Dockerfile
+    FROM ubuntu:25.04 AS builder
+
+    # install the .NET 9 SDK from the Ubuntu archive
+    # (no need to clean the apt cache as this is an unpublished stage)
+    RUN apt-get update && apt-get install -y dotnet9 ca-certificates
+
+    # add your application code
+    WORKDIR /source
+    # using https://github.com/Azure-Samples/dotnetcore-docs-hello-world
+    COPY . .
+
+    # Convert the project file to target .NET 9
+    RUN sed -i 's/net8.0/net9.0/' dotnetcoresample.csproj
+
+    # publish your ASP.NET app
+    RUN dotnet publish -c Release -r ubuntu.25.04-x64 --self-contained false -o /app
+
+    FROM ubuntu/dotnet-aspnet:9.0-25.04_edge
+
+    WORKDIR /app
+    COPY --from=builder /app ./
+
+    CMD ["exec", "dotnet", "/app/dotnetcoresample.dll"]
+    ```
