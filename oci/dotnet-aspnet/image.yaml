@@ -1,7 +1,7 @@
 version: 1
 upload:
   - source: canonical/dotnet-aspnet-rock
-    commit: b4748c01a2bff6c875ab558d9e76c10d97349c17
+    commit: 253f5b25402a0974e5b8aea3831babccc7a3719a
     directory: dotnet-aspnet-rock/9.0-25.04
     release:
       9.0-25.04:
