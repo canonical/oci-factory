@@ -4,7 +4,7 @@ upload:
     commit: d8afea0076d6b500d570be0c7e1b954fabb7e9b4
     directory: node18
     release:
-      18.19.1-24.04:
+      18-24.04:
         end-of-life: "2025-05-01T00:00:00Z"
         risks:
           - edge
