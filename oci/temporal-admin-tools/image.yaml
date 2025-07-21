@@ -2,7 +2,7 @@ version: 1
 upload:
   - source: canonical/temporal-rocks
     commit: 865b4b3ec8be4d0ec768ccd2be84218e76b0c538
-    directory: 1.23.1
+    directory: temporal-admin-tools/1.23.1
     release:
       1-24.04:
         risks:
