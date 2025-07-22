@@ -5,14 +5,14 @@ upload:
     directory: temporal-ui/2.39.0
     release:
       2-24.04:
-        end-of-life: '2025-07-21T00:00:00Z'
+        end-of-life: '2025-07-24T00:00:00Z'
         risks:
           - edge
       2.39-24.04:
-        end-of-life: '2025-07-21T00:00:00Z'
+        end-of-life: '2025-07-24T00:00:00Z'
         risks:
           - edge
       2.39.0-24.04:
-        end-of-life: '2025-07-21T00:00:00Z'
+        end-of-life: '2025-07-24T00:00:00Z'
         risks:
           - edge
