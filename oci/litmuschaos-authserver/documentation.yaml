@@ -1,0 +1,51 @@
+version: 1
+# --- OVERVIEW INFORMATION ---
+application: litmuschaos-authserver
+description: >
+  Litmus authentication server is a component of the LitmusChaos solution, an open source platform used for chaos testing.
+  Read more in the [official documentation](https://github.com/litmuschaos/litmus)
+  Please note that this repository holds a rock instead of a Dockerfile-based image.
+  As such, the entrypoint is Pebble.
+  Read more in the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 3000:3000
+  access: Access the authentication server at `http://localhost:3000`.
+parameters:
+  - type: -e
+    value: 'ADMIN_USERNAME=<user>'
+    description: Web UI admin username.
+  - type: -e
+    value: 'ADMIN_PASSWORD=<password>'
+    description: Web UI admin password.
+  - type: -e
+    value: 'DB_SERVER=<db_address>'
+    description: Database server address.
+  - type: -e
+    value: 'DB_USER=<db_user>'
+    description: Database username.
+  - type: -e
+    value: 'DB_PASSWORD=<db_password>'
+    description: Database password. 
+  - type: -e
+    value: 'REST_PORT=3000'
+    description: REST API auth server port. 
+  - type: -e
+    value: 'GRPC_PORT=3030'
+    description: gRPC auth server port. 
+  - type: -p
+    value: '3000:3000'
+    description: Access the authentication server at `http://localhost:3000`.
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+    ```bash
+    docker exec -it <authserver-container> pebble logs -f authserver
+    ```
+    To get an interactive shell:
+    ```bash
+    docker exec -it <authserver-container> /bin/bash
+    ```
