@@ -9,6 +9,5 @@ CVE-2025-22868
 # golang.org/x/crypto - Misuse of ServerConfig.PublicKeyCallback may cause authorization bypass. Resolved in Temporal v1.27.2
 CVE-2024-45337
 
-# TODO: delete below once pebble release with go 1.24.4
-# github.com/canonical/pebble - Will be resolved when a new patch version of pebble is released
-CVE-2025-22874
+# CVE pending review: https://github.com/advisories/GHSA-crqm-pwhx-j97f
+CVE-2024-34156
