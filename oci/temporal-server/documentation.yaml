@@ -55,19 +55,3 @@ parameters:
   - type: -v
     value: "/path/to/temporal/config.yaml:/etc/temporal/config/config.yaml"
     description: Local configuration file for Temporal server
-
-debug:
-  text: |
-    ### Debugging
-    
-    To debug the container:
-
-    ```bash
-    docker logs -f temporal-server-container
-    ```
-
-    To get an interactive shell:
-
-    ```bash
-    docker exec -it temporal-server-container /bin/bash
-    ```
