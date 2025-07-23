@@ -3,7 +3,7 @@ description: Request adding a new image to the OCI Factory
 labels: "onboarding"
 title: "[ONBOARDING] "
 assignees:
-  - cjdcordeiro
+  - zhijie-yang
 body:
   - type: markdown
     attributes:
