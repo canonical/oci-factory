@@ -19,17 +19,3 @@ parameters:
   - type: -e
     value: 'TEMPORAL_ENVIRONMENT=development'
     description: Runtime environment
-
-debug:
-  text: |
-    ### Debugging
-    
-    To debug the container:
-    ```bash
-    docker logs -f temporal-ui-container
-    ```
-
-    To get an interactive shell:
-    ```bash
-    docker exec -it temporal-ui-container /bin/bash
-    ```
