@@ -69,12 +69,3 @@ parameters:
   - type: -e
     value: 'TEMPORAL_CLI_TLS_DISABLE_HOST_VERFICATION=true'
     description: Disable TLS host name verification for tdbg (tls must be enabled)
-
-debug:
-  text: |
-    ### Debugging
-    
-    To get an interactive shell:
-    ```bash
-    docker exec -it temporal-admin-tools-container /bin/bash
-    ```
