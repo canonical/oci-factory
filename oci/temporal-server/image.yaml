@@ -5,14 +5,14 @@ upload:
     directory: temporal-server/1.23.1
     release:
       1-24.04:
-        end-of-life: '2025-07-24T00:00:00Z'
+        end-of-life: '2025-07-26T00:00:00Z'
         risks:
           - edge
       1.23-24.04:
-        end-of-life: '2025-07-24T00:00:00Z'
+        end-of-life: '2025-07-26T00:00:00Z'
         risks:
           - edge
       1.23.1-24.04:
-        end-of-life: '2025-07-24T00:00:00Z'
+        end-of-life: '2025-07-26T00:00:00Z'
         risks:
           - edge
