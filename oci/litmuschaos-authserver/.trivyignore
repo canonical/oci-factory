@@ -1,0 +1,8 @@
+# Upstream CVEs
+
+# Potential denial of service in golang.org/x/crypto
+# Not in use as shown by govulncheck 
+CVE-2025-22869
+# Improper Validation of Syntactic Correctness of Input in golang.org/x/oauth2
+# Not in use as show by govulncheck
+CVE-2025-22868
