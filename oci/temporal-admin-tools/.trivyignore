@@ -1,0 +1,10 @@
+# Upstream CVEs
+
+# github.com/golang-jwt/jwt/v4 - jwt-go allows excessive memory allocation during header parsing
+CVE-2025-30204
+# golang.org/x/crypto - Vulnerable to Denial of Service (DoS) via Slow or Incomplete Key Exchange. Resolved in Temporal v1.27.2
+CVE-2025-22869
+# golang.org/x/oauth2 - Improper Validation of Syntactic Correctness of Input vulnerability
+CVE-2025-22868
+# golang.org/x/crypto - Misuse of ServerConfig.PublicKeyCallback may cause authorization bypass. Resolved in Temporal v1.27.2
+CVE-2024-45337
