@@ -46,7 +46,7 @@ debug:
     # litmuschaos-authserver needs a MongoDB database to work
     docker run -d -e MONGO_INITDB_ROOT_USERNAME=root -e MONGO_INITDB_ROOT_PASSWORD=password -p 27017:27017 mongo:7
     # don't use `--network host` in production
-    docker run -d --network host -p 3000:3000 --name litmuschaos-authserver \
+    docker run -d --network host -p 3000:3000 --name litmuschaos-authserver-container \
       -e DB_USER=root \
       -e DB_PASSWORD=password \
       -e REST_PORT=3000 \
@@ -54,7 +54,7 @@ debug:
       -e DB_SERVER=mongodb://localhost:27017 \
       -e ADMIN_USERNAME=admin \
       -e ADMIN_PASSWORD=password \
-      localhost:32000/litmuschaos-authserver-dev:3.19.0
+      ubuntu/litmuschaos-authserver:3.19-24.04_edge
     ```
      
     To verify that the server is running:
@@ -65,9 +65,5 @@ debug:
 
     To debug the container:
     ```bash
-    docker exec -it litmuschaos-authserver pebble logs -f authserver
-    ```
-    To get an interactive shell:
-    ```bash
-    docker exec -it litmuschaos-authserver /bin/bash
+    docker exec -it litmuschaos-authserver-container pebble logs -f authserver
     ```
