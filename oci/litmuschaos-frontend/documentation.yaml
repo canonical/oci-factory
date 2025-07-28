@@ -24,7 +24,3 @@ debug:
     ```bash
     docker exec -it <frontend-container> pebble logs -f nginx
     ```
-    To get an interactive shell:
-    ```bash
-    docker exec -it <frontend-container> /bin/bash
-    ```
