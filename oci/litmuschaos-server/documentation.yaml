@@ -23,6 +23,7 @@ parameters:
     description: ID of the running version.
   - type: -e
     value: INFRA_DEPLOYMENTS='["app=chaos-exporter"]'
+    description: Deployment names for the infra components.
   - type: -e
     value: SUBSCRIBER_IMAGE="litmuschaos/litmusportal-subscriber:ci"
     description: Image the chaoscenter will use to deploy the subscriber service.
@@ -49,10 +50,13 @@ parameters:
     description: Runtime executor.
   - type: -e
     value: WORKFLOW_HELPER_IMAGE_VERSION="ci"
+    description: Image version tag for the workflow helper.
   - type: -e
     value: INFRA_COMPATIBLE_VERSIONS="ci"
+    description: Image version tag for the infra workloads.
   - type: -e
     value: DEFAULT_HUB_BRANCH_NAME="master"
+    description: Default branch name for gitops repos.
   - type: -e
     value: 'ADMIN_USERNAME=<user>'
     description: Web UI admin username.
