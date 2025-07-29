@@ -84,7 +84,7 @@ debug:
     To run the server:
     ```bash
     # litmuschaos-server needs a MongoDB database to work
-    docker run -d -e MONGO_INITDB_ROOT_USERNAME=root -e MONGO_INITDB_ROOT_PASSWORD=password -p 27017:27017 mongo:7
+    docker run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=root -e MONGO_INITDB_ROOT_PASSWORD=password -p 27017:27017 mongo:7
     
     # don't use `--network host` in production
     docker run -d --network host -p 3000:3000 --name litmuschaos-server \
@@ -110,6 +110,13 @@ debug:
       -e DEFAULT_HUB_BRANCH_NAME="master" \
       localhost:32000/litmuschaos-server-dev:3.19.0
     ```
+    
     Note that at this point the workload still won't be operational, as it requires the 
     litmuschaos-auth and litmuschaos-frontend components to function.
+    
+    Cleanup:
 
+    ```
+    docker rm -f mongodb
+    docker rm -f litmuschaos-server
+    ```
