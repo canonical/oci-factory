@@ -1,0 +1,26 @@
+version: 1
+# --- OVERVIEW INFORMATION ---
+application: litmuschaos-frontend
+description: >
+  Litmus frontend server is a component of the LitmusChaos solution, an open source platform used for chaos testing.
+  Read more in the [official documentation](https://github.com/litmuschaos/litmus)
+  Please note that this repository holds a rock instead of a Dockerfile-based image.
+  As such, the entrypoint is Pebble.
+  Read more in the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 8185:8185
+  access: Access the frontend server at `http://localhost:8185`.
+parameters:
+  - type: -p
+    value: '8185:8185'
+    description: Access the frontend server at `http://localhost:8185`.
+debug:
+  text: |
+    ### Debugging
+    
+    To debug the container:
+    ```bash
+    docker exec -it <frontend-container> pebble logs -f nginx
+    ```
