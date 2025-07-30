@@ -7,7 +7,7 @@ description: >
   of your cloud deployments.
   Read more on the [official documentation](https://litmuschaos.io/)
   
-  This rock deploys the backend component, also known as 'graphql server'. 
+  This rock deploys the backend component, also known as the 'graphql server'. 
 
   Please note that this repository is now holding a rock, not a
   Dockerfile-based image. As such the entrypoint is now Pebble. Read more on
@@ -91,7 +91,7 @@ debug:
     docker run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=root -e MONGO_INITDB_ROOT_PASSWORD=password -p 27017:27017 mongo:7
     
     # don't use `--network host` in production
-    docker run -d --network host -p 3000:3000 --name litmuschaos-server \
+    docker run -d --network host -p 3000:3000 --name litmuschaos-server-container \
       -e DB_USER=root \
       -e VERSION=ci \
       -e DB_PASSWORD=password \
@@ -112,7 +112,7 @@ debug:
       -e WORKFLOW_HELPER_IMAGE_VERSION="ci" \
       -e INFRA_COMPATIBLE_VERSIONS="ci" \
       -e DEFAULT_HUB_BRANCH_NAME="master" \
-      localhost:32000/litmuschaos-server-dev:3.19.0
+      litmuschaos-server:3.19-24.04_edge
     ```
     
     Note that at this point the workload still won't be operational, as it requires the 
@@ -122,5 +122,5 @@ debug:
 
     ```
     docker rm -f mongodb
-    docker rm -f litmuschaos-server
+    docker rm -f litmuschaos-server-container
     ```
