@@ -3,3 +3,6 @@ notify:
     - rocks@canonical.com
   mattermost-channels:
     - fbdezwkcxpfofpysjore1wpfoc
+maintainers:
+  - cjdcordeiro
+  - lczyk
