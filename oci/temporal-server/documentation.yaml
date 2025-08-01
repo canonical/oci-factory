@@ -7,6 +7,7 @@ description: >
 docker:
   parameters:
     - -p 7233:7233
+    - -e SQL_HOST=1.2.3.4
   access: Access the Temporal server's GRPC endpoint at localhost:7233
 
 parameters:
@@ -55,3 +56,63 @@ parameters:
   - type: -v
     value: "/path/to/temporal/config.yaml:/etc/temporal/config/config.yaml"
     description: Local configuration file for Temporal server
+  - type: -e
+    value: 'SQL_HOST=1.2.3.4'
+    description: Hostname or IP address of SQL host to connect to with temporal-sql-tool
+  - type: -e
+    value: 'SQL_PORT=3306'
+    description: Port of SQL host to connect to with temporal-sql-tool
+  - type: -e
+    value: 'SQL_USER=mysql'
+    description: User name used for authentication when connecting to SQL host with temporal-sql-tool
+  - type: -e
+    value: 'SQL_PASSWORD=supersecretpassword'
+    description: Password used for authentication when connecting to SQL host with temporal-sql-tool
+  - type: -e
+    value: 'SQL_DATABASE=temporal'
+    description: Name of SQL database used with temporal-sql-tool
+  - type: -e
+    value: 'SQL_PLUGIN=mysql'
+    description: Name of the SQL plugin for temporal-sql-tool
+  - type: -e
+    value: 'SQL_CONNECT_ATTRIBUTES'
+    description: SQL connect attributes for temporal-sql-tool
+  - type: -e
+    value: 'SQL_TLS=true'
+    description: Enable TLS over SQL connection with temporal-sql-tool
+  - type: -e
+    value: 'SQL_TLS_CERT_FILE=/path/to/client.crt'
+    description: SQL TLS client certificate path for temporal-sql-tool
+  - type: -e
+    value: 'SQL_TLS_KEY_FILE=/path/to/client.key'
+    description: SQL TLS client key path for temporal-sql-tool
+  - type: -e
+    value: 'SQL_TLS_CA_FILE=/path/to/client-ca.crt'
+    description: SQL TLS client CA file for temporal-sql-tool
+  - type: -e
+    value: 'SQL_TLS_SERVER_NAME=test-server-name'
+    description: Override for target server name with temporal-sql-tool
+  - type: -e
+    value: 'SQL_TLS_DISABLE_HOST_VERIFICATION=true'
+    description: Disable TLS host name verifaction with temporal-sql-tool (tls must be enabled)
+  - type: -e
+    value: 'TEMPORAL_CLI_ADDRESS=1.2.3.4:5555'
+    description: host:port for Temporal frontend service used by tdbg
+  - type: -e
+    value: 'TEMPORAL_CLI_NAMESPACE=testnamespace'
+    description: Temporal workflow namespace used by tdbg
+  - type: -e
+    value: 'TEMPORAL_CONTEXT_TIMEOUT=10'
+    description: Optional timeout for context of RPC calls in seconds for tdbg
+  - type: -e
+    value: 'TEMPORAL_CLI_TLS_CERT=/path/to/tls.cert'
+    description: Path to x509 certificate used by tdbg
+  - type: -e
+    value: 'TEMPORAL_CLI_TLS_KEY=/path/to/tls.key'
+    description: Path to private key used by tdbg
+  - type: -e
+    value: 'TEMPORAL_CLI_TLS_CA=/path/to/server-ca.crt'
+    description: Path to server CA certificate used by tdbg
+  - type: -e
+    value: 'TEMPORAL_CLI_TLS_DISABLE_HOST_VERFICATION=true'
+    description: Disable TLS host name verification for tdbg (tls must be enabled)
