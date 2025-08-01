@@ -21,7 +21,7 @@ git remote add origin git+ssh://${ROCKS_DEV_LP_USERNAME}@${CPC_BUILD_TOOLS_REPO}
 # using main instead of ${CPC_BUILD_TOOLS_REPO_REF} because of an unexpected
 # new issue with Launchpad: 
 # error: Server does not allow request for unadvertised object 9b716ed8a8ba728d036b54b1bb17a8f49dbda434
-git fetch --depth 1 origin main # ${CPC_BUILD_TOOLS_REPO_REF}
+git fetch --depth 1 origin devel # ${CPC_BUILD_TOOLS_REPO_REF}
 git checkout FETCH_HEAD
 
 sudo mv /tmp/cpc-build-tools/* /usr/local/bin/
