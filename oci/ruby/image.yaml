@@ -1,0 +1,10 @@
+version: 1
+upload:
+  - source: canonical/ruby-rock
+    commit: d1a053e45476f7a16fac220f8faaaa72044b7f70
+    directory: ruby/3.3-25.04
+    release:
+      3.3-25.04:
+        end-of-life: '2026-01-15T00:00:00Z'
+        risks:
+          - edge
