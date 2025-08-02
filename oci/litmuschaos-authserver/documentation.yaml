@@ -1,0 +1,69 @@
+version: 1
+# --- OVERVIEW INFORMATION ---
+application: litmuschaos-authserver
+description: >
+  Litmus authentication server is a component of the LitmusChaos solution, an open source platform used for chaos testing.
+  Read more in the [official documentation](https://github.com/litmuschaos/litmus)
+  Please note that this repository holds a rock instead of a Dockerfile-based image.
+  As such, the entrypoint is Pebble.
+  Read more in the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 3000:3000
+  access: Access the authentication server at `http://localhost:3000`.
+parameters:
+  - type: -e
+    value: 'ADMIN_USERNAME=<user>'
+    description: Web UI admin username.
+  - type: -e
+    value: 'ADMIN_PASSWORD=<password>'
+    description: Web UI admin password.
+  - type: -e
+    value: 'DB_SERVER=<db_address>'
+    description: Database server address.
+  - type: -e
+    value: 'DB_USER=<db_user>'
+    description: Database username.
+  - type: -e
+    value: 'DB_PASSWORD=<db_password>'
+    description: Database password. 
+  - type: -e
+    value: 'REST_PORT=3000'
+    description: REST API auth server port. 
+  - type: -e
+    value: 'GRPC_PORT=3030'
+    description: gRPC auth server port. 
+  - type: -p
+    value: '3000:3000'
+    description: Access the authentication server at `http://localhost:3000`.
+debug:
+  text: |
+    ### Debugging
+    
+    To run the server:
+    ```bash
+    # litmuschaos-authserver needs a MongoDB database to work
+    docker run -d -e MONGO_INITDB_ROOT_USERNAME=root -e MONGO_INITDB_ROOT_PASSWORD=password -p 27017:27017 mongo:7
+    # don't use `--network host` in production
+    docker run -d --network host -p 3000:3000 --name litmuschaos-authserver-container \
+      -e DB_USER=root \
+      -e DB_PASSWORD=password \
+      -e REST_PORT=3000 \
+      -e GRPC_PORT=3030 \
+      -e DB_SERVER=mongodb://localhost:27017 \
+      -e ADMIN_USERNAME=admin \
+      -e ADMIN_PASSWORD=password \
+      ubuntu/litmuschaos-authserver:3.19-24.04_edge
+    ```
+     
+    To verify that the server is running:
+    ```bash
+    # should get a 200 OK response 
+    curl -v localhost:3000/capabilities
+    ```
+
+    To debug the container:
+    ```bash
+    docker exec -it litmuschaos-authserver-container pebble logs -f authserver
+    ```
