@@ -25,7 +25,7 @@ docker:
     ```sh
     $ git clone https://github.com/temporalio/temporal
 
-    $ docker run -d --name temporal-server-container -e TZ=UTC -p 7233:7233 -v temporal/config:/etc/temporal/config -e TEMPORAL_ENVIRONMENT=development-sqlite ubuntu/temporal-server:1.23.1-24.04_edge
+    $ docker run -d --name temporal-server-container -e TZ=UTC -p 7233:7233 -v ./temporal/config:/etc/temporal/config -e TEMPORAL_ENVIRONMENT=development-sqlite ubuntu/temporal-server:1.23.1-24.04_edge
     ```
 
 parameters:
