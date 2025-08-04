@@ -112,7 +112,7 @@ debug:
       -e WORKFLOW_HELPER_IMAGE_VERSION="ci" \
       -e INFRA_COMPATIBLE_VERSIONS="ci" \
       -e DEFAULT_HUB_BRANCH_NAME="master" \
-      litmuschaos-server:3.19-24.04_edge
+      ubuntu/litmuschaos-server:3.19-24.04_edge
     ```
     
     Note that at this point the workload still won't be operational, as it requires the 
