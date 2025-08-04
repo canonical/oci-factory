@@ -7,7 +7,24 @@ description: >
 docker:
   parameters:
     - -p 8081:8081
-  access: Access the Temporal UI at localhost:8081
+  access: |
+    ### New entrypoint `pebble`
+
+    Please note that the entrypoint of the images in this repository is [Pebble](https://documentation.ubuntu.com/pebble/), a lightweight service manager. The pebble process launches and supervises the temporal ui server process.
+
+    #### Temporal UI Server Configuration
+
+    Temporal UI server must be provided with a configuration file to start up sucessfully. We do not include any default configurations in the image. Instead, we expect the user to either add a configuration file in the deployed container or mount a volume with the config file in the container.
+
+    Some development configuration files can be found in [the temporal ui repository](https://github.com/temporalio/ui/tree/main/server/config).
+
+    The following outlines steps to mount the development configuration files while launching a container:
+
+    ```sh
+    $ git clone https://github.com/temporalio/ui
+
+    $ docker run -d --name temporal-ui-container -p 8081:8081 -v ./ui/server/config:/home/ui-server/config -e TEMPORAL_ROOT=/home/ui-server -e TEMPORAL_ENVIRONMENT=development ubuntu/temporal-ui:1.23.1-24.04_edge
+    ```
 
 parameters:
   - type: -e
