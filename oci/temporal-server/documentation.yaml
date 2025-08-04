@@ -8,7 +8,25 @@ docker:
   parameters:
     - -p 7233:7233
     - -e SQL_HOST=1.2.3.4
-  access: Access the Temporal server's GRPC endpoint at localhost:7233
+    - -v /path/to/temporal/config.yaml:/etc/temporal/config/config.yaml
+  access: |
+    ### New entrypoint `pebble`
+
+    Please note that the entrypoint of the images in this repository is [Pebble](https://documentation.ubuntu.com/pebble/), a lightweight service manager. The pebble process launches and supervises the temporal-server process.
+
+    #### Temporal Server Configuration
+
+    Temporal server must be provided with a configuration file to start up sucessfully. We do not include any default configurations in the image. Instead, we expect the user to either add a configuration file in the deployed container or mount a volume with the config file in the container.
+
+    Some development configuration files can be found in [the temporal repository](https://github.com/temporalio/temporal/tree/main/config).
+
+    The following outlines steps to mount the development configuration files while launching a container:
+
+    ```sh
+    $ git clone https://github.com/temporalio/temporal
+
+    $ docker run -d --name temporal-server-container -e TZ=UTC -p 7233:7233 -v temporal/config:/etc/temporal/config -e TEMPORAL_ENVIRONMENT=development-sqlite ubuntu/temporal-server:1.23.1-24.04_edge
+    ```
 
 parameters:
   - type: -e
