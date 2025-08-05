@@ -1,0 +1,7 @@
+# Upstream CVEs
+
+# net-imap: net-imap rubygem vulnerable to possible DoS by memory exhaustion
+CVE-2025-43857
+# WEBrick: HTTP request smuggling
+CVE-2024-47220
+
