@@ -241,10 +241,15 @@ jobs:
 
       - name: Cloning OCI Factory
         uses: actions/checkout@v4
+        if: github.repository == 'canonical/oci-factory'
         with:
           repository: canonical/oci-factory
           ref: ${{ needs.configure-tests.outputs.oci-factory-ref }}
           fetch-depth: 1
+      
+      - name: Checkout Rock Repo
+        uses: actions/checkout@v4
+        if: github.repository != 'canonical/oci-factory'
 
       - name: Download Rock
         uses: actions/download-artifact@v4
