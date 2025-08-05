@@ -241,7 +241,6 @@ jobs:
 
       - name: Cloning OCI Factory
         uses: actions/checkout@v4
-        if: github.repository == 'canonical/oci-factory'
         with:
           repository: canonical/oci-factory
           ref: ${{ needs.configure-tests.outputs.oci-factory-ref }}
@@ -250,6 +249,8 @@ jobs:
       - name: Checkout Rock Repo
         uses: actions/checkout@v4
         if: github.repository != 'canonical/oci-factory'
+        with:
+          path: rock-repo
 
       - name: Download Rock
         uses: actions/download-artifact@v4
@@ -270,14 +271,17 @@ jobs:
             copy oci-archive:${{ inputs.oci-archive-name }} \
             docker-daemon:$docker_image
 
-          if [ -n "${{ inputs.trivyignore-path }}" ] && [ -f "${{ inputs.trivyignore-path }}" ]
-          then
-            trivyignore_path="${{ inputs.trivyignore-path }}"
-          else
-            # dummy .trivyignore file
+          # Append the "rock-repo" suffix to the trivyignore path if the repo is not canonical/oci-factory
+          trivyignore_path="${{ inputs.trivyignore-path }}"
+          if [[ "${{ github.repository }}" != "canonical/oci-factory" ]]; then
+            trivyignore_path="rock-repo/${trivyignore_path}"
+          fi
+
+          if [[ -z "${trivyignore_path}" || ! -f "${trivyignore_path}" ]]; then
             trivyignore_path=.trivyignore
             touch $trivyignore_path
           fi
+
           echo "trivyignore-path=$trivyignore_path" >> "$GITHUB_OUTPUT"
 
           echo "report-name=${{ inputs.oci-archive-name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}" >> "$GITHUB_OUTPUT"
