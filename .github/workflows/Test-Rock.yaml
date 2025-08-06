@@ -237,6 +237,8 @@ jobs:
     name: "test-vulnerabilities ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
     needs: [configure-tests]
     if: inputs.test-vulnerabilities
+    env:
+      ROCK_REPO_DIR: "rock-repo"
     steps:
 
       - name: Cloning OCI Factory
@@ -248,9 +250,9 @@ jobs:
       
       - name: Checkout Rock Repo
         uses: actions/checkout@v4
-        if: github.repository != 'canonical/oci-factory'
+        if: github.repository != 'canonical/oci-factory' && inputs.trivyignore-path != ''
         with:
-          path: rock-repo
+          path: ${{ env.ROCK_REPO_DIR }}
 
       - name: Download Rock
         uses: actions/download-artifact@v4
@@ -277,10 +279,11 @@ jobs:
             copy oci-archive:${{ inputs.oci-archive-name }} \
             docker-daemon:$docker_image
 
-          # Append the "rock-repo" suffix to the trivyignore path if the repo is not canonical/oci-factory
+          # Append the ROCK_REPO_DIR path prefix to the trivyignore path
+          # if the repo is not canonical/oci-factory
           trivyignore_path="${{ inputs.trivyignore-path }}"
           if [[ "${{ github.repository }}" != "canonical/oci-factory" ]]; then
-            trivyignore_path="rock-repo/${trivyignore_path}"
+            trivyignore_path="${{ env.ROCK_REPO_DIR }}/${trivyignore_path}"
           fi
 
           if [[ -z "${trivyignore_path}" || ! -f "${trivyignore_path}" ]]; then
