@@ -1,0 +1,73 @@
+version: 1
+application: postgres
+is_chiselled: False
+description: |
+  Current PostgreSQL software Docker Image [from Canonical](https://ubuntu.com/security/docker-images) based on Ubuntu.
+  Receives security updates and rolls to newer PostgreSQL software or Ubuntu release.
+  This repository is free to use and exempted from per-user rate limits.
+
+  # About PostgreSQL™
+  PostgreSQL is a powerful, open source object-relational database system.
+  It has more than 20 years of active development and a proven architecture that
+  has earned it a strong reputation for reliability, data integrity, and correctness.
+  Read more on the [PostgreSQL website](https://www.postgresql.org/).
+  
+  ```bash
+  docker run --detach --name postgresql-container -p 30432:5432 -e TZ=UTC -e POSTGRES_PASSWORD=My:S3cr3t ubuntu/postgres:16-24.04_edge
+  ```
+
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -e TZ=UTC
+    - -e POSTGRES_PASSWORD=My:S3cr3t
+    - -p 30432:5432
+  access: Access your PostgreSQL server at `localhost:55432`.
+parameters:
+  - type: -e
+    value: 'TZ=UTC'
+    description: Timezone.
+  - type: -e
+    value: 'POSTGRES_PASSWORD=my_secret_password'
+    description: Set the password for the superuser which is postgres by default. Bear in mind that to connect to the database in the same host the password is not needed but to access it via an external host (for instance another container) the password is needed. This option is mandatory and must not be empty.
+  - type: -e
+    value: 'POSTGRES_USER=john'
+    description: Create a new user with superuser privileges. This is used in conjunction with POSTGRES_PASSWORD.
+  - type: -e
+    value: 'POSTGRES_DB=db_test'
+    description: Set the name of the default database.
+  - type: -e
+    value: 'POSTGRES_INITDB_ARGS="--data-checksums"'
+    description: Pass arguments to the postgres initdb call.
+  - type: -e
+    value: 'POSTGRES_INITDB_WALDIR=/path/to/location'
+    description: Set the location of the Postgres transaction log. By default it is stored in a subdirectory of the main Postgres data folder (PGDATA).
+  - type: -e
+    value: 'POSTGRES_HOST_AUTH_METHOD=trust'
+    description: Set the auth-method for host connections for all databases, all users, and all addresses. The following will be added to the pg_hba.conf if this option is passed 'host all all all $POSTGRES_HOST_AUTH_METHOD'.
+  - type: -e
+    value: 'PGDATA=/path/to/location'
+    description: Set the location of the database files. The default is '/var/lib/postgresql/data'.
+  - type: -p
+    value: '30432:5432'
+    description: Expose Postgres on localhost:30432.
+  - type: -v
+    value: "/path/to/postgresql.conf:/etc/postgresql/postgresql.conf"
+    description: Local configuration file 'postgresql.conf'.
+  - type: -v
+    value: "/path/to/persisted/data:/var/lib/postgresql/data"
+    description: Persist data instead of initializing a new database every time you launch a new container.
+debug:
+  text: |
+    ### Testing / Debugging
+    
+    To debug the container:
+    ```bash
+    docker logs -f postgresql-container
+    docker exec -it postgresql-container pebble logs
+    ```
+    
+    To get an interactive shell:
+    ```bash
+    docker exec -it postgresql-container /bin/bash
+    ```
