@@ -98,7 +98,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.release-commit-sha }}
-      
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -137,7 +137,7 @@ jobs:
             --oci-image-path "${{ needs.validate-documentation-request.outputs.oci-img-path }}" \
             --repository "${ECR_NAMESPACE}" \
             --doc-data-dir data
-      
+
       - name: Upload documentation data YAML
         uses: actions/upload-artifact@v4
         with:
@@ -164,7 +164,7 @@ jobs:
             set -x
           fi
           ./src/docs/publish_docs.sh "${{ needs.validate-documentation-request.outputs.oci-img-name }}" "${{ steps.generate-documentation.outputs.name_doc_file }}" "${{ steps.generate-documentation.outputs.image_doc_folder }}"
-          
+
   notify:
     runs-on: ubuntu-22.04
     name: Notify on failure
@@ -176,7 +176,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-          
+
+      - run: pip install -r src/notifications/requirements.txt
+
       - name: Summarize workflow failure message
         id: get-summary
         run: |
