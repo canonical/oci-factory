@@ -33,6 +33,6 @@ runs:
           cd oci-factory-releases
           find . -name "_releases.json" -exec cp --parents {} ../
           cd ..
-        elif [[ -f "oci-factory-releases/${{ inputs.image-name }}/_releases.json" ]]; then
-          cp oci-factory-releases/${{ inputs.image-name }}/_releases.json ../oci/${{ inputs.image-name }}/_releases.json
+        elif [[ -f "oci-factory-releases/oci/${{ inputs.image-name }}/_releases.json" ]]; then
+          cp oci-factory-releases/oci/${{ inputs.image-name }}/_releases.json oci/${{ inputs.image-name }}/_releases.json
         fi
