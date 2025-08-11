@@ -82,8 +82,15 @@ jobs:
       release-commit-sha: ${{ steps.release-commit-sha.outputs.release-commit-sha }}
     env:
       IS_PROD: ${{ ! startsWith(inputs.oci-image-name, 'mock-') }}
+      RELEASE_BRANCH: _releases
     steps:
       - uses: actions/checkout@v4
+
+      - name: Fetch _releases.json
+        uses: ./.github/actions/fetch-releases-json
+        with:
+          image-name: ${{ inputs.oci-image-name }}
+          releases-branch: ${{ env.RELEASE_BRANCH }}
 
       - uses: actions/cache/restore@v4
         if: ${{ inputs.image-trigger-cache-key != '' }}
@@ -165,26 +172,22 @@ jobs:
             --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
             --update-releases-json
 
+      - name: Overwrite _releases.json
+        run: |
+          cp oci/${{ inputs.oci-image-name }}/_releases.json oci-factory-releases/oci/${{ inputs.oci-image-name }}/_releases.json
+
       # Commit with actor's GitHub noreply email to pass CLA and keep the privacy of the actor
       # Use force push, to bypass the branch protection rules
       - name: Commit oci/${{ inputs.oci-image-name }}/_releases.json
         uses: actions-x/commit@v6
         with:
+          directory: oci-factory-releases
           token: ${{ secrets.ROCKSBOT_TOKEN }}
-          branch: ${{ github.ref }}
+          branch: ${{ env.RELEASE_BRANCH}}
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           files: oci/${{ inputs.oci-image-name }}/_releases.json
           email: '${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com'
           force: true
-
-      - name: Get commit SHA of _release.json update
-        id: release-commit-sha
-        run: |
-          set -e
-          if [[ "$RUNNER_DEBUG" == "1" ]]; then
-            set -x
-          fi
-          echo "release-commit-sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
 
   update-documentation:
@@ -193,7 +196,6 @@ jobs:
     uses: ./.github/workflows/Documentation.yaml
     with:
       oci-image-name: "${{ inputs.oci-image-name }}"
-      release-commit-sha: "${{ needs.do-releases.outputs.release-commit-sha }}"
     secrets: inherit
 
 
