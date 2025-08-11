@@ -21,6 +21,11 @@ runs:
         path: oci-factory-releases
         ref: ${{ inputs.releases-branch }}
 
+    - shell: bash
+      run: |
+        pwd
+        ls .
+
     - name: Copy _releases.json
       shell: bash
       run: |

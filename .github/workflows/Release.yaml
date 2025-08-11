@@ -92,6 +92,13 @@ jobs:
           image-name: ${{ inputs.oci-image-name }}
           releases-branch: ${{ env.RELEASE_BRANCH }}
 
+      - name: debug
+        run: |
+          pwd
+          ls .
+          echo -e "\n"
+          ls 
+
       - uses: actions/cache/restore@v4
         if: ${{ inputs.image-trigger-cache-key != '' }}
         with:
