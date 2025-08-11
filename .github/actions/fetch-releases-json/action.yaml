@@ -30,10 +30,9 @@ runs:
 
         if [[ "${{ inputs.image-name}}" = "*" ]]; then
           echo "Copying all _releases.json files"
-          pushd oci-factory-releases
+          cd oci-factory-releases
           find . -name "_releases.json" -exec cp --parents {} ../
-          popd
-        elif [ -f "oci-factory-releases/${{ inputs.image-name }}/_releases.json" ]; then
-            cp oci-factory-releases/${{ inputs.image-name }}/_releases.json ../oci/${{ inputs.image-name }}/_releases.json
-          fi
+          cd ..
+        elif [[ -f "oci-factory-releases/${{ inputs.image-name }}/_releases.json" ]]; then
+          cp oci-factory-releases/${{ inputs.image-name }}/_releases.json ../oci/${{ inputs.image-name }}/_releases.json
         fi
