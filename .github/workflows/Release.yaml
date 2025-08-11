@@ -79,7 +79,6 @@ jobs:
     needs: [validate-push-release-request]
     outputs:
       gh-releases-matrix: ${{ steps.release-image.outputs.gh-releases-matrix }}
-      release-commit-sha: ${{ steps.release-commit-sha.outputs.release-commit-sha }}
     env:
       IS_PROD: ${{ ! startsWith(inputs.oci-image-name, 'mock-') }}
       RELEASE_BRANCH: _releases
@@ -159,9 +158,6 @@ jobs:
             --all-releases oci/${{ inputs.oci-image-name }}/_releases.json \
             --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
             --ghcr-repo "${{ github.repository_owner }}/oci-factory"
-      
-      # Pull the latest changes to prevent conflicts merging _releases.json
-      - run: git pull --quiet
 
       - name: Update _releases.json
         run: |
