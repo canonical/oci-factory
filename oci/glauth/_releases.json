@@ -1,0 +1,17 @@
+{
+    "2-22.04": {
+        "end-of-life": "2025-09-30T00:00:00Z",
+        "stable": {
+            "target": "49"
+        },
+        "candidate": {
+            "target": "2-22.04_stable"
+        },
+        "edge": {
+            "target": "2-22.04_beta"
+        },
+        "beta": {
+            "target": "2-22.04_candidate"
+        }
+    }
+}
