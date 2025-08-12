@@ -22,7 +22,6 @@ jobs:
         uses: ./.github/actions/fetch-releases-json
         with:
           image-name: '*'
-          releases-branch: "_releases"
 
       - name: Prepare test matrix
         id: prepare-test-matrix
