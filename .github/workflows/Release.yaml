@@ -82,6 +82,7 @@ jobs:
     env:
       IS_PROD: ${{ ! startsWith(inputs.oci-image-name, 'mock-') }}
       RELEASE_BRANCH: _releases
+      RELEASE_REPO_DIR: oci-factory-releases
     steps:
       - uses: actions/checkout@v4
 
@@ -90,6 +91,7 @@ jobs:
         with:
           image-name: ${{ inputs.oci-image-name }}
           releases-branch: ${{ env.RELEASE_BRANCH }}
+          directory: ${{ env.RELEASE_REPO_DIR }}
 
       - uses: actions/cache/restore@v4
         if: ${{ inputs.image-trigger-cache-key != '' }}
@@ -123,6 +125,9 @@ jobs:
           IMAGE_NAME: ${{ inputs.oci-image-name }}
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: ./src/image/get_canonical_tags_from_swift.sh
+      
+      # Pull the latest changes to prevent conflicts merging _releases.json
+      - run: pushd ${{ env.RELEASE_REPO_DIR }} && git pull --quiet && popd
 
       - name: Do releases from ${{ inputs.oci-image-name }}
         id: release-image
@@ -170,20 +175,17 @@ jobs:
 
       - name: Overwrite _releases.json
         run: |
-          cp oci/${{ inputs.oci-image-name }}/_releases.json oci-factory-releases/oci/${{ inputs.oci-image-name }}/_releases.json
+          cp oci/${{ inputs.oci-image-name }}/_releases.json ${{ env.RELEASE_REPO_DIR }}/oci/${{ inputs.oci-image-name }}/_releases.json
 
       # Commit with actor's GitHub noreply email to pass CLA and keep the privacy of the actor
       # Use force push, to bypass the branch protection rules
       - name: Commit oci/${{ inputs.oci-image-name }}/_releases.json
-        uses: actions-x/commit@v6
+        uses: ./.github/actions/commit-releases-json
         with:
-          directory: oci-factory-releases
-          token: ${{ secrets.ROCKSBOT_TOKEN }}
-          branch: ${{ env.RELEASE_BRANCH }}
+          directory: ${{ env.RELEASE_REPO_DIR }}
+          image-name: ${{ inputs.oci-image-name }}
           message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-          files: oci/${{ inputs.oci-image-name }}/_releases.json
           email: '${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com'
-          force: true
 
 
   update-documentation:

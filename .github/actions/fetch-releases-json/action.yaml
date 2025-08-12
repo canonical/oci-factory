@@ -9,6 +9,9 @@ inputs:
     description: 'Branch where the _releases.json file is located'
     required: false
     default: '_releases'
+  directory:
+    description: 'Directory where the _releases branch of the OCI Factory is checked out'
+    default: oci-factory-releases
 
 
 
@@ -18,7 +21,7 @@ runs:
     - name: Fetch _releases.json
       uses: actions/checkout@v4
       with:
-        path: oci-factory-releases
+        path: ${{ inputs.directory }}
         ref: ${{ inputs.releases-branch }}
 
     - name: Copy _releases.json
@@ -30,9 +33,9 @@ runs:
 
         if [[ "${{ inputs.image-name}}" = "*" ]]; then
           echo "Copying all _releases.json files"
-          cd oci-factory-releases
+          cd ${{ inputs.directory }}
           find . -name "_releases.json" -exec cp --parents {} ../
           cd ..
-        elif [[ -f "oci-factory-releases/oci/${{ inputs.image-name }}/_releases.json" ]]; then
-          cp oci-factory-releases/oci/${{ inputs.image-name }}/_releases.json oci/${{ inputs.image-name }}/_releases.json
+        elif [[ -f "${{ inputs.directory }}/oci/${{ inputs.image-name }}/_releases.json" ]]; then
+          cp ${{ inputs.directory }}/oci/${{ inputs.image-name }}/_releases.json oci/${{ inputs.image-name }}/_releases.json
         fi
