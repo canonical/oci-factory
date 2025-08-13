@@ -1,0 +1,58 @@
+name: Commit Releases JSON
+description: Commits the _releases.json file to the current repository.
+
+inputs:
+  image-name:
+    description: 'OCI image name to fetch the releases JSON for'
+    required: true
+  releases-branch:
+    description: 'Branch where the _releases.json file is located'
+    required: false
+    default: '_releases'
+  directory:
+    description: 'Directory where the _releases branch of the OCI Factory is checked out'
+    default: oci-factory-releases
+    required: false
+  message:
+    description: 'Commit message for the changes made to _releases.json'
+    required: true
+  email:
+    description: 'Email address to use for the commit author'
+    required: true
+  actor:
+    description: 'GitHub actor to use for the commit author'
+    default: ${{ github.actor }}
+  force:
+    description: 'Force push the changes to the branch'
+    required: false
+    default: '0'
+
+runs:
+  using: "composite"
+  steps:
+    - name: commit _releases.json
+      shell: bash
+      run: |
+        if [[ "$RUNNER_DEBUG" == "1" ]]; then
+          set -x
+        fi
+
+        if [ "${{ inputs.force }}" != "0" ]; then
+          FORCE='--force'
+        fi
+
+        cd ${{ inputs.directory }}
+
+        git config user.email "${{ inputs.email }}"
+        git config user.name "${{ inputs.actor }}"
+
+        git add oci/${{ inputs.image-name }}/_releases.json
+        git commit -m "${{ inputs.message }}"
+        
+        git branch actions-temp-branch
+        git fetch origin ${{ inputs.releases-branch }}
+        git checkout ${{ inputs.releases-branch }}
+        git merge actions-temp-branch
+        git branch -d actions-temp-branch
+
+        git push origin ${{ inputs.releases-branch }} $FORCE

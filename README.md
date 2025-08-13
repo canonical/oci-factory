@@ -6,24 +6,32 @@
 </div>
 
 ## Index
-- [Before you get started](#-**Before-you-get-started**)
-  - [What is the OCI Factory?](#What-is-the-OCI-Factory?)
-  - [Why does it exist?](#Why-does-it-exist?)
-  - [Who is it for?](#Who-is-it-for?)
-  - [How to qualify as a Maintainer?](#How-to-qualify-as-a-Maintainer?)
-- [How to contribute](#-How-to-contribute)
-  - [As a developer](#As-a-developer)
-  - [As a Maintainer](#As-a-Maintainer--)
-- [Maintainer files](#-Maintainer-files)
-  - [Trigger files](#Trigger-files)
-    - [Image trigger file](#Image-trigger-file)
-    - [Documentation trigger file](#Documentation-trigger-file)
-  - [Other files](#Other-files)
-    - [Contacts](#Contacts)
-    - [Vulnerability Filtering](#Vulnerability-Filtering)
-- [Reusable workflows](#-Reusable-workflows)
-  - [Build-Rock Workflow](#Build-Rock-Workflow)
-  - [Test-Rock Workflow](#Test-Rock-Workflow)
+- [Welcome to the OCI Factory! 👋](#welcome-to-the-oci-factory-)
+  - [Index](#index)
+  - [🍿 **Before you get started**](#-before-you-get-started)
+    - [What is the OCI Factory?](#what-is-the-oci-factory)
+    - [Why does it exist?](#why-does-it-exist)
+    - [Who is it for?](#who-is-it-for)
+    - [How to qualify as a Maintainer?](#how-to-qualify-as-a-maintainer)
+  - [🌈 **How to contribute**](#-how-to-contribute)
+    - [As a developer](#as-a-developer)
+    - [As a **Maintainer** ⛏ 🪨](#as-a-maintainer--)
+      - [1. With Pull Requests](#1-with-pull-requests)
+      - [2. With the CLI Client](#2-with-the-cli-client)
+  - [🗃 **Maintainer files**](#-maintainer-files)
+    - [Trigger files](#trigger-files)
+      - [Image trigger file](#image-trigger-file)
+        - [Example: *image.yaml*](#example-imageyaml)
+      - [Documentation trigger file](#documentation-trigger-file)
+        - [Example: *documentation.yaml*](#example-documentationyaml)
+    - [Other files](#other-files)
+      - [Contacts](#contacts)
+        - [Example: *contacts.yaml*](#example-contactsyaml)
+      - [Vulnerability Filtering](#vulnerability-filtering)
+        - [Example: *.trivyignore*](#example-trivyignore)
+  - [📦 Reusable workflows](#-reusable-workflows)
+    - [Build-Rock Workflow](#build-rock-workflow)
+    - [Test-Rock Workflow](#test-rock-workflow)
 
 
 ## 🍿 **Before you get started**
@@ -154,7 +162,7 @@ Here's an example of how an `oci` folder would look for your image:
 oci/my-oci-image/
 ├── contacts.yaml
 ├── documentation.yaml
-├── _releases.json
+├── _releases.json (on branch `_releases`)
 └── image.yaml
 ```
 
