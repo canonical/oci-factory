@@ -1,5 +1,5 @@
-name: Fetch Releases JSON
-description: Fetches the _releases.json file to the current repository.
+name: Commit Releases JSON
+description: Commits the _releases.json file to the current repository.
 
 inputs:
   image-name:

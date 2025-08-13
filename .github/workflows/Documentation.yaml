@@ -100,6 +100,11 @@ jobs:
       - name: Setup environment
         run: pip install -r ./src/image/requirements.txt -r ./src/docs/requirements.txt
 
+      - name: Fetch _releases.json
+        uses: ./.github/actions/fetch-releases-json
+        with:
+          image-name: ${{ needs.validate-documentation-request.outputs.oci-img-name }}
+
       - name: Get all revisions per track
         id: get-all-canonical-tags
         env:

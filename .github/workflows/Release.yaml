@@ -81,7 +81,7 @@ jobs:
       gh-releases-matrix: ${{ steps.release-image.outputs.gh-releases-matrix }}
     env:
       IS_PROD: ${{ ! startsWith(inputs.oci-image-name, 'mock-') }}
-      RELEASE_BRANCH: _releases
+      RELEASES_BRANCH: _releases
       RELEASE_REPO_DIR: oci-factory-releases
     steps:
       - uses: actions/checkout@v4
@@ -90,7 +90,7 @@ jobs:
         uses: ./.github/actions/fetch-releases-json
         with:
           image-name: ${{ inputs.oci-image-name }}
-          releases-branch: ${{ env.RELEASE_BRANCH }}
+          releases-branch: ${{ env.RELEASES_BRANCH }}
           directory: ${{ env.RELEASE_REPO_DIR }}
 
       - uses: actions/cache/restore@v4
