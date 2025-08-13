@@ -2,7 +2,7 @@ version: 1
 
 upload:
   - source: "canonical/postgresql-rock"
-    commit: 8c9ce145b76c18ac9145ad6dccec22d214866283
+    commit: 118965ed34e0def7d3f103a00caead9cfaa1a897
     directory: .
     release:
       16-24.04:
