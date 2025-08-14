@@ -1,0 +1,126 @@
+version: 1
+# --- OVERVIEW INFORMATION ---
+application: litmuschaos-server
+description: >
+  Litmuschaos is a chaos testing platform for kubernetes applications. It allows you to define, 
+  run and monitor 'chaos experiments' that simulate infrastructure failures to verify the stability
+  of your cloud deployments.
+  Read more on the [official documentation](https://litmuschaos.io/)
+  
+  This rock deploys the backend component, also known as the 'graphql server'. 
+
+  Please note that this repository is now holding a rock, not a
+  Dockerfile-based image. As such the entrypoint is now Pebble. Read more on
+  the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
+# --- USAGE INFORMATION ---
+docker:
+  parameters:
+    - -p 3000:3000
+  access: Access the backend server instance at `http://localhost:3000`.
+parameters:
+  - type: -e
+    value: 'VERSION=<version>'
+    description: ID of the running version.
+  - type: -e
+    value: INFRA_DEPLOYMENTS='["app=chaos-exporter"]'
+    description: Deployment names for the infra components.
+  - type: -e
+    value: SUBSCRIBER_IMAGE="litmuschaos/litmusportal-subscriber:ci"
+    description: Image the chaoscenter will use to deploy the subscriber service.
+  - type: -e
+    value: EVENT_TRACKER_IMAGE="litmuschaos/litmusportal-event-tracker:ci"
+    description: Image the chaoscenter will use to deploy the event-tracker service.
+  - type: -e
+    value: ARGO_WORKFLOW_CONTROLLER_IMAGE="litmuschaos/workflow-controller:v3.3.1"
+    description: Image the chaoscenter will use to deploy the argo-workflow-controller service.
+  - type: -e
+    value: ARGO_WORKFLOW_EXECUTOR_IMAGE="litmuschaos/argoexec:v3.3.1"
+    description: Image the chaoscenter will use to deploy the argo-workflow-executor service.
+  - type: -e
+    value: LITMUS_CHAOS_OPERATOR_IMAGE="litmuschaos/chaos-operator:ci"
+    description: Image the chaoscenter will use to deploy the chaos-operator service.
+  - type: -e
+    value: LITMUS_CHAOS_RUNNER_IMAGE="litmuschaos/chaos-runner:ci"
+    description: Image the chaoscenter will use to deploy the chaos-runner service.
+  - type: -e
+    value: LITMUS_CHAOS_EXPORTER_IMAGE="litmuschaos/chaos-exporter:ci"
+    description: Image the chaoscenter will use to deploy the chaos-exporter service.
+  - type: -e
+    value: CONTAINER_RUNTIME_EXECUTOR="k8sapi"
+    description: Runtime executor.
+  - type: -e
+    value: WORKFLOW_HELPER_IMAGE_VERSION="ci"
+    description: Image version tag for the workflow helper.
+  - type: -e
+    value: INFRA_COMPATIBLE_VERSIONS="ci"
+    description: Image version tag for the infra workloads.
+  - type: -e
+    value: DEFAULT_HUB_BRANCH_NAME="master"
+    description: Default branch name for gitops repos.
+  - type: -e
+    value: 'ADMIN_USERNAME=<user>'
+    description: Web UI admin username.
+  - type: -e
+    value: 'ADMIN_PASSWORD=<password>'
+    description: Web UI admin password.
+  - type: -e
+    value: 'DB_SERVER=<db_address>'
+    description: Database server address.
+  - type: -e
+    value: 'DB_USER=<db_user>'
+    description: Database username.
+  - type: -e
+    value: 'DB_PASSWORD=<db_password>'
+    description: Database password.
+  - type: -e
+    value: 'REST_PORT=3000'
+    description: REST API auth server port.
+  - type: -e
+    value: 'GRPC_PORT=3030'
+    description: gRPC auth server port.
+  - type: -p
+    value: '3000:3000'
+    description: Access the backend server at `http://localhost:3000`.
+debug:
+  text: |
+    ### Debugging
+    
+    To run the server:
+    ```bash
+    # litmuschaos-server needs a MongoDB database to work
+    docker run -d --name mongodb -e MONGO_INITDB_ROOT_USERNAME=root -e MONGO_INITDB_ROOT_PASSWORD=password -p 27017:27017 mongo:7
+    
+    # don't use `--network host` in production
+    docker run -d --network host -p 3000:3000 --name litmuschaos-server-container \
+      -e DB_USER=root \
+      -e VERSION=ci \
+      -e DB_PASSWORD=password \
+      -e REST_PORT=3000 \
+      -e GRPC_PORT=3030 \
+      -e DB_SERVER=mongodb://localhost:27017 \
+      -e ADMIN_USERNAME=admin \
+      -e ADMIN_PASSWORD=password \
+      -e INFRA_DEPLOYMENTS='["app=chaos-exporter"]' \
+      -e SUBSCRIBER_IMAGE="litmuschaos/litmusportal-subscriber:ci" \
+      -e EVENT_TRACKER_IMAGE="litmuschaos/litmusportal-event-tracker:ci" \
+      -e ARGO_WORKFLOW_CONTROLLER_IMAGE="litmuschaos/workflow-controller:v3.3.1" \
+      -e ARGO_WORKFLOW_EXECUTOR_IMAGE="litmuschaos/argoexec:v3.3.1" \
+      -e LITMUS_CHAOS_OPERATOR_IMAGE="litmuschaos/chaos-operator:ci" \
+      -e LITMUS_CHAOS_RUNNER_IMAGE="litmuschaos/chaos-runner:ci" \
+      -e LITMUS_CHAOS_EXPORTER_IMAGE="litmuschaos/chaos-exporter:ci" \
+      -e CONTAINER_RUNTIME_EXECUTOR="k8sapi" \
+      -e WORKFLOW_HELPER_IMAGE_VERSION="ci" \
+      -e INFRA_COMPATIBLE_VERSIONS="ci" \
+      -e DEFAULT_HUB_BRANCH_NAME="master" \
+      ubuntu/litmuschaos-server:3.19-24.04_edge
+    ```
+    
+    Note that at this point the workload still won't be operational, as it requires the 
+    litmuschaos-auth and litmuschaos-frontend components to function.
+    
+    Cleanup:
+
+    ```
+    docker rm -f mongodb
+    docker rm -f litmuschaos-server-container
+    ```
