@@ -96,7 +96,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: canonical/oci-factory
-          ref: ${{ github.repo == 'canonical/oci-factory' && github.ref || 'main' }}
           path: oci-factory
 
       - name: Fetch _releases.json
