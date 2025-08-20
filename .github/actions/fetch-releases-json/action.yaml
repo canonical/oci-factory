@@ -31,7 +31,7 @@ runs:
           set -x
         fi
 
-        if [[ "${{ inputs.image-name}}" = "*" ]]; then
+        if [[ "${{ inputs.image-name }}" = "*" ]]; then
           echo "Copying all _releases.json files"
           cd ${{ inputs.directory }}
           find . -name "_releases.json" -exec cp --parents {} $OLDPWD/

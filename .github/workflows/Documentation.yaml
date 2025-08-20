@@ -93,17 +93,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/checkout@v4
+        with:
+          repository: canonical/oci-factory
+          ref: ${{ github.repo == 'canonical/oci-factory' && github.ref || 'main' }}
+          path: oci-factory
+
+      - name: Fetch _releases.json
+        uses: ./oci-factory/.github/actions/fetch-releases-json
+        with:
+          image-name: ${{ needs.validate-documentation-request.outputs.oci-img-name }}
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
       - name: Setup environment
         run: pip install -r ./src/image/requirements.txt -r ./src/docs/requirements.txt
-
-      - name: Fetch _releases.json
-        uses: ./.github/actions/fetch-releases-json
-        with:
-          image-name: ${{ needs.validate-documentation-request.outputs.oci-img-name }}
 
       - name: Get all revisions per track
         id: get-all-canonical-tags
