@@ -93,6 +93,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # This is needed to ensure that this workflow can run when called by workflows in external repositories
       - uses: actions/checkout@v4
         with:
           repository: canonical/oci-factory
