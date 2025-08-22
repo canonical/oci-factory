@@ -1,0 +1,42 @@
+name: Fetch Releases JSON
+description: Fetches the _releases.json file to the current repository.
+
+inputs:
+  image-name:
+    description: 'OCI image name to fetch the releases JSON for'
+    required: true
+  releases-branch:
+    description: 'Branch where the _releases.json file is located'
+    required: false
+    default: '_releases'
+  directory:
+    description: 'Directory where the _releases branch of the OCI Factory is checked out'
+    default: oci-factory-releases
+
+
+
+runs:
+  using: "composite"
+  steps:
+    - name: Fetch _releases.json
+      uses: actions/checkout@v4
+      with:
+        repository: canonical/oci-factory
+        path: ${{ inputs.directory }}
+        ref: ${{ inputs.releases-branch }}
+
+    - name: Copy _releases.json
+      shell: bash
+      run: |
+        if [[ "$RUNNER_DEBUG" == "1" ]]; then
+          set -x
+        fi
+
+        if [[ "${{ inputs.image-name }}" = "*" ]]; then
+          echo "Copying all _releases.json files"
+          cd ${{ inputs.directory }}
+          find . -name "_releases.json" -exec cp --parents {} $OLDPWD/
+          cd $OLDPWD
+        elif [[ -f "${{ inputs.directory }}/oci/${{ inputs.image-name }}/_releases.json" ]]; then
+          cp ${{ inputs.directory }}/oci/${{ inputs.image-name }}/_releases.json oci/${{ inputs.image-name }}/_releases.json
+        fi

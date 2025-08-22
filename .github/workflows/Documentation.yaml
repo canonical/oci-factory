@@ -23,10 +23,6 @@ on:
         description: 'OCI image to generate the documentation for'
         required: true
         type: string
-      release-commit-sha:
-        description: 'Commit SHA containing the updated _releases.json'
-        required: true
-        type: string
 
 jobs:
   validate-documentation-request:
@@ -96,8 +92,17 @@ jobs:
       IS_PROD: ${{ ! startsWith(needs.validate-documentation-request.outputs.oci-img-name, 'mock-') }}
     steps:
       - uses: actions/checkout@v4
+
+      # This is needed to ensure that this workflow can run when called by workflows in external repositories
+      - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.release-commit-sha }}
+          repository: canonical/oci-factory
+          path: oci-factory
+
+      - name: Fetch _releases.json
+        uses: ./oci-factory/.github/actions/fetch-releases-json
+        with:
+          image-name: ${{ needs.validate-documentation-request.outputs.oci-img-name }}
 
       - uses: actions/setup-python@v5
         with:
