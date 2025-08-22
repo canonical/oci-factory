@@ -21,6 +21,7 @@ runs:
     - name: Fetch _releases.json
       uses: actions/checkout@v4
       with:
+        repository: canonical/oci-factory
         path: ${{ inputs.directory }}
         ref: ${{ inputs.releases-branch }}
 
