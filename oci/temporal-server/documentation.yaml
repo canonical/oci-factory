@@ -7,7 +7,26 @@ description: >
 docker:
   parameters:
     - -p 7233:7233
-  access: Access the Temporal server's GRPC endpoint at localhost:7233
+    - -e SQL_HOST=1.2.3.4
+    - -v /path/to/temporal/config.yaml:/etc/temporal/config/config.yaml
+  access: |
+    ### New entrypoint `pebble`
+
+    Please note that the entrypoint of the images in this repository is [Pebble](https://documentation.ubuntu.com/pebble/), a lightweight service manager. The pebble process launches and supervises the temporal-server process.
+
+    #### Temporal Server Configuration
+
+    Temporal server must be provided with a configuration file to start up sucessfully. We do not include any default configurations in the image. Instead, we expect the user to either add a configuration file in the deployed container or mount a volume with the config file in the container.
+
+    Some development configuration files can be found in [the temporal repository](https://github.com/temporalio/temporal/tree/main/config).
+
+    The following outlines steps to mount the development configuration files while launching a container:
+
+    ```sh
+    $ git clone https://github.com/temporalio/temporal
+
+    $ docker run -d --name temporal-server-container -e TZ=UTC -p 7233:7233 -v ./temporal/config:/etc/temporal/config -e TEMPORAL_ENVIRONMENT=development-sqlite ubuntu/temporal-server:1.23.1-24.04_edge
+    ```
 
 parameters:
   - type: -e
@@ -55,3 +74,63 @@ parameters:
   - type: -v
     value: "/path/to/temporal/config.yaml:/etc/temporal/config/config.yaml"
     description: Local configuration file for Temporal server
+  - type: -e
+    value: 'SQL_HOST=1.2.3.4'
+    description: Hostname or IP address of SQL host to connect to with temporal-sql-tool
+  - type: -e
+    value: 'SQL_PORT=3306'
+    description: Port of SQL host to connect to with temporal-sql-tool
+  - type: -e
+    value: 'SQL_USER=mysql'
+    description: User name used for authentication when connecting to SQL host with temporal-sql-tool
+  - type: -e
+    value: 'SQL_PASSWORD=supersecretpassword'
+    description: Password used for authentication when connecting to SQL host with temporal-sql-tool
+  - type: -e
+    value: 'SQL_DATABASE=temporal'
+    description: Name of SQL database used with temporal-sql-tool
+  - type: -e
+    value: 'SQL_PLUGIN=mysql'
+    description: Name of the SQL plugin for temporal-sql-tool
+  - type: -e
+    value: 'SQL_CONNECT_ATTRIBUTES'
+    description: SQL connect attributes for temporal-sql-tool
+  - type: -e
+    value: 'SQL_TLS=true'
+    description: Enable TLS over SQL connection with temporal-sql-tool
+  - type: -e
+    value: 'SQL_TLS_CERT_FILE=/path/to/client.crt'
+    description: SQL TLS client certificate path for temporal-sql-tool
+  - type: -e
+    value: 'SQL_TLS_KEY_FILE=/path/to/client.key'
+    description: SQL TLS client key path for temporal-sql-tool
+  - type: -e
+    value: 'SQL_TLS_CA_FILE=/path/to/client-ca.crt'
+    description: SQL TLS client CA file for temporal-sql-tool
+  - type: -e
+    value: 'SQL_TLS_SERVER_NAME=test-server-name'
+    description: Override for target server name with temporal-sql-tool
+  - type: -e
+    value: 'SQL_TLS_DISABLE_HOST_VERIFICATION=true'
+    description: Disable TLS host name verifaction with temporal-sql-tool (tls must be enabled)
+  - type: -e
+    value: 'TEMPORAL_CLI_ADDRESS=1.2.3.4:5555'
+    description: host:port for Temporal frontend service used by tdbg
+  - type: -e
+    value: 'TEMPORAL_CLI_NAMESPACE=testnamespace'
+    description: Temporal workflow namespace used by tdbg
+  - type: -e
+    value: 'TEMPORAL_CONTEXT_TIMEOUT=10'
+    description: Optional timeout for context of RPC calls in seconds for tdbg
+  - type: -e
+    value: 'TEMPORAL_CLI_TLS_CERT=/path/to/tls.cert'
+    description: Path to x509 certificate used by tdbg
+  - type: -e
+    value: 'TEMPORAL_CLI_TLS_KEY=/path/to/tls.key'
+    description: Path to private key used by tdbg
+  - type: -e
+    value: 'TEMPORAL_CLI_TLS_CA=/path/to/server-ca.crt'
+    description: Path to server CA certificate used by tdbg
+  - type: -e
+    value: 'TEMPORAL_CLI_TLS_DISABLE_HOST_VERFICATION=true'
+    description: Disable TLS host name verification for tdbg (tls must be enabled)
