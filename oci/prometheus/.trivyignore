@@ -28,3 +28,5 @@ CVE-2024-45337
 CVE-2024-34156
 # golang.org/x/net
 CVE-2024-45338
+# pkg:golang/stdlib@1.23.11 - database/sql: Postgres Scan Race Condition
+CVE-2025-47907
