@@ -157,3 +157,11 @@ docker:
         ```bash
         docker exec -it dotnet-runtime-container pebble logs
         ```
+
+override_tracks:
+  6.0-22.04:
+    end-of-life: '2024-11-12T00:00:00Z'
+  7.0-23.04:
+    end-of-life: '2024-05-14T00:00:00Z'
+  9.0-24.10:
+    end-of-life: '2025-07-10T00:00:00Z'
