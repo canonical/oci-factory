@@ -269,6 +269,9 @@ for the "ubuntu" namespace, as is as follows:
 | microk8s.deploy | True | Dict[str, str] | Link to the YAML manifest and additional access message. |
 | microk8s.deploy.link | True | str | Link to the raw manifest file. |
 | microk8s.deploy.access | True | str | Post-deployment access message. |
+| override_tracks | False | Dict[Dict[str, str]] | Override the EOL dates of the tracks are from non-OCI-Factory releases or having a different track naming inconsistent with the build-base. |
+| override_tracks.\<track\> | True | Dict[str, str] | Track to be overridden. |
+| override_tracks.\<track\>.end_of_life | True | str | Date (ISO8601) after which the support for this track ends. |
 
 ##### Example: *documentation.yaml*
 
