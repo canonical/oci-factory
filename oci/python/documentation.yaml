@@ -30,3 +30,8 @@ debug:
     ```bash
     docker exec -it python-container python3
     ```
+
+override_tracks:
+  # Tracks with different tag than build-base
+  3.13-25.04:
+    end-of-life: '2026-01-15T00:00:00Z'
