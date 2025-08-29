@@ -120,3 +120,21 @@ docker:
     docker run -p 8080:8080 my-chiseled-aspnet-app:latest
     # access http://localhost:8080/
     ```
+
+override_tracks:
+  # Tracks release from legacy repo
+  6.0-22.04:
+    end-of-life: '2024-11-12T00:00:00Z'
+  6.0-22.10:
+    end-of-life: '2023-07-20T00:00:00Z'
+  7.0-22.10:
+    end-of-life: '2023-07-20T00:00:00Z'
+  7.0-23.04:
+    end-of-life: '2024-05-14T00:00:00Z'
+  8.0-24.04:
+    end-of-life: '2026-11-10T00:00:00Z'
+  9.0-24.10:
+    end-of-life: '2025-07-10T00:00:00Z'
+  # Tracks with different tag than build-base
+  9.0-25.04:
+    end-of-life: '2026-01-15T00:00:00Z'
