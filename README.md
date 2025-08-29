@@ -269,7 +269,7 @@ for the "ubuntu" namespace, as is as follows:
 | microk8s.deploy | True | Dict[str, str] | Link to the YAML manifest and additional access message. |
 | microk8s.deploy.link | True | str | Link to the raw manifest file. |
 | microk8s.deploy.access | True | str | Post-deployment access message. |
-| override_tracks | False | Dict[Dict[str, str]] | Override the EOL dates of the tracks are from non-OCI-Factory releases or having a different track naming inconsistent with the build-base. |
+| override_tracks | False | Dict[Dict[str, str]] | Override the EOL dates of the tracks are from non-OCI-Factory releases or the track name is inconsistent with the build-base. |
 | override_tracks.\<track\> | True | Dict[str, str] | Track to be overridden. |
 | override_tracks.\<track\>.end_of_life | True | str | Date (ISO8601) after which the support for this track ends. |
 
@@ -326,6 +326,9 @@ microk8s:
   deploy:
     link: https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/apache2/plain/examples/apache2-deployment.yml?h=2.4-22.04
     access: You will now be able to connect to the apache2 server on `http://localhost:30080`.
+override_tracks:
+  2.4-21.04:
+    end_of_life: "2022-01-20"
 ```
 
 ### Other files
