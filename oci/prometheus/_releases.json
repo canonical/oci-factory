@@ -343,5 +343,26 @@
         "edge": {
             "target": "2.55.1-24.04_beta"
         }
+    },
+    "3-24.04": {
+        "end-of-life": "2025-11-08T00:00:00Z",
+        "stable": {
+            "target": "117"
+        },
+        "candidate": {
+            "target": "3-24.04_stable"
+        },
+        "beta": {
+            "target": "3-24.04_candidate"
+        },
+        "edge": {
+            "target": "3-24.04_beta"
+        }
+    },
+    "3.4-24.04": {
+        "end-of-life": "2025-08-08T00:00:00Z"
+    },
+    "3.4.1-24.04": {
+        "end-of-life": "2025-08-08T00:00:00Z"
     }
 }
