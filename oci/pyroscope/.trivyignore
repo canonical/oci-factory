@@ -1,0 +1,4 @@
+# Upstream CVEs
+
+# stdlib: Incorrect results returned from Rows.Scan in database/sql - not affected
+CVE-2025-47907
