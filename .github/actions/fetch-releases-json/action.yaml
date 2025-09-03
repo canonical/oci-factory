@@ -35,7 +35,7 @@ runs:
         if [[ "${{ inputs.image-name }}" = "*" ]]; then
           echo "Copying all _releases.json files"
           cd ${{ inputs.directory }}
-          find . -name "_releases.json" -exec cp --parents {} $OLDPWD/
+          find . -name "_releases.json" -exec cp --parents {} $OLDPWD/ \;
           cd $OLDPWD
         elif [[ -f "${{ inputs.directory }}/oci/${{ inputs.image-name }}/_releases.json" ]]; then
           cp ${{ inputs.directory }}/oci/${{ inputs.image-name }}/_releases.json oci/${{ inputs.image-name }}/_releases.json
