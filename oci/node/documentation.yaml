@@ -23,5 +23,5 @@ debug:
     To get an interactive nodejs interpreter:
 
     ```bash
-    docker exec -it nodejs-container node
+    docker run --rm -it nodejs-container exec node
     ```
