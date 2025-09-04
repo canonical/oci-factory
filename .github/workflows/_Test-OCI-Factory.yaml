@@ -130,7 +130,7 @@ jobs:
   # Test full image workflow
   test-workflows:
     name: Trigger internal tests for mock-rock
-    needs: [access-check]
+    needs: [access-check, pytest, bats-test]
     uses: ./.github/workflows/Image.yaml
     with:
       oci-image-name: "mock-rock"
