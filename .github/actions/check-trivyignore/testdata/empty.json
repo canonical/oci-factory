@@ -1,0 +1,127 @@
+{
+    "invocation": {
+      "parameters": null,
+      "uri": "",
+      "event_id": "",
+      "builder.id": ""
+    },
+    "scanner": {
+      "uri": "pkg:github/aquasecurity/trivy@0.56.1",
+      "version": "0.56.1",
+      "db": {
+        "uri": "",
+        "version": ""
+      },
+      "result": {
+        "SchemaVersion": 2,
+        "CreatedAt": "2025-08-22T12:02:28.528681739Z",
+        "ArtifactName": "test-img:test",
+        "ArtifactType": "container_image",
+        "Metadata": {
+          "OS": {
+            "Family": "ubuntu",
+            "Name": "25.04"
+          },
+          "ImageID": "sha256:13adcc8042bf2a1fb164fdeb0bcc67a2130ecda8a3d7d21d73f6775789752a4c",
+          "DiffIDs": [
+            "sha256:269ec1fde612459fd12077b060b0bbb497cf98e67ce772b045c8de2aa0265191",
+            "sha256:e60da7b62c604d31f65a559ad45d8eadee7b99c22df43097ec2b618ed9eb6b91",
+            "sha256:828322cf67a7769211b279b9e3a6240c09e2b86c14ce8f0a4789772c720f6268"
+          ],
+          "RepoTags": [
+            "test-img:test"
+          ],
+          "ImageConfig": {
+            "architecture": "amd64",
+            "created": "2025-08-22T12:00:08.255323169Z",
+            "history": [
+              {
+                "created": "2025-08-22T12:01:08.086127114Z",
+                "created_by": "umoci raw add-layer --image /root/images/dotnet-deps:rockcraft-base /root/images/.temp_layer.448.tar --tag 9.0"
+              },
+              {
+                "created": "2025-08-22T12:01:08.205693733Z",
+                "created_by": "umoci raw add-layer --image /root/images/dotnet-deps:9.0 /root/images/.temp_layer.448.tar --tag 9.0"
+              },
+              {
+                "created": "2025-08-22T12:01:08.212235646Z",
+                "created_by": "umoci config",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-22T12:01:08.219631039Z",
+                "created_by": "umoci config",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-22T12:01:08.225720658Z",
+                "created_by": "umoci config",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-22T12:01:08.230722247Z",
+                "created_by": "umoci config",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-22T12:01:08.236219171Z",
+                "created_by": "umoci config",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-22T12:01:08.241520353Z",
+                "created_by": "umoci config",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-22T12:01:08.249644782Z",
+                "created_by": "umoci raw add-layer --image /root/images/dotnet-deps:9.0 /root/images/.temp_layer.control_data.448.tar"
+              }
+            ],
+            "os": "linux",
+            "rootfs": {
+              "type": "layers",
+              "diff_ids": [
+                "sha256:269ec1fde612459fd12077b060b0bbb497cf98e67ce772b045c8de2aa0265191",
+                "sha256:e60da7b62c604d31f65a559ad45d8eadee7b99c22df43097ec2b618ed9eb6b91",
+                "sha256:828322cf67a7769211b279b9e3a6240c09e2b86c14ce8f0a4789772c720f6268"
+              ]
+            },
+            "config": {
+              "Entrypoint": [
+                "/usr/bin/pebble",
+                "enter"
+              ],
+              "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "APP_UID=584792",
+                "ASPNETCORE_URLS=http://+:8080",
+                "DOTNET_RUNNING_IN_CONTAINER=true",
+                "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true"
+              ],
+              "Labels": {
+                "org.opencontainers.image.base.digest": "872312c561b62d18c4d7e6d61e8d318bf890a9f31ed12789b68efaba0b12cce5",
+                "org.opencontainers.image.created": "2025-08-22T12:01:08.232162+00:00",
+                "org.opencontainers.image.description": "The dependencies to run .NET Apps\n\n.NET is a free, cross-platform, open source developer platform for building\nmany different types of applications. This image contains the .NET deps,\nbut does not include bash, the .NET SDK nor a package manager.\n",
+                "org.opencontainers.image.ref.name": "dotnet-deps",
+                "org.opencontainers.image.title": "dotnet-deps",
+                "org.opencontainers.image.version": "9.0"
+              },
+              "User": "584792"
+            }
+          }
+        },
+        "Results": [
+          {
+            "Target": "test-img:test (ubuntu 25.04)",
+            "Class": "os-pkgs",
+            "Type": "ubuntu"
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "scanStartedOn": "2025-08-22T12:02:28.534556719Z",
+      "scanFinishedOn": "2025-08-22T12:02:28.534556719Z"
+    }
+  }
