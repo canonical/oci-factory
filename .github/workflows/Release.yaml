@@ -175,6 +175,7 @@ jobs:
 
       - name: Overwrite _releases.json
         run: |
+          mkdir -p ${{ env.RELEASE_REPO_DIR }}/oci/${{ inputs.oci-image-name }}
           cp oci/${{ inputs.oci-image-name }}/_releases.json ${{ env.RELEASE_REPO_DIR }}/oci/${{ inputs.oci-image-name }}/_releases.json
 
       # Commit with actor's GitHub noreply email to pass CLA and keep the privacy of the actor

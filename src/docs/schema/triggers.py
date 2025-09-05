@@ -3,8 +3,10 @@ this module is the pydantic version
 of the documentation.yaml schema.
 """
 
+from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, constr, conlist, ConfigDict
+
+from pydantic import BaseModel, ConfigDict, Field, conlist, constr, field_validator
 
 
 class ConfigMapFile(BaseModel):
@@ -71,6 +73,25 @@ class DebugInfo(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class EndOfLifeInfo(BaseModel):
+    """Schema for end-of-life information."""
+
+    end_of_life: str = Field(alias="end-of-life")
+
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("end_of_life")
+    def validate_end_of_life(cls, v: str) -> str:
+        """Validate the end-of-life date format."""
+        try:
+            datetime.fromisoformat(v.replace("Z", "+00:00"))
+        except ValueError:
+            raise ValueError(
+                f"Invalid end-of-life date format: {v}. Expected ISO 8601 format."
+            )
+        return v
+
+
 class DocSchema(BaseModel):
     """Schema of the documentation.yaml file, and also validation of the schema"""
 
@@ -82,5 +103,6 @@ class DocSchema(BaseModel):
     parameters: Optional[conlist(item_type=Parameter, min_length=1)] = None
     debug: Optional[DebugInfo] = None
     microk8s: Optional[Microk8sInfo] = None
+    override_tracks: Optional[dict[str, EndOfLifeInfo]] = None
 
     model_config = ConfigDict(extra="forbid")
