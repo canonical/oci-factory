@@ -38,6 +38,11 @@ on:
       trivyignore-path:
         description: "Optional path to .trivyignore file."
         type: string
+      vulnerability-report-artifact-name:
+        description: "Optional name for the vulnerability report artifact. Defaults to <oci-archive-name>.vulnerability-report.json"
+        type: string
+        required: false
+        default: ""
 
       ## Malware Test
       test-malware:
@@ -314,8 +319,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: ${{ steps.configure-trivy.outputs.report-name }}
-          path: ${{ steps.configure-trivy.outputs.report-name}}
+          name: ${{ inputs.vulnerability-report-artifact-name || steps.configure-trivy.outputs.report-name }}
+          path: ${{ steps.configure-trivy.outputs.report-name }}
 
 
       # We have to walk through the vulnerabilities since trivy does not support outputting the results as Markdown
