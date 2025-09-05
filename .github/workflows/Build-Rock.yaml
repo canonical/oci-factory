@@ -43,8 +43,6 @@ on:
     
     secrets:
       # authentication parameters
-      host-github-token:
-        description: "Deprecated: GitHub token from repository executing this workflow."
       source-github-token:
         description: "GitHub token for pulling a Rockcraft project from a private repository."
 env:
