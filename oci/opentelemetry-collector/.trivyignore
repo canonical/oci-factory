@@ -1,0 +1,8 @@
+# Upstream CVEs
+
+# github.com/expr-lang/expr
+CVE-2025-29786
+# github.com/golang-jwt/jwt/v5 - golang-jwt is a Go implementation of JSON Web Tokens ...
+CVE-2025-30204
+# pkg:golang/stdlib@1.23.11 - Cancelling a query (e.g. by cancelling the context passed to one of th ...
+CVE-2025-47907

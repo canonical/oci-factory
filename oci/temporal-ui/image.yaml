@@ -1,0 +1,18 @@
+version: 1
+upload:
+  - source: canonical/temporal-rocks
+    commit: 865b4b3ec8be4d0ec768ccd2be84218e76b0c538
+    directory: temporal-ui/2.39.0
+    release:
+      2-24.04:
+        end-of-life: '2025-08-07T00:00:00Z'
+        risks:
+          - edge
+      2.39-24.04:
+        end-of-life: '2025-08-07T00:00:00Z'
+        risks:
+          - edge
+      2.39.0-24.04:
+        end-of-life: '2025-08-08T00:00:00Z'
+        risks:
+          - edge

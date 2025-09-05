@@ -1,0 +1,10 @@
+version: 1
+upload:
+  - source: canonical/dotnet-deps-rock
+    commit: 1bc42d7ab9c01dfe59bbf35d47a1d00e17722a2a
+    directory: dotnet-deps-rock/9.0-25.04
+    release:
+      9.0-25.04:
+        end-of-life: '2026-01-15T00:00:00Z'
+        risks:
+          - edge

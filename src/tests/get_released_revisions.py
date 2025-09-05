@@ -12,16 +12,18 @@ Activity that runs from within a scheduled workflow.
 
 import argparse
 import json
-import logging
 import os
 import sys
 from datetime import datetime, timezone
+
 import docker
+
+from ..shared.logs import get_logger
 
 SKOPEO_IMAGE = os.getenv("SKOPEO_IMAGE", "quay.io/skopeo/stable:v1.15.1")
 REGISTRY = "ghcr.io/canonical/oci-factory"
 
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logger = get_logger(stream=sys.stdout, level="INFO")
 
 
 def get_image_name_in_registry(img_name: str, revision: str) -> str:
@@ -35,7 +37,7 @@ def get_image_name_in_registry(img_name: str, revision: str) -> str:
 
     tagless_image_name = f"{REGISTRY}/{img_name}"
     cmd = f"list-tags docker://{tagless_image_name}"
-    logging.info(f"Running Skopeo with '{cmd}'")
+    logger.info(f"Running Skopeo with '{cmd}'")
     try:
         all_tags = json.loads(
             d_client.containers.run(
@@ -47,7 +49,7 @@ def get_image_name_in_registry(img_name: str, revision: str) -> str:
     except docker.errors.ContainerError as err:
         if "timeout" not in str(err):
             raise
-        logging.error(
+        logger.error(
             f"Timed out while listing tags for {tagless_image_name}: {str(err)}"
         )
 
@@ -71,7 +73,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    logging.info(f"Looping through OCI images in {args.oci_images_path}")
+    logger.info(f"Looping through OCI images in {args.oci_images_path}")
 
     released_revisions = {}
     ghcr_images = []
@@ -88,13 +90,13 @@ if __name__ == "__main__":
             if risks.get("end-of-life") and risks["end-of-life"] < datetime.now(
                 timezone.utc
             ).strftime("%Y-%m-%dT%H:%M:%SZ"):
-                logging.info(
+                logger.info(
                     f"Skipping track {track} because it reached its end of life"
                     f": {risks['end-of-life']}"
                 )
                 continue
             elif not risks.get("end-of-life"):
-                logging.warning(f"Track {track} is missing its end-of-life field")
+                logger.warning(f"Track {track} is missing its end-of-life field")
 
             for key, targets in risks.items():
                 if key == "end-of-life":
@@ -117,8 +119,8 @@ if __name__ == "__main__":
                     }
                 )
 
-    logging.info(f"Released revisions: {json.dumps(released_revisions, indent=2)}")
-    logging.info(f"Released revisions in GHCR: {ghcr_images}")
+    logger.info(f"Released revisions: {json.dumps(released_revisions, indent=2)}")
+    logger.info(f"Released revisions in GHCR: {ghcr_images}")
 
     matrix = {"include": ghcr_images}
     with open(os.environ["GITHUB_OUTPUT"], "a") as gh_out:

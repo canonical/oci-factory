@@ -23,10 +23,6 @@ on:
         description: 'OCI image to generate the documentation for'
         required: true
         type: string
-      release-commit-sha:
-        description: 'Commit SHA containing the updated _releases.json'
-        required: true
-        type: string
 
 jobs:
   validate-documentation-request:
@@ -63,7 +59,11 @@ jobs:
       - name: Validate image from dispatch
         id: validate-image
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
+          source src/shared/logs.sh
 
           # check if this is coming from a workflow dispatch/call
           # as checking github.event_name isn't reliable here
@@ -75,7 +75,7 @@ jobs:
             occurrences="${img_path//[^,]}"
             if [ ${#occurrences} -ne 0 ]
             then
-              echo "ERR: can only build documentation for 1 image at a time, but trying to document ${img_path}"
+              log_error "can only build documentation for 1 image at a time, but trying to document ${img_path}"
               exit 1
             fi
           fi
@@ -92,9 +92,18 @@ jobs:
       IS_PROD: ${{ ! startsWith(needs.validate-documentation-request.outputs.oci-img-name, 'mock-') }}
     steps:
       - uses: actions/checkout@v4
+
+      # This is needed to ensure that this workflow can run when called by workflows in external repositories
+      - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.release-commit-sha }}
-      
+          repository: canonical/oci-factory
+          path: oci-factory
+
+      - name: Fetch _releases.json
+        uses: ./oci-factory/.github/actions/fetch-releases-json
+        with:
+          image-name: ${{ needs.validate-documentation-request.outputs.oci-img-name }}
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -122,7 +131,10 @@ jobs:
           ECR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_PSW || secrets.ECR_CREDS_PSW_DEV }}
           ECR_NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu' || secrets.ECR_NAMESPACE_DEV }}
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
           python3 -m src.docs.generate_oci_doc_yaml \
             --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
             --ecr-api-key "${ECR_CREDS_USR}" \
@@ -130,7 +142,7 @@ jobs:
             --oci-image-path "${{ needs.validate-documentation-request.outputs.oci-img-path }}" \
             --repository "${ECR_NAMESPACE}" \
             --doc-data-dir data
-      
+
       - name: Upload documentation data YAML
         uses: actions/upload-artifact@v4
         with:
@@ -152,9 +164,12 @@ jobs:
           ECR_REGISTRY_ID: ${{ env.IS_PROD == 'true' && secrets.ECR_REGISTRY_ID || secrets.ECR_REGISTRY_ID_DEV }}
           DOCKER_HUB_NAMESPACE: ${{ env.IS_PROD == 'true' && 'docker.io/ubuntu' || secrets.DOCKER_HUB_NAMESPACE_DEV }}
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
           ./src/docs/publish_docs.sh "${{ needs.validate-documentation-request.outputs.oci-img-name }}" "${{ steps.generate-documentation.outputs.name_doc_file }}" "${{ steps.generate-documentation.outputs.image_doc_folder }}"
-          
+
   notify:
     runs-on: ubuntu-22.04
     name: Notify on failure
@@ -166,12 +181,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-          
+
+      - run: pip install -r src/notifications/requirements.txt
+
       - name: Summarize workflow failure message
         id: get-summary
         run: |
           echo '${{ toJson(needs) }}' > jobs.json
-          ./src/notifications/summarize_workflow_results.py --jobs-file jobs.json
+          python3 -m src.notifications.mattermost_notifier summarize jobs.json
 
       - name: Get contacts for ${{ needs.validate-documentation-request.outputs.oci-img-name }}
         id: get-contacts
@@ -192,5 +209,5 @@ jobs:
         run: |
           for channel in $(echo ${{ steps.get-contacts.outputs.mattermost-channels }} | tr ',' ' ')
           do
-            MM_CHANNEL_ID="${channel}" ./src/notifications/send_to_mattermost.sh
+            MM_CHANNEL_ID="${channel}" python3 -m src.notifications.mattermost_notifier send
           done

@@ -1,0 +1,21 @@
+name: Install umoci
+description: Reusable action that installs umoci
+
+inputs:
+  umoci-version:
+    description: The version of umoci to install
+    default: "v0.4.7"
+  umoci-binary:
+    description: The name of the umoci binary to install
+    default: "umoci.amd64"
+
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install umoci
+      shell: bash
+      run: |
+        wget https://github.com/opencontainers/umoci/releases/download/${{ inputs.umoci-version }}/${{ inputs.umoci-binary }}
+        sudo mv ${{ inputs.umoci-binary }} /usr/bin/umoci
+        sudo chmod +x /usr/bin/umoci

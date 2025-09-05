@@ -1,0 +1,140 @@
+version: 1
+
+application: dotnet-deps
+is_chiselled: true
+description: |
+  The Chiselled Ubuntu for .NET Deps image is a clean base image for developers to layer their self-contained .NET and ASP.NET applications. Read [the .NET documentation](https://docs.microsoft.com/en-us/dotnet/core/deploying/). It only includes the runtime dependencies required to run a standard self-contained .NET application: `ca-certificates`, `libc6`, `libgcc`, `libssl3`, `libstdc++6`, and `zlib1g`.
+  
+  ### About chiselled Ubuntu containers
+
+  **This image does not include bash nor a package manager.**
+  Read more about Chiselled Ubuntu for .NET, a new class of OCI images, on [the Ubuntu blog](https://ubuntu.com/blog/install-dotnet-on-ubuntu).         
+
+  Canonical and Microsoft [partner together](https://ubuntu.com/blog/install-dotnet-on-ubuntu) to deliver and support .NET on Ubuntu.
+
+  If you're looking for the .NET or the ASP.NET runtime images, please have a look at the `ubuntu/dotnet-runtime` and `ubuntu/dotnet-aspnet` repositories.
+
+# "Launch the image locally" section is automatically generated for the rock-based images.
+# For the Dockerfile-based images, it is manually written.
+docker:
+  parameters:
+    - -e TZ=UTC
+  access: |
+    For the images tagged 6.0, 8.0 and 9.0-24.10, you will see the following output:
+
+    ```
+    docker: Error response from daemon: No command specified.
+    See 'docker run --help'.
+    ```
+
+    And that is normal. That's because this image doesn't have an entrypoint.
+
+    For images tagged 9.0-25.04 and onwards, you will see the following output:
+
+    ```
+    2025-07-17T15:12:33.628Z [pebble] Started daemon.
+    2025-07-17T15:12:33.653Z [pebble] POST /v1/services 151.275µs 400 (http+unix)
+    2025-07-17T15:12:33.653Z [pebble] Cannot start default services: no default services
+    ```
+
+    This is because the image is a rock, which has
+    [Pebble](https://documentation.ubuntu.com/rockcraft/en/latest/explanation/pebble/#pebble-explanation-page)
+    as the default entrypoint, and there are no default services defined in the rock.
+
+    The main purpose or the `dotnet-deps` image is to provide all the basic dependencies for you to be
+    able to layer a **self-contained** .NET or ASP.NET application on top of it.
+
+    See the following example, with a multi-stage Dockerfile building an ASP.NET app on Ubuntu 24.04
+    and packaging it on top of `ubuntu/dotnet-deps:8.0-24.04_stable`:
+
+    ```Dockerfile
+    FROM ubuntu:24.04 AS builder
+
+    # install the .NET 8 SDK from the Ubuntu archive
+    # (no need to clean the apt cache as this is an unpublished stage)
+    RUN apt-get update && apt-get install -y dotnet8 ca-certificates
+
+    # add your application code
+    WORKDIR /source
+    # using https://github.com/Azure-Samples/dotnetcore-docs-hello-world
+    COPY . .
+
+    # export your .NET app as a self-contained artefact
+    RUN dotnet publish -c Release -r ubuntu.24.04-x64 --self-contained true -o /app
+
+    FROM ubuntu/dotnet-deps:8.0-24.04_stable
+
+    WORKDIR /app
+    COPY --from=builder /app ./
+
+    ENTRYPOINT ["/app/dotnetcoresample"]
+    ```
+
+    Run the following commands with the Dockerfile example from above:
+
+    ```bash
+    git clone https://github.com/Azure-Samples/dotnetcore-docs-hello-world.git
+    cd dotnetcore-docs-hello-world
+    git checkout 95b862ca3580c82835322d9eb45eb9ecfd731370
+    # copy the content from the example above into ./Dockerfile
+    docker build . -t my-chiseled-aspnet-app:latest
+    docker run -p 8080:8080 my-chiseled-aspnet-app:latest
+    # access http://localhost:8080/
+    ```
+
+    To build such an application with .NET 9 and and package it on top of 
+    `ubuntu/dotnet-deps:9.0-25.04_edge`, you can use the following Dockerfile:
+
+    ```Dockerfile
+    FROM ubuntu:25.04 AS builder
+
+    # install the .NET 9 SDK from the Ubuntu archive
+    # (no need to clean the apt cache as this is an unpublished stage)
+    RUN apt-get update && apt-get install -y dotnet9 ca-certificates
+
+    # add your application code
+    WORKDIR /source
+    # using https://github.com/Azure-Samples/dotnetcore-docs-hello-world
+    COPY . .
+
+    # export your .NET app as a self-contained artefact
+    RUN dotnet publish -c Release -r ubuntu.25.04-x64 --self-contained true -o /app
+
+    FROM ubuntu/dotnet-deps:9.0-25.04_edge
+
+    WORKDIR /app
+    COPY --from=builder /app ./
+
+    CMD ["exec", "/app/dotnetcoresample"]
+    ```
+    
+    Run the following commands with the Dockerfile example from above:
+
+    ```bash
+    git clone https://github.com/Azure-Samples/dotnetcore-docs-hello-world.git
+    cd dotnetcore-docs-hello-world
+    git checkout 95b862ca3580c82835322d9eb45eb9ecfd731370
+    sed -i 's/net8.0/net9.0/' dotnetcoresample.csproj
+    # copy the content from the example above into ./Dockerfile
+    docker build . -t my-chiseled-aspnet-app:latest
+    docker run -p 8080:8080 my-chiseled-aspnet-app:latest
+    # access http://localhost:8080/
+    ```
+
+override_tracks:
+  # Tracks release from legacy repo
+  6.0-22.04:
+    end-of-life: '2024-11-12T00:00:00Z'
+  6.0-22.10:
+    end-of-life: '2023-07-20T00:00:00Z'
+  7.0-22.10:
+    end-of-life: '2023-07-20T00:00:00Z'
+  7.0-23.04:
+    end-of-life: '2024-05-14T00:00:00Z'
+  8.0-24.04:
+    end-of-life: '2026-11-10T00:00:00Z'
+  9.0-24.10:
+    end-of-life: '2025-07-10T00:00:00Z'
+  # Tracks with different tag than build-base
+  9.0-25.04:
+    end-of-life: '2026-01-15T00:00:00Z'

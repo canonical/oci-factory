@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -e
 
 # LP configurations
 mkdir -p $HOME/.ssh
@@ -8,7 +8,9 @@ ssh-keyscan -H git.launchpad.net | tee $HOME/.ssh/known_hosts
 
 echo "${ROCKS_DEV_LP_SSH_PRIVATE}" >$HOME/.ssh/id_rsa
 
-set -x
+if [[ "$RUNNER_DEBUG" == "1" ]]; then
+  set -x
+fi
 chmod 600 $HOME/.ssh/id_rsa
 
 ## To avoid installing Snaps, just take the needed Python script
@@ -19,7 +21,7 @@ git remote add origin git+ssh://${ROCKS_DEV_LP_USERNAME}@${CPC_BUILD_TOOLS_REPO}
 # using main instead of ${CPC_BUILD_TOOLS_REPO_REF} because of an unexpected
 # new issue with Launchpad: 
 # error: Server does not allow request for unadvertised object 9b716ed8a8ba728d036b54b1bb17a8f49dbda434
-git fetch --depth 1 origin main # ${CPC_BUILD_TOOLS_REPO_REF}
+git fetch --depth 1 origin devel # ${CPC_BUILD_TOOLS_REPO_REF}
 git checkout FETCH_HEAD
 
 sudo mv /tmp/cpc-build-tools/* /usr/local/bin/
@@ -38,3 +40,6 @@ docker run -v $PWD:/src -w /src -e DISABLE_DOCS=1 \
 sudo mv bin/skopeo /usr/local/bin/
 sudo chmod +x /usr/local/bin/skopeo
 popd
+
+sudo apt update
+sudo apt install -y distro-info
