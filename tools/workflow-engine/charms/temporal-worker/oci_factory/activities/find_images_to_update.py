@@ -306,15 +306,15 @@ if __name__ == "__main__":
 
     # We download the OCI Factory repo as a zip
     oci_factory_gh_url = (
-        "https://github.com/canonical/oci-factory/archive/refs/heads/main.zip"
+        "https://github.com/canonical/oci-factory/archive/refs/heads/_releases.zip"
     )
     # Download and extract the repo to the tmp folder
     logging.info(f"Downloading {oci_factory_gh_url}")
     repo_zip = requests.get(oci_factory_gh_url, stream=True)
-    z = zipfile.ZipFile(io.BytesIO(repo_zip.content))
+    zf = zipfile.ZipFile(io.BytesIO(repo_zip.content))
 
     with tempfile.TemporaryDirectory() as temp_dir:
-        z.extractall(temp_dir)
+        zf.extractall(temp_dir)
 
         # Get the extracted repo's path
         repo = glob.glob(str(temp_dir).rstrip("/") + "/*")[0].rstrip("/")
