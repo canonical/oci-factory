@@ -45,6 +45,10 @@ on:
         default: true
         type: boolean
 
+    secrets:
+      # authentication parameters
+      host-github-token:
+        description: "Deprecated: GitHub token from repository executing this workflow."
 
 env:
   VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"  # TODO: inherit string from caller
