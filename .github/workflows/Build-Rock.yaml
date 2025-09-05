@@ -44,7 +44,7 @@ on:
     secrets:
       # authentication parameters
       host-github-token:
-        description: "GitHub token from repository executing this workflow."
+        description: "Deprecated: GitHub token from repository executing this workflow."
       source-github-token:
         description: "GitHub token for pulling a Rockcraft project from a private repository."
 env:
@@ -62,20 +62,13 @@ jobs:
       oci-factory-ref: ${{ steps.workflow-version.outputs.sha }}
     name: "configure-build ${{ inputs.build-id != '' && format('| {0}', inputs.build-id) || ' '}}"
     steps:
-
-      - name: Get Workflow Version
-        id: workflow-version
-        uses: canonical/get-workflow-version-action@v1
-        with:
-          repository-name: canonical/oci-factory
-          file-name: Build-Rock.yaml
-          github-token: ${{ secrets.host-github-token }}
-
       - name: Cloning OCI Factory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
+          # Here we clone the oci-factory repo using the default ref of the checkout action.
+          # It will be set to a ref that triggered this workflow if the workflow is run within the oci-factory repo,
+          # or to the default branch of the oci-factory repo if the workflow is called from another repo.
           repository: canonical/oci-factory
-          ref: ${{ steps.workflow-version.outputs.sha }}
           fetch-depth: 1
 
       - name: Cloning Target Repo
