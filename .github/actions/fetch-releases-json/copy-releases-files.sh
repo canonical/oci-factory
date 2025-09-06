@@ -15,9 +15,9 @@ fi
 
 if [[ "$image_name" = "*" ]]; then
     echo "Copying all _releases.json files"
-    cd $directory
-    find . -name "_releases.json" -exec cp --parents {} $OLDPWD \;
-    cd $OLDPWD
+    cd "$directory" || exit 1
+    find . -name "_releases.json" -exec cp --parents {} "$OLDPWD" \;
+    cd "$OLDPWD" || exit 1
 elif [[ -f "$directory/oci/$image_name/_releases.json" ]]; then
-    cp $directory/oci/$image_name/_releases.json oci/$image_name/_releases.json
+    cp "$directory/oci/$image_name/_releases.json" "oci/$image_name/_releases.json"
 fi
