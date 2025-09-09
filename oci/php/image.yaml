@@ -2,7 +2,7 @@ version: 1
 upload:
   - source: canonical/php-rock
     commit: 2ed32dd4cf81ace8c2f8ea59c10247408eff615e
-    directory: php8.3-24.04
+    directory: php/8.3-24.04
     release:
       8.3-24.04:
         end-of-life: "2025-09-15T00:00:00Z"
@@ -10,7 +10,7 @@ upload:
           - edge
   - source: canonical/php-rock
     commit: 2ed32dd4cf81ace8c2f8ea59c10247408eff615e
-    directory: php8.4-25.04
+    directory: php/8.4-25.04
     release:
       8.4-25.04:
         end-of-life: "2025-09-15T00:00:00Z"
