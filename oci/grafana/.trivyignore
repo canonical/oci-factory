@@ -1,3 +1,6 @@
+# Upstream GitHub-related
+github-pat
+
 # Upstream CVEs
 
 # goproxy v1.1 was discovered to contain an issue which can lead to a Denial of service (DoS) via unspecified vectors.
@@ -38,5 +41,21 @@ CVE-2025-30153
 CVE-2025-3260
 # github.com/grafana/grafana - grafana: Cross-site Scripting (XSS) in Grafana via Custom Frontend Plugins and Open Redirect
 CVE-2025-4123
+# github.com/grafana/grafana - grafana: Cross Site Scripting in Grafana
+CVE-2025-6023
+# github.com/grafana/grafana - grafana: authentication bypass  knowing only a username of an LDAP or OAuth user
+CVE-2018-15727
+# github.com/grafana/grafana - grafana: information disclosure through world-readable /var/lib/grafana/grafana.db
+CVE-2020-12458
+# github.com/grafana/grafana - grafana: Snapshot authentication bypass
+CVE-2021-39226
+# github.com/grafana/grafana - grafana: Escalation from admin to server admin when auth proxy is used
+CVE-2022-35957
+# github.com/grafana/grafana - grafana: User enumeration via forget password
+CVE-2022-39307
+# github.com/grafana/grafana - grafana: data source proxy race condition
+CVE-2023-2801
+# github.com/grafana/grafana - grafana: account takeover possible when using Azure AD OAuth
+CVE-2023-3128
 # github.com/grafana/grafana - grafana: Cross Site Scripting in Grafana
 CVE-2025-6023
