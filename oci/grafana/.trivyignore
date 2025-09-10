@@ -1,3 +1,6 @@
+# Upstream GitHub-related
+github-pat
+
 # Upstream CVEs
 
 # goproxy v1.1 was discovered to contain an issue which can lead to a Denial of service (DoS) via unspecified vectors.
