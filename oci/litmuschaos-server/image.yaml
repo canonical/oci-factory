@@ -1,14 +1,18 @@
 version: 1
 upload:
   - source: canonical/litmuschaos-server-rock
-    commit: 82d71a048a74afbdeefe2503b37394ba9dc53875
+    commit: 440f702339b505efbee415c22ba5436574e93983
     directory: 3.19.0
     release:
       3-24.04:
-        end-of-life: '2025-10-30T00:00:00Z'
+        end-of-life: '2025-12-10T00:00:00Z'
         risks:
           - edge
       3.19-24.04:
-        end-of-life: '2025-10-30T00:00:00Z'
+        end-of-life: '2025-12-10T00:00:00Z'
+        risks:
+          - edge
+      3.19.0-24.04:
+        end-of-life: '2025-09-09T00:00:00Z'
         risks:
           - edge
