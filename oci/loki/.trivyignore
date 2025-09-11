@@ -10,3 +10,5 @@ CVE-2023-45142
 CVE-2023-39325
 # google.golang.org/grpc - gRPC-Go HTTP/2 Rapid Reset vulnerability
 GHSA-m425-mq94-257g
+# stdlib - database/sql: Postgres Scan Race Condition
+CVE-2025-47907
