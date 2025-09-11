@@ -74,7 +74,7 @@ jobs:
           HOST_GITHUB_TOKEN: ${{ secrets.host-github-token }}
         if: ${{ env.HOST_GITHUB_TOKEN != '' }}
         run: |
-          echo "Warning: 'host-github-token' is unused and deprecated. Please remove this secret from the caller workflow."
+          echo "::warning:: 'host-github-token' is unused and deprecated. Please remove this secret from the caller workflow."
 
       - name: Cloning OCI Factory
         uses: actions/checkout@v5
