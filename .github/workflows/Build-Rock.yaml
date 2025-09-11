@@ -3,7 +3,7 @@ name: Build rock
 on:
   workflow_call:
     inputs:
-      # build parameters
+      # Build parameters
       oci-archive-name:
         description: "Final filename of the rock OCI archive."
         type: string
@@ -16,7 +16,7 @@ on:
         type: boolean
         default: false
 
-      # source parameters
+      # Source parameters
       rock-repo:
         description: "Public Git repo where to build the rock from."
         type: string
@@ -30,7 +30,7 @@ on:
         type: string
         required: true
 
-      # parameters for multi-arch builds
+      # Parameters for multi-arch builds
       # specifying the runners with size label to prevent from running on private/tiobe runners
       arch-map:
         description: "JSON string mapping target architecture to runners."
@@ -42,7 +42,7 @@ on:
         default: false
     
     secrets:
-      # authentication parameters
+      # Authentication parameters
       host-github-token:
         description: "GitHub token from repository executing this workflow."
       source-github-token:
