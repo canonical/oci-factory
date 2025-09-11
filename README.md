@@ -487,6 +487,7 @@ needed.
 |`test-oci-compliance`| False | bool | Enable Umoci OCI Image compliance test. Enabled by default. |
 |`test-efficiency`| False | bool | Enable Dive image efficiency test. Enabled by default. |
 |`test-vulnerabilities`| False | bool | Enable Trivy vulnerability test. Enabled by default. |
+|`vulnerability-report-artifact-name`| False | str | Custom filename for Trivy vulnerability report. |
 |`trivyignore-path`| False | str | Optional path to `.trivyignore` file used in vulnerability scan. |
 |`test-malware`| False | bool | Enable ClamAV malware test. Enabled by default. |
 
