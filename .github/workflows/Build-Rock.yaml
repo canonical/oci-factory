@@ -62,6 +62,13 @@ jobs:
       oci-factory-ref: ${{ steps.workflow-version.outputs.sha }}
     name: "configure-build ${{ inputs.build-id != '' && format('| {0}', inputs.build-id) || ' '}}"
     steps:
+      - name: Warn deprecated secret
+        env: 
+          HOST_GITHUB_TOKEN: ${{ secrets.host-github-token }}
+        if: ${{ env.HOST_GITHUB_TOKEN != '' }}
+        run: |
+          echo "Warning: 'host-github-token' is unused and deprecated. Please remove this secret from the caller workflow."
+
       - name: Cloning OCI Factory
         uses: actions/checkout@v5
         with:

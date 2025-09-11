@@ -69,6 +69,13 @@ jobs:
     name: "configure-tests ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
 
     steps:
+      - name: Warn deprecated secret
+        env: 
+          HOST_GITHUB_TOKEN: ${{ secrets.host-github-token }}
+        if: ${{ env.HOST_GITHUB_TOKEN != '' }}
+        run: |
+          echo "Warning: 'host-github-token' is unused and deprecated. Please remove this secret from the caller workflow."
+
       - name: Cloning OCI Factory
         uses: actions/checkout@v5
         with:
