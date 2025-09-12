@@ -49,10 +49,6 @@ runs:
         git add oci/${{ inputs.image-name }}/_releases.json
         git commit -m "${{ inputs.message }}"
         
-        git branch actions-temp-branch
-        git fetch origin ${{ inputs.releases-branch }}
-        git checkout ${{ inputs.releases-branch }}
-        git merge actions-temp-branch
-        git branch -d actions-temp-branch
+        git pull origin ${{ inputs.releases-branch }} --rebase
 
         git push origin ${{ inputs.releases-branch }} $FORCE
