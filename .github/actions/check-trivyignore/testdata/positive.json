@@ -1,0 +1,208 @@
+{
+    "invocation": {
+      "parameters": null,
+      "uri": "",
+      "event_id": "",
+      "builder.id": ""
+    },
+    "scanner": {
+      "uri": "pkg:github/aquasecurity/trivy@0.56.1",
+      "version": "0.56.1",
+      "db": {
+        "uri": "",
+        "version": ""
+      },
+      "result": {
+        "SchemaVersion": 2,
+        "CreatedAt": "2025-08-22T11:00:42.836251267Z",
+        "ArtifactName": "test-img:test",
+        "ArtifactType": "container_image",
+        "Metadata": {
+          "OS": {
+            "Family": "ubuntu",
+            "Name": "24.04"
+          },
+          "ImageID": "sha256:7ee5faa488109491a77badc162915542f958c9d262b2d4aeabb32c6b8432862e",
+          "DiffIDs": [
+            "sha256:9d592720ced4a7a4ddf16adef8a126e4c8c49f22114de769343320b37674321e",
+            "sha256:00ac3b8ccf0790ddee87a1e24ee83e5e52db7b03b5090f0908cd9c65841f9360",
+            "sha256:b72cb6c10aa48162fb0f17f1077057110faf7fd4dcfb152ae6a67aac07d9108d",
+            "sha256:bd2a943dcd344c764a50484f80cea6c5d24b69a8720f7b43c5eafe35a93224f8",
+            "sha256:cab615dd4204c832a69488356fdb235a518f77f74c6ab31054df30e7f8cb2348"
+          ],
+          "RepoTags": [
+            "test-img:test"
+          ],
+          "ImageConfig": {
+            "architecture": "amd64",
+            "created": "2025-08-19T14:37:01.23577114Z",
+            "history": [
+              {
+                "created": "2025-08-19T14:36:58.563415611Z",
+                "created_by": "/bin/sh -c #(nop)  ARG RELEASE",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-19T14:36:58.588740408Z",
+                "created_by": "/bin/sh -c #(nop)  ARG LAUNCHPAD_BUILD_ARCH",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-19T14:36:58.62539552Z",
+                "created_by": "/bin/sh -c #(nop)  LABEL org.opencontainers.image.ref.name=ubuntu",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-19T14:36:58.656408981Z",
+                "created_by": "/bin/sh -c #(nop)  LABEL org.opencontainers.image.version=24.04",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-19T14:37:00.843597813Z",
+                "created_by": "/bin/sh -c #(nop) ADD file:e67907c77897d27192314f6c4fa0112b6f7dce3e127500516535cc50fe736c92 in / "
+              },
+              {
+                "created": "2025-08-19T14:37:01.23577114Z",
+                "created_by": "/bin/sh -c #(nop)  CMD [\"/bin/bash\"]",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-22T10:36:15.831044348Z",
+                "created_by": "umoci raw add-layer --image /root/images/opentelemetry-collector:rockcraft-base /root/images/.temp_layer.411.tar --tag 0.127.0"
+              },
+              {
+                "created": "2025-08-22T10:36:16.068424786Z",
+                "created_by": "umoci raw add-layer --image /root/images/opentelemetry-collector:0.127.0 /root/images/.temp_layer.411.tar --tag 0.127.0"
+              },
+              {
+                "created": "2025-08-22T10:36:16.073059492Z",
+                "created_by": "umoci config",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-22T10:36:16.076932625Z",
+                "created_by": "umoci config",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-22T10:36:16.083499Z",
+                "created_by": "umoci raw add-layer --image /root/images/opentelemetry-collector:0.127.0 /root/images/.temp_layer.411.tar --tag 0.127.0"
+              },
+              {
+                "created": "2025-08-22T10:36:16.08940208Z",
+                "created_by": "umoci config",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-22T10:36:16.092906079Z",
+                "created_by": "umoci config",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-22T10:36:16.097509348Z",
+                "created_by": "umoci raw add-layer --image /root/images/opentelemetry-collector:0.127.0 /root/images/.temp_layer.control_data.411.tar"
+              }
+            ],
+            "os": "linux",
+            "rootfs": {
+              "type": "layers",
+              "diff_ids": [
+                "sha256:9d592720ced4a7a4ddf16adef8a126e4c8c49f22114de769343320b37674321e",
+                "sha256:00ac3b8ccf0790ddee87a1e24ee83e5e52db7b03b5090f0908cd9c65841f9360",
+                "sha256:b72cb6c10aa48162fb0f17f1077057110faf7fd4dcfb152ae6a67aac07d9108d",
+                "sha256:bd2a943dcd344c764a50484f80cea6c5d24b69a8720f7b43c5eafe35a93224f8",
+                "sha256:cab615dd4204c832a69488356fdb235a518f77f74c6ab31054df30e7f8cb2348"
+              ]
+            },
+            "config": {
+              "Entrypoint": [
+                "/usr/bin/pebble",
+                "enter"
+              ],
+              "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+              ],
+              "Labels": {
+                "org.opencontainers.image.base.digest": "b40d671bf589b6e5eaaceae32d7eb325a69182963519760571161df996d0d62a",
+                "org.opencontainers.image.created": "2025-08-22T10:36:16.086361+00:00",
+                "org.opencontainers.image.description": "Crucial component in the OpenTelemetry ecosystem.\n\nDesigned to collect, process, and export telemetry data such as metrics, logs,\nand traces from various sources to multiple destinations.\n",
+                "org.opencontainers.image.licenses": "Apache-2.0",
+                "org.opencontainers.image.ref.name": "opentelemetry-collector",
+                "org.opencontainers.image.title": "opentelemetry-collector",
+                "org.opencontainers.image.version": "0.127.0"
+              },
+              "User": "584792"
+            }
+          }
+        },
+        "Results": [
+          {
+            "Target": "test-img:test (ubuntu 24.04)",
+            "Class": "os-pkgs",
+            "Type": "ubuntu",
+            "Packages": []
+          },
+          {
+            "Target": "usr/bin/otelcol",
+            "Class": "lang-pkgs",
+            "Type": "gobinary",
+            "Packages": [],
+            "Vulnerabilities": [
+              {
+                "VulnerabilityID": "CVE-2025-47907",
+                "PkgName": "stdlib",
+                "PkgIdentifier": {
+                  "PURL": "pkg:golang/stdlib@1.23.11",
+                  "UID": "8e226646f0281f8c"
+                },
+                "InstalledVersion": "1.23.11",
+                "FixedVersion": "1.23.12, 1.24.6",
+                "Status": "fixed",
+                "Layer": {
+                  "DiffID": "sha256:00ac3b8ccf0790ddee87a1e24ee83e5e52db7b03b5090f0908cd9c65841f9360"
+                },
+                "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-47907",
+                "DataSource": {
+                  "ID": "govulndb",
+                  "Name": "The Go Vulnerability Database",
+                  "URL": "https://pkg.go.dev/vuln/"
+                },
+                "Title": "database/sql: Postgres Scan Race Condition",
+                "Description": "Cancelling a query (e.g. by cancelling the context passed to one of the query methods) during a call to the Scan method of the returned Rows can result in unexpected results if other queries are being made in parallel. This can result in a race condition that may overwrite the expected results with those of another query, causing the call to Scan to return either unexpected results from the other query or an error.",
+                "Severity": "HIGH",
+                "VendorSeverity": {
+                  "bitnami": 3,
+                  "redhat": 3
+                },
+                "CVSS": {
+                  "bitnami": {
+                    "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:L/A:L",
+                    "V3Score": 7
+                  },
+                  "redhat": {
+                    "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:L/A:L",
+                    "V3Score": 7
+                  }
+                },
+                "References": [
+                  "https://access.redhat.com/security/cve/CVE-2025-47907",
+                  "https://go.dev/cl/693735",
+                  "https://go.dev/issue/74831",
+                  "https://groups.google.com/g/golang-announce/c/x5MKroML2yM",
+                  "https://nvd.nist.gov/vuln/detail/CVE-2025-47907",
+                  "https://pkg.go.dev/vuln/GO-2025-3849",
+                  "https://www.cve.org/CVERecord?id=CVE-2025-47907"
+                ],
+                "PublishedDate": "2025-08-07T16:15:30.357Z",
+                "LastModifiedDate": "2025-08-07T21:26:37.453Z"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "scanStartedOn": "2025-08-22T11:00:42.883544683Z",
+      "scanFinishedOn": "2025-08-22T11:00:42.883544683Z"
+    }
+  }
