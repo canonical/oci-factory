@@ -32,7 +32,7 @@ runs:
 
     - name: "Install trivy if not present"
       if: ${{ steps.detect-trivy.outputs.trivy-installed == 'false' }}
-      uses: aquasecurity/setup-trivy@v0.2.3
+      uses: aquasecurity/setup-trivy@v0.2.4
 
     - name: "Check unnecessary trivyignore entries"
       shell: bash
@@ -41,7 +41,7 @@ runs:
           then
             json_output=$(trivy image ${{ inputs.image-ref }} --severity ${{ inputs.severity }} -q \
                       -f json --ignorefile "" --skip-files ${{ inputs.skip-files }} --exit-code 0)
-            output=$(echo $json_output | jq -r '.Results[].Vulnerabilities[].VulnerabilityID' \
+            output=$(echo $json_output | jq -r '.Results[] | .Vulnerabilities | try to_entries[] | .value.VulnerabilityID' \
                     2>/dev/null \
                     || echo "No vulnerabilities found")
             line=0

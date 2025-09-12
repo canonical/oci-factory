@@ -45,9 +45,3 @@ debug:
     ```bash
     curl -u guest:guest http://localhost:15672/api/healthchecks/node
     ```
-
-    To get an interactive shell:
-
-    ```bash
-    docker exec -it rabbitmq-container /bin/bash
-    ```

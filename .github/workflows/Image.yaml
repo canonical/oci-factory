@@ -642,6 +642,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
+  
+      - run: pip install -r src/notifications/requirements.txt
 
       - name: Summarize workflow failure message
         id: get-summary

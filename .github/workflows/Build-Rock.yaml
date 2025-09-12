@@ -3,7 +3,7 @@ name: Build rock
 on:
   workflow_call:
     inputs:
-      # build parameters
+      # Build parameters
       oci-archive-name:
         description: "Final filename of the rock OCI archive."
         type: string
@@ -11,8 +11,12 @@ on:
       build-id:
         description: "Optional string for identifying workflow jobs in GitHub UI"
         type: string
+      rockcraft-test:
+        description: "Whether to run rockcraft test when packing the rock"
+        type: boolean
+        default: false
 
-      # source parameters
+      # Source parameters
       rock-repo:
         description: "Public Git repo where to build the rock from."
         type: string
@@ -26,7 +30,7 @@ on:
         type: string
         required: true
 
-      # parameters for multi-arch builds
+      # Parameters for multi-arch builds
       # specifying the runners with size label to prevent from running on private/tiobe runners
       arch-map:
         description: "JSON string mapping target architecture to runners."
@@ -38,7 +42,7 @@ on:
         default: false
     
     secrets:
-      # authentication parameters
+      # Authentication parameters
       host-github-token:
         description: "GitHub token from repository executing this workflow."
       source-github-token:
@@ -132,6 +136,7 @@ jobs:
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
+          test: "${{ inputs.rockcraft-test }}"
           verbosity: debug
 
       - name: Collecting Artifacts

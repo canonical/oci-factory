@@ -2,3 +2,6 @@
 
 # https://github.com/advisories/GHSA-crqm-pwhx-j97f  - Decoder.Decode 
 CVE-2024-34156
+
+# https://github.com/advisories/GHSA-6f52-wpx2-hvf2  - Calling Verify with a VerifyOptions.KeyUsages that contains ExtKeyUsageAny unintentionally disabledpolicy validation.
+CVE-2025-22874 

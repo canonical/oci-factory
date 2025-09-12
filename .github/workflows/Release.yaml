@@ -79,11 +79,19 @@ jobs:
     needs: [validate-push-release-request]
     outputs:
       gh-releases-matrix: ${{ steps.release-image.outputs.gh-releases-matrix }}
-      release-commit-sha: ${{ steps.release-commit-sha.outputs.release-commit-sha }}
     env:
       IS_PROD: ${{ ! startsWith(inputs.oci-image-name, 'mock-') }}
+      RELEASES_BRANCH: _releases
+      RELEASE_REPO_DIR: oci-factory-releases
     steps:
       - uses: actions/checkout@v4
+
+      - name: Fetch _releases.json
+        uses: ./.github/actions/fetch-releases-json
+        with:
+          image-name: ${{ inputs.oci-image-name }}
+          releases-branch: ${{ env.RELEASES_BRANCH }}
+          directory: ${{ env.RELEASE_REPO_DIR }}
 
       - uses: actions/cache/restore@v4
         if: ${{ inputs.image-trigger-cache-key != '' }}
@@ -117,6 +125,9 @@ jobs:
           IMAGE_NAME: ${{ inputs.oci-image-name }}
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: ./src/image/get_canonical_tags_from_swift.sh
+      
+      # Pull the latest changes to prevent conflicts merging _releases.json
+      - run: pushd ${{ env.RELEASE_REPO_DIR }} && git pull --quiet && popd
 
       - name: Do releases from ${{ inputs.oci-image-name }}
         id: release-image
@@ -152,9 +163,6 @@ jobs:
             --all-releases oci/${{ inputs.oci-image-name }}/_releases.json \
             --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
             --ghcr-repo "${{ github.repository_owner }}/oci-factory"
-      
-      # Pull the latest changes to prevent conflicts merging _releases.json
-      - run: git pull --quiet
 
       - name: Update _releases.json
         run: |
@@ -165,24 +173,20 @@ jobs:
             --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
             --update-releases-json
 
-      # Commit with actor's GitHub noreply email to pass CLA and keep the privacy of the actor
-      - name: Commit oci/${{ inputs.oci-image-name }}/_releases.json
-        uses: actions-x/commit@v6
-        with:
-          token: ${{ secrets.ROCKSBOT_TOKEN }}
-          branch: ${{ github.ref }}
-          message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-          files: oci/${{ inputs.oci-image-name }}/_releases.json
-          email: '${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com'
-
-      - name: Get commit SHA of _release.json update
-        id: release-commit-sha
+      - name: Overwrite _releases.json
         run: |
-          set -e
-          if [[ "$RUNNER_DEBUG" == "1" ]]; then
-            set -x
-          fi
-          echo "release-commit-sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          mkdir -p ${{ env.RELEASE_REPO_DIR }}/oci/${{ inputs.oci-image-name }}
+          cp oci/${{ inputs.oci-image-name }}/_releases.json ${{ env.RELEASE_REPO_DIR }}/oci/${{ inputs.oci-image-name }}/_releases.json
+
+      # Commit with actor's GitHub noreply email to pass CLA and keep the privacy of the actor
+      # Use force push, to bypass the branch protection rules
+      - name: Commit oci/${{ inputs.oci-image-name }}/_releases.json
+        uses: ./.github/actions/commit-releases-json
+        with:
+          directory: ${{ env.RELEASE_REPO_DIR }}
+          image-name: ${{ inputs.oci-image-name }}
+          message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          email: '${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com'
 
 
   update-documentation:
@@ -191,7 +195,6 @@ jobs:
     uses: ./.github/workflows/Documentation.yaml
     with:
       oci-image-name: "${{ inputs.oci-image-name }}"
-      release-commit-sha: "${{ needs.do-releases.outputs.release-commit-sha }}"
     secrets: inherit
 
 

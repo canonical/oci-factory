@@ -5,12 +5,10 @@ for OCI images within the oci-factory
 """
 
 import argparse
-import base64
 import json
 import os
 import re
 import subprocess
-import sys
 import tempfile
 from datetime import datetime, timezone
 from typing import Any, Dict, List
@@ -357,6 +355,10 @@ class OCIDocumentationData:
         all_tracks = self.get_all_tracks(
             all_revision_tags, releases_file=f"{self.image_path}/_releases.json"
         )
+
+        override_tracks = base_doc_yaml.get("override_tracks", {})
+        logger.info(f"Override tracks from documentation.yaml: {override_tracks}")
+        all_tracks.update({k: v["end_of_life"] for k, v in override_tracks.items()})
 
         # Get all the published OCI tags from ECR
         all_ecr_tags = {"imageTagDetails": []}

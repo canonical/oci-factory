@@ -6,24 +6,32 @@
 </div>
 
 ## Index
-- [Before you get started](#-**Before-you-get-started**)
-  - [What is the OCI Factory?](#What-is-the-OCI-Factory?)
-  - [Why does it exist?](#Why-does-it-exist?)
-  - [Who is it for?](#Who-is-it-for?)
-  - [How to qualify as a Maintainer?](#How-to-qualify-as-a-Maintainer?)
-- [How to contribute](#-How-to-contribute)
-  - [As a developer](#As-a-developer)
-  - [As a Maintainer](#As-a-Maintainer--)
-- [Maintainer files](#-Maintainer-files)
-  - [Trigger files](#Trigger-files)
-    - [Image trigger file](#Image-trigger-file)
-    - [Documentation trigger file](#Documentation-trigger-file)
-  - [Other files](#Other-files)
-    - [Contacts](#Contacts)
-    - [Vulnerability Filtering](#Vulnerability-Filtering)
-- [Reusable workflows](#-Reusable-workflows)
-  - [Build-Rock Workflow](#Build-Rock-Workflow)
-  - [Test-Rock Workflow](#Test-Rock-Workflow)
+- [Welcome to the OCI Factory! 👋](#welcome-to-the-oci-factory-)
+  - [Index](#index)
+  - [🍿 **Before you get started**](#-before-you-get-started)
+    - [What is the OCI Factory?](#what-is-the-oci-factory)
+    - [Why does it exist?](#why-does-it-exist)
+    - [Who is it for?](#who-is-it-for)
+    - [How to qualify as a Maintainer?](#how-to-qualify-as-a-maintainer)
+  - [🌈 **How to contribute**](#-how-to-contribute)
+    - [As a developer](#as-a-developer)
+    - [As a **Maintainer** ⛏ 🪨](#as-a-maintainer--)
+      - [1. With Pull Requests](#1-with-pull-requests)
+      - [2. With the CLI Client](#2-with-the-cli-client)
+  - [🗃 **Maintainer files**](#-maintainer-files)
+    - [Trigger files](#trigger-files)
+      - [Image trigger file](#image-trigger-file)
+        - [Example: *image.yaml*](#example-imageyaml)
+      - [Documentation trigger file](#documentation-trigger-file)
+        - [Example: *documentation.yaml*](#example-documentationyaml)
+    - [Other files](#other-files)
+      - [Contacts](#contacts)
+        - [Example: *contacts.yaml*](#example-contactsyaml)
+      - [Vulnerability Filtering](#vulnerability-filtering)
+        - [Example: *.trivyignore*](#example-trivyignore)
+  - [📦 Reusable workflows](#-reusable-workflows)
+    - [Build-Rock Workflow](#build-rock-workflow)
+    - [Test-Rock Workflow](#test-rock-workflow)
 
 
 ## 🍿 **Before you get started**
@@ -154,7 +162,7 @@ Here's an example of how an `oci` folder would look for your image:
 oci/my-oci-image/
 ├── contacts.yaml
 ├── documentation.yaml
-├── _releases.json
+├── _releases.json (on branch `_releases`)
 └── image.yaml
 ```
 
@@ -261,6 +269,9 @@ for the "ubuntu" namespace, as is as follows:
 | microk8s.deploy | True | Dict[str, str] | Link to the YAML manifest and additional access message. |
 | microk8s.deploy.link | True | str | Link to the raw manifest file. |
 | microk8s.deploy.access | True | str | Post-deployment access message. |
+| override_tracks | False | Dict[Dict[str, str]] | Override the EOL dates of the tracks from non-OCI-Factory releases or the track names inconsistent with the build-base. |
+| override_tracks.\<track\> | True | Dict[str, str] | Track to be overridden. |
+| override_tracks.\<track\>.end_of_life | True | str | Date (ISO8601) after which the support for this track ends. |
 
 ##### Example: *documentation.yaml*
 
@@ -315,6 +326,9 @@ microk8s:
   deploy:
     link: https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/apache2/plain/examples/apache2-deployment.yml?h=2.4-22.04
     access: You will now be able to connect to the apache2 server on `http://localhost:30080`.
+override_tracks:
+  2.4-21.04:
+    end_of_life: "2022-01-20"
 ```
 
 ### Other files
@@ -473,6 +487,7 @@ needed.
 |`test-oci-compliance`| False | bool | Enable Umoci OCI Image compliance test. Enabled by default. |
 |`test-efficiency`| False | bool | Enable Dive image efficiency test. Enabled by default. |
 |`test-vulnerabilities`| False | bool | Enable Trivy vulnerability test. Enabled by default. |
+|`vulnerability-report-artifact-name`| False | str | Custom filename for Trivy vulnerability report. |
 |`trivyignore-path`| False | str | Optional path to `.trivyignore` file used in vulnerability scan. |
 |`test-malware`| False | bool | Enable ClamAV malware test. Enabled by default. |
 

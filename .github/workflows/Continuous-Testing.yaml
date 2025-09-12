@@ -18,6 +18,11 @@ jobs:
           python-version: "3.10"
       - run: pip install -r src/tests/requirements.txt
 
+      - name: Fetch _releases.json
+        uses: ./.github/actions/fetch-releases-json
+        with:
+          image-name: '*'
+
       - name: Prepare test matrix
         id: prepare-test-matrix
         run: python3 -m src.tests.get_released_revisions --oci-images-path $PWD/oci
