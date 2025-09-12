@@ -53,7 +53,7 @@ on:
     secrets:
       # authentication parameters
       host-github-token:
-        description: "GitHub token from repository executing this workflow."
+        description: "Deprecated: GitHub token from repository executing this workflow."
 
 env:
   VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"  # TODO: inherit string from caller
@@ -70,24 +70,24 @@ jobs:
   configure-tests:
     runs-on: ubuntu-22.04
     outputs:
-      oci-factory-ref: ${{ steps.workflow-version.outputs.sha }}
       cache-key: ${{ steps.set-cache.outputs.key }}
     name: "configure-tests ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
 
     steps:
-      - name: Get Workflow Version
-        id: workflow-version
-        uses: canonical/get-workflow-version-action@v1
-        with:
-          repository-name: canonical/oci-factory
-          file-name: Test-Rock.yaml
-          github-token: ${{ secrets.host-github-token }}
+      - name: Warn deprecated secret
+        env: 
+          HOST_GITHUB_TOKEN: ${{ secrets.host-github-token }}
+        if: ${{ env.HOST_GITHUB_TOKEN != '' }}
+        run: |
+          echo "::warning:: 'host-github-token' is unused and deprecated. Please remove this secret from the caller workflow."
 
       - name: Cloning OCI Factory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
+          # Here we clone the oci-factory repo using the default ref of the checkout action.
+          # It will be set to a ref that triggered this workflow if the workflow is run within the oci-factory repo,
+          # or to the default branch of the oci-factory repo if the workflow is called from another repo.
           repository: canonical/oci-factory
-          ref: ${{ steps.workflow-version.outputs.sha }}
           fetch-depth: 1
 
       # download and unpack the image under test, then store it under a common cache key. 
@@ -126,7 +126,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: canonical/oci-factory
-          ref: ${{ needs.configure-tests.outputs.oci-factory-ref }}
           fetch-depth: 1
 
       - uses: actions/cache/restore@v4
@@ -196,7 +195,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: canonical/oci-factory
-          ref: ${{ needs.configure-tests.outputs.oci-factory-ref }}
           fetch-depth: 1
 
       - uses: actions/cache/restore@v4
@@ -250,7 +248,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: canonical/oci-factory
-          ref: ${{ needs.configure-tests.outputs.oci-factory-ref }}
           fetch-depth: 1
       
       - name: Checkout Rock Repo
@@ -370,7 +367,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: canonical/oci-factory
-          ref: ${{ needs.configure-tests.outputs.oci-factory-ref }}
           fetch-depth: 1
 
       - uses: actions/cache/restore@v4
