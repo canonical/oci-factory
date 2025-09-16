@@ -1,7 +1,7 @@
 version: 1
 upload:
   - source: canonical/litmuschaos-authserver-rock
-    commit: a10686a4b9b5ace4ac0a783700d673881fedd8ad
+    commit: 4d56e70af07279601b26b09f39baf989570395b0
     directory: 3.20.0
     release:
       3-24.04:
