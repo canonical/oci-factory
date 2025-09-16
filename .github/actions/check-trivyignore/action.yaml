@@ -39,7 +39,7 @@ runs:
       run: |
         if [ -f "${{ inputs.trivyignores }}" ]; then
             trivy image ${{ inputs.image-ref }} --severity ${{ inputs.severity }} -q \
-              -f json --ignorefile "" --skip-files ${{ inputs.skip-files }} --exit-code 0\
+              -f json --ignorefile "" --skip-files ${{ inputs.skip-files }} --exit-code 0 \
               > trivy-scan-raw.json 2>/dev/null
               bash ./.github/actions/check-trivyignore/check-trivyignore-entries.sh trivy-scan-raw.json "${{ inputs.trivyignores }}"
           else
