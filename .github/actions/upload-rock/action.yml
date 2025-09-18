@@ -59,6 +59,7 @@ runs:
           --dest-username "${{ inputs.username }}" \
           --dest-password "${{ inputs.password }}" \
           --multi-arch all \
+          --preserve-digests \
           oci-archive:${{ inputs.artifact_name }} \
           docker://${{ inputs.registry }}/${{ inputs.name }}:$tag
         done
