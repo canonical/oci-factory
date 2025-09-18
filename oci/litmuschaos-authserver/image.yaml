@@ -1,18 +1,18 @@
 version: 1
 upload:
   - source: canonical/litmuschaos-authserver-rock
-    commit: 4d56e70af07279601b26b09f39baf989570395b0
-    directory: 3.20.0
+    commit: 84cb9575df91119d976d04aac3e00a1aafbe7025
+    directory: 3.21.0
     release:
       3-24.04:
-        end-of-life: '2025-12-16T00:00:00Z'
+        end-of-life: '2025-12-18T00:00:00Z'
         risks:
           - edge
-      3.20-24.04:
-        end-of-life: '2025-12-16T00:00:00Z'
+      3.21-24.04:
+        end-of-life: '2025-12-18T00:00:00Z'
         risks:
           - edge
-      3.20.0-24.04:
-        end-of-life: '2025-09-15T00:00:00Z'
+      3.21.0-24.04:
+        end-of-life: '2025-09-17T00:00:00Z'
         risks:
           - edge
