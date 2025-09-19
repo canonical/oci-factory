@@ -12,3 +12,5 @@ CVE-2023-39325
 GHSA-m425-mq94-257g
 # stdlib - database/sql: Postgres Scan Race Condition
 CVE-2025-47907
+# stdlib - If the PATH environment variable contains paths which are executables  ...
+CVE-2025-47906
