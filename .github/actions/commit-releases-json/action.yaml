@@ -49,6 +49,9 @@ runs:
         git add oci/${{ inputs.image-name }}/_releases.json
         git commit -m "${{ inputs.message }}"
         
-        git pull origin ${{ inputs.releases-branch }} --rebase
-
-        git push origin ${{ inputs.releases-branch }} $FORCE
+        for i in {1..10}; do
+          git pull origin ${{ inputs.releases-branch }} --rebase
+          git push origin ${{ inputs.releases-branch }} $FORCE && break
+          echo "Retrying push... attempt $i"
+          sleep 0.5
+        done
