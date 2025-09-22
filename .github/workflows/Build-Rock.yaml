@@ -40,6 +40,10 @@ on:
         description: "Enable fallback to Launchpad build when runners for target arch are not available."
         type: boolean
         default: false
+      pro-services:
+        description: "The pro services to enable during the build. Requires pro-token to be set."
+        type: string
+        default: ''
     
     secrets:
       # Authentication parameters
@@ -47,6 +51,8 @@ on:
         description: "Deprecated: GitHub token from repository executing this workflow."
       source-github-token:
         description: "GitHub token for pulling a Rockcraft project from a private repository."
+      pro-token:
+        description: "The Ubuntu Pro token. Required for building Ubuntu Pro based rocks."
 env:
   ROCK_REPO_DIR: rock-repo  # path where the image repo is cloned into
   ROCK_CI_FOLDER: ci-rocks  # path of uploaded/downloaded artifacts
@@ -67,6 +73,14 @@ jobs:
         if: ${{ env.HOST_GITHUB_TOKEN != '' }}
         run: |
           echo "::warning:: 'host-github-token' is unused and deprecated. Please remove this secret from the caller workflow."
+      
+      - name: Verify pro build
+        env:
+          UBUNTU_PRO_TOKEN: ${{ secrets.pro-token }}
+        if: ${{ inputs.pro-services != '' && env.UBUNTU_PRO_TOKEN == '' }}
+        run: |
+          echo "Error: 'pro-token' must be provided in order to use 'pro-services'."
+          exit 1
 
       - name: Cloning OCI Factory
         uses: actions/checkout@v5
@@ -129,13 +143,27 @@ jobs:
           submodules: "recursive"
           token: ${{ secrets.source-github-token }}
 
+      - name: Attach pro token
+        if: ${{ inputs.pro-services != '' }}
+        id: attach_pro
+        env:
+          UBUNTU_PRO_TOKEN: ${{ secrets.pro-token }}
+        run: |
+          pro attach "$UBUNTU_PRO_TOKEN"
+
       - name: Building Target
         id: rockcraft
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
           test: "${{ inputs.rockcraft-test }}"
+          pro: "${{ inputs.pro-services }}"
           verbosity: debug
+      
+      - name: Detach pro token
+        if: always() && steps.attach_pro.outcome == 'success'
+        run: |
+          pro detach
 
       - name: Collecting Artifacts
         id: collect-artifacts
