@@ -159,6 +159,8 @@ jobs:
           test: "${{ inputs.rockcraft-test }}"
           pro: "${{ inputs.pro-services }}"
           verbosity: debug
+          # TODO remove once the pro feature is merged to stable
+          rockcraft-channel: ${{ inputs.pro-services && 'edge/pro-sources' }}
       
       - name: Detach pro token
         if: always() && steps.attach_pro.outcome == 'success'
