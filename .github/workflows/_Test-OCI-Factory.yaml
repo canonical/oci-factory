@@ -27,7 +27,7 @@ env:
 jobs:
   access-check:
     name: Validate access to mock-rock
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/validate-actor
@@ -39,7 +39,7 @@ jobs:
   pytest:
     # Trigger python unit tests across the repository
     name: pytest
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       # Job Setup
       - uses: actions/checkout@v4
@@ -78,7 +78,7 @@ jobs:
   bats-test:
     # Trigger bash unit tests across the repository
     name: bats
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       # Job Setup
       - uses: actions/checkout@v4
@@ -88,7 +88,7 @@ jobs:
       - name: Install bats
         run: |
           sudo apt-get update
-          sudo apt-get install -y bats
+          sudo apt-get install -y bats bats-assert bats-file bats-support
 
       - name: Run bats
         env:
@@ -130,7 +130,7 @@ jobs:
   # Test full image workflow
   test-workflows:
     name: Trigger internal tests for mock-rock
-    needs: [access-check]
+    needs: [access-check, pytest, bats-test]
     uses: ./.github/workflows/Image.yaml
     with:
       oci-image-name: "mock-rock"
