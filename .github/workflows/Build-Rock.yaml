@@ -165,7 +165,7 @@ jobs:
       - name: Detach pro token
         if: always() && steps.attach_pro.outcome == 'success'
         run: |
-          pro detach
+          sudo pro detach
 
       - name: Collecting Artifacts
         id: collect-artifacts
