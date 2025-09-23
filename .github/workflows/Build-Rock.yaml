@@ -149,7 +149,7 @@ jobs:
         env:
           UBUNTU_PRO_TOKEN: ${{ secrets.pro-token }}
         run: |
-          pro attach "$UBUNTU_PRO_TOKEN"
+          sudo pro attach "$UBUNTU_PRO_TOKEN"
 
       - name: Building Target
         id: rockcraft
