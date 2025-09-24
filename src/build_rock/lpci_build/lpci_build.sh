@@ -50,7 +50,7 @@ cd "$ROCKCRAFT_DIR"
 rocks_toolbox="$(mktemp -d)"
 
 # install dependencies
-git clone --depth 1 --branch v1.1.2 https://github.com/canonical/rocks-toolbox $rocks_toolbox
+git clone --depth 1 --branch lpci-build-log https://github.com/canonical/rocks-toolbox $rocks_toolbox
 ${rocks_toolbox}/rockcraft_lpci_build/requirements.sh
 pip3 install -r ${rocks_toolbox}/rockcraft_lpci_build/requirements.txt
 

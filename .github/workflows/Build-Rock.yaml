@@ -182,6 +182,7 @@ jobs:
       - name: Building Target
         # TODO: Replace this retry action with bash equivalent for better testing
         uses: nick-fields/retry@v3.0.0
+        id: lpci-build
         with:
           timeout_minutes: 180
           max_attempts: 4
@@ -191,6 +192,13 @@ jobs:
             src/build_rock/lpci_build/lpci_build.sh \
               -c "${{ secrets.LP_CREDENTIALS_B64 }}" \
               -d "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
+
+      - name: Upload Build Logs
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lpci-build-logs-${{ matrix.architecture }}
+          path: ${{ steps.lpci-build.outputs.build-log }}
 
       - name: Collecting Artifacts
         id: collect-artifacts
