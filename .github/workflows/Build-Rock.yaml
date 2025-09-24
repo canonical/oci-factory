@@ -36,8 +36,8 @@ on:
         description: "JSON string mapping target architecture to runners."
         type: string
         default: '{
-          "amd64": ["self-hosted", "linux", "X64", "large", "jammy"],
-          "arm64": ["self-hosted", "linux", "ARM64", "medium", "jammy"],
+          "amd64": ["self-hosted", "linux", "X64", "large", "noble"],
+          "arm64": ["self-hosted", "linux", "ARM64", "medium", "noble"],
           "s390x": ["self-hosted", "linux", "s390x", "noble"]
           }'
       lpci-fallback:
@@ -92,8 +92,6 @@ jobs:
 
       - name: Installing Python 
         uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
 
       - name: Installing Python requirements
         run: pip install -r src/build_rock/configure/requirements.txt
