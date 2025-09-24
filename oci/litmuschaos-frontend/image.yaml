@@ -1,18 +1,18 @@
 version: 1
 upload:
   - source: canonical/litmuschaos-frontend-rock
-    commit: b03381c95635090603563a50d9298544ba9acf65
+    commit: 3e6da4a79e924b2ae37f434cb65ff7b7ba8685bc
     directory: 3.21.0
     release:
       3-24.04:
-        end-of-life: '2025-12-18T00:00:00Z'
+        end-of-life: '2025-12-24T00:00:00Z'
         risks:
           - edge
       3.21-24.04:
-        end-of-life: '2025-12-18T00:00:00Z'
+        end-of-life: '2025-12-24T00:00:00Z'
         risks:
           - edge
       3.21.0-24.04:
-        end-of-life: '2025-09-17T00:00:00Z'
+        end-of-life: '2025-09-23T00:00:00Z'
         risks:
           - edge
