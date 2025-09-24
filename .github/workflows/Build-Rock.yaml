@@ -185,7 +185,7 @@ jobs:
         id: lpci-build
         with:
           timeout_minutes: 180
-          max_attempts: 4
+          max_attempts: 1
           polling_interval_seconds: 5
           retry_wait_seconds: 30
           command: |
