@@ -35,7 +35,11 @@ on:
       arch-map:
         description: "JSON string mapping target architecture to runners."
         type: string
-        default: '{"amd64": ["self-hosted", "linux", "X64", "large", "jammy"], "arm64": ["self-hosted", "linux", "ARM64", "medium", "jammy"]}'
+        default: '{
+          "amd64": ["self-hosted", "linux", "X64", "large", "jammy"],
+          "arm64": ["self-hosted", "linux", "ARM64", "medium", "jammy"],
+          "s390x": ["self-hosted", "linux", "s390x", "noble"]
+          }'
       lpci-fallback:
         description: "Enable fallback to Launchpad build when runners for target arch are not available."
         type: boolean
@@ -182,15 +186,23 @@ jobs:
       - name: Building Target
         # TODO: Replace this retry action with bash equivalent for better testing
         uses: nick-fields/retry@v3.0.0
+        id: lpci-build
         with:
           timeout_minutes: 180
-          max_attempts: 4
+          max_attempts: 1
           polling_interval_seconds: 5
           retry_wait_seconds: 30
           command: |
             src/build_rock/lpci_build/lpci_build.sh \
               -c "${{ secrets.LP_CREDENTIALS_B64 }}" \
               -d "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
+
+      - name: Upload Build Logs
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lpci-build-logs-${{ matrix.architecture }}
+          path: ${{ steps.lpci-build.outputs.build-log }}
 
       - name: Collecting Artifacts
         id: collect-artifacts
