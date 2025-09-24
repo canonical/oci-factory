@@ -36,8 +36,8 @@ on:
         description: "JSON string mapping target architecture to runners."
         type: string
         default: '{
-          "amd64": ["self-hosted", "linux", "X64", "large", "jammy"],
-          "arm64": ["self-hosted", "linux", "ARM64", "medium", "jammy"],
+          "amd64": ["self-hosted", "linux", "X64", "large", "noble"],
+          "arm64": ["self-hosted", "linux", "ARM64", "medium", "noble"],
           "s390x": ["self-hosted", "linux", "s390x", "noble"]
           }'
       lpci-fallback:
@@ -90,13 +90,12 @@ jobs:
           submodules: "recursive"
           token: ${{ secrets.source-github-token }}
 
-      - name: Installing Python 
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
+      # Note: We skip setup-python here because there is no available Python release
+      # for architectures other than amd64 and arm64 from GitHub actions/setup-python.
+      # https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json
 
       - name: Installing Python requirements
-        run: pip install -r src/build_rock/configure/requirements.txt
+        run: python3 -m pip install -r src/build_rock/configure/requirements.txt
 
       # Configure matrices for each *-build job
       - name: Configuring Jobs

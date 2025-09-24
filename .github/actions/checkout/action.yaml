@@ -24,9 +24,9 @@ runs:
   using: "composite" 
   steps:
 
-    - uses: actions/setup-python@v5
-      with:
-        python-version: "3.x"
+    # Note: We skip setup-python here because there is no available Python release
+    # for architectures other than amd64 and arm64 from GitHub actions/setup-python.
+    # https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json
 
     - name: Checkout
       shell: bash
