@@ -1,7 +1,13 @@
 # Upstream CVEs
 
 # net-imap: net-imap rubygem vulnerable to possible DoS by memory exhaustion
+# https://ubuntu.com/security/CVE-2025-43857
 CVE-2025-43857
+
 # WEBrick: HTTP request smuggling
+# https://ubuntu.com/security/CVE-2024-47220
 CVE-2024-47220
 
+# REXML DoS vulnerability when parsing XML containing multiple XML declarations
+# https://ubuntu.com/security/CVE-2025-58767
+CVE-2025-58767
