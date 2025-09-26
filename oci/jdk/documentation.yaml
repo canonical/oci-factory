@@ -36,7 +36,7 @@ description: |
   Launch this image locally:
 
   ```bash
-  docker run -d --name jre-container -e TZ=UTC ubuntu/jdk:21-24.04_edge exec java
+  docker run -d --name jdk-container -e TZ=UTC ubuntu/jdk:21-24.04_edge exec java
   ```
 
   The container logs will simply show the OpenJRE help message.
