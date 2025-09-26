@@ -9,8 +9,6 @@ description: |
   OpenJDK is the official reference implementation of Java SE since
   version 7. [Read more](https://openjdk.org/).
   Java is a registered trademark of Oracle and/or its affiliates.
-  XX-full-A.B, e.g. 21-full-24.04, images include Ubuntu base image.
-  XX-A.B, e.g. 21-24.04, are chiselled Ubuntu images.
 
   ## About Chiselled Ubuntu
 
