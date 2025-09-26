@@ -1,0 +1,67 @@
+version: 1
+
+application: jdk-full
+is_chiselled: false
+description: |
+  This image packs the Java Development Kit installed on Ubuntu 24.04, coming
+  from the [OpenJDK project](https://www.openjdk.org/), a free and open
+  source implementation of the Java Platform, Standard Edition (Java SE).
+  OpenJDK is the official reference implementation of Java SE since
+  version 7. [Read more](https://openjdk.org/).
+  Java is a registered trademark of Oracle and/or its affiliates.
+
+  The images have `pebble enter` as the entrypoint. You can
+  access the `java` with the following command:
+
+  ```bash
+  $ docker run --rm ubuntu/jdk:21-24.04_edge exec java
+  Usage: java [options] <mainclass> [args...]
+  ...
+  ```
+
+  ## Usage
+
+  Launch this image locally:
+
+  ```bash
+  docker run -d --name jdk-container -e TZ=UTC ubuntu/jdk:21-24.04_edge exec java
+  ```
+
+  The container logs will simply show the OpenJRE help message.
+  This is because the container expects a compiled Java application to be given.
+
+  Let's use the following Hello World application as an example:
+
+  ```java
+  // HelloWorld.java
+
+  class HelloWorld
+  {
+      public static void main(String args[])
+      {
+          System.out.println("Hello, World");
+      }
+  }
+  ```
+
+  You can run the above Hello World application using
+  the following example Dockerfile.
+
+  ```docker
+  FROM ubuntu/jdk:21-24.04_edge
+
+  WORKDIR /
+  COPY HelloWorld.java /
+
+  CMD [ "exec", "java", "/HelloWorld.java" ]
+  ```
+
+debug:
+  text: |
+    ### Debugging
+
+    To debug the container:
+
+    ```bash
+    docker exec openjdk-jdk-container pebble logs
+    ```
