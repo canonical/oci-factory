@@ -1,0 +1,81 @@
+version: 1
+
+application: tomcat
+is_chiselled: true
+description: |
+  This image packs [Apache Tomcat®](https://tomcat.apache.org/), an
+  open source implementation of the [Jakarta Servlet](https://projects.eclipse.org/projects/ee4j.servlet),
+  [Jakarta Pages](https://projects.eclipse.org/projects/ee4j.jsp),
+  [Jakarta Expression Language](https://projects.eclipse.org/projects/ee4j.el),
+  [Jakarta WebSocket](https://projects.eclipse.org/projects/ee4j.websocket),
+  [Jakarta Annotations](https://projects.eclipse.org/projects/ee4j.ca)
+  and [Jakarta Authentication](https://projects.eclipse.org/projects/ee4j.authentication)
+  specifications. These specifications are part of the Jakarta EE platform.
+
+  The Jakarta EE platform is the evolution of the Java EE platform.
+  Tomcat 10 and later implement specifications developed as part of
+  Jakarta EE. Tomcat 9 and earlier implement specifications developed
+  as part of Java EE.
+
+  The Apache Tomcat® software is developed in an open and participatory
+  environment and released under the [Apache License version 2](http://www.apache.org/licenses/).
+
+  ## About Chiselled Ubuntu
+
+  This image contains minimal dependencies needed to run Apache Tomcat®:
+  [busybox](https://launchpad.net/ubuntu/+source/busybox),
+  [Apache Tomcat® Native](https://launchpad.net/ubuntu/+source/tomcat-native)
+  and OpenJDK.
+
+  ## Usage
+
+  The image CATALINA_BASE is set to /var/lib/tomcat.
+  It uses the default port 8080.
+
+  Launch the image locally:
+
+  ```bash
+  docker run -d --name tomcat-container -p 8080:8080 -e TZ=UTC tomcat:10-jre-21-24.04
+  ```
+
+  This example builds and deploys [Spring Petclinic](https://github.com/spring-petclinic/spring-framework-petclinic)
+  sample application.
+
+  Create the Dockerfile:
+
+  ```docker
+    FROM ubuntu:24.04 as builder
+
+    RUN apt-get update && \
+        apt-get install -y maven git default-jdk git && \
+        cd / && \
+        git clone --depth 1 --branch v6.2.1 https://github.com/spring-petclinic/spring-framework-petclinic && \
+        cd spring-framework-petclinic && \
+        mvn -DskipTests package
+
+    FROM ubuntu/tomcat:10-jre-21-24.04
+    COPY --from=builder --chown=584792:584792 /spring-framework-petclinic/target/petclinic.war \
+        /var/lib/tomcat/webapps/
+  ```
+
+  Build the image:
+
+  ```bash
+  docker build -t petclinic .
+  ```
+
+  Run the container:
+
+  ```bash
+  docker run -d --name tomcat-container -p 8080:8080 -e TZ=UTC petclinic
+  ```
+
+debug:
+  text: |
+    ### Debugging
+
+    To  to inspect application logs:
+
+    ```bash
+    docker exec tomcat-container pebble logs
+    ```
