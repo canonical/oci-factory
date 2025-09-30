@@ -2,13 +2,13 @@
     "3.3-25.04": {
         "end-of-life": "2026-01-15T00:00:00Z",
         "edge": {
-            "target": "7"
+            "target": "8"
         },
         "candidate": {
-            "target": "7"
+            "target": "8"
         },
         "beta": {
-            "target": "7"
+            "target": "8"
         }
     }
 }
