@@ -2,31 +2,31 @@
     "7.2.7-24.04": {
         "end-of-life": "2029-04-01T00:00:00Z",
         "edge": {
-            "target": "26"
+            "target": "28"
         },
         "stable": {
-            "target": "26"
+            "target": "28"
         },
         "candidate": {
-            "target": "26"
+            "target": "28"
         },
         "beta": {
-            "target": "26"
+            "target": "28"
         }
     },
     "7.2.10-24.04": {
         "end-of-life": "2029-04-01T00:00:00Z",
         "stable": {
-            "target": "27"
+            "target": "29"
         },
         "candidate": {
-            "target": "27"
+            "target": "29"
         },
         "beta": {
-            "target": "27"
+            "target": "29"
         },
         "edge": {
-            "target": "27"
+            "target": "29"
         }
     }
 }
