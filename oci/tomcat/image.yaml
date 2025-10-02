@@ -2,7 +2,7 @@ version: 1
 
 upload:
   - source: canonical/chiselled-tomcat
-    commit: ae2f1d6b9806ed4006265dee34fed06377c44061
+    commit: 59f3f98b37988ab3a07419098e755c892c44f93d
     directory: tomcat/9-jre-21-24.04
     release:
       9-21-24.04:
@@ -13,7 +13,7 @@ upload:
           - beta
           - edge
   - source: canonical/chiselled-tomcat
-    commit: ae2f1d6b9806ed4006265dee34fed06377c44061
+    commit: 59f3f98b37988ab3a07419098e755c892c44f93d
     directory: tomcat/10-jre-21-24.04
     release:
       10-21-24.04:
@@ -24,7 +24,7 @@ upload:
           - beta
           - edge
   - source: canonical/chiselled-tomcat
-    commit: ae2f1d6b9806ed4006265dee34fed06377c44061
+    commit: 59f3f98b37988ab3a07419098e755c892c44f93d
     directory: tomcat/11-jre-21-24.04
     release:
       10-21-24.04:
