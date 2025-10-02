@@ -35,7 +35,7 @@ description: |
   Launch the image locally:
 
   ```bash
-  docker run -d --name tomcat-container -p 8080:8080 -e TZ=UTC tomcat:10-jre-21-24.04
+  docker run -d --name tomcat-container -p 8080:8080 -e TZ=UTC tomcat:10-21-24.04
   ```
 
   This example builds and deploys [Spring Petclinic](https://github.com/spring-petclinic/spring-framework-petclinic)
@@ -53,7 +53,7 @@ description: |
         cd spring-framework-petclinic && \
         mvn -DskipTests package
 
-    FROM ubuntu/tomcat:10-jre-21-24.04
+    FROM ubuntu/tomcat:10-21-24.04
     COPY --from=builder --chown=584792:584792 /spring-framework-petclinic/target/petclinic.war \
         /var/lib/tomcat/webapps/
   ```

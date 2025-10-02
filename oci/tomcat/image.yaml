@@ -5,18 +5,7 @@ upload:
     commit: ae2f1d6b9806ed4006265dee34fed06377c44061
     directory: tomcat/9-jre-21-24.04
     release:
-      9-jre-21-24.04:
-        end-of-life: "2032-01-30T00:00:00Z"
-        risks:
-          - stable
-          - candidate
-          - beta
-          - edge
-  - source: canonical/chiselled-tomcat
-    commit: ae2f1d6b9806ed4006265dee34fed06377c44061
-    directory: tomcat/9-jdk-21-24.04
-    release:
-      9-jdk-21-24.04:
+      9-21-24.04:
         end-of-life: "2032-01-30T00:00:00Z"
         risks:
           - stable
@@ -27,18 +16,7 @@ upload:
     commit: ae2f1d6b9806ed4006265dee34fed06377c44061
     directory: tomcat/10-jre-21-24.04
     release:
-      10-jre-21-24.04:
-        end-of-life: "2032-01-30T00:00:00Z"
-        risks:
-          - stable
-          - candidate
-          - beta
-          - edge
-  - source: canonical/chiselled-tomcat
-    commit: ae2f1d6b9806ed4006265dee34fed06377c44061
-    directory: tomcat/10-jdk-21-24.04
-    release:
-      10-jdk-21-24.04:
+      10-21-24.04:
         end-of-life: "2032-01-30T00:00:00Z"
         risks:
           - stable
@@ -49,18 +27,7 @@ upload:
     commit: ae2f1d6b9806ed4006265dee34fed06377c44061
     directory: tomcat/11-jre-21-24.04
     release:
-      10-jre-21-24.04:
-        end-of-life: "2032-01-30T00:00:00Z"
-        risks:
-          - stable
-          - candidate
-          - beta
-          - edge
-  - source: canonical/chiselled-tomcat
-    commit: ae2f1d6b9806ed4006265dee34fed06377c44061
-    directory: tomcat/11-jdk-21-24.04
-    release:
-      10-jdk-21-24.04:
+      10-21-24.04:
         end-of-life: "2032-01-30T00:00:00Z"
         risks:
           - stable
