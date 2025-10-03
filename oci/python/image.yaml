@@ -6,7 +6,7 @@ upload:
     directory: python/3.8-20.04/
     release:
       3.8-20.04:
-        end-of-life: "2025-10-04T00:00:00Z"
+        end-of-life: "2025-03-31T00:00:00Z"
         risks:
           - stable
           - candidate
