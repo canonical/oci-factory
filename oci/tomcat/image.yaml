@@ -6,7 +6,7 @@ upload:
     directory: tomcat/9-jre-21-24.04
     release:
       9-21-24.04:
-        end-of-life:  nil
+        end-of-life:
         risks:
           - stable
           - candidate
