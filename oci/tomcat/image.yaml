@@ -17,7 +17,7 @@ upload:
     directory: tomcat/10-jre-21-24.04
     release:
       10-21-24.04:
-        end-of-life: nil
+        end-of-life:
         risks:
           - stable
           - candidate
@@ -28,7 +28,7 @@ upload:
     directory: tomcat/11-jre-21-24.04
     release:
       10-21-24.04:
-        end-of-life:  nil
+        end-of-life:
         risks:
           - stable
           - candidate
