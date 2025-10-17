@@ -6,7 +6,7 @@ upload:
     directory: tomcat/9-jre-21-24.04
     release:
       9-21-24.04:
-        end-of-life: "2026-04-23T00:00:00Z"
+        end-of-life: "2025-12-12T00:00:00Z"
         risks:
           - stable
           - candidate
@@ -17,7 +17,7 @@ upload:
     directory: tomcat/10-jre-21-24.04
     release:
       10-21-24.04:
-        end-of-life: "2026-04-23T00:00:00Z"
+        end-of-life: "2025-12-12T00:00:00Z"
         risks:
           - stable
           - candidate
@@ -28,7 +28,7 @@ upload:
     directory: tomcat/11-jre-21-24.04
     release:
       10-21-24.04:
-        end-of-life: "2026-04-23T00:00:00Z"
+        end-of-life: "2025-12-12T00:00:00Z"
         risks:
           - stable
           - candidate
