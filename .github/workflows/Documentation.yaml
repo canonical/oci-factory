@@ -106,7 +106,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: "3.14"
 
       - name: Setup environment
         run: pip install -r ./src/image/requirements.txt -r ./src/docs/requirements.txt
