@@ -1,0 +1,10 @@
+version: 1
+upload:
+  - source: canonical/rust-rock
+    commit: 61b9b21a7d7fc334bbd576bad731b65b54b80838
+    directory: rust/1.84-25.04
+    release:
+      1.84-25.04:
+        end-of-life: "2026-01-15T00:00:00Z"
+        risks:
+          - edge
