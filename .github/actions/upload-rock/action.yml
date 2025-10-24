@@ -23,6 +23,8 @@ inputs:
   password:
     description: "The password for the container registry"
     required: true
+  run-id:
+    description: "The id of the workflow run where the desired download artifact was uploaded from."
 outputs:
   digest:
     description: "The digest of the uploaded image"
@@ -35,6 +37,8 @@ runs:
       uses: actions/download-artifact@v4
       with:
         name: ${{ inputs.artifact_name }}
+        run-id: ${{ inputs.run-id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Get Metadata
       id: meta
