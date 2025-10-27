@@ -1,17 +1,17 @@
 {
     "1-22.04": {
-        "end-of-life": "2025-10-09T00:00:00Z",
+        "end-of-life": "2026-01-27T00:00:00Z",
         "stable": {
-            "target": "28"
+            "target": "29"
         },
         "candidate": {
-            "target": "28"
+            "target": "1-22.04_stable"
         },
         "edge": {
-            "target": "28"
+            "target": "1-22.04_beta"
         },
         "beta": {
-            "target": "28"
+            "target": "1-22.04_candidate"
         }
     }
 }
