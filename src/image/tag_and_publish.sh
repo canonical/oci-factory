@@ -28,7 +28,7 @@ publish_with_auth_token()
     local token=$1 name=$2
     shift 2
     log_info "Publishing to Docker registry repository $name ..."
-    REGISTRY_AUTH=$token cpc-build-tools.oci-registry-upload \
+    REGISTRY_AUTH=$token oci-registry-upload \
         "${source_img}" "$name" "$@"
     log_info "Publishing to Docker registry repository $name finished"
 }
