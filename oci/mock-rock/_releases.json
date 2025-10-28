@@ -35,31 +35,31 @@
     "1.1-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "candidate": {
-            "target": "2140"
+            "target": "2146"
         },
         "beta": {
-            "target": "2140"
+            "target": "2146"
         },
         "edge": {
-            "target": "2140"
+            "target": "2146"
         }
     },
     "1-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "candidate": {
-            "target": "2140"
+            "target": "2146"
         },
         "beta": {
-            "target": "2140"
+            "target": "2146"
         },
         "edge": {
-            "target": "2140"
+            "target": "2146"
         }
     },
     "1.2-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "beta": {
-            "target": "2141"
+            "target": "2147"
         },
         "edge": {
             "target": "1.2-22.04_beta"
