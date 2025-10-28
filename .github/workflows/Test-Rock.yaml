@@ -59,7 +59,7 @@ env:
   VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"  # TODO: inherit string from caller
   TEST_IMAGE_NAME: "test-img"
   TEST_IMAGE_TAG: "test"
-  SKOPEO_IMAGE: "quay.io/skopeo/stable:v1.15.1"
+  SKOPEO_IMAGE: "quay.io/skopeo/stable:v1.20.0"
   UMOCI_VERSION: "v0.4.7"
   UMOCI_BINARY: "umoci.amd64"
   DIVE_IMAGE: "wagoodman/dive:v0.12"
