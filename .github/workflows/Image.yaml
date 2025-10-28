@@ -194,7 +194,7 @@ jobs:
     secrets: inherit
 
   prepare-upload:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [prepare-build, build-rock, test-rock]
     name: Prepare upload
     if: ${{ inputs.upload || (github.ref_name == 'main' && github.event_name == 'push') }}
@@ -276,7 +276,7 @@ jobs:
           key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
 
   upload:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [prepare-build, prepare-upload]
     name: Upload
     strategy:
