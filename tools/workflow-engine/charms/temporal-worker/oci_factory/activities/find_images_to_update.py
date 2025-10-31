@@ -80,7 +80,7 @@ def trigger_image_rebuild():
         return
 
     # Let's use an uber image trigger file to trigger the CI rebuilds
-    uber_img_trigger = {"version": 1, "upload": []}
+    uber_img_trigger = {"version": 2, "upload": []}
     uploads = {}  # key: trigger triplet, value: uber_image_trigger["upload"] entry
     # We'll also need to find which tags (channels) to release the new
     # rebuilds to
@@ -132,7 +132,7 @@ def trigger_image_rebuild():
             "directory": build_metadata["directory"],
             "ignored-vulnerabilities": build_metadata.get(
                 "ignored-vulnerabilities", ""
-            ).split(" "),
+            ).split(),
         }
         release_to = {}
         imageTagDetails = tags.get("imageTagDetails", {})
