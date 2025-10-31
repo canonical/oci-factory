@@ -190,7 +190,7 @@ jobs:
     uses: ./.github/workflows/Test-Rock.yaml
     with:
       oci-archive-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}"
-      trivyignore-path: ${{ matrix.ignored-vulnerabilities != '' && '' || format('oci/{0}/.trivyignore', matrix.name) }}
+      trivyignore-path: ${{ matrix.ignored-vulnerabilities == '' && format('oci/{0}/.trivyignore', matrix.name) || '' }}
       ignored-vulnerabilities: ${{ matrix.ignored-vulnerabilities }}
     secrets: inherit
 
