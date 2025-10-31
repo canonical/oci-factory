@@ -470,7 +470,7 @@ jobs:
           jq --arg base "${{ matrix.base }}" \
             --arg digest "${{ steps.upload-image.outputs.digest }}" \
             --arg ignored_vulnerabilities "${{ matrix.ignored-vulnerabilities }}" \
-            '. + {base: $base, digest: $digest, "ignored-vulnerabilities": $ignored_vulnerabilities}'\
+            '. + {base: $base, digest: $digest, "ignored-vulnerabilities": $ignored_vulnerabilities}' \
             <<< '${{ toJSON(matrix) }}' > build_metadata.json
           ./src/uploads/upload_to_swift.sh \
             ${{ matrix.name }} \
