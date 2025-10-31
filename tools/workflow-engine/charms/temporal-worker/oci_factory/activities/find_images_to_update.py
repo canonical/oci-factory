@@ -131,7 +131,7 @@ def trigger_image_rebuild():
             "commit": build_metadata["commit"],
             "directory": build_metadata["directory"],
             "ignored-vulnerabilities": build_metadata.get(
-                "ignored-vulnerabilities", []
+                "ignored-vulnerabilities", ""
             ).split(" "),
         }
         release_to = {}
