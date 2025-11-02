@@ -17,16 +17,16 @@
     "1-22.04": {
         "end-of-life": "2026-04-01T00:00:00Z",
         "stable": {
-            "target": "36"
+            "target": "38"
         },
         "candidate": {
-            "target": "36"
+            "target": "38"
         },
         "beta": {
-            "target": "36"
+            "target": "38"
         },
         "edge": {
-            "target": "36"
+            "target": "38"
         }
     },
     "1.21.0-22.04": {
