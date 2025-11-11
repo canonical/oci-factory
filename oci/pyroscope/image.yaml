@@ -1,18 +1,18 @@
 version: 1
 upload:
   - source: canonical/pyroscope-rock
-    commit: 338cb3c951e0f1e14c4dcd23459536df85270dad
-    directory: 1.15.0
+    commit: 9b393723c7de54c0aee10cc4e43376e7a4245a7c
+    directory: 1.16.0
     release:
       1-24.04:
-        end-of-life: '2026-01-10T00:00:00Z'
+        end-of-life: '2026-02-06T00:00:00Z'
         risks:
           - edge
-      1.15-24.04:
-        end-of-life: '2026-01-10T00:00:00Z'
+      1.16-24.04:
+        end-of-life: '2026-02-06T00:00:00Z'
         risks:
           - edge
-      1.15.0-24.04:
-        end-of-life: '2025-10-10T00:00:00Z'
+      1.16.0-24.04:
+        end-of-life: '2025-11-06T00:00:00Z'
         risks:
           - edge
