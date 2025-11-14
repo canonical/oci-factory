@@ -8,8 +8,8 @@ docker:
   parameters:
     - -p 8080:8080
     - -e AIRFLOW_HOME=/var/lib/airflow
-    - -v /path/to/dags:/var/lib/airflow/dags
-    - -v /path/to/airflow.cfg:/var/lib/airflow/airflow.cfg
+    - -v /var/lib/airflow/dags
+    - -v /var/lib/airflow/airflow.cfg
   access: |
     ### Entrypoint and Pebble
 
@@ -93,24 +93,24 @@ parameters:
       include if you split services or run triggerer separately.
       (Not strictly needed for `airflow standalone`, but common in prod charts.)
   - type: -v
-    value: '/path/to/dags:/var/lib/airflow/dags'
+    value: '/var/lib/airflow/dags'
     description: >
       Mount your DAGs from the host so you can iterate without rebuilding the rock.
       Anything in /var/lib/airflow/dags will be auto-discovered.
 
   - type: -v
-    value: '/path/to/logs:/var/lib/airflow/logs'
+    value: '/var/lib/airflow/logs'
     description: >
       Persist task logs outside the container (useful for debugging and restarts).
 
   - type: -v
-    value: '/path/to/airflow.cfg:/var/lib/airflow/airflow.cfg'
+    value: '/var/lib/airflow/airflow.cfg'
     description: >
       Inject a custom airflow.cfg instead of the auto-generated one from
       `airflow standalone`.
 
   - type: -v
-    value: '/path/to/requirements.txt:/requirements.txt'
+    value: '/requirements.txt'
     description: >
       (Optional) If you extend this rock and want extra Python deps at runtime,
       you can mount and install them in an init hook / derived image.
