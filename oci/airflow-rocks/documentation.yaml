@@ -13,9 +13,7 @@ docker:
   access: |
     ### Entrypoint and Pebble
 
-    The rock uses Pebble (https://documentation.ubuntu.com/pebble/), the same lightweight
-    service manager used in Ubuntu rocks. Pebble is PID 1 in the container, and it
-    supervises the Airflow service defined in the rock.
+    The rock uses [Pebble](https://documentation.ubuntu.com/pebble/), the same lightweight service manager. Pebble is PID 1 in the container, and it supervises the Airflow service defined in the rock.
 
     #### Airflow service
 
@@ -28,7 +26,7 @@ docker:
     #### Configuration & State
 
     - Runtime state (AIRFLOW_HOME) lives at `/var/lib/airflow`. This includes `airflow.cfg`, `airflow.db` (Database by default for standalone), logs, and `dags/`.
-    - You should mount volumes to persist that data or to inject your own DAGs.
+    - It is required to mount volumes to persist that data or to inject custom dags.
       For example:
         `-v ./dags:/var/lib/airflow/dags`
         `-v ./airflow.cfg:/var/lib/airflow/airflow.cfg`
