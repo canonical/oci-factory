@@ -1,0 +1,146 @@
+version: 1
+
+application: apache airflow
+description: >
+  Apache Airflow is a platform to programmatically author, schedule, and monitor workflows. This rock ("airflow-rock") packages Airflow built from source on Ubuntu with Python and a wide set of providers.
+
+docker:
+  parameters:
+    - -p 8080:8080
+    - -e AIRFLOW_HOME=/var/lib/airflow
+    - -v /path/to/dags:/var/lib/airflow/dags
+    - -v /path/to/airflow.cfg:/var/lib/airflow/airflow.cfg
+  access: |
+    ### Entrypoint and Pebble
+
+    The rock uses Pebble (https://documentation.ubuntu.com/pebble/), the same lightweight
+    service manager used in Ubuntu rocks. Pebble is PID 1 in the container, and it
+    supervises the Airflow service defined in the rock.
+
+    #### Airflow service
+
+    The `airflow` service is configured with:
+      command: `/usr/bin/airflow standalone`
+      startup: enabled
+
+    `airflow standalone` initializes a local metadata DB, creates a default admin user, and starts the webserver, scheduler, and other core components in one process group (intended for development).
+
+    #### Configuration & State
+
+    - Runtime state (AIRFLOW_HOME) lives at `/var/lib/airflow`. This includes `airflow.cfg`, `airflow.db` (Database by default for standalone), logs, and `dags/`.
+    - You should mount volumes to persist that data or to inject your own DAGs.
+      For example:
+        `-v ./dags:/var/lib/airflow/dags`
+        `-v ./airflow.cfg:/var/lib/airflow/airflow.cfg`
+
+    #### Providers
+
+    The rock is built from Airflow with many providers pre-installed (Amazon, GCP, Kubernetes, MySQL, Postgres, etc.), so common integrations work out of the box without requiring `pip install` inside the container.
+
+parameters:
+  - type: -e
+    value: 'AIRFLOW_HOME=/var/lib/airflow'
+    description: >
+      Root directory for Airflow state inside the container (DB, logs, dags, config).
+      The rock sets this to /var/lib/airflow.
+  - type: -e
+    value: 'AIRFLOW__CORE__LOAD_EXAMPLES=false'
+    description: >
+      Disable shipping example DAGs on first init. Airflow reads env vars of the form
+      AIRFLOW__SECTION__KEY to override airflow.cfg.
+  - type: -e
+    value: 'AIRFLOW__WEBSERVER__RBAC=True'
+    description: >
+      Ensure RBAC UI is enabled (in modern Airflow this is typically already on,
+      but kept here to make it explicit for some deployments).
+  - type: -e
+    value: 'AIRFLOW__CORE__EXECUTOR=LocalExecutor'
+    description: >
+      Executor backend. For quickstart/standalone you normally use SequentialExecutor
+      or LocalExecutor; for production you'd set CeleryExecutor/KubernetesExecutor/etc.
+  - type: -e
+    value: 'AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@db:5432/airflow'
+    description: >
+      SQLAlchemy connection string for the Airflow metadata DB.
+      `airflow standalone` defaults to local SQLite, but for production you
+      generally want Postgres or MySQL. Override this to point at an external DB.
+  - type: -e
+    value: 'AIRFLOW__CELERY__BROKER_URL=redis://:password@redis:6379/0'
+    description: >
+      Message broker URL (only required if using CeleryExecutor).
+  - type: -e
+    value: 'AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@db:5432/airflow'
+    description: >
+      Task result backend for CeleryExecutor. Not used in standalone mode.
+  - type: -e
+    value: 'AIRFLOW_UID=50000'
+    description: >
+      Useful if you want to control which UID writes files under mounted volumes,
+      mirroring upstream Airflow container practice.
+  - type: -e
+    value: 'AIRFLOW_GID=50000'
+    description: >
+      Group ID to match host perms for mounted volumes.
+  - type: -p
+    value: '8080:8080'
+    description: >
+      Airflow Webserver UI (HTTP). This is what you open in the browser.
+
+  - type: -p
+    value: '8793:8793'
+    description: >
+      Airflow triggerer / debug / health endpoints can run here in some setups;
+      include if you split services or run triggerer separately.
+      (Not strictly needed for `airflow standalone`, but common in prod charts.)
+  - type: -v
+    value: '/path/to/dags:/var/lib/airflow/dags'
+    description: >
+      Mount your DAGs from the host so you can iterate without rebuilding the rock.
+      Anything in /var/lib/airflow/dags will be auto-discovered.
+
+  - type: -v
+    value: '/path/to/logs:/var/lib/airflow/logs'
+    description: >
+      Persist task logs outside the container (useful for debugging and restarts).
+
+  - type: -v
+    value: '/path/to/airflow.cfg:/var/lib/airflow/airflow.cfg'
+    description: >
+      Inject a custom airflow.cfg instead of the auto-generated one from
+      `airflow standalone`.
+
+  - type: -v
+    value: '/path/to/requirements.txt:/requirements.txt'
+    description: >
+      (Optional) If you extend this rock and want extra Python deps at runtime,
+      you can mount and install them in an init hook / derived image.
+  - type: -e
+    value: 'AIRFLOW__SCHEDULER__MAX_THREADS=4'
+    description: >
+      Parallelism of the scheduler loop. Increase for heavier DAG throughput.
+  - type: -e
+    value: 'AIRFLOW__CORE__PARALLELISM=32'
+    description: >
+      Global max task instances that can run in parallel across the whole cluster.
+  - type: -e
+    value: 'AIRFLOW__CORE__DAG_CONCURRENCY=16'
+    description: >
+      Max number of task instances allowed to run per DAG.
+  - type: -e
+    value: 'AIRFLOW__WEBSERVER__WORKERS=4'
+    description: >
+      Gunicorn worker count for the web UI.
+  - type: -e
+    value: 'AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.basic_auth'
+    description: >
+      Enable basic auth for the stable API. For production you'd point to a more
+      secure auth backend.
+  - type: -e
+    value: 'AIRFLOW__WEBSERVER__SECRET_KEY=change-me'
+    description: >
+      Flask secret key used by the webserver for session signing. MUST be set
+      to a strong value in production.
+  - type: -e
+    value: 'AIRFLOW__WEBSERVER__BASE_URL=https://airflow.example.com'
+    description: >
+      External URL for the web UI. Helps generate links in emails, etc.
