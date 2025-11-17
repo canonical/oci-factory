@@ -73,5 +73,17 @@
         "beta": {
             "target": "61"
         }
+    },
+    "0.24-22.04": {
+        "end-of-life": "2025-12-01T00:00:00Z",
+        "candidate": {
+            "target": "69"
+        },
+        "edge": {
+            "target": "69"
+        },
+        "beta": {
+            "target": "0.24-22.04_candidate"
+        }
     }
 }
