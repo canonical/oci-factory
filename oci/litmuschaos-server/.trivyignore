@@ -10,3 +10,9 @@ CVE-2025-22868
 
 # stdlib: Incorrect results returned from Rows.Scan in database/sql - not affected
 CVE-2025-47907
+
+# github.com/argoproj/argo-workflows/v3: Argo Workflow has a Zipslip Vulnerability
+CVE-2025-62156
+
+# github.com/argoproj/argo-workflows/v3: Argo Workflow may expose artifact repository credentials
+CVE-2025-62157
