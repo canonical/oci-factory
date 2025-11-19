@@ -23,3 +23,14 @@ upload:
           - candidate
           - beta
           - edge
+  - source: canonical/jre-rock
+    commit: 3b97f723013467356e2ebbfc778c9891c5ddb9c0
+    directory: jre/17-jre-24.04
+    release:
+      17-24.04:
+        end-of-life: "2029-05-31T00:00:00Z"
+        risks:
+          - stable
+          - candidate
+          - beta
+          - edge
