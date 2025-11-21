@@ -78,3 +78,39 @@ def test_image_trigger_validator_minimal_input():
     }
 
     prep_matrix.validate_image_trigger(image_trigger)
+
+
+def test_ignored_vulnerabilities_must_have_v2_schema():
+    image_trigger = {
+        "version": 1,
+        "upload": [
+            {
+                "source": "canonical/rocks-toolbox",
+                "commit": "abcdef1234567890",
+                "directory": "mock_rock/1.2",
+                "ignored-vulnerabilities": ["CVE-2023-1234"],
+            },
+        ],
+    }
+
+    with pytest.raises(
+        ImageTriggerValidationError,
+        match='ignored-vulnerabilities" field is not supported in',
+    ):
+        prep_matrix.validate_image_trigger(image_trigger)
+
+
+def test_ignored_vulnerabilities_with_v2_schema():
+    image_trigger = {
+        "version": 2,
+        "upload": [
+            {
+                "source": "canonical/rocks-toolbox",
+                "commit": "abcdef1234567890",
+                "directory": "mock_rock/1.2",
+                "ignored-vulnerabilities": ["CVE-2023-1234", "CVE-2024-5678"],
+            },
+        ],
+    }
+
+    prep_matrix.validate_image_trigger(image_trigger)
