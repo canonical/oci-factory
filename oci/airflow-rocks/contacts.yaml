@@ -1,0 +1,5 @@
+notify:
+  emails:
+    - workflows-charmers@canonical.com
+  mattermost-channels:
+    - tbgx8brhn3b3djrh57aqctuibo
