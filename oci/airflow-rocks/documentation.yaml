@@ -44,101 +44,68 @@ parameters:
   - type: -e
     value: 'AIRFLOW__CORE__LOAD_EXAMPLES=false'
     description: >
-      Disable shipping example DAGs on first init. Airflow reads env vars of the form
-      AIRFLOW__SECTION__KEY to override airflow.cfg.
-  - type: -e
-    value: 'AIRFLOW__WEBSERVER__RBAC=True'
-    description: >
-      Ensure RBAC UI is enabled (in modern Airflow this is typically already on,
-      but kept here to make it explicit for some deployments).
+      Whether to load the DAG examples that ship with Airflow. It’s good to get started, but you probably want to set this to False in a production environment
   - type: -e
     value: 'AIRFLOW__CORE__EXECUTOR=LocalExecutor'
     description: >
-      Executor backend. For quickstart/standalone you normally use SequentialExecutor
-      or LocalExecutor; for production you'd set CeleryExecutor/KubernetesExecutor/etc.
+      The executor class that airflow should use. Choices include LocalExecutor, CeleryExecutor, KubernetesExecutor or the full import path to the class when using a custom executor.
   - type: -e
     value: 'AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@db:5432/airflow'
     description: >
-      SQLAlchemy connection string for the Airflow metadata DB.
-      `airflow standalone` defaults to local SQLite, but for production you
-      generally want Postgres or MySQL. Override this to point at an external DB.
-  - type: -e
-    value: 'AIRFLOW__CELERY__BROKER_URL=redis://:password@redis:6379/0'
-    description: >
-      Message broker URL (only required if using CeleryExecutor).
-  - type: -e
-    value: 'AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@db:5432/airflow'
-    description: >
-      Task result backend for CeleryExecutor. Not used in standalone mode.
-  - type: -e
-    value: 'AIRFLOW_UID=50000'
-    description: >
-      Useful if you want to control which UID writes files under mounted volumes,
-      mirroring upstream Airflow container practice.
-  - type: -e
-    value: 'AIRFLOW_GID=50000'
-    description: >
-      Group ID to match host perms for mounted volumes.
+      SQLAlchemy connection string for the Airflow metadata DB. `airflow standalone` defaults to local SQLite, but for production you generally want Postgres or MySQL. Override this to point at an external DB.
   - type: -p
     value: '8080:8080'
     description: >
       Airflow Webserver UI (HTTP). This is what you open in the browser.
-
+  - type: -p
+    value: '8794:8794'
+    description: >
+      Triggerer log server port. Used for log streaming and collection by the Airflow triggerer. Officially defined in the Airflow Helm Chart as `ports.triggererLogs`.
   - type: -p
     value: '8793:8793'
     description: >
-      Airflow triggerer / debug / health endpoints can run here in some setups;
-      include if you split services or run triggerer separately.
-      (Not strictly needed for `airflow standalone`, but common in prod charts.)
+       Worker log server port. Used for log streaming and collection by Airflow workers in distributed setups. Officially defined in the Airflow Helm Chart as `ports.workerLogs`.
   - type: -v
     value: '/path/to/dags:/var/lib/airflow/dags'
     description: >
       Mount your DAGs from the host so you can iterate without rebuilding the rock.
       Anything in /var/lib/airflow/dags will be auto-discovered.
-
   - type: -v
     value: '/path/to/logs:/var/lib/airflow/logs'
     description: >
       Persist task logs outside the container (useful for debugging and restarts).
-
   - type: -v
     value: '/path/to/airflow.cfg:/var/lib/airflow/airflow.cfg'
     description: >
       Inject a custom airflow.cfg instead of the auto-generated one from
       `airflow standalone`.
-
   - type: -v
     value: '/path/to/requirements.txt:/requirements.txt'
     description: >
       (Optional) If you extend this rock and want extra Python deps at runtime,
       you can mount and install them in an init hook / derived image.
   - type: -e
-    value: 'AIRFLOW__SCHEDULER__MAX_THREADS=4'
+    value: 'AIRFLOW__API__SECRET_KEY=change-me'
     description: >
-      Parallelism of the scheduler loop. Increase for heavier DAG throughput.
+      Secret key used to run your api server. It should be as random as possible. However, when running more than 1 instances of the api, make sure all of them use the same secret_key otherwise one of them will error with “CSRF session token is missing”.
   - type: -e
-    value: 'AIRFLOW__CORE__PARALLELISM=32'
+    value: 'AIRFLOW__API__BASE_URL=https://airflow.example.com'
     description: >
-      Global max task instances that can run in parallel across the whole cluster.
+      The base url of the API server.
   - type: -e
-    value: 'AIRFLOW__CORE__DAG_CONCURRENCY=16'
+    value: 'AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG=16'
     description: >
-      Max number of task instances allowed to run per DAG.
-  - type: -e
-    value: 'AIRFLOW__WEBSERVER__WORKERS=4'
-    description: >
-      Gunicorn worker count for the web UI.
-  - type: -e
-    value: 'AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.basic_auth'
-    description: >
-      Enable basic auth for the stable API. For production you'd point to a more
-      secure auth backend.
-  - type: -e
-    value: 'AIRFLOW__WEBSERVER__SECRET_KEY=change-me'
-    description: >
-      Flask secret key used by the webserver for session signing. MUST be set
-      to a strong value in production.
-  - type: -e
-    value: 'AIRFLOW__WEBSERVER__BASE_URL=https://airflow.example.com'
-    description: >
-      External URL for the web UI. Helps generate links in emails, etc.
+      The maximum number of task instances allowed to run concurrently in each dag run.
+
+notes: |
+  ### Authentication Managers
+  For more information on available authentication managers and the configuration options they require, refer to the official [Airflow Auth Manager documentation](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/auth-manager/index.html
+
+  ### Ports
+  Airflow’s webserver and log services expose specific ports depending on the deployment.
+  Port 8080 is used for the web UI, while the triggerer and worker log servers use 8794 and 8793 respectively.
+  These are documented in the [upstream Helm chart](https://airflow.apache.org/docs/helm-chart/stable/parameters-ref.html).
+
+  ### Full Configuration Reference
+  Airflow offers a large number of configuration options that can be set via environment variables or `airflow.cfg`. 
+  For the complete list of configurable settings, consult the official [configuration reference](https://airflow.apache.org/docs/apache-airflow/stable/configurations-ref.html)
