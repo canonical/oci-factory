@@ -7,9 +7,9 @@ description: >
 docker:
   parameters:
     - -p 8080:8080
-    - -e AIRFLOW_HOME=/var/lib/airflow
-    - -v /path/to/dags:/var/lib/airflow/dags
-    - -v /path/to/airflow.cfg:/var/lib/airflow/airflow.cfg
+    - -e AIRFLOW_HOME=/opt/airflow
+    - -v /path/to/dags:/opt/airflow/dags
+    - -v /path/to/airflow.cfg:/opt/airflow/airflow.cfg
   access: |
     ### Entrypoint and Pebble
 
@@ -25,11 +25,11 @@ docker:
 
     #### Configuration & State
 
-    - Runtime state (AIRFLOW_HOME) lives at `/var/lib/airflow`. This includes `airflow.cfg`, `airflow.db` (Database by default for standalone), logs, and `dags/`.
+    - Runtime state (AIRFLOW_HOME) lives at `/opt/airflow`. This includes `airflow.cfg`, `airflow.db` (Database by default for standalone), logs, and `dags/`.
     - It is required to mount volumes to persist that data or to inject custom dags.
       For example:
-        `-v ./dags:/var/lib/airflow/dags`
-        `-v ./airflow.cfg:/var/lib/airflow/airflow.cfg`
+        `-v ./dags:/opt/airflow/dags`
+        `-v ./airflow.cfg:/opt/airflow/airflow.cfg`
 
     #### Providers
 
@@ -37,10 +37,10 @@ docker:
 
 parameters:
   - type: -e
-    value: 'AIRFLOW_HOME=/var/lib/airflow'
+    value: 'AIRFLOW_HOME=/opt/airflow'
     description: >
       Root directory for Airflow state inside the container (DB, logs, dags, config).
-      The rock sets this to /var/lib/airflow.
+      The rock sets this to /opt/airflow.
   - type: -e
     value: 'AIRFLOW__CORE__LOAD_EXAMPLES=false'
     description: >
@@ -66,16 +66,16 @@ parameters:
     description: >
        Worker log server port. Used for log streaming and collection by Airflow workers in distributed setups. Officially defined in the Airflow Helm Chart as `ports.workerLogs`.
   - type: -v
-    value: '/path/to/dags:/var/lib/airflow/dags'
+    value: '/path/to/dags:/opt/airflow/dags'
     description: >
       Mount your DAGs from the host so you can iterate without rebuilding the rock.
-      Anything in /var/lib/airflow/dags will be auto-discovered.
+      Anything in /opt/airflow/dags will be auto-discovered.
   - type: -v
-    value: '/path/to/logs:/var/lib/airflow/logs'
+    value: '/path/to/logs:/opt/airflow/logs'
     description: >
       Persist task logs outside the container (useful for debugging and restarts).
   - type: -v
-    value: '/path/to/airflow.cfg:/var/lib/airflow/airflow.cfg'
+    value: '/path/to/airflow.cfg:/opt/airflow/airflow.cfg'
     description: >
       Inject a custom airflow.cfg instead of the auto-generated one from
       `airflow standalone`.
