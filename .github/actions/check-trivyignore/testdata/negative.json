@@ -1,0 +1,140 @@
+{
+    "invocation": {
+      "parameters": null,
+      "uri": "",
+      "event_id": "",
+      "builder.id": ""
+    },
+    "scanner": {
+      "uri": "pkg:github/aquasecurity/trivy@0.56.1",
+      "version": "0.56.1",
+      "db": {
+        "uri": "",
+        "version": ""
+      },
+      "result": {
+        "SchemaVersion": 2,
+        "CreatedAt": "2025-08-22T10:11:55.218958107Z",
+        "ArtifactName": "test-img:test",
+        "ArtifactType": "container_image",
+        "Metadata": {
+          "OS": {
+            "Family": "ubuntu",
+            "Name": "24.04"
+          },
+          "ImageID": "sha256:793be522cc7221bc0ad7846cc73082735a471a6d3d3bde0de5b3dfc97c9d05d5",
+          "DiffIDs": [
+            "sha256:9d592720ced4a7a4ddf16adef8a126e4c8c49f22114de769343320b37674321e",
+            "sha256:e3ed94f10601441a29c368f421da19caf9ca4f8795c1dcbbef9fa644540f595b",
+            "sha256:c23b7ec3be77a85329f53c97fe6ec2db619e118f1ba11e04f453601af206a6a2",
+            "sha256:6ad963bbe20178df6de862ed55b0adbd9109af87a1ba58374c5f0ff6d600999a"
+          ],
+          "RepoTags": [
+            "test-img:test"
+          ],
+          "ImageConfig": {
+            "architecture": "amd64",
+            "created": "2025-08-19T14:37:01.23577114Z",
+            "history": [
+              {
+                "created": "2025-08-19T14:36:58.563415611Z",
+                "created_by": "/bin/sh -c #(nop)  ARG RELEASE",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-19T14:36:58.588740408Z",
+                "created_by": "/bin/sh -c #(nop)  ARG LAUNCHPAD_BUILD_ARCH",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-19T14:36:58.62539552Z",
+                "created_by": "/bin/sh -c #(nop)  LABEL org.opencontainers.image.ref.name=ubuntu",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-19T14:36:58.656408981Z",
+                "created_by": "/bin/sh -c #(nop)  LABEL org.opencontainers.image.version=24.04",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-19T14:37:00.843597813Z",
+                "created_by": "/bin/sh -c #(nop) ADD file:e67907c77897d27192314f6c4fa0112b6f7dce3e127500516535cc50fe736c92 in / "
+              },
+              {
+                "created": "2025-08-19T14:37:01.23577114Z",
+                "created_by": "/bin/sh -c #(nop)  CMD [\"/bin/bash\"]",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-22T10:09:48.707261826Z",
+                "created_by": "umoci raw add-layer --image /root/images/litmuschaos-frontend:rockcraft-base /root/images/.temp_layer.411.tar --tag 3.19.0"
+              },
+              {
+                "created": "2025-08-22T10:09:48.849703258Z",
+                "created_by": "umoci config",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-22T10:09:48.856653175Z",
+                "created_by": "umoci raw add-layer --image /root/images/litmuschaos-frontend:3.19.0 /root/images/.temp_layer.411.tar --tag 3.19.0"
+              },
+              {
+                "created": "2025-08-22T10:09:48.862683403Z",
+                "created_by": "umoci config",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-22T10:09:48.86618673Z",
+                "created_by": "umoci config",
+                "empty_layer": true
+              },
+              {
+                "created": "2025-08-22T10:09:48.871037348Z",
+                "created_by": "umoci raw add-layer --image /root/images/litmuschaos-frontend:3.19.0 /root/images/.temp_layer.control_data.411.tar"
+              }
+            ],
+            "os": "linux",
+            "rootfs": {
+              "type": "layers",
+              "diff_ids": [
+                "sha256:9d592720ced4a7a4ddf16adef8a126e4c8c49f22114de769343320b37674321e",
+                "sha256:e3ed94f10601441a29c368f421da19caf9ca4f8795c1dcbbef9fa644540f595b",
+                "sha256:c23b7ec3be77a85329f53c97fe6ec2db619e118f1ba11e04f453601af206a6a2",
+                "sha256:6ad963bbe20178df6de862ed55b0adbd9109af87a1ba58374c5f0ff6d600999a"
+              ]
+            },
+            "config": {
+              "Entrypoint": [
+                "/usr/bin/pebble",
+                "enter"
+              ],
+              "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+              ],
+              "Labels": {
+                "org.opencontainers.image.base.digest": "b40d671bf589b6e5eaaceae32d7eb325a69182963519760571161df996d0d62a",
+                "org.opencontainers.image.created": "2025-08-22T10:09:48.859563+00:00",
+                "org.opencontainers.image.description": "Petrified litmuschaos-frontend.\n\nLitmus frontend.",
+                "org.opencontainers.image.licenses": "Apache-2.0",
+                "org.opencontainers.image.ref.name": "litmuschaos-frontend",
+                "org.opencontainers.image.title": "litmuschaos-frontend",
+                "org.opencontainers.image.version": "3.19.0"
+              }
+            }
+          }
+        },
+        "Results": [
+          {
+            "Target": "test-img:test (ubuntu 24.04)",
+            "Class": "os-pkgs",
+            "Type": "ubuntu",
+            "Packages": []
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "scanStartedOn": "2025-08-22T10:11:55.254232257Z",
+      "scanFinishedOn": "2025-08-22T10:11:55.254232257Z"
+    }
+  }
