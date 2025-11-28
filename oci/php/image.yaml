@@ -10,6 +10,7 @@ upload:
           - edge
           - beta
           - candidate
+          - stable
   - source: canonical/php-rock
     commit: c88fad02db7c16f2a44311dd37c6905466ca0545
     directory: php/8.4-25.04
@@ -20,3 +21,4 @@ upload:
           - edge
           - beta
           - candidate
+          - stable
