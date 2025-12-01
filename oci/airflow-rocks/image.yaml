@@ -2,7 +2,7 @@ version: 1
 upload:
   - source: canonical/airflow-rocks
     commit: 36693a325e87d425b2b4c126bbd91899f9d9d8eb
-    directory: airflow-rocks/3.1.0
+    directory: 3.1.0
     release:
       3-24.04:
         end-of-life: '2025-12-12T00:00:00Z'
