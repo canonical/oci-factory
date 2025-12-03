@@ -1,27 +1,54 @@
-# === Ubuntu base CVEs (no upstream fix available in 24.04 images) ===
-# openssl/libssl3 - DHE key validation inefficiency; not exploitable inside Airflow runtime
-CVE-2024-41996
-# linux-pam - incomplete fix for CVE-2025-6020; privilege escalation requires local shell access
-CVE-2025-8941
-# shadow-utils - subuid range conflict; not relevant to immutable container users
-CVE-2024-56433
-# tar - path traversal requires user-supplied tar extraction; Airflow does not extract tar files
-CVE-2025-45582
-# coreutils chroot --userspec escape; no chroot used inside Airflow runtime
-CVE-2016-2781
-# gpgv compressed packet DoS; gpgv is never invoked by Airflow
-CVE-2022-3219
+# Upstream CVEs
 
-
-
-# === Python ecosystem (unused or unexploitable in Airflow runtime) ===
-# ray - arbitrary code execution via job submission API; ray is bundled but unused by Airflow
-CVE-2023-48022
-
-# === Python tooling (not used at runtime) ===
-# pip - symlink validation during tar extraction; pip not invoked inside running container
-CVE-2025-8869
-# werkzeug DoS via crafted multipart form; not used by Airflow webserver
+# werkzeug (pip) : Werkzeug DoS: High resource usage when parsing multipart/form-data containing a large part with CR/LF character at the beginning 
 CVE-2023-46136
-# flask-appbuilder password reset bypass; Airflow bundles patched UI routes
+# cryptography (pip)  : Vulnerable OpenSSL included in cryptography wheels 
+CVE-2024-12797
+# werkzeug (pip) : Werkzeug debugger vulnerable to remote execution when interacting with attacker controlled domain 
+CVE-2024-34069
+# werkzeug (pip) : Werkzeug safe_join not safe on Windows 
+CVE-2024-49766
+# org.apache.commons:commons-lang3 : Apache Commons Lang is vulnerable to Uncontrolled Recursion when processing long inputs 
+CVE-2025-48924
+# aiohttp (pip) : AIOHTTP is vulnerable to HTTP Request/Response Smuggling through incorrect parsing of chunked trailer sections 
+CVE-2025-53643
+# flask-appbuilder (pip) : Flask App Builder has an Authentication Bypass vulnerability when using non AUTH_DB methods
 CVE-2025-58065
+# apache-airflow(pip) : Apache Airflow `/api/v2/dagReports` executes DAG Python in API
+CVE-2025-62402
+# apache-airflow (pip) : Apache Airflow's create action can upsert existing Pools/Connections/Variables
+CVE-2025-62503
+# ray (pip) : Ray is vulnerable to Critical RCE via Safari & Firefox Browsers through DNS Rebinding Attack 
+CVE-2025-62593
+# aiomysql (pip) : aiomysql allows arbitrary access to client files through vulnerability of a malicious MySQL server )
+CVE-2025-62611
+# starlette (pip) : Starlette vulnerable to O(n^2) DoS via Range header merging in ``starlette.responses.FileResponse`` 
+CVE-2025-62727
+# Werkzeug (pip) : Werkzeug safe_join() allows Windows special device names
+CVE-2025-66221
+# pip (pip) :  pip's fallback tar extraction doesn't check symbolic links point to extraction directory
+CVE-2025-8869
+# werkzeug, Quart (pip) : Werkzeug possible resource exhaustion when parsing file data in forms 
+CVE-2024-49767
+# cryptography (pip) : pyca/cryptography has a vulnerable OpenSSL included in cryptography wheels
+GHSA-h4gh-qq45-vh27
+
+
+# CVE Pending Review https://github.com/advisories/GHSA-vf3q-65gx-324p
+CVE-2016-2781
+# CVE Pending Review https://github.com/advisories/GHSA-pf7g-97vv-qmrr
+CVE-2022-3219
+# CVE Pending Review https://github.com/advisories/GHSA-6wgj-66m2-xxp2
+CVE-2023-48022
+# CVE Pending Review https://github.com/advisories/GHSA-w2gx-4fh8-wm9f
+CVE-2024-2236
+# CVE Pending Review https://github.com/advisories/GHSA-h964-f4gx-gw3x
+CVE-2024-41996
+# CVE Pending Review https://github.com/advisories/GHSA-7683-vm2j-m4cc
+CVE-2024-56433
+# CVE Pending Review https://github.com/advisories/GHSA-gx77-xgc2-4888
+CVE-2025-34351
+# CVE Pending Review https://github.com/advisories/GHSA-f93m-9mq4-2fjj
+CVE-2025-45582
+# CVE Pending review https://github.com/advisories/GHSA-hqqx-rjqh-53c2
+CVE-2025-8941
