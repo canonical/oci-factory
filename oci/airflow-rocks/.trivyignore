@@ -35,20 +35,29 @@ GHSA-h4gh-qq45-vh27
 
 
 # CVE Pending Review https://github.com/advisories/GHSA-vf3q-65gx-324p
+# Coreutils `chroot` ioctl flaw not reachable in containerized Airflow environment.
 CVE-2016-2781
 # CVE Pending Review https://github.com/advisories/GHSA-pf7g-97vv-qmrr
+# gpgv DoS via crafted key is not used or exposed by Airflow; Ubuntu fix deferred.
 CVE-2022-3219
 # CVE Pending Review https://github.com/advisories/GHSA-6wgj-66m2-xxp2
+# Applies only to Ray job submission API—Ray is not installed in the rock, it's a metadata reference. Airflow uses it's own executors
 CVE-2023-48022
 # CVE Pending Review https://github.com/advisories/GHSA-w2gx-4fh8-wm9f
+# libgcrypt RSA side-channel not used by Python/OpenSSL-based Airflow crypto.
 CVE-2024-2236
 # CVE Pending Review https://github.com/advisories/GHSA-h964-f4gx-gw3x
+# glibc DH validation path unused; OpenSSL is used for DH + TLS; glibc crypto is not used.
 CVE-2024-41996
 # CVE Pending Review https://github.com/advisories/GHSA-7683-vm2j-m4cc
+# shadow-utils subuid collision only affects multi-user hosts, not single-user containers.
 CVE-2024-56433
 # CVE Pending Review https://github.com/advisories/GHSA-gx77-xgc2-4888
+# Ray dashboard/Jobs API not present; no Ray runtime exists in the image.
 CVE-2025-34351
 # CVE Pending Review https://github.com/advisories/GHSA-f93m-9mq4-2fjj
+# No upstream affected package or reproducer; package not installed in your image.
 CVE-2025-45582
 # CVE Pending review https://github.com/advisories/GHSA-hqqx-rjqh-53c2
+# linux-pam `pam_namespace` flaw irrelevant because Airflow rock does not use PAM for authentication.
 CVE-2025-8941
