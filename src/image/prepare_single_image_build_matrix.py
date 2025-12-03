@@ -72,7 +72,7 @@ class RevisionDataSchemaFilter(RevisionDataSchema):
     model_config = pydantic.ConfigDict(extra="ignore")
 
     @pydantic.model_validator(mode="before")
-    def _warn_extra_fields(cls, data: Any) -> Any:
+    def _warn_extra_fields(cls, data: Any) -> Any:  # pylint: disable=no-self-argument
         for extra_field in data.keys() - cls.model_fields.keys():
             logger.warning(
                 f'Field "{extra_field}" removed from {data["name"]} revision data'
@@ -216,12 +216,25 @@ def find_eol_exceed_base_eol(builds: list[dict[str, Any]]):
     tracks_eol_exceed_base_eol = []
     for build in builds:
         if "release" in build:
-            for track, track_value, in build["release"].items():
+            for (
+                track,
+                track_value,
+            ) in build["release"].items():
                 if eols := track_eol_exceeds_base_eol(
-                    track, track_value["end-of-life"], build["base"] if "base" in build else None
+                    track,
+                    track_value["end-of-life"],
+                    build["base"] if "base" in build else None,
                 ):
                     tracks_eol_exceed_base_eol.append(eols)
     return tracks_eol_exceed_base_eol
+
+
+def flatten_ignored_vulnerabilities(builds: list[dict[str, Any]]) -> None:
+    """Flatten ignored-vulnerabilities field for GH Actions matrix."""
+    for build in builds:
+        build["ignored-vulnerabilities"] = " ".join(
+            build.get("ignored-vulnerabilities", [])
+        )
 
 
 def main():
@@ -266,6 +279,8 @@ def main():
             # the workflow GH matrix has a problem parsing nested JSON dicts
             # so let's remove this field since we don't need it for the builds themselves
             del build["release"]
+
+    flatten_ignored_vulnerabilities(builds)
 
     write_github_output(release, builds, args.revision_data_dir)
 

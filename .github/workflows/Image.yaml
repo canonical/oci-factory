@@ -190,7 +190,8 @@ jobs:
     uses: ./.github/workflows/Test-Rock.yaml
     with:
       oci-archive-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}"
-      trivyignore-path: "oci/${{ matrix.name }}/.trivyignore"
+      trivyignore-path: ${{ matrix.ignored-vulnerabilities == '' && format('oci/{0}/.trivyignore', matrix.name) || '' }}
+      ignored-vulnerabilities: ${{ matrix.ignored-vulnerabilities }}
     secrets: inherit
 
   prepare-upload:
@@ -468,7 +469,9 @@ jobs:
         run: |
           jq --arg base "${{ matrix.base }}" \
             --arg digest "${{ steps.upload-image.outputs.digest }}" \
-            '. + {base: $base, digest: $digest}' <<< '${{ toJSON(matrix) }}' > build_metadata.json
+            --arg ignored_vulnerabilities "${{ matrix.ignored-vulnerabilities }}" \
+            '. + {base: $base, digest: $digest, "ignored-vulnerabilities": $ignored_vulnerabilities}' \
+            <<< '${{ toJSON(matrix) }}' > build_metadata.json
           ./src/uploads/upload_to_swift.sh \
             ${{ matrix.name }} \
             ${{ matrix.track }} \
