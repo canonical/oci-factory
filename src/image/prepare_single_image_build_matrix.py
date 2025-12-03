@@ -229,7 +229,7 @@ def find_eol_exceed_base_eol(builds: list[dict[str, Any]]):
     return tracks_eol_exceed_base_eol
 
 
-def flatten_ignored_vulnerabilities(builds: list[dict[str, Any]]):
+def flatten_ignored_vulnerabilities(builds: list[dict[str, Any]]) -> None:
     """Flatten ignored-vulnerabilities field for GH Actions matrix."""
     for build in builds:
         build["ignored-vulnerabilities"] = " ".join(
