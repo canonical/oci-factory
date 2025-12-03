@@ -297,7 +297,7 @@ jobs:
             trivyignore_path="${{ env.ROCK_REPO_DIR }}/${trivyignore_path}"
           fi
 
-          if [[ -z "${trivyignore_path}" ]]; then
+          if [[ ! -s "${trivyignore_path}" ]]; then
             trivyignore_path=.trivyignore
             echo "${{ inputs.ignored-vulnerabilities }}" | tr ' ' '\n' > "$trivyignore_path"
           fi
