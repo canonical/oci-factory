@@ -29,6 +29,10 @@ on:
         description: "Directory in repository where to find the rockcraft.yaml file."
         type: string
         required: true
+      pro-services:
+        description: "The pro services to enable during the build. Requires pro-token to be set."
+        type: string
+        default: ''
 
       # Parameters for multi-arch builds
       # specifying the runners with size label to prevent from running on private/tiobe runners
@@ -40,10 +44,6 @@ on:
         description: "Enable fallback to Launchpad build when runners for target arch are not available."
         type: boolean
         default: false
-      pro-services:
-        description: "The pro services to enable during the build. Requires pro-token to be set."
-        type: string
-        default: ''
     
     secrets:
       # Authentication parameters
@@ -53,6 +53,7 @@ on:
         description: "GitHub token for pulling a Rockcraft project from a private repository."
       pro-token:
         description: "The Ubuntu Pro token. Required for building Ubuntu Pro based rocks."
+
 env:
   ROCK_REPO_DIR: rock-repo  # path where the image repo is cloned into
   ROCK_CI_FOLDER: ci-rocks  # path of uploaded/downloaded artifacts
@@ -173,6 +174,14 @@ jobs:
           mkdir -p ${{ env.ROCK_CI_FOLDER }} && cp ${{ steps.rockcraft.outputs.rock }} "$_"
           echo "filename=$(basename ${{ steps.rockcraft.outputs.rock }})" >> $GITHUB_OUTPUT
 
+      - name: Encrypting Artifacts
+        if: ${{ inputs.pro-services != '' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: encrypt
+          input-path: ${{ env.ROCK_CI_FOLDER }}
+          passphrase: ${{ secrets.pro-token }}
+
       - name: Uploading Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -259,15 +268,31 @@ jobs:
           path: ${{ env.ROCK_CI_FOLDER }}
           pattern: ${{ inputs.oci-archive-name }}-*
 
+      - name: Decrypt Artifacts
+        if: ${{ inputs.pro-services != '' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: decrypt
+          input-path: ${{ env.ROCK_CI_FOLDER }}
+          passphrase: ${{ secrets.pro-token }}
+
       - name: Assembling Multi Arch rock
         run: |
           src/build_rock/assemble_rock/assemble.sh \
             -n "${{ inputs.oci-archive-name }}" \
             -d "${{ env.ROCK_CI_FOLDER }}"
 
+      - name: Encrypt Artifact
+        if: ${{ inputs.pro-services != '' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: encrypt
+          input-path: ${{ inputs.oci-archive-name }}
+          passphrase: ${{ secrets.pro-token }}
+
       - name: Uploading Multi Arch rock
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.oci-archive-name }}
-          path: ${{ inputs.oci-archive-name }}
+          path: ${{ inputs.pro-services != '' && '${{ inputs.oci-archive-name }}.gpg' || inputs.oci-archive-name }}
           if-no-files-found: error
