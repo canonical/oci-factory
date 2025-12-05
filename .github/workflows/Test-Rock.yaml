@@ -100,7 +100,9 @@ jobs:
           name: ${{ inputs.oci-archive-name }}
 
       - name: Decrypt Rock
-        if: ${{ secrets.pro-token != '' }}
+        env:
+          UBUNTU_PRO_TOKEN: ${{ secrets.pro-token }}
+        if: ${{ env.UBUNTU_PRO_TOKEN != '' }}
         uses: ./.github/actions/crypt-artifact
         with:
           mode: decrypt
