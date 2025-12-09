@@ -1,7 +1,7 @@
 version: 1
 upload:
   - source: canonical/airflow-rocks
-    commit: 1009f4b949187927919d4efbb3e5b3f0934b67e8
+    commit: 35411bc38c1807de1e36bad3c7eb0bf086f53893
     directory: 3.1.0
     release:
       3-24.04:

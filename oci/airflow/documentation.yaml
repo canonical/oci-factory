@@ -1,8 +1,8 @@
 version: 1
 
-application: apache airflow
+application: airflow
 description: >
-  Apache Airflow is a platform to programmatically author, schedule, and monitor workflows. This rock ("airflow-rock") packages Airflow built from source on Ubuntu with Python and a wide set of providers.
+  Apache Airflow is a platform to programmatically author, schedule, and monitor workflows. This rock ("airflow") packages Airflow built from source on Ubuntu with Python and a wide set of providers.
 
 docker:
   parameters:
@@ -13,15 +13,15 @@ docker:
   access: |
     ### Entrypoint and Pebble
 
-    The rock uses [Pebble](https://documentation.ubuntu.com/pebble/), the same lightweight service manager. Pebble is PID 1 in the container, and it supervises the Airflow service defined in the rock.
+    The rock uses [Pebble](https://documentation.ubuntu.com/pebble/), a lightweight service manager. Pebble is PID 1 in the container, and it supervises the Airflow service defined in the rock.
 
     #### Airflow service
 
     The `airflow` service is configured with:
-      command: `/usr/bin/airflow standalone`
+      command: ```/usr/bin/airflow standalone```
       startup: enabled
 
-    `airflow standalone` initializes a local  metadata DB, creates a default admin user, and starts the webserver, scheduler, and other core components in one process group (intended for development).
+    `airflow standalone` initializes a local metadata DB, creates a default admin user, and starts the webserver, scheduler, and other core components in one process group (intended for development).
 
     #### Configuration & State
 
