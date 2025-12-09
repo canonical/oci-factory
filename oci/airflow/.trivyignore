@@ -26,6 +26,10 @@ CVE-2025-62611
 CVE-2025-62727
 # Werkzeug (pip) : Werkzeug safe_join() allows Windows special device names
 CVE-2025-66221
+# urllib3 (pip) : urllib3 allows an unbounded number of links in the decompression chain
+CVE-2025-66418
+# urllib3(pip) : urllib3 streaming API improperly handles highly compressed data
+CVE-2025-66471
 # pip (pip) :  pip's fallback tar extraction doesn't check symbolic links point to extraction directory
 CVE-2025-8869
 # werkzeug, Quart (pip) : Werkzeug possible resource exhaustion when parsing file data in forms 
@@ -33,7 +37,12 @@ CVE-2024-49767
 # cryptography (pip) : pyca/cryptography has a vulnerable OpenSSL included in cryptography wheels
 GHSA-h4gh-qq45-vh27
 
-
+# CVE Pending Review https://github.com/advisories/GHSA-5mh9-3jwc-rp59
+# Affects Go toolchain packages (golang-1.24/1.25) that are not present in Ubuntu 24.04–based Airflow rock.
+CVE-2025-61727
+# CVE Pending Review https://github.com/advisories/GHSA-7c64-f9jr-v9h2
+# Affects only the Go toolchain packages golang-1.24 and golang-1.25, which are not included in Ubuntu 24.04
+CVE-2025-61729
 # CVE Pending Review https://github.com/advisories/GHSA-vf3q-65gx-324p
 # Coreutils `chroot` ioctl flaw not reachable in containerized Airflow environment.
 CVE-2016-2781
@@ -52,9 +61,6 @@ CVE-2024-41996
 # CVE Pending Review https://github.com/advisories/GHSA-7683-vm2j-m4cc
 # shadow-utils subuid collision only affects multi-user hosts, not single-user containers.
 CVE-2024-56433
-# CVE Pending Review https://github.com/advisories/GHSA-gx77-xgc2-4888
-# Ray dashboard/Jobs API not present; no Ray runtime exists in the image.
-CVE-2025-34351
 # CVE Pending Review https://github.com/advisories/GHSA-f93m-9mq4-2fjj
 # No upstream affected package or reproducer; package not installed in your image.
 CVE-2025-45582
