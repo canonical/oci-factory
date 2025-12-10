@@ -18,8 +18,10 @@ docker:
     #### Airflow service
 
     The `airflow` service is configured with:
-      command: ```/usr/bin/airflow standalone```
+      ```
+      command: /usr/bin/airflow standalone
       startup: enabled
+      ```
 
     `airflow standalone` initializes a local metadata DB, creates a default admin user, and starts the webserver, scheduler, and other core components in one process group (intended for development).
 
