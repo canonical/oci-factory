@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 
 source $(dirname $0)/../../../src/shared/logs.sh
 
