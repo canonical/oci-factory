@@ -10,6 +10,8 @@ passphrase=$3
 HASHED_PASSPHRASE=$(echo -n "$passphrase" | sha256sum | cut -d' ' -f1)
 
 for FILE in $input_path/* $input_path; do
+    [ -f "$FILE" ] || continue  # skip if not a regular file
+
     if [ $mode = "encrypt" ]; then
         gpg --batch --yes --passphrase "$HASHED_PASSPHRASE" -c --cipher-algo AES256 -o "${FILE}.gpg" "$FILE"
         rm -f "$FILE"
