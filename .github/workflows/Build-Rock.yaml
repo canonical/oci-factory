@@ -267,6 +267,7 @@ jobs:
         with:
           path: ${{ env.ROCK_CI_FOLDER }}
           pattern: ${{ inputs.oci-archive-name }}-*
+          merge-multiple: true
 
       - name: Decrypt Artifacts
         if: ${{ inputs.pro-services != '' }}
