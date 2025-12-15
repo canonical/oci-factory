@@ -272,6 +272,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.oci-archive-name }}
+      
+      - name: Decrypt Rock
+        env:
+          UBUNTU_PRO_TOKEN: ${{ secrets.pro-token }}
+        if: ${{ env.UBUNTU_PRO_TOKEN != '' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: decrypt
+          passphrase: ${{ secrets.pro-token }}
+          input-path: ${{ inputs.oci-archive-name }}.gpg
 
       - name: Configure Trivy
         id: configure-trivy
