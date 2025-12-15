@@ -107,7 +107,7 @@ jobs:
         with:
           mode: decrypt
           passphrase: ${{ secrets.pro-token }}
-          input-path: ${{ inputs.oci-archive-name }}
+          input-path: ${{ inputs.oci-archive-name }}.gpg
 
       - name: Unpack Rock
         run: |
