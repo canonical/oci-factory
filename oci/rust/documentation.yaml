@@ -21,7 +21,7 @@ debug:
     To get a shell inside the container:
 
     ```bash
-    docker run -it --rm ubuntu/rust:<version>_edge exec sh
+    docker run -it --rm ubuntu/rust:1.75-24.04_edge exec sh
     ```
 
     To mount a directory with your Rust project and build it with Cargo:
