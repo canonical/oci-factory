@@ -38,5 +38,3 @@ override_tracks:
   # Tracks with different tag than build-base
   1.84-25.04:
     end-of-life: '2026-01-15T00:00:00Z'
-  1.75-24.04:
-    end-of-life: '2029-05-31T00:00:00Z'
