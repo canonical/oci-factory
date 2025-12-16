@@ -7,7 +7,7 @@ description: |
     performance and reliability.
 
     This image is a chiselled Ubuntu rock. It contains a minimal Rust toolchain
-    and Cargo build system which can be used to build a wide variety of Rust
+    and the Cargo build system which can be used to build a wide variety of Rust
     applications. It also includes a minimal GCC toolchain to custom build
     steps in Cargo builds.
     
