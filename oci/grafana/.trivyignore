@@ -59,3 +59,15 @@ CVE-2023-2801
 CVE-2023-3128
 # github.com/grafana/grafana - grafana: Cross Site Scripting in Grafana
 CVE-2025-6023
+# github.com/grafana/grafana-plugin-sdk-go - grafana-plugin-sdk-go: Information Leakage in grafana-plugin-sdk-go
+CVE-2024-8986
+# github.com/go-git/go-git/v5 - go-git: argument injection via the URL field
+CVE-2025-21613
+# github.com/go-git/go-git/v5 - go-git: go-git clients vulnerable to DoS via maliciously crafted Git server replies
+CVE-2025-21614
+# golang.org/x/oauth2 - golang.org/x/oauth2/jws: Unexpected memory consumption during token parsing in golang.org/x/oauth2/jws
+CVE-2025-22868
+# golang.org/x/crypto - golang.org/x/crypto/ssh: Denial of Service in the Key Exchange of golang.org/x/crypto/ssh
+CVE-2025-22869
+# github.com/golang-jwt/jwt/v4 - golang-jwt/jwt: jwt-go allows excessive memory allocation during header parsing
+CVE-2025-30204

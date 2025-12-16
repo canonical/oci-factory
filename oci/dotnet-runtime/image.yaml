@@ -1,7 +1,7 @@
 version: 1
 upload:
   - source: canonical/dotnet-runtime-rock
-    commit: 10d8acfff0790cb0ffd37769ad2134850163e60a
+    commit: e9361aa184b2a0c00d1e79c9a4da93ce552405e4
     directory: dotnet-runtime-rock/9.0-25.04
     release:
       9.0-25.04:

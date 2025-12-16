@@ -15,3 +15,9 @@ CVE-2024-24790
 # Patched version released in Ubuntu archive
 # https://ubuntu.com/security/CVE-2024-34156
 CVE-2024-34156
+
+# Golang CVE golang pulled from ubuntu archive
+# stdlib: Incorrect results returned from Rows.Scan in database/sql - not affected
+CVE-2025-47907
+# stdlib - If the PATH environment variable contains paths which are executables
+CVE-2025-47906

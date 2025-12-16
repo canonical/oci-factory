@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Dict, List, Literal, Optional, Any
 
 
-LATEST_SCHEMA_VERSION = 1
+LATEST_SCHEMA_VERSION = 2
 KNOWN_RISKS_ORDERED = ["stable", "candidate", "beta", "edge"]
 
 
@@ -42,6 +42,9 @@ class ImageUploadSchema(pydantic.BaseModel):
     source: str
     commit: str
     directory: str
+    ignored_vulnerabilities: Optional[list[str]] = pydantic.Field(
+        default_factory=list, alias="ignored-vulnerabilities"
+    )
     release: Optional[Dict[str, ImageUploadReleaseSchema]] = None
 
     model_config = pydantic.ConfigDict(extra="forbid")
@@ -98,3 +101,29 @@ class ImageSchema(pydantic.BaseModel):
                 )
             unique_triggers.add(trigger)
         return v
+
+    @pydantic.field_validator("version")
+    def _ensure_valid_version_number(cls, value: int) -> int:
+        """Check that the schema version is supported."""
+        error = (
+            f"image.yaml schema version {value} is not supported. "
+            f"Supported version is {','.join([str(i) for i in range(1, LATEST_SCHEMA_VERSION+1)])}."
+        )
+        if int(value) > LATEST_SCHEMA_VERSION:
+            raise ImageTriggerValidationError(error)
+
+        return value
+
+    @pydantic.model_validator(mode="after")
+    def _ensure_ignored_vuln_only_in_v2_and_later(
+        cls, data: "ImageSchema"
+    ) -> "ImageSchema":
+        if data.version and int(data.version) < 2:
+            if data.upload:
+                for upload in data.upload:
+                    if upload.ignored_vulnerabilities:
+                        raise ImageTriggerValidationError(
+                            '"ignored-vulnerabilities" field is not supported in '
+                            f"image.yaml schema version {data.version}."
+                        )
+        return data

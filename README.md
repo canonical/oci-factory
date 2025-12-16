@@ -204,6 +204,7 @@ Having said that this trigger's syntax is as follows:
 | upload[*].source | True | str | Git repository hosting the image's project. |
 | upload[*].commit | True | str | Specific reference in the source, where to run the build from. |
 | upload[*].directory | True | str | Path to the "rockcraft.yaml". Where the build will run from. |
+| upload[*].ignored-vulnerabilities | False | conlist[str, unique_items=true] | List of vulnerability IDs (CVE or GHSA) to ignore during vulnerability scanning. These IDs will be added to the image's build metadata for future reference. When specifying this field, the `.trivyignore` file will be ignored. |
 | upload[*].release | False | Dict[Dict[str, Any]] | Immediately release this (yet unknown) revision to the given channels. Same as using `--release <channels>` with `rockcraft upload`. |
 | upload[*].release.\<track\> | True | Dict[str, Any] | Track to release this revision to. Canonical track `<version>-<base>` MUST be explicit, always! |
 | upload[*].release.\<track\>.end-of-life | True* | str | Same as `release.<track>` above. |
@@ -489,7 +490,8 @@ needed.
 |`test-efficiency`| False | bool | Enable Dive image efficiency test. Enabled by default. |
 |`test-vulnerabilities`| False | bool | Enable Trivy vulnerability test. Enabled by default. |
 |`vulnerability-report-artifact-name`| False | str | Custom filename for Trivy vulnerability report. |
-|`trivyignore-path`| False | str | Optional path to `.trivyignore` file used in vulnerability scan. |
+|`trivyignore-path`| False | str | Optional path to `.trivyignore` file used in vulnerability scan. When specifying this input, the `ignored-vulnerabilities` must be left empty. |
+|`ignored-vulnerabilities`| False | JSON str | Space separated list of vulnerability IDs (CVE or GHSA) to ignore during vulnerability scanning. When specifying this input, the `trivyignore-path` must be left empty. |
 |`test-malware`| False | bool | Enable ClamAV malware test. Enabled by default. |
 
 **Workflow Secrets:**
