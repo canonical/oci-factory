@@ -1,0 +1,22 @@
+name: Artifact Crypto Handler
+description: 'Encrypt and decrypt artifacts using GPG symmetric encryption'
+
+
+inputs:
+  input-path:
+    description: 'Path where the artifact is stored'
+    required: true
+  mode:
+    description: 'Operation mode: encrypt or decrypt'
+    required: true
+  passphrase:
+    description: 'Passphrase for GPG symmetric encryption/decryption'
+    required: true
+
+runs:
+  using: "composite" 
+  steps:
+    - name: Crypto Operation
+      shell: bash
+      id: crypto
+      run: ./.github/actions/crypt-artifact/crypt-artifact.sh ${{ inputs.mode }} ${{ inputs.input-path }} ${{ inputs.passphrase }}

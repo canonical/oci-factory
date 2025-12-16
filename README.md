@@ -441,6 +441,7 @@ many cases, these repositories are the same, meaning both `host-github-token` an
 | `rockfile-directory` | True | str | Directory in repository where to find the rockcraft.yaml file. |
 | `arch-map` | False | JSON str | JSON string mapping target architecture to runners. |
 | `lpci-fallback` | False | bool | Enable fallback to Launchpad build when runners for target arch are not available. |
+| `pro-services` | False | str | Comma separated list of the pro services to enable when building. |
 
 **Workflow Secrets:**
 

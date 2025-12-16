@@ -37,6 +37,10 @@ on:
         description: "Value to provide to git lfs pull --include when downloading LFS files. If this is not provided then all LFS files are pulled"
         type: string
         default: ''
+      pro-services:
+        description: "The pro services to enable during the build. Requires pro-token to be set."
+        type: string
+        default: ''
 
       # Parameters for multi-arch builds
       # specifying the runners with size label to prevent from running on private/tiobe runners
@@ -60,6 +64,9 @@ on:
         description: "Deprecated: GitHub token from repository executing this workflow."
       source-github-token:
         description: "GitHub token for pulling a Rockcraft project from a private repository."
+      pro-token:
+        description: "The Ubuntu Pro token. Required for building Ubuntu Pro based rocks."
+
 env:
   ROCK_REPO_DIR: rock-repo  # path where the image repo is cloned into
   ROCK_CI_FOLDER: ci-rocks  # path of uploaded/downloaded artifacts
@@ -80,6 +87,14 @@ jobs:
         if: ${{ env.HOST_GITHUB_TOKEN != '' }}
         run: |
           echo "::warning:: 'host-github-token' is unused and deprecated. Please remove this secret from the caller workflow."
+      
+      - name: Verify pro build
+        env:
+          UBUNTU_PRO_TOKEN: ${{ secrets.pro-token }}
+        if: ${{ inputs.pro-services != '' && env.UBUNTU_PRO_TOKEN == '' }}
+        run: |
+          echo "Error: 'pro-token' must be provided in order to use 'pro-services'."
+          exit 1
 
       - name: Cloning OCI Factory
         uses: actions/checkout@v5
@@ -146,19 +161,43 @@ jobs:
           lfs: ${{ inputs.lfs }}
           lfs-include: ${{ inputs.lfs-include }}
 
+      - name: Attach pro token
+        if: ${{ inputs.pro-services != '' }}
+        id: attach_pro
+        env:
+          UBUNTU_PRO_TOKEN: ${{ secrets.pro-token }}
+        run: |
+          sudo pro attach --no-auto-enable "$UBUNTU_PRO_TOKEN"
+
       - name: Building Target
         id: rockcraft
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
           test: "${{ inputs.rockcraft-test }}"
+          pro: "${{ inputs.pro-services }}"
           verbosity: debug
+          # TODO remove once the pro feature is merged to stable
+          rockcraft-channel: ${{ inputs.pro-services && 'edge/pro-sources' }}
+      
+      - name: Detach pro token
+        if: always() && steps.attach_pro.outcome == 'success'
+        run: |
+          sudo pro detach --assume-yes
 
       - name: Collecting Artifacts
         id: collect-artifacts
         run: |
           mkdir -p ${{ env.ROCK_CI_FOLDER }} && cp ${{ steps.rockcraft.outputs.rock }} "$_"
           echo "filename=$(basename ${{ steps.rockcraft.outputs.rock }})" >> $GITHUB_OUTPUT
+
+      - name: Encrypting Artifacts
+        if: ${{ inputs.pro-services != '' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: encrypt
+          input-path: ${{ env.ROCK_CI_FOLDER }}
+          passphrase: ${{ secrets.pro-token }}
 
       - name: Uploading Artifacts
         uses: actions/upload-artifact@v4
@@ -253,6 +292,15 @@ jobs:
         with:
           path: ${{ env.ROCK_CI_FOLDER }}
           pattern: ${{ inputs.oci-archive-name }}-*
+          merge-multiple: true
+
+      - name: Decrypt Artifacts
+        if: ${{ inputs.pro-services != '' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: decrypt
+          input-path: ${{ env.ROCK_CI_FOLDER }}
+          passphrase: ${{ secrets.pro-token }}
 
       - name: Assembling Multi Arch rock
         run: |
@@ -260,9 +308,17 @@ jobs:
             -n "${{ inputs.oci-archive-name }}" \
             -d "${{ env.ROCK_CI_FOLDER }}"
 
+      - name: Encrypt Artifact
+        if: ${{ inputs.pro-services != '' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: encrypt
+          input-path: ${{ inputs.oci-archive-name }}
+          passphrase: ${{ secrets.pro-token }}
+
       - name: Uploading Multi Arch rock
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.oci-archive-name }}
-          path: ${{ inputs.oci-archive-name }}
+          path: ${{ inputs.pro-services != '' && format('{0}.gpg', inputs.oci-archive-name) || inputs.oci-archive-name }}
           if-no-files-found: error
