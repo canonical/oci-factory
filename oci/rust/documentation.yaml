@@ -30,7 +30,7 @@ debug:
     docker run -it --rm \
       -v /path/to/your/rust/project:/work \
       --workdir /work \
-      ubuntu/rust:<version>_edge exec \
+      ubuntu/rust:1.75-24.04_edge exec \
       cargo build --release
     ```
 
