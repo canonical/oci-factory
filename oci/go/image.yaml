@@ -1,0 +1,23 @@
+version: 2
+
+upload:
+  - source: canonical/golang-rock
+    directory: go-rock/1.22-24.04
+    commit: 8df1631ffae0eb023fca60379756311d7fd4b952
+    release:
+      1.22-24.04:
+        end-of-life: "2029-05-31T00:00:00Z"
+        risks:
+          - edge
+          - beta
+          - candidate
+          - stable
+    ignored-vulnerabilities:
+      - CVE-2024-24788  # Patched. https://ubuntu.com/security/CVE-2024-24788
+      - CVE-2024-24790  # Patched. https://ubuntu.com/security/CVE-2024-24790
+      - CVE-2024-34156  # Patched. https://ubuntu.com/security/CVE-2024-34156
+      - CVE-2025-47907  # Needs evaluation. https://ubuntu.com/security/CVE-2025-47907
+      - CVE-2025-58183  # Needs evaluation. https://ubuntu.com/security/CVE-2025-58183
+      - CVE-2025-58186  # Needs evaluation. https://ubuntu.com/security/CVE-2025-58186
+      - CVE-2025-58187  # Needs evaluation. https://ubuntu.com/security/CVE-2025-58187
+      - CVE-2025-61729  # Not triaged for golang 1.22 yet. https://ubuntu.com/security/CVE-2025-61729
