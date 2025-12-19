@@ -5,7 +5,7 @@ upload:
     commit: aad63c2e9209a31818daead25bd68de9a0673a0e
     directory: .
     release:
-      4.1.1-24.04:
-        end-of-life: "2031-01-01T00:00:00Z"
+      4.1-24.04:
+        end-of-life: "2029-05-31T00:00:00Z"
         risks:
           - edge
