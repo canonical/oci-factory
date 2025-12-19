@@ -11,9 +11,6 @@ description: |
   Apache Kafka is an open-source distributed event streaming platform for
   high-performance data pipelines, streaming analytics and integrations.
   Read more on the [Apache Kafka website](https://kafka.apache.org/).
-  This image requires the
-  [Apache Zookeeper image](https://hub.docker.com/r/ubuntu/zookeeper)
-  to run properly.
   
   Please note that the images tagged up to 3.1 are Dockerfile-base images,
   whereas from version 3.6.1 onward the images are now rocks. As such the
@@ -21,46 +18,47 @@ description: |
   [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
 
   # Quickstart
-  To deploy a single-broker dockerized version of Kafka, you need to first 
-  deploy the ZooKeeper service and make sure that the ZooKeeper service is 
-  reachable by Kafka. 
-  
-  First, create a network 
+  To deploy a single-broker dockerized version of Kafka, create a network first:
   
   ```bash 
   docker network create -d bridge kafka-network
   ```
-  
-  Deploy the ZooKeeper service
-  
-  ```bash 
-  docker run --detach  --name zookeeper --network kafka-network ubuntu/zookeeper:3.8-22.04_edge
-  ```
-  
-  Finally, deploy the Kafka service
+
+  Now, deploy the Apache Kafka service
   
   ```
-  docker run --detach --name kafka --network kafka-network -p 9092:9092 ubuntu/kafka:3.9.1-22.04_edge
+  docker run --detach \
+    --name kafka \
+    --network kafka-network \
+    -p 9092:9092 \
+    ubuntu/kafka:4.1.1-24.04_edge
   ```
+
+  To activate the Apache Kafka service, you need to format the logs directory
+  and grant its ownership to the `kafka` user:
+
+  ```
+  docker exec kafka \
+    /opt/kafka/bin/kafka-storage.sh format \
+    --standalone \
+    --cluster-id LTYn8gxpTcyYI3JNrkAKQw4862534Z \
+    -c /etc/kafka/server.properties
+
+  docker exec kafka chown -R kafka:kafka /tmp/kraft-combined-logs/
+  ````
 
 # --- USAGE INFORMATION ---
 docker:
   parameters:
     - -p 9092:9092
-  access: Access your Apache Kafka server at `http://localhost:9092`.
+  access: Access your Apache Kafka server at `localhost:9092`.
 parameters:
   - type: -e
     value: 'TZ=UTC'
     description: Timezone.
-  - type: -e
-    value: 'ZOOKEEPER_HOST=<zookeeper>'
-    description: Hostname for the related Zookeeper instance.
-  - type: -e
-    value: 'ZOOKEEPER_PORT=2181'
-    description: Port for the related Zookeeper instance.
   - type: -p
     value: '9092:9092'
-    description: Expose Apache Kafka server on `localhost:2181`.
+    description: Expose Apache Kafka server on `localhost:9092`.
   - type: -v
     value: "/path/to/config/file:/etc/kafka/server.properties"
     description: Local Kafka configuration file.
