@@ -18,3 +18,13 @@ GHSA-9763-4f94-gfch
 CVE-2024-21626
 # golang.org/x/crypto - Applications and libraries which misuse the ServerConfig.PublicKeyCall ...
 CVE-2024-45337
+# golang.org/x/oauth2 - golang.org/x/oauth2/jws: Unexpected memory consumption during token parsing in golang.org/x/oauth2/jws
+CVE-2025-22868
+# github.com/opencontainers/runc - runc: container escape via 'masked path' abuse due to mount race conditions
+CVE-2025-31133
+# github.com/opencontainers/runc - runc: container escape with malicious config due to /dev/console mount and related races
+CVE-2025-52565
+# github.com/opencontainers/runc - runc: opencontainers/selinux: container escape and denial of service due to arbitrary write gadgets and procfs write redirects
+CVE-2025-52881
+# github.com/expr-lang/expr - github.com/expr-lang/expr: Expr: Denial of Service via uncontrolled recursion in expression evaluation
+CVE-2025-68156
