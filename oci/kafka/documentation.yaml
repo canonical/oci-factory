@@ -18,7 +18,7 @@ description: |
   [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
 
   # Quickstart
-  To deploy a single-broker dockerized version of Kafka, create a network first:
+  To deploy a single-broker containerized Kafka, create a network first:
   
   ```bash 
   docker network create -d bridge kafka-network
@@ -41,7 +41,7 @@ description: |
   docker exec kafka \
     /opt/kafka/bin/kafka-storage.sh format \
     --standalone \
-    --cluster-id LTYn8gxpTcyYI3JNrkAKQw4862534Z \
+    --cluster-id $(cat /proc/sys/kernel/random/uuid | tr -d '-' | base64 | cut -b 1-22) \
     -c /etc/kafka/server.properties
 
   docker exec kafka chown -R kafka:kafka /tmp/kraft-combined-logs/
