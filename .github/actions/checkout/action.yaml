@@ -19,6 +19,10 @@ inputs:
     description: "Github token for pulling from private repositories"
     default: ''
     required: false
+  lfs: 
+    description: 'Whether to pull Git LFS files.'
+    default: 'false'
+    required: false
 
 runs:
   using: "composite" 
@@ -56,4 +60,10 @@ runs:
         if ${{ inputs.submodules == 'true' || inputs.submodules == 'recursive' }}
         then
           git submodule update ${{ inputs.submodules == 'recursive' && '--recursive' || '' }}
+        fi
+
+        # pull lfs files if required
+        if ${{ inputs.lfs == 'true' }}
+        then
+          git lfs pull
         fi
