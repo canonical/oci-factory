@@ -33,6 +33,10 @@ on:
         description: "Whether to download Git LFS files from target repo."
         type: boolean
         default: false
+      lfs-include:
+        description: "Value to provide to git lfs pull --include when downloading LFS files."
+        type: string
+        default: ''
 
       # Parameters for multi-arch builds
       # specifying the runners with size label to prevent from running on private/tiobe runners
@@ -95,6 +99,7 @@ jobs:
           submodules: "recursive"
           token: ${{ secrets.source-github-token }}
           lfs: ${{ inputs.lfs }}
+          lfs-include: ${{ inputs.lfs-include }}
 
       - name: Installing Python 
         uses: actions/setup-python@v5
@@ -139,6 +144,7 @@ jobs:
           submodules: "recursive"
           token: ${{ secrets.source-github-token }}
           lfs: ${{ inputs.lfs }}
+          lfs-include: ${{ inputs.lfs-include }}
 
       - name: Building Target
         id: rockcraft
@@ -189,7 +195,6 @@ jobs:
           ref: ${{ inputs.rock-repo-commit }}
           submodules: "recursive"
           token: ${{ secrets.source-github-token }}
-
 
       - name: Building Target
         # TODO: Replace this retry action with bash equivalent for better testing
