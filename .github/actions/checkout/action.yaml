@@ -69,6 +69,9 @@ runs:
         # pull lfs files if required
         if ${{ inputs.lfs == 'true' }}
         then
+          if ! command -v git-lfs &> /dev/null; then
+            sudo apt-get update && sudo apt-get install git-lfs -y
+          fi
           if ! [[ -z "${{ inputs.lfs-include }}" ]]; then
             git lfs pull --include="${{ inputs.lfs-include }}"
           else
