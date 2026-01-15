@@ -32,7 +32,7 @@ runs:
 
     - name: "Install trivy if not present"
       if: ${{ steps.detect-trivy.outputs.trivy-installed == 'false' }}
-      uses: aquasecurity/setup-trivy@v0.2.4
+      uses: aquasecurity/setup-trivy@v0.2.5
 
     - name: "Check unnecessary trivyignore entries"
       shell: bash
