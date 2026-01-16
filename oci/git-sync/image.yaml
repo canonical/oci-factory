@@ -1,15 +1,15 @@
 version: 1
 upload:
   - source: canonical/git-sync-rock
-    commit: 01ce48938495ff5382c937fb7e6fd74d461f141b
+    commit: 8c8be3d7e66f364b06dca570e7d12ebdcd108865
     directory: 4.5.1
     release:
       4-24.04:
-        end-of-life: '2026-04-17T00:00:00Z'
+        end-of-life: '2026-04-18T00:00:00Z'
         risks:
           - stable
       4.5-24.04:
-        end-of-life: '2026-04-17T00:00:00Z'
+        end-of-life: '2026-04-18T00:00:00Z'
         risks:
           - stable
       4.5.1-24.04:
