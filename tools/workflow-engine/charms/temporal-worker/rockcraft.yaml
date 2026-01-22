@@ -1,0 +1,90 @@
+# Copyright 2023 Canonical Ltd.
+# See LICENSE file for licensing details.
+name: temporal-worker
+summary: Temporal worker app
+description: OCI image for Temporal worker app
+version: "1.2.2"
+base: ubuntu@22.04
+build-base: ubuntu@22.04
+license: Apache-2.0
+
+services:
+  temporal-worker:
+    override: replace
+    summary: "temporal worker"
+    startup: disabled
+    command: "./app/scripts/start-worker.sh"
+    environment:
+      TEMPORAL_LOG_LEVEL: "DEBUG"
+      TEMPORAL_HOST: localhost:7233
+      TEMPORAL_NAMESPACE: default
+      TEMPORAL_QUEUE: test-queue
+      TEMPORAL_PROMETHEUS_PORT: "9000"
+      TEMPORAL_TLS_ROOT_CAS: ""
+      TEMPORAL_AUTH_PROVIDER: "" # "google" or "candid"
+      TEMPORAL_ENCRYPTION_KEY: ""
+      TEMPORAL_SENTRY_DSN: ""
+      TEMPORAL_SENTRY_RELEASE: ""
+      TEMPORAL_SENTRY_ENVIRONMENT: ""
+      TEMPORAL_SENTRY_REDACT_PARAMS: "False"
+      TEMPORAL_SENTRY_SAMPLE_RATE: "1.0"
+      TEMPORAL_CANDID_URL: ""
+      TEMPORAL_CANDID_USERNAME: ""
+      TEMPORAL_CANDID_PRIVATE_KEY: ""
+      TEMPORAL_CANDID_PUBLIC_KEY: ""
+      TEMPORAL_OIDC_PROJECT_ID: ""
+      TEMPORAL_OIDC_PRIVATE_KEY_ID: ""
+      TEMPORAL_OIDC_PRIVATE_KEY: ""
+      TEMPORAL_OIDC_CLIENT_EMAIL: ""
+      TEMPORAL_OIDC_CLIENT_ID: ""
+      TEMPORAL_OIDC_AUTH_URI: ""
+      TEMPORAL_OIDC_TOKEN_URI: ""
+      TEMPORAL_OIDC_AUTH_CERT_URL: ""
+      TEMPORAL_OIDC_CLIENT_CERT_URL: ""
+
+      # Vault variables
+      TEMPORAL_VAULT_ADDR: ""
+      TEMPORAL_VAULT_CACERT_BYTES: ""
+      TEMPORAL_VAULT_ROLE_ID: ""
+      TEMPORAL_VAULT_ROLE_SECRET_ID: ""
+      TEMPORAL_VAULT_MOUNT: ""
+      TEMPORAL_VAULT_CERT_PATH: ""
+
+platforms:
+  amd64:
+
+parts:
+  worker-dependencies:
+    plugin: python
+    source: .
+    build-packages:
+      - build-essential
+      - libpq-dev
+      - python3-dev
+    # Uncomment if using a 'requirements.txt' file
+    # python-requirements:
+    #   - requirements.txt
+    stage-packages:
+      - python3.10-venv
+      - coreutils
+      - bash
+      - libpq-dev
+      - python3-dev
+
+  add-ca-certificates:
+    # This installs ca-certificates in the build env to populate our /etc/ssl/certs,
+    # then copies just the ca-certificates.crt to the final image
+    plugin: nil
+    build-packages: 
+      - ca-certificates
+    override-build: |-
+      mkdir -p $CRAFT_PART_INSTALL/etc/ssl/certs/
+      cp /etc/ssl/certs/ca-certificates.crt $CRAFT_PART_INSTALL/etc/ssl/certs/ca-certificates.crt
+
+  worker-app:
+    plugin: dump
+    source: .
+    organize:
+      "*": app/
+    stage:
+      - app
