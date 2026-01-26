@@ -25,15 +25,18 @@ debug:
   text: |
     ### Basic usage
 
-    Generate Prometheus rules from a single SLO spec file:
+    Generate Prometheus rules from a single SLO spec file (input.yaml):
 
     ```bash
+    touch output.yaml
     docker run --name sloth-container \
       -v ./input.yaml:/input.yaml \
       -v ./output.yaml:/output.yaml \
       ubuntu/sloth:0.15-24.04_edge \
       --args sloth generate -i ./input.yaml -o ./output.yaml
     ```
+
+    You can get an example SLO spec file from the upstream [`examples/` folder](https://github.com/slok/sloth/tree/3757b6607160646ce3a78114d077992663d5c9b7/examples).
 
     To debug the container:
     ```bash
