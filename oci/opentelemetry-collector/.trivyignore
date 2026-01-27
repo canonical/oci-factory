@@ -20,3 +20,5 @@ CVE-2025-58187
 CVE-2025-58188
 # The Reader.ReadResponse function constructs a response...
 CVE-2025-61724
+# stdlib - crypto/x509: golang: Denial of Service due to excessive resource consumption via crafted certificate
+CVE-2025-61729
