@@ -1,0 +1,44 @@
+version: 1
+application: sloth
+description: >
+  Sloth is an easy and simple Prometheus SLO (service level objectives) generator. 
+  It generates understandable, uniform and reliable Prometheus SLOs for any kind of service 
+  using a simple SLO spec.
+  Read more in the [official documentation](https://sloth.dev/)
+  Please note that this repository holds a rock instead of a Dockerfile-based image.
+  As such, the entrypoint is Pebble.
+  Read more in the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
+docker:
+  parameters:
+    - -v ./input.yaml:/input.yaml
+    - -v ./output.yaml:/output.yaml
+parameters:
+  - type: "-v"
+    value: "./input.yaml:/input.yaml"
+    description: Bind mount for the SLO spec input.
+
+  - type: "-v"
+    value: "./output.yaml:/output.yaml"
+    description: Bind mount for the generated rules output.
+
+debug:
+  text: |
+    ### Basic usage
+
+    Generate Prometheus rules from a single SLO spec file (input.yaml):
+
+    ```bash
+    touch output.yaml
+    docker run --name sloth-container \
+      -v ./input.yaml:/input.yaml \
+      -v ./output.yaml:/output.yaml \
+      ubuntu/sloth:0.15-24.04_edge \
+      --args sloth generate -i ./input.yaml -o ./output.yaml
+    ```
+
+    You can get an example SLO spec file from the upstream [`examples/` folder](https://github.com/slok/sloth/tree/3757b6607160646ce3a78114d077992663d5c9b7/examples).
+
+    To debug the container:
+    ```bash
+    docker exec -it sloth-container pebble logs -f sloth
+    ```
