@@ -1,69 +1,173 @@
 # Upstream CVEs
 
-# werkzeug (pip) : Werkzeug DoS: High resource usage when parsing multipart/form-data containing a large part with CR/LF character at the beginning 
+# werkzeug (pip) : Werkzeug DoS: High resource usage when parsing multipart/form-data containing a large part with CR/LF character at the beginning
+
 CVE-2023-46136
-# cryptography (pip)  : Vulnerable OpenSSL included in cryptography wheels 
+
+# cryptography (pip) : Vulnerable OpenSSL included in cryptography wheels
+
 CVE-2024-12797
-# werkzeug (pip) : Werkzeug debugger vulnerable to remote execution when interacting with attacker controlled domain 
+
+# werkzeug (pip) : Werkzeug debugger vulnerable to remote execution when interacting with attacker controlled domain
+
 CVE-2024-34069
-# werkzeug (pip) : Werkzeug safe_join not safe on Windows 
+
+# werkzeug (pip) : Werkzeug safe_join not safe on Windows
+
 CVE-2024-49766
-# org.apache.commons:commons-lang3 : Apache Commons Lang is vulnerable to Uncontrolled Recursion when processing long inputs 
+
+# org.apache.commons:commons-lang3 : Apache Commons Lang is vulnerable to Uncontrolled Recursion when processing long inputs
+
 CVE-2025-48924
-# aiohttp (pip) : AIOHTTP is vulnerable to HTTP Request/Response Smuggling through incorrect parsing of chunked trailer sections 
+
+# aiohttp (pip) : AIOHTTP is vulnerable to HTTP Request/Response Smuggling through incorrect parsing of chunked trailer sections
+
 CVE-2025-53643
+
 # flask-appbuilder (pip) : Flask App Builder has an Authentication Bypass vulnerability when using non AUTH_DB methods
+
 CVE-2025-58065
+
 # apache-airflow(pip) : Apache Airflow `/api/v2/dagReports` executes DAG Python in API
+
 CVE-2025-62402
+
 # apache-airflow (pip) : Apache Airflow's create action can upsert existing Pools/Connections/Variables
+
 CVE-2025-62503
-# ray (pip) : Ray is vulnerable to Critical RCE via Safari & Firefox Browsers through DNS Rebinding Attack 
+
+# ray (pip) : Ray is vulnerable to Critical RCE via Safari & Firefox Browsers through DNS Rebinding Attack
+
 CVE-2025-62593
+
 # aiomysql (pip) : aiomysql allows arbitrary access to client files through vulnerability of a malicious MySQL server )
+
 CVE-2025-62611
-# starlette (pip) : Starlette vulnerable to O(n^2) DoS via Range header merging in ``starlette.responses.FileResponse`` 
+
+# starlette (pip) : Starlette vulnerable to O(n^2) DoS via Range header merging in `starlette.responses.FileResponse`
+
 CVE-2025-62727
+
 # Werkzeug (pip) : Werkzeug safe_join() allows Windows special device names
+
 CVE-2025-66221
+
 # urllib3 (pip) : urllib3 allows an unbounded number of links in the decompression chain
+
 CVE-2025-66418
+
 # urllib3(pip) : urllib3 streaming API improperly handles highly compressed data
+
 CVE-2025-66471
-# pip (pip) :  pip's fallback tar extraction doesn't check symbolic links point to extraction directory
+
+# pip (pip) : pip's fallback tar extraction doesn't check symbolic links point to extraction directory
+
 CVE-2025-8869
-# werkzeug, Quart (pip) : Werkzeug possible resource exhaustion when parsing file data in forms 
+
+# werkzeug, Quart (pip) : Werkzeug possible resource exhaustion when parsing file data in forms
+
 CVE-2024-49767
+
 # cryptography (pip) : pyca/cryptography has a vulnerable OpenSSL included in cryptography wheels
+
 GHSA-h4gh-qq45-vh27
 
 # CVE Pending Review https://github.com/advisories/GHSA-5mh9-3jwc-rp59
+
 # Affects Go toolchain packages (golang-1.24/1.25) that are not present in Ubuntu 24.04–based Airflow rock.
+
 CVE-2025-61727
+
 # CVE Pending Review https://github.com/advisories/GHSA-7c64-f9jr-v9h2
+
 # Affects only the Go toolchain packages golang-1.24 and golang-1.25, which are not included in Ubuntu 24.04
+
 CVE-2025-61729
+
 # CVE Pending Review https://github.com/advisories/GHSA-vf3q-65gx-324p
+
 # Coreutils `chroot` ioctl flaw not reachable in containerized Airflow environment.
+
 CVE-2016-2781
+
 # CVE Pending Review https://github.com/advisories/GHSA-pf7g-97vv-qmrr
+
 # gpgv DoS via crafted key is not used or exposed by Airflow; Ubuntu fix deferred.
+
 CVE-2022-3219
+
 # CVE Pending Review https://github.com/advisories/GHSA-6wgj-66m2-xxp2
+
 # Applies only to Ray job submission API—Ray is not installed in the rock, it's a metadata reference. Airflow uses it's own executors
+
 CVE-2023-48022
+
 # CVE Pending Review https://github.com/advisories/GHSA-w2gx-4fh8-wm9f
+
 # libgcrypt RSA side-channel not used by Python/OpenSSL-based Airflow crypto.
+
 CVE-2024-2236
+
 # CVE Pending Review https://github.com/advisories/GHSA-h964-f4gx-gw3x
+
 # glibc DH validation path unused; OpenSSL is used for DH + TLS; glibc crypto is not used.
+
 CVE-2024-41996
+
 # CVE Pending Review https://github.com/advisories/GHSA-7683-vm2j-m4cc
+
 # shadow-utils subuid collision only affects multi-user hosts, not single-user containers.
+
 CVE-2024-56433
+
 # CVE Pending Review https://github.com/advisories/GHSA-f93m-9mq4-2fjj
+
 # No upstream affected package or reproducer; package not installed in your image.
+
 CVE-2025-45582
+
 # CVE Pending review https://github.com/advisories/GHSA-hqqx-rjqh-53c2
+
 # linux-pam `pam_namespace` flaw irrelevant because Airflow rock does not use PAM for authentication.
+
 CVE-2025-8941
+
+# aiohttp (pip) : Zip bomb DoS requires attacker-controlled server; Airflow connects to admin-configured endpoints only.
+
+CVE-2025-69223
+
+# apache-airflow (pip) : Secrets in templates UI exposure; requires UI access restricted to authorized users. Fixed in 3.1.6.
+
+CVE-2025-68438
+
+# apache-airflow (pip) : Proxy credential leak in logs; proxy connections not used in default config. Fixed in 3.1.6.
+
+CVE-2025-68675
+
+# azure-core (pip) : Deserialization RCE requires attacker-controlled data; Airflow uses trusted Azure connections only.
+
+CVE-2026-21226
+
+# jaraco.context (pip) : Path traversal in tarball extraction; Airflow rock does not extract untrusted tarballs.
+
+CVE-2026-23949
+
+# pyasn1 (pip) : DoS via malformed ASN.1; only trusted TLS certificates parsed, no untrusted ASN.1 input.
+
+CVE-2026-23490
+
+# python-multipart (pip) : Path traversal in uploads; file operations restricted to authorized admins.
+
+CVE-2026-24486
+
+# urllib3 (pip) : Decompression bomb on redirects; Airflow connects to admin-configured endpoints only.
+
+CVE-2026-21441
+
+# wheel (pip) : Path traversal in unpack; wheel installation occurs at build time, not runtime.
+
+CVE-2026-24049
+
+# protobuf (pip) : Protobuf DoS due to recursion depth bypass in ParseDict()
+
+CVE-2026-0994
