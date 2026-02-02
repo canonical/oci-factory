@@ -14,6 +14,7 @@ passphrase=$3
 
 
 HASHED_PASSPHRASE=$(echo -n "$passphrase" | sha256sum | cut -d' ' -f1)
+echo "::add-mask::$HASHED_PASSPHRASE"
 
 for FILE in $input_path/* $input_path; do
     [ -f "$FILE" ] || continue  # skip if not a regular file
