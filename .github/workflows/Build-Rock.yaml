@@ -161,7 +161,7 @@ jobs:
           lfs: ${{ inputs.lfs }}
           lfs-include: ${{ inputs.lfs-include }}
 
-      - name: Attach pro token
+      - name: Attaching Pro Token
         if: ${{ inputs.pro-services != '' }}
         id: attach_pro
         env:
@@ -180,7 +180,7 @@ jobs:
           # TODO remove once the pro feature is merged to stable
           rockcraft-channel: ${{ inputs.pro-services && 'edge/pro-sources' }}
       
-      - name: Detach pro token
+      - name: Detaching Pro Token
         if: always() && steps.attach_pro.outcome == 'success'
         run: |
           sudo pro detach --assume-yes
@@ -191,7 +191,7 @@ jobs:
           mkdir -p ${{ env.ROCK_CI_FOLDER }} && cp ${{ steps.rockcraft.outputs.rock }} "$_"
           echo "filename=$(basename ${{ steps.rockcraft.outputs.rock }})" >> $GITHUB_OUTPUT
 
-      - name: Encrypting Artifacts
+      - name: Encrypting Single Arch Rock Artifacts
         if: ${{ inputs.pro-services != '' }}
         uses: ./.github/actions/crypt-artifact
         with:
@@ -294,7 +294,7 @@ jobs:
           pattern: ${{ inputs.oci-archive-name }}-*
           merge-multiple: true
 
-      - name: Decrypt Artifacts
+      - name: Decrypting Single Arch Rock Artifacts
         if: ${{ inputs.pro-services != '' }}
         uses: ./.github/actions/crypt-artifact
         with:
@@ -308,7 +308,7 @@ jobs:
             -n "${{ inputs.oci-archive-name }}" \
             -d "${{ env.ROCK_CI_FOLDER }}"
 
-      - name: Encrypt Artifact
+      - name: Encrypting Multi Arch Rock Artifact
         if: ${{ inputs.pro-services != '' }}
         uses: ./.github/actions/crypt-artifact
         with:
