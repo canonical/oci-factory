@@ -2,6 +2,12 @@
 
 source $(dirname $0)/../../../src/shared/logs.sh
 
+# Verify arguments
+if [ "$#" -ne 3 ]; then
+    log_error "Usage: $0 <encrypt|decrypt> <input_path> <passphrase>"
+    exit 1
+fi
+
 mode=$1
 input_path=$2
 passphrase=$3
