@@ -21,6 +21,7 @@ for FILE in $input_path/* $input_path; do
 
     if [ $mode = "encrypt" ]; then
         gpg --batch --yes --passphrase "$HASHED_PASSPHRASE" -c --cipher-algo AES256 -o "${FILE}.gpg" "$FILE"
+        log_info "Encrypted file: ${FILE} into ${FILE}.gpg"
         rm -f "$FILE"
     elif [ $mode = "decrypt" ]; then
         if [[ "$FILE" != *.gpg ]]; then
