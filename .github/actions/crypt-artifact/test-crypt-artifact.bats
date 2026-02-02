@@ -52,11 +52,8 @@ teardown() {
   local encrypted_a="${file_a}.gpg"
   local encrypted_b="${file_b}.gpg"
   
-  # Manually encrypt files first (simulating a previous run)
-  local HASHED_PASSPHRASE=$(echo -n "$TEST_PASSPHRASE" | sha256sum | cut -d' ' -f1)
-  gpg --batch --yes --passphrase "$HASHED_PASSPHRASE" -c --cipher-algo AES256 -o "$encrypted_a" "$file_a"
-  gpg --batch --yes --passphrase "$HASHED_PASSPHRASE" -c --cipher-algo AES256 -o "$encrypted_b" "$file_b"
-  rm -f "$file_a" "$file_b"
+  # Encrypt the files first
+  run bash "$SOURCE_SCRIPT" "encrypt" "$workdir" "$TEST_PASSPHRASE"
   
   # Decrypt the files
   run bash "$SOURCE_SCRIPT" "decrypt" "$workdir" "$TEST_PASSPHRASE"
