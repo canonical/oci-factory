@@ -17,7 +17,30 @@ description: |
   entrypoint is now Pebble. Read more on the
   [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
 
-  # Quickstart
+  # Apache Kafka 3 Quickstart
+  To deploy a single-broker containerized Kafka, you need to first 
+  deploy the ZooKeeper service and make sure that the ZooKeeper service is 
+  reachable by Kafka. 
+  
+  First, create a network 
+  
+  ```bash 
+  docker network create -d bridge kafka-network
+  ```
+  
+  Deploy the ZooKeeper service
+  
+  ```bash 
+  docker run --detach  --name zookeeper --network kafka-network ubuntu/zookeeper:3.8-22.04_edge
+  ```
+  
+  Finally, deploy the Kafka service
+  
+  ```
+  docker run --detach --name kafka --network kafka-network -p 9092:9092 ubuntu/kafka:3.9-22.04_edge
+  ```
+
+  # Apache Kafka 4 Quickstart
   To deploy a single-broker containerized Kafka, create a network first:
   
   ```bash 
@@ -67,6 +90,12 @@ parameters:
     description: > 
       "Persist data in a docker volume named `kafkaData`. "
       "Make sure that the mount point is consistent with the configuration property `logs.dirs`.
+  - type: -e
+    value: 'ZOOKEEPER_HOST=<zookeeper>'
+    description: Hostname for the related Zookeeper instance. Only used in Apache Kafka 3.
+  - type: -e
+    value: 'ZOOKEEPER_PORT=2181'
+    description: Port for the related Zookeeper instance. Only used in Apache Kafka 3.
 debug:
   text: |
     ### Debugging
