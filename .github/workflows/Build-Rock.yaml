@@ -174,7 +174,9 @@ jobs:
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
-          test: "${{ inputs.rockcraft-test }}"
+          # Change back to the following line once the pro feature is merged to stable
+          # test: "${{ inputs.rockcraft-test }}"
+          test: "${{ inputs.pro-services != '' && false || inputs.rockcraft-test }}"
           pro: "${{ inputs.pro-services }}"
           verbosity: debug
           # TODO remove once the pro feature is merged to stable
