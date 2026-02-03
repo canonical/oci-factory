@@ -16,7 +16,15 @@ inputs:
 runs:
   using: "composite" 
   steps:
+
+    - name: Cloning OCI Factory
+      uses: actions/checkout@v4
+      with:
+        repository: canonical/oci-factory
+        path: oci-factory
+        fetch-depth: 1
+
     - name: Crypto Operation
       shell: bash
       id: crypto
-      run: ./.github/actions/crypt-artifact/crypt-artifact.sh ${{ inputs.mode }} ${{ inputs.input-path }} ${{ inputs.passphrase }}
+      run: ./oci-factory/.github/actions/crypt-artifact/crypt-artifact.sh ${{ inputs.mode }} ${{ inputs.input-path }} ${{ inputs.passphrase }}
