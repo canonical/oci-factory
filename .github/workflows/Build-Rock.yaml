@@ -330,5 +330,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.oci-archive-name }}
-          path: ${{ needs.configure-build.outputs.pro-build == 'true' && format('{0}.gpg', inputs.oci-archive-name) || inputs.oci-archive-name }}
+          path: ${{ inputs.oci-archive-name }}*
           if-no-files-found: error
