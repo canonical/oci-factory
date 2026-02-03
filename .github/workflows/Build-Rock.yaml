@@ -79,6 +79,7 @@ jobs:
     outputs:
       runner-build-matrix: ${{ steps.configure.outputs.runner-build-matrix }}
       lpci-build-matrix: ${{ steps.configure.outputs.lpci-build-matrix }}
+      pro-build: ${{ steps.check-pro-build.outputs.pro-build }}
     name: "configure-build ${{ inputs.build-id != '' && format('| {0}', inputs.build-id) || ' '}}"
     steps:
       - name: Warn deprecated secret
@@ -87,14 +88,21 @@ jobs:
         if: ${{ env.HOST_GITHUB_TOKEN != '' }}
         run: |
           echo "::warning:: 'host-github-token' is unused and deprecated. Please remove this secret from the caller workflow."
-      
-      - name: Verify pro build
+
+      - name: Check Pro Build
+        id: check-pro-build
         env:
           UBUNTU_PRO_TOKEN: ${{ secrets.pro-token }}
-        if: ${{ inputs.pro-services != '' && env.UBUNTU_PRO_TOKEN == '' }}
         run: |
-          echo "Error: 'pro-token' must be provided in order to use 'pro-services'."
-          exit 1
+          if [[ -n "${{ inputs.pro-services }}" ]]; then
+            if [[ -z "${UBUNTU_PRO_TOKEN:-}" ]]; then
+              echo "Error: 'pro-token' must be provided in order to use 'pro-services'."
+              exit 1
+            fi
+            echo "pro-build=true" >> $GITHUB_OUTPUT
+          else
+            echo "pro-build=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Cloning OCI Factory
         uses: actions/checkout@v5
@@ -162,7 +170,7 @@ jobs:
           lfs-include: ${{ inputs.lfs-include }}
 
       - name: Attaching Pro Token
-        if: ${{ inputs.pro-services != '' }}
+        if: ${{ needs.configure-build.outputs.pro-build == 'true' }}
         id: attach_pro
         env:
           UBUNTU_PRO_TOKEN: ${{ secrets.pro-token }}
@@ -174,13 +182,13 @@ jobs:
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
-          # Change back to the following line once the pro feature is merged to stable
+          # TODO Change back to the following line once the pro feature is merged to stable
           # test: "${{ inputs.rockcraft-test }}"
-          test: "${{ inputs.pro-services != '' && false || inputs.rockcraft-test }}"
+          test: "${{ needs.configure-build.outputs.pro-build == 'true' && 'false' || inputs.rockcraft-test }}"
           pro: "${{ inputs.pro-services }}"
           verbosity: debug
           # TODO remove once the pro feature is merged to stable
-          rockcraft-channel: ${{ inputs.pro-services && 'edge/pro-sources' }}
+          rockcraft-channel: ${{ needs.configure-build.outputs.pro-build == 'true' && 'edge/pro-sources' || '' }}
       
       - name: Detaching Pro Token
         if: always() && steps.attach_pro.outcome == 'success'
@@ -194,7 +202,7 @@ jobs:
           echo "filename=$(basename ${{ steps.rockcraft.outputs.rock }})" >> $GITHUB_OUTPUT
 
       - name: Encrypting Single Arch Rock Artifacts
-        if: ${{ inputs.pro-services != '' }}
+        if: ${{ needs.configure-build.outputs.pro-build == 'true' }}
         uses: ./.github/actions/crypt-artifact
         with:
           mode: encrypt
@@ -297,7 +305,7 @@ jobs:
           merge-multiple: true
 
       - name: Decrypting Single Arch Rock Artifacts
-        if: ${{ inputs.pro-services != '' }}
+        if: ${{ needs.configure-build.outputs.pro-build == 'true' }}
         uses: ./.github/actions/crypt-artifact
         with:
           mode: decrypt
@@ -311,7 +319,7 @@ jobs:
             -d "${{ env.ROCK_CI_FOLDER }}"
 
       - name: Encrypting Multi Arch Rock Artifact
-        if: ${{ inputs.pro-services != '' }}
+        if: ${{ needs.configure-build.outputs.pro-build == 'true' }}
         uses: ./.github/actions/crypt-artifact
         with:
           mode: encrypt
@@ -322,5 +330,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.oci-archive-name }}
-          path: ${{ inputs.pro-services != '' && format('{0}.gpg', inputs.oci-archive-name) || inputs.oci-archive-name }}
+          path: ${{ needs.configure-build.outputs.pro-build == 'true' && format('{0}.gpg', inputs.oci-archive-name) || inputs.oci-archive-name }}
           if-no-files-found: error
