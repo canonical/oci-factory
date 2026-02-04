@@ -81,8 +81,7 @@ teardown() {
 
   # Encrypt file_a and leave a non-encrypted file_c
   echo "Some log content" > "$file_c"
-  local HASHED_PASSPHRASE=$(echo -n "$TEST_PASSPHRASE" | sha256sum | cut -d' ' -f1)
-  gpg --batch --yes --passphrase "$HASHED_PASSPHRASE" -c --cipher-algo AES256 -o "$encrypted_a" "$file_a"
+  gpg --batch --yes --passphrase "$TEST_PASSPHRASE" -c --cipher-algo AES256 -o "$encrypted_a" "$file_a"
   rm -f "$file_a"
   
   # Decrypt

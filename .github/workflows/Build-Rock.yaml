@@ -64,6 +64,8 @@ on:
         description: "Deprecated: GitHub token from repository executing this workflow."
       source-github-token:
         description: "GitHub token for pulling a Rockcraft project from a private repository."
+      pro-artifact-passphrase:
+        description: "Passphrase for encrypting/decrypting rock artifacts when pro-services is used."
       pro-token:
         description: "The Ubuntu Pro token. Required for building Ubuntu Pro based rocks."
 
@@ -207,7 +209,7 @@ jobs:
         with:
           mode: encrypt
           input-path: ${{ env.ROCK_CI_FOLDER }}
-          passphrase: ${{ secrets.pro-token }}
+          passphrase: ${{ secrets.pro-artifact-passphrase }}
 
       - name: Uploading Artifacts
         uses: actions/upload-artifact@v4
@@ -310,7 +312,7 @@ jobs:
         with:
           mode: decrypt
           input-path: ${{ env.ROCK_CI_FOLDER }}
-          passphrase: ${{ secrets.pro-token }}
+          passphrase: ${{ secrets.pro-artifact-passphrase }}
 
       - name: Assembling Multi Arch rock
         run: |
@@ -324,7 +326,7 @@ jobs:
         with:
           mode: encrypt
           input-path: ${{ inputs.oci-archive-name }}
-          passphrase: ${{ secrets.pro-token }}
+          passphrase: ${{ secrets.pro-artifact-passphrase }}
 
       - name: Uploading Multi Arch rock
         uses: actions/upload-artifact@v4

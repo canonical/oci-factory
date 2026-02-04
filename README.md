@@ -451,6 +451,7 @@ _See Note on Private Repositories._
 | `source-github-token` | False | GitHub token for pulling a Rockcraft project from a private repository. |
 | `host-github-token` | False | (Deprecated) GitHub token from repository executing this workflow. |
 | `pro-token` | False | Pro token required to enable Pro services during the build. |
+| `pro-artifact-passphrase` | False | Passphrase required to encrypt artifacts built with pro services enabled. |
 
 ### Test-Rock Workflow
 
@@ -501,4 +502,4 @@ _See Note on Private Repositories._
 | Property | Required | Description |
 |---|---|---|
 | `host-github-token` | False  | (Deprecated) GitHub token from repository executing this workflow. |
-| `pro-token` | False | Pro token required to decrypt artifacts built with pro services enabled. |
+| `pro-artifact-passphrase` | False | Passphrase required to decrypt artifacts built with pro services enabled. |
