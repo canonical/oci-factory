@@ -1,18 +1,42 @@
 version: 1
 upload:
   - source: canonical/istio-pilot-rock
-    commit: 6630bb87abbb6db045d80d2d7879c51b22fa45c7
-    directory: 1.24.3
+    commit: 5a115721f16df85301bcc875e87b59cbcb8f6558
+    directory: 1.23.3
     release:
-      1-24.04:
-        end-of-life: '2025-08-21T00:00:00Z'
+      1.23-24.04:
+        end-of-life: '2026-05-07T00:00:00Z'
         risks:
           - stable
+      1.23.3-24.04:
+        end-of-life: '2026-02-04T00:00:00Z'
+        risks:
+          - stable
+  - source: canonical/istio-pilot-rock
+    commit: 5a115721f16df85301bcc875e87b59cbcb8f6558
+    directory: 1.24.3
+    release:
       1.24-24.04:
-        end-of-life: '2025-08-21T00:00:00Z'
+        end-of-life: '2026-05-07T00:00:00Z'
         risks:
           - stable
       1.24.3-24.04:
-        end-of-life: '2025-02-21T00:00:00Z'
+        end-of-life: '2026-02-04T00:00:00Z'
+        risks:
+          - stable
+  - source: canonical/istio-pilot-rock
+    commit: 5a115721f16df85301bcc875e87b59cbcb8f6558
+    directory: 1.26.1
+    release:
+      1-24.04:
+        end-of-life: '2026-05-07T00:00:00Z'
+        risks:
+          - stable
+      1.26-24.04:
+        end-of-life: '2026-05-07T00:00:00Z'
+        risks:
+          - stable
+      1.26.1-24.04:
+        end-of-life: '2026-02-04T00:00:00Z'
         risks:
           - stable
