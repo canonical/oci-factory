@@ -441,6 +441,7 @@ many cases, these repositories are the same, meaning both `host-github-token` an
 | `rockfile-directory` | True | str | Directory in repository where to find the rockcraft.yaml file. |
 | `arch-map` | False | JSON str | JSON string mapping target architecture to runners. |
 | `lpci-fallback` | False | bool | Enable fallback to Launchpad build when runners for target arch are not available. |
+| `pro-services` | False | str | Comma separated list of the pro services to enable when building. |
 
 **Workflow Secrets:**
 
@@ -449,6 +450,8 @@ _See Note on Private Repositories._
 |---|---|---|
 | `source-github-token` | False | GitHub token for pulling a Rockcraft project from a private repository. |
 | `host-github-token` | False | (Deprecated) GitHub token from repository executing this workflow. |
+| `pro-token` | False | Pro token required to enable Pro services during the build. |
+| `pro-artifact-passphrase` | False | Passphrase used to encrypt artifacts when Pro builds are enabled. If not given, a random passphrase will be used, deeming the CI artifacts only accessible by the CI itself. |
 
 ### Test-Rock Workflow
 
@@ -499,3 +502,4 @@ _See Note on Private Repositories._
 | Property | Required | Description |
 |---|---|---|
 | `host-github-token` | False  | (Deprecated) GitHub token from repository executing this workflow. |
+| `pro-artifact-passphrase` | False | Passphrase required to decrypt artifacts built with pro services enabled. |

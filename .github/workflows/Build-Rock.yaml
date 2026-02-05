@@ -37,6 +37,10 @@ on:
         description: "Value to provide to git lfs pull --include when downloading LFS files. If this is not provided then all LFS files are pulled"
         type: string
         default: ''
+      pro-services:
+        description: "The pro services to enable during the build. Requires pro-token to be set."
+        type: string
+        default: ''
 
       # Parameters for multi-arch builds
       # specifying the runners with size label to prevent from running on private/tiobe runners
@@ -60,6 +64,11 @@ on:
         description: "Deprecated: GitHub token from repository executing this workflow."
       source-github-token:
         description: "GitHub token for pulling a Rockcraft project from a private repository."
+      pro-artifact-passphrase:
+        description: "Passphrase for encrypting/decrypting rock artifacts when pro-services is used."
+      pro-token:
+        description: "The Ubuntu Pro token. Required for building Ubuntu Pro based rocks."
+
 env:
   ROCK_REPO_DIR: rock-repo  # path where the image repo is cloned into
   ROCK_CI_FOLDER: ci-rocks  # path of uploaded/downloaded artifacts
@@ -72,6 +81,7 @@ jobs:
     outputs:
       runner-build-matrix: ${{ steps.configure.outputs.runner-build-matrix }}
       lpci-build-matrix: ${{ steps.configure.outputs.lpci-build-matrix }}
+      pro-build: ${{ steps.check-pro-build.outputs.pro-build }}
     name: "configure-build ${{ inputs.build-id != '' && format('| {0}', inputs.build-id) || ' '}}"
     steps:
       - name: Warn deprecated secret
@@ -80,6 +90,21 @@ jobs:
         if: ${{ env.HOST_GITHUB_TOKEN != '' }}
         run: |
           echo "::warning:: 'host-github-token' is unused and deprecated. Please remove this secret from the caller workflow."
+
+      - name: Check Pro Build
+        id: check-pro-build
+        env:
+          UBUNTU_PRO_TOKEN: ${{ secrets.pro-token }}
+        run: |
+          if [[ -n "${{ inputs.pro-services }}" ]]; then
+            if [[ -z "${UBUNTU_PRO_TOKEN:-}" ]]; then
+              echo "Error: 'pro-token' must be provided in order to use 'pro-services'."
+              exit 1
+            fi
+            echo "pro-build=true" >> $GITHUB_OUTPUT
+          else
+            echo "pro-build=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Cloning OCI Factory
         uses: actions/checkout@v5
@@ -146,19 +171,45 @@ jobs:
           lfs: ${{ inputs.lfs }}
           lfs-include: ${{ inputs.lfs-include }}
 
+      - name: Attaching Pro Token
+        if: ${{ needs.configure-build.outputs.pro-build == 'true' }}
+        id: attach_pro
+        env:
+          UBUNTU_PRO_TOKEN: ${{ secrets.pro-token }}
+        run: |
+          sudo pro attach --no-auto-enable "$UBUNTU_PRO_TOKEN"
+
       - name: Building Target
         id: rockcraft
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
-          test: "${{ inputs.rockcraft-test }}"
+          # TODO Change back to the following line once the pro feature is merged to stable
+          # test: "${{ inputs.rockcraft-test }}"
+          test: "${{ needs.configure-build.outputs.pro-build == 'true' && 'false' || inputs.rockcraft-test }}"
+          pro: "${{ inputs.pro-services }}"
           verbosity: debug
+          # TODO remove once the pro feature is merged to stable
+          rockcraft-channel: ${{ needs.configure-build.outputs.pro-build == 'true' && 'edge/pro-sources' || '' }}
+      
+      - name: Detaching Pro Token
+        if: always() && steps.attach_pro.outcome == 'success'
+        run: |
+          sudo pro detach --assume-yes
 
       - name: Collecting Artifacts
         id: collect-artifacts
         run: |
           mkdir -p ${{ env.ROCK_CI_FOLDER }} && cp ${{ steps.rockcraft.outputs.rock }} "$_"
           echo "filename=$(basename ${{ steps.rockcraft.outputs.rock }})" >> $GITHUB_OUTPUT
+
+      - name: Encrypting Single Arch Rock Artifacts
+        if: ${{ needs.configure-build.outputs.pro-build == 'true' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: encrypt
+          input-path: ${{ env.ROCK_CI_FOLDER }}
+          passphrase: ${{ secrets.pro-artifact-passphrase }}
 
       - name: Uploading Artifacts
         uses: actions/upload-artifact@v4
@@ -253,6 +304,15 @@ jobs:
         with:
           path: ${{ env.ROCK_CI_FOLDER }}
           pattern: ${{ inputs.oci-archive-name }}-*
+          merge-multiple: true
+
+      - name: Decrypting Single Arch Rock Artifacts
+        if: ${{ needs.configure-build.outputs.pro-build == 'true' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: decrypt
+          input-path: ${{ env.ROCK_CI_FOLDER }}
+          passphrase: ${{ secrets.pro-artifact-passphrase }}
 
       - name: Assembling Multi Arch rock
         run: |
@@ -260,9 +320,17 @@ jobs:
             -n "${{ inputs.oci-archive-name }}" \
             -d "${{ env.ROCK_CI_FOLDER }}"
 
+      - name: Encrypting Multi Arch Rock Artifact
+        if: ${{ needs.configure-build.outputs.pro-build == 'true' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: encrypt
+          input-path: ${{ inputs.oci-archive-name }}
+          passphrase: ${{ secrets.pro-artifact-passphrase }}
+
       - name: Uploading Multi Arch rock
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.oci-archive-name }}
-          path: ${{ inputs.oci-archive-name }}
+          path: ${{ inputs.oci-archive-name }}*
           if-no-files-found: error
