@@ -293,7 +293,13 @@ if __name__ == "__main__":
     )
     # Check the connection: get all objects from the 'oci-factory' Swift container
     SWIFT_CONTAINER = "oci-factory"
-    _, swift_oci_factory_objs = swift_conn.get_container(SWIFT_CONTAINER)
+    prefix = None
+    if image != "*":
+        prefix = f"{image}/"
+
+    _, swift_oci_factory_objs = swift_conn.get_container(
+        SWIFT_CONTAINER, prefix=prefix, full_listing=True
+    )
 
     # Need the ROCKsBot GitHub token in order to dispatch workflows
     GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
