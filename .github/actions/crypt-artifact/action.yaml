@@ -1,0 +1,30 @@
+name: Artifact Crypto Handler
+description: 'Encrypt and decrypt artifacts using GPG symmetric encryption'
+
+
+inputs:
+  input-path:
+    description: 'Path where the artifact is stored'
+    required: true
+  mode:
+    description: 'Operation mode: encrypt or decrypt'
+    required: true
+  passphrase:
+    description: 'Passphrase for GPG symmetric encryption/decryption'
+    required: true
+
+runs:
+  using: "composite" 
+  steps:
+
+    - name: Cloning OCI Factory
+      uses: actions/checkout@v4
+      with:
+        repository: canonical/oci-factory
+        path: oci-factory
+        fetch-depth: 1
+
+    - name: Crypto Operation
+      shell: bash
+      id: crypto
+      run: ./oci-factory/.github/actions/crypt-artifact/crypt-artifact.sh ${{ inputs.mode }} ${{ inputs.input-path }} ${{ inputs.passphrase }}
