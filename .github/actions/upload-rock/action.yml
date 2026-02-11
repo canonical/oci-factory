@@ -27,6 +27,8 @@ inputs:
     description: "The id of the workflow run where the desired download artifact was uploaded from."
   github-token:
     description: "The github token needed for downloading the artifact from a different repository or workflow run."
+  decrypt-passphrase:
+    description: "The passphrase for the artifact if it is encrypted."
 outputs:
   digest:
     description: "The digest of the uploaded image"
@@ -41,6 +43,14 @@ runs:
         name: ${{ inputs.artifact_name }}
         run-id: ${{ inputs.run-id }}
         github-token: ${{ inputs.github-token }}
+    
+    - name: Decrypt Rock
+      if: ${{ inputs.decrypt-passphrase }}
+      uses: ./.github/actions/crypt-artifact
+      with:
+        mode: decrypt
+        input-path: ${{ inputs.artifact_name }}
+        passphrase: ${{ inputs.decrypt-passphrase }}
 
     - name: Get Metadata
       id: meta
