@@ -46,7 +46,7 @@ runs:
     
     - name: Decrypt Rock
       if: ${{ inputs.decrypt-passphrase }}
-      uses: ./.github/actions/crypt-artifact
+      uses: canonical/oci-factory/.github/actions/crypt-artifact@main
       with:
         mode: decrypt
         input-path: ${{ inputs.artifact_name }}
