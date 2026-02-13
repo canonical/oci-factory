@@ -5,3 +5,5 @@ github.com/golang-jwt/jwt/v4 - jwt-go allows excessive memory allocation during 
 # no code path in v4.4.0 calls this vulnerability
 CVE-2025-30204	
 
+# stdlib - crypto/tls: Unexpected session resumption in crypto/tls
+CVE-2025-68121
