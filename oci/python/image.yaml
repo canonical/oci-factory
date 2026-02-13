@@ -44,13 +44,13 @@ upload:
           - stable
           - candidate
           - beta
-          - edge
-            - source: canonical/python-rock
+          - edge          
+  - source: canonical/python-rock
     commit: 98ef12e107338fc710edb43e78cddff58d4d299e
     directory: python/3.13-25.10/
     release:
       3.13-25.10:
-        end-of-life: "2026-07-15T00:00:00Z"
+        end-of-life: "2026-07-09T00:00:00Z"
         risks:
           - stable
           - candidate
