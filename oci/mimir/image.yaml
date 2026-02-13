@@ -1,18 +1,18 @@
 version: 1
 upload:
   - source: canonical/mimir-rock
-    commit: ba1f5286d9767b1e8c211214ab91dc67539b2441
-    directory: 2.17.1
+    commit: e6194f730203a64daedbb1a8554e6cd5f3e210f9
+    directory: 3.0.3
     release:
-      2-24.04:
-        end-of-life: '2025-12-09T00:00:00Z'
+      3-24.04:
+        end-of-life: '2026-05-15T00:00:00Z'
         risks:
           - stable
-      2.17-24.04:
-        end-of-life: '2025-12-09T00:00:00Z'
+      3.0-24.04:
+        end-of-life: '2026-05-15T00:00:00Z'
         risks:
           - stable
-      2.17.1-24.04:
-        end-of-life: '2025-09-07T00:00:00Z'
+      3.0.3-24.04:
+        end-of-life: '2026-02-12T00:00:00Z'
         risks:
           - stable
