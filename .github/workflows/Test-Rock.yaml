@@ -67,7 +67,7 @@ env:
   SKOPEO_IMAGE: "quay.io/skopeo/stable:v1.20.0"
   UMOCI_VERSION: "v0.4.7"
   UMOCI_BINARY: "umoci.amd64"
-  DIVE_IMAGE: "wagoodman/dive:v0.12"
+  DIVE_IMAGE: "wagoodman/dive:v0.13.1"
   TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db,aquasec/trivy-db,ghcr.io/aquasecurity/trivy-db
   TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db,aquasec/trivy-java-db,ghcr.io/aquasecurity/trivy-java-db
 
