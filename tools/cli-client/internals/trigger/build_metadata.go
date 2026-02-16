@@ -13,9 +13,10 @@ import (
 )
 
 type BuildMetadata struct {
-	Source    string
-	Commit    string
-	Directory string
+	Source                 string
+	Commit                 string
+	Directory              string
+	IgnoredVulnerabilities []string
 }
 
 func InferBuildMetadata() BuildMetadata {

@@ -18,7 +18,8 @@ type UploadRelease struct {
 }
 
 type CmdUpload struct {
-	UploadRelease []string `long:"release" description:"Release images to container registries.\nSyntax: --release track=<release track>,risks=<risk1>[,<risk2>...],eol=yyyy-mm-dd"`
+	UploadRelease          []string `long:"release" description:"Release images to container registries.\nSyntax: --release track=<release track>,risks=<risk1>[,<risk2>...],eol=yyyy-mm-dd"`
+	IgnoredVulnerabilities string   `long:"ignored-vulnerabilities" description:"Comma-separated list of vulnerabilities to ignore when triggering the build and release. This is a global flag that applies to all releases specified with --release. Syntax: --ignored-vulnerabilities FINDING_ID_1[,FINDING_ID_2...]"`
 }
 
 var riskOptions = []string{"stable", "candidate", "beta", "edge"}
@@ -35,7 +36,8 @@ func (c *CmdUpload) Execute(args []string) error {
 	if err != nil {
 		return fmt.Errorf("error parsing release arguments: %v", err)
 	}
-	triggerUploadReleases(releases)
+	ignoredVulnerabilities := parseIgnoredVulnerabilities(c.IgnoredVulnerabilities)
+	triggerUploadReleases(releases, ignoredVulnerabilities)
 	return nil
 }
 
@@ -126,9 +128,17 @@ func parseUploadReleases(args []string) ([]UploadRelease, error) {
 	return releases, nil
 }
 
-func triggerUploadReleases(releases []UploadRelease) {
+func parseIgnoredVulnerabilities(arg string) []string {
+	splitFn := func(c rune) bool {
+		return c == ','
+	}
+	return strings.FieldsFunc(arg, splitFn)
+}
+
+func triggerUploadReleases(releases []UploadRelease, ignored_vulnerabilities []string) {
 	// really builds
 	buildMetadata := trigger.InferBuildMetadata()
+	buildMetadata.IgnoredVulnerabilities = ignored_vulnerabilities
 	var uploadReleaseTrack = make(trigger.UploadReleaseTrack)
 	for _, release := range releases {
 		uploadReleaseTrack[release.Track] = trigger.UploadRelease{
