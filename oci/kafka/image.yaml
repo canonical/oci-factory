@@ -17,3 +17,8 @@ upload:
         end-of-life: "2027-06-01T00:00:00Z"
         risks:
           - edge
+      # Legacy tag, as it was released once before.
+      3.9.1-22.04:
+        end-of-life: "2027-06-01T00:00:00Z"
+        risks:
+          - edge
