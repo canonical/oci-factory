@@ -46,7 +46,7 @@ runs:
     
     - name: Decrypt Rock
       if: ${{ inputs.decrypt-passphrase }}
-      uses: canonical/oci-factory/.github/actions/crypt-artifact@main
+      uses: canonical/oci-factory/.github/actions/crypt-artifact@feat/decrypt-before-upload
       with:
         mode: decrypt
         passphrase: ${{ inputs.decrypt-passphrase }}
