@@ -49,8 +49,10 @@ runs:
       uses: canonical/oci-factory/.github/actions/crypt-artifact@main
       with:
         mode: decrypt
-        input-path: ${{ inputs.artifact_name }}.gpg
         passphrase: ${{ inputs.decrypt-passphrase }}
+        input-path: ${{ inputs.artifact_name }}*
+        output-path: ${{ inputs.artifact_name }}
+        preserve-original: false
 
     - name: Get Metadata
       id: meta

@@ -208,8 +208,10 @@ jobs:
         uses: ./.github/actions/crypt-artifact
         with:
           mode: encrypt
-          input-path: ${{ env.ROCK_CI_FOLDER }}
+          input-path: ${{ env.ROCK_CI_FOLDER }}/${{ steps.collect-artifacts.outputs.filename }}
+          output-path: ${{ env.ROCK_CI_FOLDER }}/${{ steps.collect-artifacts.outputs.filename }}.gpg
           passphrase: ${{ secrets.pro-artifact-passphrase }}
+          preserve-original: false
 
       - name: Uploading Artifacts
         uses: actions/upload-artifact@v4
@@ -306,13 +308,19 @@ jobs:
           pattern: ${{ inputs.oci-archive-name }}-*
           merge-multiple: true
 
+      # We cannot use the action here, as we need to iterate over
+      # multiple files if there are multiple single-arch rocks.
       - name: Decrypting Single Arch Rock Artifacts
         if: ${{ needs.configure-build.outputs.pro-build == 'true' }}
-        uses: ./.github/actions/crypt-artifact
-        with:
-          mode: decrypt
-          input-path: ${{ env.ROCK_CI_FOLDER }}
-          passphrase: ${{ secrets.pro-artifact-passphrase }}
+        env:
+          ARTIFACT_PASSPHRASE: ${{ secrets.pro-artifact-passphrase }}
+        run: |
+          for rock in ${{ env.ROCK_CI_FOLDER }}/*; do
+            ./.github/actions/crypt-artifact/crypt-artifact.sh decrypt \
+              -i "$rock" \
+              -p "$ARTIFACT_PASSPHRASE" \
+              -o "${rock%.gpg}" \
+          done
 
       - name: Assembling Multi Arch rock
         run: |
@@ -326,11 +334,13 @@ jobs:
         with:
           mode: encrypt
           input-path: ${{ inputs.oci-archive-name }}
+          output-path: ${{ inputs.oci-archive-name }}.gpg
           passphrase: ${{ secrets.pro-artifact-passphrase }}
+          preserve-original: false
 
       - name: Uploading Multi Arch rock
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.oci-archive-name }}
-          path: ${{ inputs.oci-archive-name }}*
+          path: ${{ needs.configure-build.outputs.pro-build == 'true' && format('{0}.gpg', inputs.oci-archive-name) || inputs.oci-archive-name }}
           if-no-files-found: error

@@ -110,7 +110,9 @@ jobs:
         with:
           mode: decrypt
           passphrase: ${{ secrets.pro-artifact-passphrase }}
-          input-path: ${{ inputs.oci-archive-name }}.gpg
+          input-path: ${{ inputs.oci-archive-name }}*
+          output-path: ${{ inputs.oci-archive-name }}
+          preserve-original: false
 
       - name: Unpack Rock
         run: |
@@ -290,7 +292,9 @@ jobs:
         with:
           mode: decrypt
           passphrase: ${{ secrets.pro-artifact-passphrase }}
-          input-path: ${{ inputs.oci-archive-name }}.gpg
+          input-path: ${{ inputs.oci-archive-name }}*
+          output-path: ${{ inputs.oci-archive-name }}
+          preserve-original: false
 
       - name: Configure Trivy
         id: configure-trivy
