@@ -6,7 +6,7 @@ upload:
     directory: jdk/21-24.04
     release:
       21-24.04:
-        end-of-life: "2029-04-25T00:00:00Z"
+        end-of-life: "2029-05-31T00:00:00Z"
         risks:
           - stable
           - candidate
