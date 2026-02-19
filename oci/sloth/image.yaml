@@ -1,0 +1,18 @@
+version: 1
+upload:
+  - source: canonical/sloth-rock
+    commit: 4ea48a4a57d6840cef95b986f9389916d4cce40f
+    directory: 0.15.0
+    release:
+      0-24.04:
+        end-of-life: '2026-05-19T00:00:00Z'
+        risks:
+          - edge
+      0.15-24.04:
+        end-of-life: '2026-05-19T00:00:00Z'
+        risks:
+          - edge
+      0.15.0-24.04:
+        end-of-life: '2026-02-16T00:00:00Z'
+        risks:
+          - edge

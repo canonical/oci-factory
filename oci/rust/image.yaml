@@ -8,3 +8,14 @@ upload:
         end-of-life: "2026-01-15T00:00:00Z"
         risks:
           - edge
+  - source: canonical/rust-rock
+    commit: 98516fe632e3b6db13f42ad9482f7e35028b7397
+    directory: rust/1.75-24.04
+    release:
+      1.75-24.04:
+        end-of-life: "2029-05-31T00:00:00Z"
+        risks:
+          - stable
+          - candidate
+          - beta
+          - edge

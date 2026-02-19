@@ -41,7 +41,7 @@ def get_base_and_track(rockcraft_yaml) -> tuple[str, str]:
 
     version = rockcraft_yaml["version"]
 
-    return base_release, f"{version}-{base_release}"
+    return f"{base_release:.2f}", f"{version}-{base_release:.2f}"
 
 
 if __name__ == "__main__":

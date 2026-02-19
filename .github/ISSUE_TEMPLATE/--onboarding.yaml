@@ -4,6 +4,7 @@ labels: "onboarding"
 title: "[ONBOARDING] "
 assignees:
   - zhijie-yang
+  - alesancor1
 body:
   - type: markdown
     attributes:

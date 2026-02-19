@@ -2,7 +2,7 @@
 name: Rebuild images
 on:
   schedule:
-    - cron: "0 2 * * 0"
+    - cron: "0 2 */2 * *"
   workflow_dispatch:
     inputs:
       image-name:

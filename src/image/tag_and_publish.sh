@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-source $(dirname $0)/../shared/logs.sh
+source "$(dirname "$0")/../shared/logs.sh"
 
 # SUITE="{{ suite }}"
 # RELEASE="{{ release }}"
@@ -21,14 +21,14 @@ source_img="${1}"
 image_name="${2}"
 shift 2
 # The tag names are handled by the CI
-tag_names=($@)
+tag_names=("$@")
 
 publish_with_auth_token()
 {
     local token=$1 name=$2
     shift 2
     log_info "Publishing to Docker registry repository $name ..."
-    REGISTRY_AUTH=$token cpc-build-tools.oci-registry-upload \
+    REGISTRY_AUTH=$token "$(dirname "$0")/../uploads/oci_registry_upload.py" \
         "${source_img}" "$name" "$@"
     log_info "Publishing to Docker registry repository $name finished"
 }
@@ -95,7 +95,7 @@ acr_repo_name="${ACR_NAMESPACE}/${image_name}"
 ecr_repo_name="${ECR_NAMESPACE}/${image_name}"
 # ecr_lts_repo_name="${ECR_LTS_NAMESPACE}/${image_name}"
 
-log_info "Publishing ${image_name} to registries with tags: ${tag_names[@]}"
+log_info "Publishing ${image_name} to registries with tags: ${tag_names[*]}"
 
 trace_suspend
 if [ ! -z $GHCR_REPO ]; then

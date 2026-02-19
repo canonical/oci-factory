@@ -74,7 +74,7 @@ jobs:
 
   
   do-releases:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: Release
     needs: [validate-push-release-request]
     outputs:
@@ -109,7 +109,7 @@ jobs:
           ROCKS_DEV_LP_USERNAME: ${{ secrets.ROCKS_DEV_LP_USERNAME }}
           CPC_BUILD_TOOLS_REPO: git.launchpad.net/~cloudware/cloudware/+git/cpc_build_tools
           # CPC_BUILD_TOOLS_REPO_REF: 9b716ed8a8ba728d036b54b1bb17a8f49dbda434
-          SKOPEO_BRANCH: 'v1.9.1'
+          SKOPEO_BRANCH: 'v1.20.0'
           SKOPEO_URL: 'https://github.com/containers/skopeo'
         run: | 
           ./src/image/requirements.sh

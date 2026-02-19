@@ -82,7 +82,36 @@ def test_release_to(prep_execution, expected_release_to, expected_release_count)
         revision_data = json.loads(file.read_text())
         if release_list := revision_data.get("release"):
             release_count += len(release_list)
+    # run main from prepare_single_image_build_matrix
+    prepare_build_matrix()
 
+    github_output_content = github_output.read_text("utf8")
     assert (
         expected_release_count == release_count
     ), "Invalid number of builds to release"
+
+
+@pytest.mark.parametrize(
+    "prep_execution",
+    [DATA_DIR / "image_v2_ignored_vuln.yaml"],
+    indirect=["prep_execution"],
+)
+def test_ignored_vulnerabilities(prep_execution):
+    _, github_output, _ = prep_execution
+
+    # run main from prepare_single_image_build_matrix
+    prepare_build_matrix()
+
+    github_output_content = github_output.read_text("utf8")
+
+    assert re.search(
+        r'build-matrix=\{"include": \[.*"directory": "mock_rock/1.2", .*"ignored-vulnerabilities": "CVE-2023-1234 CVE-2024-5678".*\]\}',
+        github_output_content,
+        re.M,
+    )
+
+    assert re.search(
+        r'build-matrix=\{"include": \[.*"directory": "mock_rock/1.1", .*"ignored-vulnerabilities": "".*\]\}',
+        github_output_content,
+        re.M,
+    )

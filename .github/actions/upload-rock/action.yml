@@ -23,6 +23,10 @@ inputs:
   password:
     description: "The password for the container registry"
     required: true
+  run-id:
+    description: "The id of the workflow run where the desired download artifact was uploaded from."
+  github-token:
+    description: "The github token needed for downloading the artifact from a different repository or workflow run."
 outputs:
   digest:
     description: "The digest of the uploaded image"
@@ -35,6 +39,8 @@ runs:
       uses: actions/download-artifact@v4
       with:
         name: ${{ inputs.artifact_name }}
+        run-id: ${{ inputs.run-id }}
+        github-token: ${{ inputs.github-token }}
 
     - name: Get Metadata
       id: meta
@@ -42,7 +48,7 @@ runs:
       run: |
         docker run --rm \
           -v $PWD:/workdir -w /workdir \
-          "quay.io/skopeo/stable:v1.15.1" \
+          "quay.io/skopeo/stable:v1.20.0" \
           inspect oci-archive:${{ inputs.artifact_name }} > metadata.json
 
         digest="$(cat metadata.json | jq -r .Digest)"
@@ -54,7 +60,7 @@ runs:
         for tag in ${{ inputs.tags }}; do
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
           -v $PWD:/workdir -w /workdir \
-          "quay.io/skopeo/stable:v1.15.1" \
+          "quay.io/skopeo/stable:v1.20.0" \
           copy \
           --dest-username "${{ inputs.username }}" \
           --dest-password "${{ inputs.password }}" \

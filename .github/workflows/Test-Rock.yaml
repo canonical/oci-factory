@@ -38,6 +38,9 @@ on:
       trivyignore-path:
         description: "Optional path to .trivyignore file."
         type: string
+      ignored-vulnerabilities:
+        description: "List of vulnerability IDs to ignore during vulnerability test."
+        type: string
       vulnerability-report-artifact-name:
         description: "Optional name for the vulnerability report artifact. Defaults to <oci-archive-name>.vulnerability-report.json"
         type: string
@@ -54,15 +57,17 @@ on:
       # authentication parameters
       host-github-token:
         description: "Deprecated: GitHub token from repository executing this workflow."
+      pro-artifact-passphrase:
+        description: "Passphrase for encrypting/decrypting rock artifacts when pro-services is used."
 
 env:
   VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"  # TODO: inherit string from caller
   TEST_IMAGE_NAME: "test-img"
   TEST_IMAGE_TAG: "test"
-  SKOPEO_IMAGE: "quay.io/skopeo/stable:v1.15.1"
+  SKOPEO_IMAGE: "quay.io/skopeo/stable:v1.20.0"
   UMOCI_VERSION: "v0.4.7"
   UMOCI_BINARY: "umoci.amd64"
-  DIVE_IMAGE: "wagoodman/dive:v0.12"
+  DIVE_IMAGE: "wagoodman/dive:v0.13.1"
   TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db,aquasec/trivy-db,ghcr.io/aquasecurity/trivy-db
   TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db,aquasec/trivy-java-db,ghcr.io/aquasecurity/trivy-java-db
 
@@ -96,6 +101,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.oci-archive-name }}
+
+      - name: Decrypt Rock
+        env:
+          ARTIFACT_PASSPHRASE: ${{ secrets.pro-artifact-passphrase }}
+        if: ${{ env.ARTIFACT_PASSPHRASE != '' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: decrypt
+          passphrase: ${{ secrets.pro-artifact-passphrase }}
+          input-path: ${{ inputs.oci-archive-name }}.gpg
 
       - name: Unpack Rock
         run: |
@@ -243,6 +258,12 @@ jobs:
     env:
       ROCK_REPO_DIR: "rock-repo"
     steps:
+      - name: Check mutual exclusivity of ignored vulnerabilities and trivyignore path
+        run: |
+          if [[ "${{ inputs.ignored-vulnerabilities }}" != "" && "${{ inputs.trivyignore-path }}" != "" ]]; then
+            echo "Error: 'ignored-vulnerabilities' and 'trivyignore-path' inputs are mutually exclusive."
+            exit 1
+          fi
 
       - name: Cloning OCI Factory
         uses: actions/checkout@v4
@@ -260,6 +281,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.oci-archive-name }}
+      
+      - name: Decrypt Rock
+        env:
+          ARTIFACT_PASSPHRASE: ${{ secrets.pro-artifact-passphrase }}
+        if: ${{ env.ARTIFACT_PASSPHRASE != '' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: decrypt
+          passphrase: ${{ secrets.pro-artifact-passphrase }}
+          input-path: ${{ inputs.oci-archive-name }}.gpg
 
       - name: Configure Trivy
         id: configure-trivy
@@ -288,9 +319,9 @@ jobs:
             trivyignore_path="${{ env.ROCK_REPO_DIR }}/${trivyignore_path}"
           fi
 
-          if [[ -z "${trivyignore_path}" || ! -f "${trivyignore_path}" ]]; then
+          if [[ ! -s "${trivyignore_path}" ]]; then
             trivyignore_path=.trivyignore
-            touch $trivyignore_path
+            echo "${{ inputs.ignored-vulnerabilities }}" | tr ' ' '\n' > "$trivyignore_path"
           fi
 
           echo "trivyignore-path=$trivyignore_path" >> "$GITHUB_OUTPUT"

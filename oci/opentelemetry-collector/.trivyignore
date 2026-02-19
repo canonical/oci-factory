@@ -8,3 +8,19 @@ CVE-2025-30204
 CVE-2025-47907
 # Calling Verify with a VerifyOptions.KeyUsages that contains ExtKeyUsageAny unintentionally disabledpolicy validation
 CVE-2025-22874
+# The Parse function permits values other than IPv6...
+CVE-2025-47912
+# tar.Reader does not set a maximum size on the number of...
+CVE-2025-58183
+# Despite HTTP headers having a default limit of 1MB, the...
+CVE-2025-58186
+# Due to the design of the name constraint checking...
+CVE-2025-58187
+# Validating certificate chains which contain DSA public...
+CVE-2025-58188
+# The Reader.ReadResponse function constructs a response...
+CVE-2025-61724
+# stdlib - crypto/x509: golang: Denial of Service due to excessive resource consumption via crafted certificate
+CVE-2025-61729
+# stdlib - crypto/tls: Unexpected session resumption in crypto/tls
+CVE-2025-68121

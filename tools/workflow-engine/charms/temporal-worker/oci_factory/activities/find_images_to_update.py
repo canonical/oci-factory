@@ -27,7 +27,8 @@ import requests
 import swiftclient
 import yaml
 
-# TODO: 
+
+# TODO:
 # - Future improvement: merge the functions below with similar code in temporal worker into its own module.
 def find_released_revisions(releases_json: dict) -> list:
     """Given the contents of a _release.json file,
@@ -79,8 +80,8 @@ def trigger_image_rebuild():
         return
 
     # Let's use an uber image trigger file to trigger the CI rebuilds
-    uber_img_trigger = {"version": 1, "upload": []}
-    uploads = {} # key: trigger triplet, value: uber_image_trigger["upload"] entry
+    uber_img_trigger = {"version": 2, "upload": []}
+    uploads = {}  # key: trigger triplet, value: uber_image_trigger["upload"] entry
     # We'll also need to find which tags (channels) to release the new
     # rebuilds to
     # TODO: Get rid of this once we have a proper DB where to store all the
@@ -105,9 +106,7 @@ def trigger_image_rebuild():
                 SWIFT_CONTAINER, image_revision["name"]
             )
         except swiftclient.exceptions.ClientException:
-            logging.exception(
-                f"Unable to get {image_revision['name']} from Swift"
-            )
+            logging.exception(f"Unable to get {image_revision['name']} from Swift")
             continue
 
         build_metadata = json.loads(build_metadata_raw.decode())
@@ -131,6 +130,9 @@ def trigger_image_rebuild():
             "source": build_metadata["source"],
             "commit": build_metadata["commit"],
             "directory": build_metadata["directory"],
+            "ignored-vulnerabilities": build_metadata.get(
+                "ignored-vulnerabilities", ""
+            ).split(),
         }
         release_to = {}
         imageTagDetails = tags.get("imageTagDetails", {})
@@ -180,9 +182,7 @@ def trigger_image_rebuild():
                         "end-of-life"
                     ]
             else:
-                logging.warning(
-                    f"Track {to_track} is missing its end-of-" "life field"
-                )
+                logging.warning(f"Track {to_track} is missing its end-of-" "life field")
 
         if not tags_matched:
             logging.warning(
@@ -205,9 +205,7 @@ def trigger_image_rebuild():
                 build_and_upload_data["release"] = release_to
                 uploads[triplet] = build_and_upload_data
 
-    uber_img_trigger["upload"] = [
-        trigger for trigger in uploads.values()
-    ]
+    uber_img_trigger["upload"] = [trigger for trigger in uploads.values()]
 
     if not uber_img_trigger["upload"]:
         logging.info(f"{image}: skipping revision {revision}, nothing to rebuild")
@@ -217,9 +215,7 @@ def trigger_image_rebuild():
     uber_img_trigger_yaml = yaml.safe_dump(
         uber_img_trigger, default_style=None, default_flow_style=False
     )
-    logging.info(
-        f"About to rebuild {image} with the trigger:\n{uber_img_trigger_yaml}"
-    )
+    logging.info(f"About to rebuild {image} with the trigger:\n{uber_img_trigger_yaml}")
 
     uber_img_trigger_b64 = base64.b64encode(uber_img_trigger_yaml.encode())
 
@@ -258,9 +254,7 @@ def trigger_image_rebuild():
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
-    parser = argparse.ArgumentParser(
-        description="Find images to update in OCI Factory"
-    )
+    parser = argparse.ArgumentParser(description="Find images to update in OCI Factory")
     parser.add_argument(
         "ubuntu_release",
         help="The Ubuntu release to check for images to update",
@@ -299,7 +293,13 @@ if __name__ == "__main__":
     )
     # Check the connection: get all objects from the 'oci-factory' Swift container
     SWIFT_CONTAINER = "oci-factory"
-    _, swift_oci_factory_objs = swift_conn.get_container(SWIFT_CONTAINER)
+    prefix = None
+    if image != "*":
+        prefix = f"{image}/"
+
+    _, swift_oci_factory_objs = swift_conn.get_container(
+        SWIFT_CONTAINER, prefix=prefix, full_listing=True
+    )
 
     # Need the ROCKsBot GitHub token in order to dispatch workflows
     GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
@@ -324,7 +324,9 @@ if __name__ == "__main__":
         images_to_check = os.listdir(oci_imgs_path) if image == "*" else [image]
 
         for image in images_to_check:
-            logging.info(f"#### Checking if {image} depends on release {ubuntu_release}")
+            logging.info(
+                f"#### Checking if {image} depends on release {ubuntu_release}"
+            )
             try:
                 # Check what is currently released for this image
                 with open(f"{oci_imgs_path}/{image}/_releases.json") as rel:

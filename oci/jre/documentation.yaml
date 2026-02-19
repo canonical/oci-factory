@@ -16,26 +16,27 @@ description: |
   Its purpose is to serve as a runtime, final-stage base image for
   compatible Java applications.
 
-  Read more about chiselled Ubuntu for OpenJRE, a new class of OCI images,
+  Read more about chiselled Ubuntu for OpenJDK JRE, a new class of OCI images,
   on [the Ubuntu blog](https://ubuntu.com/blog/combining-distroless-and-ubuntu-chiselled-containers).
   And remember, the best base image is FROM scratch: so you could also
   [easily craft your own chiselled Ubuntu base](https://ubuntu.com/blog/craft-custom-chiselled-ubuntu-distroless)
   for your app specific needs.
 
-  Please note that the images tagged 8 and 17 are Dockerfile-base images,
-  whereas from version 21 onward the images are now rocks. As such the
-  entrypoint is now Pebble. Read more on the
+  Please note that the Ubuntu 22.04 JRE images are Dockerfile-base
+  images, whereas from Ubuntu 24.04 onward the images
+  are now rocks. As such the entrypoint is now Pebble. Read more on the
   [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
 
-  Version 8 and 17 images have `java` as the entrypoint.
+  Ubuntu 22.04 JRE images have `java` as the entrypoint.
 
   ```bash
   $ docker run --rm ubuntu/jre:17_edge
   Usage: java [options] <mainclass> [args...]
   ```
 
-  Version 11 and 21 images have `pebble enter` as the entrypoint. You can
-  access the `java` with the following command:
+  Ubuntu 24.04 JRE images have `pebble enter`
+  as the entrypoint. You can access the `java` with the following
+  command:
 
   ```bash
   $ docker run --rm ubuntu/jre:21_edge exec java
@@ -47,12 +48,12 @@ description: |
 
   Launch this image locally:
 
-  For versions 8 and 17
+  For Ubuntu 22.04 JRE
 
   ```bash
   docker run -d --name jre-container -e TZ=UTC ubuntu/jre:17-22.04_edge
   ```
-  For versions 11 and 21
+  For Ubuntu 24.04 JRE
 
   ```bash
   docker run -d --name jre-container -e TZ=UTC ubuntu/jre:21-24.04_edge exec java
@@ -76,7 +77,8 @@ description: |
   ```
 
   You can build and package the above Hello World application with
-  chiselled Ubuntu 8 and 17 using the following example Dockerfile.
+  chiselled Ubuntu 22.04 JRE 8 and 17 using the following example
+  Dockerfile.
 
   ```docker
   FROM ubuntu:22.04 AS builder
@@ -94,7 +96,7 @@ description: |
   CMD [ "HelloWorld" ]
   ```
 
-  For versions 11 and 21 please use
+  For Ubuntu 24.04 please use
 
   ```docker
   FROM ubuntu:24.04 AS builder
@@ -121,7 +123,7 @@ debug:
     docker logs -f openjdk-jre-container
     ```
 
-    For versions 11 and 21, to inspect application logs:
+    For Ubuntu 24.04 JRE, to inspect application logs:
 
     ```bash
     docker exec openjdk-jre-container pebble logs

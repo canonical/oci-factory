@@ -190,11 +190,12 @@ jobs:
     uses: ./.github/workflows/Test-Rock.yaml
     with:
       oci-archive-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}"
-      trivyignore-path: "oci/${{ matrix.name }}/.trivyignore"
+      trivyignore-path: ${{ matrix.ignored-vulnerabilities == '' && format('oci/{0}/.trivyignore', matrix.name) || '' }}
+      ignored-vulnerabilities: ${{ matrix.ignored-vulnerabilities }}
     secrets: inherit
 
   prepare-upload:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [prepare-build, build-rock, test-rock]
     name: Prepare upload
     if: ${{ inputs.upload || (github.ref_name == 'main' && github.event_name == 'push') }}
@@ -276,7 +277,7 @@ jobs:
           key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
 
   upload:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [prepare-build, prepare-upload]
     name: Upload
     strategy:
@@ -301,7 +302,7 @@ jobs:
           ROCKS_DEV_LP_USERNAME: ${{ secrets.ROCKS_DEV_LP_USERNAME }}
           CPC_BUILD_TOOLS_REPO: git.launchpad.net/~cloudware/cloudware/+git/cpc_build_tools
           # CPC_BUILD_TOOLS_REPO_REF: 9b716ed8a8ba728d036b54b1bb17a8f49dbda434
-          SKOPEO_BRANCH: "v1.9.1"
+          SKOPEO_BRANCH: "v1.20.0"
           SKOPEO_URL: "https://github.com/containers/skopeo"
         run: |
           ./src/image/requirements.sh
@@ -468,7 +469,9 @@ jobs:
         run: |
           jq --arg base "${{ matrix.base }}" \
             --arg digest "${{ steps.upload-image.outputs.digest }}" \
-            '. + {base: $base, digest: $digest}' <<< '${{ toJSON(matrix) }}' > build_metadata.json
+            --arg ignored_vulnerabilities "${{ matrix.ignored-vulnerabilities }}" \
+            '. + {base: $base, digest: $digest, "ignored-vulnerabilities": $ignored_vulnerabilities}' \
+            <<< '${{ toJSON(matrix) }}' > build_metadata.json
           ./src/uploads/upload_to_swift.sh \
             ${{ matrix.name }} \
             ${{ matrix.track }} \

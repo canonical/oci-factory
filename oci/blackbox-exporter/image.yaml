@@ -1,14 +1,18 @@
 version: 1
 upload:
   - source: canonical/blackbox-exporter-rock
-    commit: 1fde2ee2dede24359ccee3fbacc0b0222c0d996d
-    directory: 0.26.0
+    commit: 38620f54a48d35764621301593bc119900aaf6a1
+    directory: 0.28.0
     release:
       0-24.04:
-        end-of-life: '2025-07-11T00:00:00Z'
+        end-of-life: '2026-05-19T00:00:00Z'
         risks:
           - stable
-      0.26-24.04:
-        end-of-life: '2025-07-11T00:00:00Z'
+      0.28-24.04:
+        end-of-life: '2026-05-19T00:00:00Z'
+        risks:
+          - stable
+      0.28.0-24.04:
+        end-of-life: '2026-02-16T00:00:00Z'
         risks:
           - stable

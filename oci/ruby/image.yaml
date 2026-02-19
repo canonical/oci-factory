@@ -1,11 +1,11 @@
 version: 1
 upload:
   - source: canonical/ruby-rock
-    commit: 79ca0043dc3715051b130d32d7a26b19e6092a88
-    directory: ruby/3.3-25.04
+    commit: bc370ce666898d0f49dfd9d8ab30acc24468d71d
+    directory: ruby/3.2-24.04
     release:
-      3.3-25.04:
-        end-of-life: '2026-01-15T00:00:00Z'
+      3.2-24.04:
+        end-of-life: "2029-05-31T00:00:00Z"
         risks:
           - stable
           - candidate

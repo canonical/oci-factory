@@ -1,0 +1,14 @@
+version: 1
+upload:
+  - source: canonical/airflow-rocks
+    commit: b1575f3280ef0419ad278bb262c4c4812b4140d2
+    directory: 3.1.0
+    release:
+      3-24.04:
+        end-of-life: "2026-02-05T00:00:00Z"
+        risks:
+          - edge
+      3.1-24.04:
+        end-of-life: "2026-02-05T00:00:00Z"
+        risks:
+          - edge

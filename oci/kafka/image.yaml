@@ -2,10 +2,18 @@ version: 1
     
 upload:  
   - source: "canonical/kafka-rock"
-    commit: 728311b40b55e13ada3112e10a59cd3aaabab048
+    commit: aad63c2e9209a31818daead25bd68de9a0673a0e
     directory: .
     release:
-      3.9.1-22.04:
-        end-of-life: "2027-02-09T00:00:00Z"
+      4.1-24.04:
+        end-of-life: "2029-05-31T00:00:00Z"
+        risks:
+          - edge
+  - source: "canonical/kafka-rock"
+    commit: a4c7dd466d6f25a66de1f9ed192ec3239ba07f76
+    directory: .
+    release:
+      3.9-22.04:
+        end-of-life: "2027-06-01T00:00:00Z"
         risks:
           - edge

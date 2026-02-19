@@ -5,7 +5,7 @@ released revision numbers. From that number, it queries GHCR in order to
 form and return a list of image names in their canonical format, i.e.:
     ghcr.io/canonical/oci-factory/<img-name>:<canonical-track>_<revision>
     ...
-    
+
 TODO: this script could eventually be adjusted and converted to a Temporal
 Activity that runs from within a scheduled workflow.
 """
@@ -20,7 +20,7 @@ import docker
 
 from ..shared.logs import get_logger
 
-SKOPEO_IMAGE = os.getenv("SKOPEO_IMAGE", "quay.io/skopeo/stable:v1.15.1")
+SKOPEO_IMAGE = os.getenv("SKOPEO_IMAGE", "quay.io/skopeo/stable:v1.20.0")
 REGISTRY = "ghcr.io/canonical/oci-factory"
 
 logger = get_logger(stream=sys.stdout, level="INFO")
