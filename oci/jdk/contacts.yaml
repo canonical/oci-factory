@@ -1,0 +1,5 @@
+notify:
+  emails:
+    - foundations-crew@lists.canonical.com
+  mattermost-channels:
+    - fjogmntyqpy99cjfhdkzuet57h
