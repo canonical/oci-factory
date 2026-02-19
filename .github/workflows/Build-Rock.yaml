@@ -319,7 +319,7 @@ jobs:
             ./.github/actions/crypt-artifact/crypt-artifact.sh decrypt \
               -i "$rock" \
               -p "$ARTIFACT_PASSPHRASE" \
-              -o "${rock%.gpg}" \
+              -o "${rock%.gpg}"
           done
 
       - name: Assembling Multi Arch rock
