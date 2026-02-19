@@ -6,6 +6,6 @@ upload:
     directory: .
     release:
       16-24.04:
-        end-of-life: "2025-01-01T00:00:00Z"
+        end-of-life: "2026-03-01T00:00:00Z"
         risks:
           - edge
