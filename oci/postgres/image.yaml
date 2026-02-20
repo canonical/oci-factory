@@ -1,0 +1,11 @@
+version: 1
+
+upload:
+  - source: "canonical/postgresql-rock"
+    commit: 92485999ea9118e59017861d37b01a5d0bfea0a0
+    directory: .
+    release:
+      16-24.04:
+        end-of-life: "2029-05-31T00:00:00Z"
+        risks:
+          - edge
