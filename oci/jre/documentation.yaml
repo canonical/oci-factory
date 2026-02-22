@@ -43,75 +43,76 @@ description: |
   Usage: java [options] <mainclass> [args...]
   ...
   ```
+docker:
+  parameters:
+    - -e TZ=UTC
+  access: |
+    Launch this image locally:
 
-  ## Usage
+    For Ubuntu 22.04 JRE
 
-  Launch this image locally:
+    ```bash
+    docker run -d --name jre-container -e TZ=UTC ubuntu/jre:17-22.04_edge
+    ```
+    For Ubuntu 24.04 JRE
 
-  For Ubuntu 22.04 JRE
+    ```bash
+    docker run -d --name jre-container -e TZ=UTC ubuntu/jre:21-24.04_edge exec java
+    ```
 
-  ```bash
-  docker run -d --name jre-container -e TZ=UTC ubuntu/jre:17-22.04_edge
-  ```
-  For Ubuntu 24.04 JRE
+    The container logs will simply show the OpenJRE help message.
+    This is because the container expects a compiled Java application to be given.
 
-  ```bash
-  docker run -d --name jre-container -e TZ=UTC ubuntu/jre:21-24.04_edge exec java
-  ```
+    Let's use the following Hello World application as an example:
 
-  The container logs will simply show the OpenJRE help message.
-  This is because the container expects a compiled Java application to be given.
+    ```java
+    // HelloWorld.java
 
-  Let's use the following Hello World application as an example:
+    class HelloWorld
+    {
+        public static void main(String args[])
+        {
+            System.out.println("Hello, World");
+        }
+    }
+    ```
 
-  ```java
-  // HelloWorld.java
+    You can build and package the above Hello World application with
+    chiselled Ubuntu 22.04 JRE 8 and 17 using the following example
+    Dockerfile.
 
-  class HelloWorld
-  {
-      public static void main(String args[])
-      {
-          System.out.println("Hello, World");
-      }
-  }
-  ```
+    ```docker
+    FROM ubuntu:22.04 AS builder
+    RUN apt-get update && apt-get install -y openjdk-8-jdk
+    WORKDIR /app
+    ADD HelloWorld.java .
 
-  You can build and package the above Hello World application with
-  chiselled Ubuntu 22.04 JRE 8 and 17 using the following example
-  Dockerfile.
+    RUN javac -source 8 -target 8 HelloWorld.java -d .
 
-  ```docker
-  FROM ubuntu:22.04 AS builder
-  RUN apt-get update && apt-get install -y openjdk-8-jdk
-  WORKDIR /app
-  ADD HelloWorld.java .
+    FROM ubuntu/jre:8-22.04_edge
 
-  RUN javac -source 8 -target 8 HelloWorld.java -d .
+    WORKDIR /
+    COPY --from=builder /app/HelloWorld.class .
 
-  FROM ubuntu/jre:8-22.04_edge
+    CMD [ "HelloWorld" ]
+    ```
 
-  WORKDIR /
-  COPY --from=builder /app/HelloWorld.class .
+    For Ubuntu 24.04 please use
 
-  CMD [ "HelloWorld" ]
-  ```
+    ```docker
+    FROM ubuntu:24.04 AS builder
+    RUN apt-get update && apt-get install -y openjdk-8-jdk
+    WORKDIR /app
+    ADD HelloWorld.java .
 
-  For Ubuntu 24.04 please use
+    RUN javac -source 8 -target 8 HelloWorld.java -d .
 
-  ```docker
-  FROM ubuntu:24.04 AS builder
-  RUN apt-get update && apt-get install -y openjdk-8-jdk
-  WORKDIR /app
-  ADD HelloWorld.java .
+    FROM ubuntu/jre:21-24.04_edge
 
-  RUN javac -source 8 -target 8 HelloWorld.java -d .
+    COPY --from=builder /app/HelloWorld.class .
 
-  FROM ubuntu/jre:21-24.04_edge
-
-  COPY --from=builder /app/HelloWorld.class .
-
-  CMD [ "exec", "java", "-cp", "/", "HelloWorld" ]
-  ```
+    CMD [ "exec", "java", "-cp", "/", "HelloWorld" ]
+    ```
 
 debug:
   text: |
