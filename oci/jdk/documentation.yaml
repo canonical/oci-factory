@@ -31,42 +31,39 @@ description: |
   ...
   ```
 
-  ## Usage
+docker:
+  parameters:
+    - -d
+    - --name jdk-container
+    - -e TZ=UTC
+  access: |
+    Launch this image locally:
 
-  Launch this image locally:
+    ```bash
+    docker run -d --name jdk-container -e TZ=UTC ubuntu/jdk:21-24.04_edge exec java
+    ```
+    The container logs will simply show the OpenJRE help message.
+    This is because the container expects a compiled Java application to be given.
 
-  ```bash
-  docker run -d --name jdk-container -e TZ=UTC ubuntu/jdk:21-24.04_edge exec java
-  ```
+    Let's use the following Hello World application as an example:
 
-  The container logs will simply show the OpenJRE help message.
-  This is because the container expects a compiled Java application to be given.
+    ```java
+    // HelloWorld.java
 
-  Let's use the following Hello World application as an example:
+    class HelloWorld
+    {
+        public static void main(String args[])
+        {
+            System.out.println("Hello, World");
+        }
+    }
+    ```
 
-  ```java
-  // HelloWorld.java
+    You can run the above Hello World application using the following command:
 
-  class HelloWorld
-  {
-      public static void main(String args[])
-      {
-          System.out.println("Hello, World");
-      }
-  }
-  ```
-
-  You can run the above Hello World application using
-  the following example Dockerfile.
-
-  ```docker
-  FROM ubuntu/jdk:21-24.04_edge
-
-  WORKDIR /
-  COPY HelloWorld.java /
-
-  CMD [ "exec", "java", "/HelloWorld.java" ]
-  ```
+    ```bash
+    docker run -e TZ=UTC ubuntu/jdk:21-24.04_edge exec java HelloWorld.java
+    ```
 
 debug:
   text: |
