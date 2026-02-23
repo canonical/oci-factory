@@ -329,13 +329,13 @@ jobs:
             -d "${{ env.ROCK_CI_FOLDER }}"
       
       - name: Get artifact name
-        id: artifact-name
+        id: final-artifact
         run: |
-          artifact_name="${{ inputs.oci-archive-name }}"
+          name="${{ inputs.oci-archive-name }}"
           if [[ ${{ needs.configure-build.outputs.pro-build }} == 'true' ]]; then
-            artifact_name="${artifact_name}.gpg"
+            name="${name}.gpg"
           fi
-          echo "artifact_name=$artifact_name" >> $GITHUB_OUTPUT
+          echo "name=$name" >> $GITHUB_OUTPUT
 
       - name: Encrypting Multi Arch Rock Artifact
         if: ${{ needs.configure-build.outputs.pro-build == 'true' }}
@@ -343,7 +343,7 @@ jobs:
         with:
           mode: encrypt
           input-path: ${{ inputs.oci-archive-name }}
-          output-path: ${{ steps.artifact-name.outputs.artifact_name }}
+          output-path: ${{ steps.final-artifact.outputs.name }}
           passphrase: ${{ secrets.pro-artifact-passphrase }}
           preserve-original: false
 
@@ -351,5 +351,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.oci-archive-name }}
-          path: ${{ steps.artifact-name.outputs.artifact_name }}
+          path: ${{ steps.final-artifact.outputs.name }}
           if-no-files-found: error
