@@ -30,10 +30,6 @@ description: |
   ```
 
 docker:
-  parameters:
-    - -d
-    - --name jdk-container
-    - -e TZ=UTC
   access: |
     The container logs will simply show the OpenJDK help message.
     This is because the container expects a compiled Java application to be given.
