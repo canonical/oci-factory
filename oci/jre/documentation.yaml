@@ -44,16 +44,7 @@ description: |
   ...
   ```
 docker:
-  parameters:
-    - -e TZ=UTC
   access: |
-    Launch this image locally:
-
-    For Ubuntu 22.04 JRE
-
-    ```bash
-    docker run -d --name jre-container -e TZ=UTC ubuntu/jre:17-22.04_edge
-    ```
     For Ubuntu 24.04 JRE
 
     ```bash
