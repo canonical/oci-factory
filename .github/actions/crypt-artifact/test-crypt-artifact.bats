@@ -42,7 +42,7 @@ teardown() {
 
 @test "encrypt mode works for a single file (with output path)" {
   local input_path="$workdir/test_file.txt"
-  local output_path="$my_encrypted_file.gpg"
+  local output_path="$workdir/my_encrypted_file.gpg"
   
   # Encrypt the file passing the output path
   run bash "$SOURCE_SCRIPT" "encrypt" -i "$input_path" -p "$TEST_PASSPHRASE" -o "$output_path"
@@ -83,7 +83,7 @@ teardown() {
 
 @test "encrypt mode works for a single file (preserve-original)" {
   local input_path="$workdir/test_file.txt"
-  local output_path="$my_encrypted_file.gpg"
+  local output_path="$workdir/my_encrypted_file.gpg"
   
   # Encrypt the file with preserve-original flag
   run bash "$SOURCE_SCRIPT" "encrypt" -i "$input_path" -p "$TEST_PASSPHRASE" -o "$output_path" --preserve-original
