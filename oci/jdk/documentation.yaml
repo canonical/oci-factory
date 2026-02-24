@@ -12,11 +12,9 @@ description: |
 
   ## About Chiselled Ubuntu
 
-  This image does not include bash nor a package manager nor the OpenJDK.
-  Its purpose is to serve as a runtime, final-stage base image for
-  compatible Java applications.
+  The image provides a minimal development rock to build and run Java applications.
 
-  Read more about chiselled Ubuntu for OpenJRE, a new class of OCI images,
+  Read more about chiselled Ubuntu for OpenJDK, a new class of OCI images,
   on [the Ubuntu blog](https://ubuntu.com/blog/combining-distroless-and-ubuntu-chiselled-containers).
   And remember, the best base image is FROM scratch: so you could also
   [easily craft your own chiselled Ubuntu base](https://ubuntu.com/blog/craft-custom-chiselled-ubuntu-distroless)
@@ -37,12 +35,7 @@ docker:
     - --name jdk-container
     - -e TZ=UTC
   access: |
-    Launch this image locally:
-
-    ```bash
-    docker run -d --name jdk-container -e TZ=UTC ubuntu/jdk:21-24.04_edge exec java
-    ```
-    The container logs will simply show the OpenJRE help message.
+    The container logs will simply show the OpenJDK help message.
     This is because the container expects a compiled Java application to be given.
 
     Let's use the following Hello World application as an example:
