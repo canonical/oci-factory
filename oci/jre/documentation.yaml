@@ -44,6 +44,7 @@ description: |
   ...
   ```
 docker:
+  parameters: []
   access: |
     For Ubuntu 24.04 JRE
 
