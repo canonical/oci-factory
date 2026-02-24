@@ -68,13 +68,13 @@ validate_args() {
         exit 1
     fi
 
-    files=$(ls -la $input_path 2>/dev/null)
-    if [[ $(wc -l <<< "$files") -gt 1 ]]; then
+    matches=( $input_path )
+    if (( ${#matches[@]} > 1 )); then
         log_error "There are multiple files matching the input path: $input_path. Please specify a single file."
         exit 1
     fi
 
-    input_file=$(ls -la $input_path 2>/dev/null | awk '{print $NF}')
+    input_file="${matches[0]}"
     if [ ! -f "$input_file" ]; then
         log_error "Input path does not exist: $input_path"
         exit 1
