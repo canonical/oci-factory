@@ -44,12 +44,13 @@ description: |
   ...
   ```
 docker:
-  parameters: []
+  parameters:
+    - --rm
   access: |
     For Ubuntu 24.04 JRE
 
     ```bash
-    docker run -d --name jre-container -e TZ=UTC ubuntu/jre:21-24.04_edge exec java
+    docker run --rm --name jre-container -e TZ=UTC ubuntu/jre:21-24.04_edge exec java
     ```
 
     The container logs will simply show the OpenJRE help message.
