@@ -78,15 +78,15 @@
         }
     },
     "1.25-22.04": {
-        "end-of-life": "2025-10-15T00:00:00Z",
+        "end-of-life": "2026-03-11T00:00:00Z",
         "candidate": {
-            "target": "35"
+            "target": "55"
         },
         "edge": {
-            "target": "35"
+            "target": "55"
         },
         "beta": {
-            "target": "35"
+            "target": "1.25-22.04_candidate"
         }
     }
 }
