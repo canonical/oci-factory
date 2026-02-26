@@ -1,0 +1,10 @@
+version: 1
+upload:
+  - source: canonical/apache2-rock
+    commit: 79eac2f16e654d7c5a60134a2e1ab387c12ec577
+    directory: apache2/2.4-26.04
+    release:
+      2.4-26.04:
+        end-of-life: "2031-05-29T00:00:00Z"
+        risks:
+          - edge
