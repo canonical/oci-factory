@@ -132,7 +132,20 @@ func parseIgnoredVulnerabilities(arg string) []string {
 	splitFn := func(c rune) bool {
 		return c == ','
 	}
-	return strings.FieldsFunc(arg, splitFn)
+	raw := strings.FieldsFunc(arg, splitFn)
+
+	// Trim whitespace, filter out empty entries, and deduplicate IDs.
+	ignored := make([]string, 0, len(raw))
+	for _, v := range raw {
+		id := strings.TrimSpace(v)
+		if id == "" {
+			continue
+		}
+		if !slices.Contains(ignored, id) {
+			ignored = append(ignored, id)
+		}
+	}
+	return ignored
 }
 
 func triggerUploadReleases(releases []UploadRelease, ignored_vulnerabilities []string) {

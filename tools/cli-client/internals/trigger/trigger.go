@@ -56,7 +56,7 @@ func NewUploadImageTrigger(buildMetadata BuildMetadata, tracks UploadReleaseTrac
 
 func NewUploadTrigger(imageTriggers []UploadImageTrigger) UploadTrigger {
 	trigger := UploadTrigger{
-		Version:             1,
+		Version:             2,
 		UploadImageTriggers: imageTriggers,
 	}
 	return trigger
