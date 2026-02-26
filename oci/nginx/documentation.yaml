@@ -1,0 +1,66 @@
+version: 1
+
+application: Nginx
+is_chiselled: true
+description: |
+  Nginx ("engine X") is a high-performance web and reverse proxy server created by Igor Sysoev.
+  It can be used both as a standalone web server and as a proxy to reduce the load on back-end HTTP
+  or mail servers. Read more on the [nginx website](https://www.f5.com/products/nginx).
+
+docker:
+  parameters:
+    - -p 8080:80
+  access: Access your Nginx server at `http://localhost:8080`.
+
+parameters:
+  - type: -p
+    value: '8080:80'
+    description: Expose Nginx on `localhost:8080`.
+  - type: -v
+    value: /local/path/to/website:/var/www/html:ro
+    description: Mount and serve a local website.
+  - type: -v
+    value: /path/to/conf.template:/etc/nginx/templates/conf.template
+    description: Mount template files inside `/etc/nginx/templates`. They will be processed and the results will be placed at `/etc/nginx/conf.d`. (e.g.  listen ${NGINX_PORT}``; will generate `listen 80`;).
+  - type: -v
+    value: /path/to/nginx.conf:/etc/nginx/nginx.conf:ro
+    description: Local [configuration file](https://nginx.org/en/docs/) (try [this example](https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/nginx/plain/examples/config/nginx.conf?h=1.18-22.04))
+debug:
+  text: |
+    ### Deploy with Kubernetes
+
+    Works with any Kubernetes; if you don't have one, we recommend you [install MicroK8s](https://canonical.com/microk8s)
+    and `microk8s.enable dns storage` then `snap alias microk8s.kubectl kubectl`.
+
+    Download [nginx.conf](https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/nginx/plain/examples/config/nginx.conf?h=1.18-22.04),
+    [index.html](https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/nginx/plain/examples/config/html/index.html?h=1.18-22.04)
+    and [nginx-deployment.yml](https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/nginx/plain/examples/nginx-deployment.yml?h=1.18-22.04)
+    and set `containers.nginx.image` in `nginx-deployment.yml` to your chosen channel tag (e.g. `ubuntu/nginx:1.27-24.04_stable`), then:
+
+    ```bash
+    kubectl create configmap nginx-config --from-file=nginx=nginx.conf --from-file=nginx-site=index.html
+    kubectl apply -f nginx-deployment.yml
+    ```
+
+    You will now be able to connect to the nginx server on `http://localhost:31080`.
+
+override_tracks:
+  # Tracks release from legacy repo
+  1.26-24.10:
+    end-of-life: '2025-07-10T00:00:00Z'
+  1.24-24.04:
+    end-of-life: '2029-05-31T00:00:00Z'
+  1.24-23.10:
+    end-of-life: '2024-07-11T00:00:00Z'
+  1.22-23.04:
+    end-of-life: '2024-01-25T00:00:00Z'
+  1.22-22.10:
+    end-of-life: '2023-07-20T00:00:00Z'
+  1.18-22.04:
+    end-of-life: '2027-06-01T00:00:00Z'
+  1.18-21.10:
+    end-of-life: '2022-07-14T00:00:00Z'
+  1.18-21.04:
+    end-of-life: '2022-01-20T00:00:00Z'
+  1.18-20.04:
+    end-of-life: '2025-05-29T00:00:00Z'
