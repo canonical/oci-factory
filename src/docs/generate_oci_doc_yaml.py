@@ -19,7 +19,8 @@ import yaml
 from dateutil import parser
 
 import src.shared.release_info as shared
-from src.docs.schema.triggers import DocSchema
+from src.docs.schema.v1 import DocSchema as DocSchemaV1
+from src.docs.schema.v2 import DocSchema as DocSchemaV2
 
 from ..shared.logs import get_logger
 
@@ -289,9 +290,16 @@ class OCIDocumentationData:
         logger.info("Opening file %s", doc_file)
         with open(doc_file, "r", encoding="UTF-8") as file:
             try:
-                base_doc_data = DocSchema(
-                    **yaml.load(file, Loader=yaml.BaseLoader) or {}
-                ).model_dump(exclude_none=True)
+                yaml_file = yaml.load(file, Loader=yaml.BaseLoader) or {}
+
+                if yaml_file.get("version") == 1:
+                    base_doc_data = DocSchemaV1(**yaml_file).model_dump(exclude_none=True)
+                elif yaml_file.get("version") == 2:
+                    base_doc_data = DocSchemaV2(**yaml_file).model_dump(exclude_none=True)
+                else:
+                    raise ValueError(
+                        f"Unsupported documentation.yaml version: {yaml_file.get('version')}"
+                    )
             except (yaml.YAMLError, pydantic.ValidationError) as exc:
                 msg = f"Error loading the {doc_file} file"
                 raise Exception(msg) from exc
