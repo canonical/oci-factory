@@ -31,8 +31,8 @@ def get_base_and_track(rockcraft_yaml) -> tuple[str, str]:
 
     if rock_base == "devel":
         rock_base = subprocess.check_output(
-            ["ubuntu-distro-info", "--devel"], universal_newlines=True
-        ).splitlines()[0]
+            ["ubuntu-distro-info", "--devel", "--release"], universal_newlines=True
+        ).splitlines()[0].split()[0]
 
     try:
         base_release = float(rock_base.replace(":", "@").split("@")[-1])
