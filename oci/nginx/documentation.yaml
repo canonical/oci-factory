@@ -25,24 +25,20 @@ parameters:
   - type: -v
     value: /path/to/nginx.conf:/etc/nginx/nginx.conf:ro
     description: Local [configuration file](https://nginx.org/en/docs/) (try [this example](https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/nginx/plain/examples/config/nginx.conf?h=1.18-22.04))
-debug:
-  text: |
-    ### Deploy with Kubernetes
 
-    Works with any Kubernetes; if you don't have one, we recommend you [install MicroK8s](https://canonical.com/microk8s)
-    and `microk8s.enable dns storage` then `snap alias microk8s.kubectl kubectl`.
-
-    Download [nginx.conf](https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/nginx/plain/examples/config/nginx.conf?h=1.18-22.04),
-    [index.html](https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/nginx/plain/examples/config/html/index.html?h=1.18-22.04)
-    and [nginx-deployment.yml](https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/nginx/plain/examples/nginx-deployment.yml?h=1.18-22.04)
-    and set `containers.nginx.image` in `nginx-deployment.yml` to your chosen channel tag (e.g. `ubuntu/nginx:1.27-24.04_stable`), then:
-
-    ```bash
-    kubectl create configmap nginx-config --from-file=nginx=nginx.conf --from-file=nginx-site=index.html
-    kubectl apply -f nginx-deployment.yml
-    ```
-
-    You will now be able to connect to the nginx server on `http://localhost:31080`.
+microk8s:
+  deploy:
+    link: https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/nginx/plain/examples/nginx-deployment.yml?h=1.18-22.04
+    access: |
+      You will now be able to connect to the nginx server on `http://localhost:31080`.
+  configmap:
+    files:
+      - key: nginx
+        name: nginx.conf
+        link: https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/nginx/plain/examples/config/nginx.conf?h=1.18-22.04
+      - key: nginx-site
+        name: index.html
+        link: https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/nginx/plain/examples/config/html/index.html?h=1.18-22.04
 
 override_tracks:
   # Tracks release from legacy repo
