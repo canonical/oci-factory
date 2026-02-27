@@ -23,20 +23,19 @@ parameters:
     value: /path/to/apache2.conf:/etc/apache2/apache2.conf:ro
     description: Local [configuration file](https://httpd.apache.org/docs/2.4) `apache2.conf` (try [this example](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/config/apache2.conf?h=2.4-22.04))
 
-debug:
-  microk8s:
-    deploy:
-      link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/apache2-deployment.yml?h=2.4-22.04
-      access: |
-        You will now be able to connect to the apache2 server on `http://localhost:30080`.
-    configmap:
-      files:
-        - key: apache2
-          name: apache2.conf
-          link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/config/apache2.conf?h=2.4-22.04
-        - key: apache2-site
-          name: index.html
-          link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/config/html/index.html?h=2.4-22.04
+microk8s:
+  deploy:
+    link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/apache2-deployment.yml?h=2.4-22.04
+    access: |
+      You will now be able to connect to the apache2 server on `http://localhost:30080`.
+  configmap:
+    files:
+      - key: apache2
+        name: apache2.conf
+        link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/config/apache2.conf?h=2.4-22.04
+      - key: apache2-site
+        name: index.html
+        link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/config/html/index.html?h=2.4-22.04
 
 override_tracks:
   # Tracks release from legacy repo
