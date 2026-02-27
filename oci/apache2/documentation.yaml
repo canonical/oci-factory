@@ -24,23 +24,19 @@ parameters:
     description: Local [configuration file](https://httpd.apache.org/docs/2.4) `apache2.conf` (try [this example](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/config/apache2.conf?h=2.4-22.04))
 
 debug:
-  text: |
-    ### Deploy with Kubernetes
-
-    Works with any Kubernetes; if you don't have one, we recommend you [install MicroK8s](https://canonical.com/microk8s)
-    and `microk8s.enable dns storage` then `snap alias microk8s.kubectl kubectl`.
-
-    Download [apache2.conf](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/config/apache2.conf?h=2.4-22.04),
-    [index.html](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/config/html/index.html?h=2.4-22.04)
-    and [apache2-deployment.yml](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/apache2-deployment.yml?h=2.4-22.04)
-    and set `containers.apache2.image` in `apache2-deployment.yml` to your chosen channel tag (e.g. `ubuntu/apache2:2.4-22.04_stable`), then:
-
-    ```bash
-    kubectl create configmap apache2-config --from-file=apache2=apache2.conf --from-file=apache2-site=index.html
-    kubectl apply -f apache2-deployment.yml
-    ```
-
-    You will now be able to connect to the Apache2 server on `http://localhost:30080`.
+  microk8s:
+    deploy:
+      link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/apache2-deployment.yml?h=2.4-22.04
+      access: |
+        You will now be able to connect to the apache2 server on `http://localhost:30080`.
+    configmap:
+      files:
+        - key: apache2
+          name: apache2.conf
+          link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/config/apache2.conf?h=2.4-22.04
+        - key: apache2-site
+          name: index.html
+          link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/config/html/index.html?h=2.4-22.04
 
 override_tracks:
   # Tracks release from legacy repo
