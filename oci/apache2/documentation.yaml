@@ -1,0 +1,61 @@
+version: 1
+
+application: Apache2
+is_chiselled: true
+description: |
+  The Apache HTTP Server Project's goal is to build a secure, efficient and extensible
+  HTTP server as standards-compliant open source software. The result has long been the
+  number one web server on the Internet. Read more on the [apache2 website](https://httpd.apache.org/).
+
+docker:
+  parameters:
+    - -p 8080:80
+  access: Access your Apache2 server at `http://localhost:8080`.
+
+parameters:
+  - type: -p
+    value: '8080:80'
+    description: Expose Apache2 on `localhost:8080`.
+  - type: -v
+    value: /local/path/to/website:/var/www/html:ro
+    description: Mount and serve a local website.
+  - type: -v
+    value: /path/to/apache2.conf:/etc/apache2/apache2.conf:ro
+    description: Local [configuration file](https://httpd.apache.org/docs/2.4) `apache2.conf` (try [this example](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/config/apache2.conf?h=2.4-22.04))
+
+microk8s:
+  deploy:
+    link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/apache2-deployment.yml?h=2.4-22.04
+    access: |
+      You will now be able to connect to the apache2 server on `http://localhost:30080`.
+  configmap:
+    files:
+      - key: apache2
+        name: apache2.conf
+        link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/config/apache2.conf?h=2.4-22.04
+      - key: apache2-site
+        name: index.html
+        link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/config/html/index.html?h=2.4-22.04
+
+override_tracks:
+  # Tracks release from legacy repo
+  2.4-25.04:
+    end-of-life: '2026-01-15T00:00:00Z'
+  2.4-24.10:
+    end-of-life: '2025-07-10T00:00:00Z'
+  2.4-24.04:
+    end-of-life: '2029-05-31T00:00:00Z'
+  2.4-23.10:
+    end-of-life: '2024-07-11T00:00:00Z'
+  2.4-23.04:
+    end-of-life: '2024-01-25T00:00:00Z'
+  2.4-22.10:
+    end-of-life: '2023-07-20T00:00:00Z'
+  2.4-22.04:
+    end-of-life: '2027-06-01T00:00:00Z'
+  2.4-21.10:
+    end-of-life: '2022-07-14T00:00:00Z'
+  2.4-21.04:
+    end-of-life: '2022-01-20T00:00:00Z'
+  2.4-20.04:
+    end-of-life: '2025-05-29T00:00:00Z'
