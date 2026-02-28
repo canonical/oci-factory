@@ -292,9 +292,9 @@ class OCIDocumentationData:
             try:
                 yaml_file = yaml.load(file, Loader=yaml.BaseLoader) or {}
 
-                if yaml_file.get("version") == 1:
+                if int(yaml_file.get("version")) == 1:
                     base_doc_data = DocSchemaV1(**yaml_file).model_dump(exclude_none=True)
-                elif yaml_file.get("version") == 2:
+                elif int(yaml_file.get("version")) == 2:
                     base_doc_data = DocSchemaV2(**yaml_file).model_dump(exclude_none=True)
                 else:
                     raise ValueError(
