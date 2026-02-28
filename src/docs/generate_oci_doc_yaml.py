@@ -19,8 +19,8 @@ import yaml
 from dateutil import parser
 
 import src.shared.release_info as shared
-from src.docs.schema.v1 import DocSchema as DocSchemaV1
-from src.docs.schema.v2 import DocSchema as DocSchemaV2
+from src.docs.schema.v1.DocSchema import DocSchema as DocSchemaV1
+from src.docs.schema.v2.DocSchema import DocSchema as DocSchemaV2
 
 from ..shared.logs import get_logger
 
