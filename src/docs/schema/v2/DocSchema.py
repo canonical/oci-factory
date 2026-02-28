@@ -52,21 +52,20 @@ class DockerRun(DockerRunBase):
 
     # Validate either dockerfile or parent.run_conclusion is provided
     @model_validator(mode="after")
-    def check_dockerfile_or_run_conclusion(cls, values):
-        dockerfile = values.get("dockerfile")
-        run_conclusion = values.get("run_conclusion")
-        if not dockerfile and not run_conclusion:
-            raise ValueError("Either 'dockerfile' or 'run-conclusion' must be provided.")
-        return values
+    def check_dockerfile_or_run_conclusion(self):
+        if not self.dockerfile and not self.run_conclusion:
+            raise ValueError(
+                "Either 'dockerfile' or 'run-conclusion' must be provided."
+            )
+        return self
 
     # Validate any of the fields in the legacy section if legacy is provided
     @model_validator(mode="after")
-    def check_legacy_fields(cls, values):
-        legacy = values.get("legacy")
-        if legacy:
-            if not any([legacy.parameters, legacy.run_cmd, legacy.run_conclusion]):
+    def check_legacy_fields(self):
+        if self.legacy:
+            if not any([self.legacy.parameters, self.legacy.run_cmd, self.legacy.run_conclusion]):
                 raise ValueError("At least one of 'parameters', 'run-cmd', or 'run-conclusion' must be provided in the 'legacy' section.")
-        return values
+        return self
 
 #
 # Config fields
