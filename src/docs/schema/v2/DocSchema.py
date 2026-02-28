@@ -98,7 +98,7 @@ class DocSchema(BaseModel):
     version: str = Field(..., description="Schema version, should be 2")
     application: str = Field(..., description="Human-readable name of the container image.", min_length=1, strip_whitespace=True)
     description: str = Field(..., description="Long image description.", min_length=1, strip_whitespace=True)
-    website: HttpUrl = Field(..., description="The link to the original software’s web pages.")
+    website: HttpUrl = Field(..., description="The link to the original software's web pages.")
     issues: HttpUrl = Field(
         default="https://bugs.launchpad.net/ubuntu-docker-images",
         description="The link for submitting issues, bugs, and feature requests."

@@ -1,6 +1,7 @@
 version: 2
 
 application: Mock rock test
+website: https://github.com/canonical/rocks-toolbox/tree/main/mock_rock
 description: |
   This is a long description for a mock rock that is only used for **testing**
   and **demonstration** purposes.
