@@ -4,7 +4,7 @@ of the documentation.yaml schema.
 """
 from typing_extensions import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, model_validator
 from pydantic.networks import HttpUrl, AnyUrl
 
 from ..common.Microk8s import Microk8sInfo
@@ -126,3 +126,7 @@ class DocSchema(BaseModel):
     )
 
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    @field_serializer("website", "issues", "source_code", mode="after")
+    def serialize_url(self, url: AnyUrl) -> str:
+        return str(url)
