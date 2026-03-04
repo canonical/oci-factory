@@ -1,7 +1,11 @@
-version: 1
+version: 2
 
 application: Mock rock test
-is_chiselled: true
+website: https://github.com/canonical/rocks-toolbox/tree/main/mock_rock
 description: |
   This is a long description for a mock rock that is only used for **testing**
   and **demonstration** purposes.
+docker:
+  run_cmd: docker run --rm mock-rock:1.2-22.04 exec hello
+  run_conclusion: |
+    You'll see "Hello, world!" printed to STDOUT
