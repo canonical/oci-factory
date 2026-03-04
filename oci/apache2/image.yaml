@@ -1,7 +1,7 @@
 version: 1
 upload:
   - source: canonical/apache2-rock
-    commit: 79eac2f16e654d7c5a60134a2e1ab387c12ec577
+    commit: 9f4d2a4d9816c9efa3558c9be06df78b281d7d56
     directory: apache2/2.4-26.04
     release:
       2.4-26.04:
