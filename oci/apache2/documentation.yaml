@@ -38,7 +38,7 @@ microk8s:
         link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/config/html/index.html?h=2.4-22.04
 
 override_tracks:
-  # Tracks release from legacy repo
+  # Tracks released from legacy repo
   2.4-25.04:
     end-of-life: '2026-01-15T00:00:00Z'
   2.4-24.10:
