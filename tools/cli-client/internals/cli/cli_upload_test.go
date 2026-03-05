@@ -169,3 +169,20 @@ func (s *CmdUploadSuite) TestParseUploadReleases(c *C) {
 		c.Assert(releases, DeepEquals, test.out)
 	}
 }
+
+func (s *CmdUploadSuite) TestParseIgnoredVulnerabilities(c *C) {
+	for _, test := range []struct {
+		in  string
+		out []string
+	}{
+		{"FINDING-1", []string{"FINDING-1"}},
+		{",,FINDING-1", []string{"FINDING-1"}},
+		{"FINDING-1,FINDING-2", []string{"FINDING-1", "FINDING-2"}},
+		{"FINDING-1,FINDING-2,,", []string{"FINDING-1", "FINDING-2"}},
+		{"", []string{}},
+		{",,,", []string{}},
+	} {
+		out := cli.ParseIgnoredVulnerabilities(test.in)
+		c.Assert(out, DeepEquals, test.out)
+	}
+}

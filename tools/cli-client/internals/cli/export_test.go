@@ -1,6 +1,7 @@
 package cli
 
 var (
-	ValidateAndFormatDate = validateAndFormatDate
-	ParseUploadReleases   = parseUploadReleases
+	ValidateAndFormatDate       = validateAndFormatDate
+	ParseUploadReleases         = parseUploadReleases
+	ParseIgnoredVulnerabilities = parseIgnoredVulnerabilities
 )
