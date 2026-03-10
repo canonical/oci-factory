@@ -1,0 +1,52 @@
+version: "1"
+application: vault
+is_chiselled: True
+description: |
+  A distroless OCI image for [HashiCorp Vault](https://www.vaultproject.io/), a tool
+  for secrets management, encryption as a service, and privileged access management.
+
+  Vault enables you to secure, store, and tightly control access to tokens, passwords,
+  certificates, encryption keys, and other sensitive data using a UI, CLI, or HTTP API.
+
+  This image is based on Ubuntu 24.04 and is built from the
+  [vault-rock](https://github.com/canonical/vault-rock) project using Rockcraft.
+docker:
+  parameters:
+    - -p 8200:8200
+  access: Access the Vault UI at http://localhost:8200
+parameters:
+  - type: -p
+    value: "8200:8200"
+    description: Vault API and UI port.
+  - type: -v
+    value: "/path/to/config.hcl:/vault/config/config.hcl"
+    description: >
+      Mount a custom Vault configuration file. See the
+      [Vault documentation](https://developer.hashicorp.com/vault/docs/configuration)
+      for configuration options.
+  - type: -e
+    value: "VAULT_ADDR=http://0.0.0.0:8200"
+    description: >
+      Set the Vault server address for the CLI client.
+  - type: CMD
+    value: "vault server -config=/vault/config/config.hcl"
+    description: >
+      Start the Vault server with the specified configuration file.
+debug:
+  text: |
+    ### Debugging
+
+    To check the Vault server status:
+    ```bash
+    docker exec <vault-container> vault status
+    ```
+
+    To view container logs:
+    ```bash
+    docker logs -f <vault-container>
+    ```
+
+    To get an interactive shell:
+    ```bash
+    docker exec -it <vault-container> /bin/bash
+    ```
