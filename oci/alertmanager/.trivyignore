@@ -4,3 +4,5 @@
 CVE-2022-41723
 # golang.org/x/net - Excessive server resource consumption
 CVE-2023-39325
+# stdlib - During session resumption in crypto/tls, if the underlying Config has  ...
+CVE-2025-68121

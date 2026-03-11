@@ -22,3 +22,5 @@ CVE-2025-58188
 CVE-2025-61724
 # stdlib - crypto/x509: golang: Denial of Service due to excessive resource consumption via crafted certificate
 CVE-2025-61729
+# stdlib - crypto/tls: Unexpected session resumption in crypto/tls
+CVE-2025-68121
