@@ -2,7 +2,7 @@ version: 1
 
 upload:
   - source: "canonical/rocks-toolbox"
-    commit: 17916dd5de270e61a6a3fd3f4661a6413a50fd6f
+    commit: eee5f5ebeff62848903156fb3fe93c5d37174085
     directory: mock_rock/1.0
     release:
       1.0-22.04:
@@ -12,7 +12,7 @@ upload:
           - edge
           - beta
   - source: "canonical/rocks-toolbox"
-    commit: 17916dd5de270e61a6a3fd3f4661a6413a50fd6f
+    commit: eee5f5ebeff62848903156fb3fe93c5d37174085
     directory: mock_rock/1.1
     release:
       1.1-22.04:
@@ -28,10 +28,18 @@ upload:
           - edge
           - beta
   - source: "canonical/rocks-toolbox"
-    commit: 17916dd5de270e61a6a3fd3f4661a6413a50fd6f
+    commit: eee5f5ebeff62848903156fb3fe93c5d37174085
     directory: mock_rock/1.2
     release:
       1.2-22.04:
         end-of-life: "2000-05-01T00:00:00Z"
         risks:
           - beta
+  - source: "canonical/rocks-toolbox"
+    commit: eee5f5ebeff62848903156fb3fe93c5d37174085
+    directory: mock_rock/devel
+    release:
+      devel:
+        end-of-life: "2000-05-01T00:00:00Z"
+        risks:
+          - edge

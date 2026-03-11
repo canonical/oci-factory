@@ -54,8 +54,8 @@ def prep_execution(tmpdir, monkeypatch, request):
         (DATA_DIR / "image_all_eol_tracks.yaml", False, 0),
         (DATA_DIR / "image_no_track_releases.yaml", False, 0),
         (DATA_DIR / "image_single_track_release.yaml", True, 1),
-        (DATA_DIR / "image_with_release.yaml", True, 3),
-        (DATA_DIR / "image_without_release.yaml", True, 3),
+        (DATA_DIR / "image_with_release.yaml", True, 4),
+        (DATA_DIR / "image_without_release.yaml", True, 4),
     ],
     indirect=["prep_execution"],
 )
