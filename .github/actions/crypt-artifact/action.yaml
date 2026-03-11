@@ -3,15 +3,21 @@ description: 'Encrypt and decrypt artifacts using GPG symmetric encryption'
 
 
 inputs:
-  input-path:
-    description: 'Path where the artifact is stored'
-    required: true
   mode:
     description: 'Operation mode: encrypt or decrypt'
+    required: true
+  input-path:
+    description: 'Path where the artifact is stored'
     required: true
   passphrase:
     description: 'Passphrase for GPG symmetric encryption/decryption'
     required: true
+  output-path:
+    description: 'Path where the processed artifact should be stored (optional, defaults to input-path)'
+    required: false
+  preserve-original:
+    description: 'Whether to preserve the original file after encryption/decryption (optional, defaults to false)'
+    required: false
 
 runs:
   using: "composite" 
@@ -27,4 +33,9 @@ runs:
     - name: Crypto Operation
       shell: bash
       id: crypto
-      run: ./oci-factory/.github/actions/crypt-artifact/crypt-artifact.sh ${{ inputs.mode }} ${{ inputs.input-path }} ${{ inputs.passphrase }}
+      run: |
+        ./oci-factory/.github/actions/crypt-artifact/crypt-artifact.sh ${{ inputs.mode }} \
+          -i "${{ inputs.input-path }}" \
+          -p "${{ inputs.passphrase }}" \
+          -o "${{ inputs.output-path }}" \
+          ${{ inputs.preserve-original == 'true' && '--preserve-original' || '' }}
