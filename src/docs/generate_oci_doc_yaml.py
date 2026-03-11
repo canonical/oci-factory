@@ -364,7 +364,7 @@ class OCIDocumentationData:
             all_revision_tags, releases_file=f"{self.image_path}/_releases.json"
         )
 
-        override_tracks = base_doc_yaml.get("override_tracks", {})
+        override_tracks = base_doc_yaml.get("override_tracks") or {}
         logger.info(f"Override tracks from documentation.yaml: {override_tracks}")
         all_tracks.update({k: v["end_of_life"] for k, v in override_tracks.items()})
 
