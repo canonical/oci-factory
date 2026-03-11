@@ -1,0 +1,10 @@
+# Vulnerabilities of the upstream release CI
+## github.com/argoproj/argo-workflows/v3
+CVE-2025-62156
+CVE-2025-62157
+CVE-2025-66626
+CVE-2026-23960
+
+# Vulnerabilities that don't affect the binary per govulncheck
+## golang.org/x/oauth2 Improper Validation of Syntactic Correctness of Input vulnerability
+CVE-2025-22868
