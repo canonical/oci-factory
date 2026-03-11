@@ -2,6 +2,10 @@ version: 1
 # --- OVERVIEW INFORMATION ---
 application: grafana-agent
 description: >
+  > Grafana Agent has reached End-of-Life (EOL) on November 1, 2025.
+  Grafana Agent is no longer receiving support, security, or bug fixes from the
+  vendor.
+
   Grafana Agent is a batteries-included, open source telemetry collector for
   collecting logs, metrics, and traces. It uses established battle-tested code
   to be fully compatible with Prometheus, Loki and Tmepo telemetry stack. 
