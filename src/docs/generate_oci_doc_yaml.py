@@ -293,9 +293,9 @@ class OCIDocumentationData:
                 yaml_file = yaml.load(file, Loader=yaml.BaseLoader) or {}
 
                 if int(yaml_file.get("version")) == 1:
-                    base_doc_data = DocSchemaV1(**yaml_file).model_dump(exclude_none=True)
+                    base_doc_data = DocSchemaV1(**yaml_file).model_dump()
                 elif int(yaml_file.get("version")) == 2:
-                    base_doc_data = DocSchemaV2(**yaml_file).model_dump(exclude_none=True)
+                    base_doc_data = DocSchemaV2(**yaml_file).model_dump()
                 else:
                     raise ValueError(
                         f"Unsupported documentation.yaml version: {yaml_file.get('version')}"
@@ -388,17 +388,7 @@ class OCIDocumentationData:
 
         base_doc_yaml["repo"] = self.image_name
         base_doc_yaml["releases"] = releases
-        # Making optional values explicitly "null" if they were not given
-        base_doc_yaml["docker"] = base_doc_yaml.get("docker")
-        base_doc_yaml["microk8s"] = base_doc_yaml.get("microk8s")
-        if int(base_doc_yaml.get("version")) == 1:
-            base_doc_yaml["debug"] = base_doc_yaml.get("debug")
-            base_doc_yaml["parameters"] = base_doc_yaml.get("parameters")
-            base_doc_yaml["is_chiselled"] = base_doc_yaml.get("is_chiselled", False)
-        else:
-            base_doc_yaml["issues"] = base_doc_yaml.get("issues")
-            base_doc_yaml["source_code"] = base_doc_yaml.get("source_code")
-            base_doc_yaml["config"] = base_doc_yaml.get("config")
+
         self.create_data_dir(doc_data_dir)
 
         name_doc_file = f"{self.image_name}_doc_data.yaml"
