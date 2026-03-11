@@ -1,0 +1,25 @@
+version: 1
+
+upload:
+  - source: canonical/jdk-rock
+    commit: 812bfc5996e59372e4e79db9932e7892cc819848
+    directory: jdk/21-24.04
+    release:
+      21-24.04:
+        end-of-life: "2029-05-31T00:00:00Z"
+        risks:
+          - stable
+          - candidate
+          - beta
+          - edge
+  - source: canonical/jdk-rock
+    commit: 812bfc5996e59372e4e79db9932e7892cc819848
+    directory: jdk/17-24.04
+    release:
+      17-24.04:
+        end-of-life: "2029-05-31T00:00:00Z"
+        risks:
+          - stable
+          - candidate
+          - beta
+          - edge
