@@ -8,3 +8,5 @@ CVE-2025-22869
 CVE-2025-22868
 # stdlib: Incorrect results returned from Rows.Scan in database/sql - not affected
 CVE-2025-47907
+# stdlib: During session resumption in crypto/tls, if the...
+CVE-2025-68121
