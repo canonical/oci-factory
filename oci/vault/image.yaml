@@ -1,7 +1,7 @@
 version: 1
 upload:
   - source: canonical/vault-rock
-    commit: 238265912103654db065930979883fc9460c0a7e
+    commit: c5432a5800d9728bfa03d2725832ce52134c6164
     directory: .
     release:
       1.19-24.04:
