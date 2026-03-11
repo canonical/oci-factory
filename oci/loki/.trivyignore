@@ -14,3 +14,7 @@ GHSA-m425-mq94-257g
 CVE-2025-47907
 # stdlib - If the PATH environment variable contains paths which are executables  ...
 CVE-2025-47906
+
+# Vulnerabilities Upstream hasn't fixed yet
+# go.opentelemetry.io/otel/sdk - OpenTelemetry-Go Affected by Arbitrary Code Execution via PATH Hijacking
+CVE-2026-24051
