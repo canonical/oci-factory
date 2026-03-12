@@ -10,11 +10,14 @@ trivyignores=$2
 
 temp_dir=$(mktemp -d)
 
-output=$(jq -r '.scanner.result.Results[]| .Vulnerabilities | try to_entries[] | .value.VulnerabilityID' \
+output=$(jq -r '.scanner.result.Results[]? | .Vulnerabilities? | .[]? | .VulnerabilityID' \
         <"$scan_result" 2>"${temp_dir}/errors.txt" || true)
 if [ -s "${temp_dir}/errors.txt" ]; then
     echo "Unable to parse scan result."
     exit 1
+fi
+if [ -z "$output" ]; then
+    echo "::warning:: No vulnerabilities found in the scan result."
 fi
 line=0
 while read -r CVE;

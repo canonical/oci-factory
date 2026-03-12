@@ -35,8 +35,18 @@ load '/usr/lib/bats/bats-assert/load.bash'
   assert_output ""
 }
 
-@test "fail when scan result cannot be parsed" {
+@test "do not fail when scan result is erroneous" {
   run "${BATS_TEST_DIRNAME}/check-trivyignore-entries.sh" "${BATS_TEST_DIRNAME}/testdata/error.json" "${BATS_TEST_DIRNAME}/testdata/extra.trivyignore"
-  assert_failure
-  assert_output "Unable to parse scan result."
+  assert_success
+  assert_output --partial "::warning:: No vulnerabilities found in the scan result."
+  assert_output --partial "::notice file=${BATS_TEST_DIRNAME}/testdata/extra.trivyignore,line=2::CVE-2025-47907 not present anymore, can be safely removed."
+  assert_output --partial "::notice file=${BATS_TEST_DIRNAME}/testdata/extra.trivyignore,line=5::CVE-2024-34156 not present anymore, can be safely removed."
+}
+
+@test "do not fail when .scanner.result.Results is null" {
+  run "${BATS_TEST_DIRNAME}/check-trivyignore-entries.sh" "${BATS_TEST_DIRNAME}/testdata/no_results.json" "${BATS_TEST_DIRNAME}/testdata/extra.trivyignore"
+  assert_success
+  assert_output --partial "::warning:: No vulnerabilities found in the scan result."
+  assert_output --partial "::notice file=${BATS_TEST_DIRNAME}/testdata/extra.trivyignore,line=2::CVE-2025-47907 not present anymore, can be safely removed."
+  assert_output --partial "::notice file=${BATS_TEST_DIRNAME}/testdata/extra.trivyignore,line=5::CVE-2024-34156 not present anymore, can be safely removed."
 }
