@@ -17,10 +17,11 @@ type UploadRelease struct {
 type UploadReleaseTrack map[string]UploadRelease
 
 type UploadImageTrigger struct {
-	Source    string             `yaml:"source"`
-	Commit    string             `yaml:"commit"`
-	Directory string             `yaml:"directory"`
-	Release   UploadReleaseTrack `yaml:"release,omitempty"`
+	Source                 string             `yaml:"source"`
+	Commit                 string             `yaml:"commit"`
+	Directory              string             `yaml:"directory"`
+	Release                UploadReleaseTrack `yaml:"release,omitempty"`
+	IgnoredVulnerabilities []string           `yaml:"ignored-vulnerabilities,omitempty"`
 }
 
 type UploadTrigger struct {
@@ -44,17 +45,18 @@ func NewUploadReleaseTrack(track string, risks []string, eol string) UploadRelea
 
 func NewUploadImageTrigger(buildMetadata BuildMetadata, tracks UploadReleaseTrack) UploadImageTrigger {
 	UploadImageTrigger := UploadImageTrigger{
-		Source:    buildMetadata.Source,
-		Commit:    buildMetadata.Commit,
-		Directory: buildMetadata.Directory,
-		Release:   tracks,
+		Source:                 buildMetadata.Source,
+		Commit:                 buildMetadata.Commit,
+		Directory:              buildMetadata.Directory,
+		IgnoredVulnerabilities: buildMetadata.IgnoredVulnerabilities,
+		Release:                tracks,
 	}
 	return UploadImageTrigger
 }
 
 func NewUploadTrigger(imageTriggers []UploadImageTrigger) UploadTrigger {
 	trigger := UploadTrigger{
-		Version:             1,
+		Version:             2,
 		UploadImageTriggers: imageTriggers,
 	}
 	return trigger
