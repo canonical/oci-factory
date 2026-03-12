@@ -179,6 +179,7 @@ func (s *CmdUploadSuite) TestParseIgnoredVulnerabilities(c *C) {
 		{",,FINDING-1", []string{"FINDING-1"}},
 		{"FINDING-1,FINDING-2", []string{"FINDING-1", "FINDING-2"}},
 		{"FINDING-1,FINDING-2,,", []string{"FINDING-1", "FINDING-2"}},
+		{"FINDING-1,FINDING-1,,", []string{"FINDING-1"}},
 		{"", []string{}},
 		{",,,", []string{}},
 	} {
