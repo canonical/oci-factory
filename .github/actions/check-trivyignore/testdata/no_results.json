@@ -1,0 +1,118 @@
+{
+  "invocation": {
+    "parameters": null,
+    "uri": "",
+    "event_id": "",
+    "builder.id": ""
+  },
+  "scanner": {
+    "uri": "pkg:github/aquasecurity/trivy@0.69.3",
+    "version": "0.69.3",
+    "db": {
+      "uri": "",
+      "version": ""
+    },
+    "result": {
+      "SchemaVersion": 2,
+      "Trivy": {
+        "Version": "0.69.3"
+      },
+      "ReportID": "019cddd6-60b3-7d38-80ff-b8911c97e75c",
+      "CreatedAt": "2026-03-11T16:59:00.147867899Z",
+      "ArtifactID": "sha256:f78b9fb2e5b0bcaf858c8e47e2eb842b97417c89a07d8991fe2b583cce35249e",
+      "ArtifactName": "test-img:test",
+      "ArtifactType": "container_image",
+      "Metadata": {
+        "Size": 23971840,
+        "ImageID": "sha256:f54a0015df3fc9d236f6f89b86bb902557bfd94151de9313e4328a512f183216",
+        "DiffIDs": [
+          "sha256:32e047ed12e32232afe913b759806735d057a276a0accc8f4ed16b863891b50f",
+          "sha256:941b44435b28fe4d42ac838b8b26c2f51cb1dcf739f4635781309ff964f62006"
+        ],
+        "RepoTags": [
+          "test-img:test"
+        ],
+        "Reference": "test-img:test",
+        "ImageConfig": {
+          "architecture": "amd64",
+          "created": "2026-03-11T16:57:26.170077441Z",
+          "history": [
+            {
+              "created": "2026-03-11T16:57:35.374694765Z",
+              "created_by": "umoci raw add-layer --image /root/images/mock-rock:rockcraft-base /root/images/.temp_layer.226.tar --tag 1.2"
+            },
+            {
+              "created": "2026-03-11T16:57:35.450696177Z",
+              "created_by": "umoci config",
+              "empty_layer": true
+            },
+            {
+              "created": "2026-03-11T16:57:35.456965221Z",
+              "created_by": "umoci config",
+              "empty_layer": true
+            },
+            {
+              "created": "2026-03-11T16:57:35.463374805Z",
+              "created_by": "umoci config",
+              "empty_layer": true
+            },
+            {
+              "created": "2026-03-11T16:57:35.469648866Z",
+              "created_by": "umoci config",
+              "empty_layer": true
+            },
+            {
+              "created": "2026-03-11T16:57:35.475419613Z",
+              "created_by": "umoci config",
+              "empty_layer": true
+            },
+            {
+              "created": "2026-03-11T16:57:35.483912552Z",
+              "created_by": "umoci raw add-layer --image /root/images/mock-rock:1.2 /root/images/.temp_layer.control_data.226.tar"
+            }
+          ],
+          "os": "linux",
+          "rootfs": {
+            "type": "layers",
+            "diff_ids": [
+              "sha256:32e047ed12e32232afe913b759806735d057a276a0accc8f4ed16b863891b50f",
+              "sha256:941b44435b28fe4d42ac838b8b26c2f51cb1dcf739f4635781309ff964f62006"
+            ]
+          },
+          "config": {
+            "Entrypoint": [
+              "/bin/pebble",
+              "enter"
+            ],
+            "Env": [
+              "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            ],
+            "Labels": {
+              "org.opencontainers.image.base.digest": "923ac50c39d0a3a2e39adedce0ea1d405f1e1b78df91437f580feb4be5ef3b13",
+              "org.opencontainers.image.created": "2026-03-11T16:57:35.466308+00:00",
+              "org.opencontainers.image.description": "Hello World\n\nThe most basic example of a rock.",
+              "org.opencontainers.image.licenses": "Apache-2.0",
+              "org.opencontainers.image.ref.name": "mock-rock",
+              "org.opencontainers.image.title": "mock-rock",
+              "org.opencontainers.image.version": "1.2"
+            }
+          }
+        },
+        "Layers": [
+          {
+            "Size": 23961600,
+            "DiffID": "sha256:32e047ed12e32232afe913b759806735d057a276a0accc8f4ed16b863891b50f"
+          },
+          {
+            "Size": 10240,
+            "DiffID": "sha256:941b44435b28fe4d42ac838b8b26c2f51cb1dcf739f4635781309ff964f62006"
+          }
+        ]
+      }
+    }
+  },
+  "metadata": {
+    "scanStartedOn": "2026-03-11T16:59:00.153192243Z",
+    "scanFinishedOn": "2026-03-11T16:59:00.153192243Z"
+  }
+}
