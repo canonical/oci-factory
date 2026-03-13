@@ -1,0 +1,45 @@
+version: "1"
+application: vault
+is_chiselled: True
+description: |
+  [HashiCorp Vault](https://www.vaultproject.io/) is an encryption-as-a-service tool
+  for secrets and privileged access management.
+
+  Vault enables you to secure, store, and tightly control access to tokens, passwords,
+  certificates, encryption keys, and other sensitive data using a UI, CLI, or HTTP API.
+
+  This image is a chiseled rock that contains only the Vault components and is built
+  from the repository [vault-rock](https://github.com/canonical/vault-rock).
+docker:
+  parameters:
+    - -p 8200:8200
+  access: Access the Vault UI at http://localhost:8200
+parameters:
+  - type: -v
+    value: "/path/to/config.hcl:/vault/config/config.hcl"
+    description: >
+      Mount a custom Vault configuration file. See the
+      [Vault documentation](https://developer.hashicorp.com/vault/docs/configuration)
+      for configuration options.
+  - type: CMD
+    value: "vault server [ -config=/vault/config/config.hcl ]"
+    description: >
+      Start the Vault server with the specified configuration file.
+debug:
+  text: |
+    ### Debugging
+
+    To check the Vault server status:
+    ```bash
+    docker exec <vault-container> vault status
+    ```
+
+    To view container logs:
+    ```bash
+    docker logs -f <vault-container>
+    ```
+
+    To get an interactive shell:
+    ```bash
+    docker exec -it <vault-container> /bin/bash
+    ```
