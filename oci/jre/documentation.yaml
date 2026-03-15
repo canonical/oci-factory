@@ -107,6 +107,14 @@ docker:
     CMD [ "exec", "java", "-cp", "/", "HelloWorld" ]
     ```
 
+override_tracks:
+  # Tracks release from legacy repo
+  #(https://github.com/rockcrafters/chiselled-jre/)
+  8-22.04:
+    end-of-life: "2027-06-01T00:00:00Z"
+  17-22.04:
+    end-of-life: "2027-06-01T00:00:00Z"
+
 debug:
   text: |
     ### Debugging
