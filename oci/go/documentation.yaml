@@ -1,7 +1,6 @@
-version: 1
+version: 2
 
 application: go
-is_chiselled: true
 description: |
   Go is an open source programming language that makes it easy to build simple, reliable, and efficient software.
 
@@ -10,22 +9,10 @@ description: |
 
   Any additional dependencies can be either mounted at runtime or installed with the apt installation included in this rock.
 
-debug:
-  text: |
-    ### Debugging
+docker:
+  parameters: --rm -v /path/to/your/go/project:/work -w /work
+  run_cmd: exec go build /path/to/target
+  run_conclusion: |
+    The project within the current working directory will be built with the `go build` command.
+    The resulting binary will be placed in the current working directory.
 
-    To get a shell inside the container:
-
-    ```bash
-    docker run -it --rm ubuntu/go:1.22-24.04_edge exec bash
-    ```
-
-    To mount a directory with your Go project and build it:
-
-    ```bash
-    docker run -it --rm \
-      -v /path/to/your/go/project:/work \
-      --workdir /work \
-      ubuntu/go:1.22-24.04_edge exec \
-      go build /path/to/target
-    ```
