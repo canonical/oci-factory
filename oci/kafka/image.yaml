@@ -1,8 +1,8 @@
 version: 1
-    
-upload:  
+
+upload:
   - source: "canonical/kafka-rock"
-    commit: aad63c2e9209a31818daead25bd68de9a0673a0e
+    commit: 8efeeb4639be3d4e812e63185fd41a4d7f65f999
     directory: .
     release:
       4.1-24.04:
@@ -10,7 +10,7 @@ upload:
         risks:
           - edge
   - source: "canonical/kafka-rock"
-    commit: a4c7dd466d6f25a66de1f9ed192ec3239ba07f76
+    commit: ff319e1f8f967a47f9bef8de873b27a9609994a2
     directory: .
     release:
       3.9-22.04:

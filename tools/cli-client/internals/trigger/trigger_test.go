@@ -65,7 +65,7 @@ func (s *TriggerSuite) TestNewUploadTrigger(c *C) {
 	},
 	)
 	resultYaml := result.ToYamlString()
-	expectedYaml := `version: 1
+	expectedYaml := `version: 2
 upload:
     - source: canonical/oci-factory
       commit: f0250895d1758cdab6619122a4fd67dbbde3004a
