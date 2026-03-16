@@ -29,9 +29,8 @@ upload:
       1.25-26.04:
         end-of-life: "2026-04-23T00:00:00Z"
         risks:
-         - edge
+          - edge
     ignored-vulnerabilities:
       - CVE-2025-68121  # Not triaged for golang 1.25 yet. https://ubuntu.com/security/CVE-2025-68121
       - CVE-2025-61726  # Not triaged for golang 1.25 yet. https://ubuntu.com/security/CVE-2025-61726
       - CVE-2025-61728  # Not triaged for golang 1.25 yet. https://ubuntu.com/security/CVE-2025-61728
-
