@@ -8,42 +8,8 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, conlist, constr, field_validator
 
-
-class ConfigMapFile(BaseModel):
-    """Schema of the microk8s[configmap][files] section."""
-
-    key: str
-    name: str
-    link: str
-
-    model_config = ConfigDict(extra="forbid")
-
-
-class Microk8sConfigMap(BaseModel):
-    """Schema of the microk8s[configmap] section."""
-
-    name: Optional[str] = None
-    files: conlist(item_type=ConfigMapFile, min_length=1)
-
-    model_config = ConfigDict(extra="forbid")
-
-
-class Microk8sDeploy(BaseModel):
-    """Schema of the microk8s[deploy] section."""
-
-    link: str
-    access: str
-
-    model_config = ConfigDict(extra="forbid")
-
-
-class Microk8sInfo(BaseModel):
-    """Schema of the microk8s section."""
-
-    configmap: Optional[Microk8sConfigMap] = None
-    deploy: Microk8sDeploy
-
-    model_config = ConfigDict(extra="forbid")
+from ..common.Microk8s import Microk8sInfo
+from ..common.OverrideTracks import EndOfLifeInfo
 
 
 class DockerRunParameters(BaseModel):
@@ -71,25 +37,6 @@ class DebugInfo(BaseModel):
     text: str
 
     model_config = ConfigDict(extra="forbid")
-
-
-class EndOfLifeInfo(BaseModel):
-    """Schema for end-of-life information."""
-
-    end_of_life: str = Field(alias="end-of-life")
-
-    model_config = ConfigDict(extra="forbid")
-
-    @field_validator("end_of_life")
-    def validate_end_of_life(cls, v: str) -> str:
-        """Validate the end-of-life date format."""
-        try:
-            datetime.fromisoformat(v.replace("Z", "+00:00"))
-        except ValueError:
-            raise ValueError(
-                f"Invalid end-of-life date format: {v}. Expected ISO 8601 format."
-            )
-        return v
 
 
 class DocSchema(BaseModel):
