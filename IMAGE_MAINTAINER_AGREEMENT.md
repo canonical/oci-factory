@@ -167,6 +167,7 @@ and stating:
     ```
 
   - if this deb-based security manifest is not present, the Maintainer **acknowledges** that it *might* be automatically added by the Build system, consequently adding a new OCI layer to the Ubuntu Rock.
+- **if** the Ubuntu Rock uses [chisel](https://github.com/canonical/chisel) to install deb slices into the filesystem, then it **must** include a security manifest `/usr/share/rocks/dpkg.query`. It can be generated using the [rocks-security-manifest](https://github.com/canonical/rocks-security-manifest) repo.
 - **if** the Ubuntu Rock reuses content from a Snap, then it **must** include the Snap’s `snapcraft.yaml` and `manifest.yaml`, under `/usr/share/rocks/`.
 - **if** the Ubuntu Rock is based on other upstream source code, it **must** also include a security manifest. Currently, there is no convention for what this security manifest should look like. You **must** reach out to the Security team and discuss this on a case per case basis. As an example, the (now deprecated) [ubuntu/cortex](https://hub.docker.com/r/ubuntu/cortex) image [produces](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/utils/tree/golang-manifest-builder.py) this custom security
 [manifest](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/cortex/tree/oci/Dockerfile.ubuntu?h=1.7-21.04#n58).
