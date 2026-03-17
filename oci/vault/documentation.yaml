@@ -22,7 +22,7 @@ parameters:
       [Vault documentation](https://developer.hashicorp.com/vault/docs/configuration)
       for configuration options.
   - type: CMD
-    value: "vault server [ -config=/vault/config/config.hcl ]"
+    value: "--args -config=/vault/config/config.hcl"
     description: >
       Start the Vault server with the specified configuration file.
 debug:
