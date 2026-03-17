@@ -1,13 +1,13 @@
 {
     "latest": {
         "candidate": {
-            "target": "2468"
+            "target": "1.2-22.04_beta"
         },
         "beta": {
-            "target": "2468"
+            "target": "latest_candidate"
         },
         "edge": {
-            "target": "2468"
+            "target": "latest_beta"
         },
         "end-of-life": "2030-05-01T00:00:00Z"
     },
@@ -25,44 +25,44 @@
     },
     "test": {
         "beta": {
-            "target": "2467"
+            "target": "1.1-22.04_beta"
         },
         "edge": {
-            "target": "2467"
+            "target": "test_beta"
         },
         "end-of-life": "2030-05-01T00:00:00Z"
     },
     "1.1-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "candidate": {
-            "target": "2467"
+            "target": "2471"
         },
         "beta": {
-            "target": "2467"
+            "target": "2471"
         },
         "edge": {
-            "target": "2467"
+            "target": "2471"
         }
     },
     "1-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "candidate": {
-            "target": "2467"
+            "target": "2471"
         },
         "beta": {
-            "target": "2467"
+            "target": "2471"
         },
         "edge": {
-            "target": "2467"
+            "target": "2471"
         }
     },
     "1.2-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "beta": {
-            "target": "2468"
+            "target": "2472"
         },
         "edge": {
-            "target": "2468"
+            "target": "1.2-22.04_beta"
         }
     },
     "1.0.0-22.04": {},
@@ -105,7 +105,7 @@
     "devel": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "edge": {
-            "target": "2469"
+            "target": "2473"
         }
     }
 }
