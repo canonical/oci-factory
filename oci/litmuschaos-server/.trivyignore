@@ -16,3 +16,17 @@ CVE-2025-62156
 
 # github.com/argoproj/argo-workflows/v3: Argo Workflow may expose artifact repository credentials
 CVE-2025-62157
+
+# github.com/argoproj/argo-workflows/v3: RCE via ZipSlip and symbolic links in argoproj/argo-workflows
+CVE-2025-66626
+
+# github.com/argoproj/argo-workflows/v3: Argo Workflows affected by stored XSS in the artifact directory listing
+CVE-2026-23960
+
+# stdlib for Go < 1.25.7 - During session resumption in crypto/tls, if the...
+CVE-2025-68121
+
+## Upstream won't fix these
+# github.com/argoproj/argo-workflows/v3
+CVE-2026-28229
+CVE-2026-31892

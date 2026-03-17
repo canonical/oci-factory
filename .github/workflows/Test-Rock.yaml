@@ -110,7 +110,9 @@ jobs:
         with:
           mode: decrypt
           passphrase: ${{ secrets.pro-artifact-passphrase }}
-          input-path: ${{ inputs.oci-archive-name }}.gpg
+          input-path: ${{ inputs.oci-archive-name }}*
+          output-path: ${{ inputs.oci-archive-name }}
+          preserve-original: false
 
       - name: Unpack Rock
         run: |
@@ -290,7 +292,9 @@ jobs:
         with:
           mode: decrypt
           passphrase: ${{ secrets.pro-artifact-passphrase }}
-          input-path: ${{ inputs.oci-archive-name }}.gpg
+          input-path: ${{ inputs.oci-archive-name }}*
+          output-path: ${{ inputs.oci-archive-name }}
+          preserve-original: false
 
       - name: Configure Trivy
         id: configure-trivy
@@ -329,7 +333,7 @@ jobs:
           echo "report-name=${{ inputs.oci-archive-name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}" >> "$GITHUB_OUTPUT"
 
       - name: Scan for vulnerabilities
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           # NOTE: we're allowing images with vulnerabilities to be published
           ignore-unfixed: true
