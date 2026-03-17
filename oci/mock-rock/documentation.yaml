@@ -8,4 +8,4 @@ description: |
 docker:
   run_cmd: exec hello
   run_conclusion: |
-    You'll see "Hello, world!" printed to STDOUT
+    You'll see "Hello, world!" printed to STDOUT.
