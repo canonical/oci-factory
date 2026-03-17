@@ -171,3 +171,39 @@ CVE-2026-24049
 # protobuf (pip) : Protobuf DoS due to recursion depth bypass in ParseDict()
 
 CVE-2026-0994
+
+# (jackson-core): Airflow is a Python-based application, and while this Java library may exist in a metadata reference (like ray_dist.jar), it is not executed by the Airflow runtime.
+
+GHSA-72hv-8253-57qq
+
+# (PyJWT): This vulnerability involves improper handling of the crit header; Airflow does not use JWT extensions that rely on this specific header for its internal authentication.
+
+CVE-2026-32597
+
+# (apache-airflow-providers-http): The Unsafe Pickle Deserialization flaw requires the application to connect to an untrusted server; our Airflow instance only connects to admin-defined, trusted endpoints.
+
+CVE-2025-69219
+
+# (cryptography): This Subgroup Attack affects specific SECT curves that are not utilized in the default encryption or TLS configurations of this Airflow ROCK.
+
+CVE-2026-26007
+
+# (google-cloud-aiplatform): The Stored XSS vulnerability in Vertex AI requires an attacker to inject malicious metadata; Airflow's interaction with this API is limited to trusted, internal service accounts.
+
+CVE-2026-2472
+
+# (google-cloud-aiplatform): This predictable bucket naming flaw is mitigated by our use of unique, environment-specific GCS bucket naming conventions and IAM restrictions.
+
+CVE-2026-2473
+
+# (orjson): The unbounded recursion DoS can only be triggered by malformed, deeply nested JSON strings which are not encountered in standard Airflow metadata or task communications.
+
+CVE-2025-67221
+
+# (pyOpenSSL): This buffer overflow affects DTLS cookie callbacks, but the Airflow application and its standard providers do not use the DTLS protocol.
+
+CVE-2026-27459
+
+# (tornado): The DoS via large multipart bodies is mitigated by the fact that the Airflow API and Webserver are placed behind a gateway (like Traefik) that enforces body size limits.
+
+CVE-2026-31958
