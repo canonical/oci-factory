@@ -53,7 +53,7 @@ docker:
     You can run the above Hello World application using the following command:
 
     ```bash
-    docker run -e TZ=UTC -v `pwd`:/tmp ubuntu/jdk:21-24.04_edge exec java /tmp/HelloWorld.java
+    docker run -e TZ=UTC -v "$(pwd)":/tmp ubuntu/jdk:21-24.04_edge exec java /tmp/HelloWorld.java
     ```
 
 debug:
