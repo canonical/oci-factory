@@ -21,3 +21,19 @@ upload:
       - CVE-2025-58186  # Needs evaluation. https://ubuntu.com/security/CVE-2025-58186
       - CVE-2025-58187  # Needs evaluation. https://ubuntu.com/security/CVE-2025-58187
       - CVE-2025-61729  # Not triaged for golang 1.22 yet. https://ubuntu.com/security/CVE-2025-61729
+      - CVE-2025-68121  # Need evaluation. https://ubuntu.com/security/CVE-2025-68121
+      - CVE-2025-61726  # Need evaluation. https://ubuntu.com/security/CVE-2025-61726
+      - CVE-2025-61728  # Need evaluation. https://ubuntu.com/security/CVE-2025-61728
+
+  - source: canonical/golang-rock
+    directory: go-rock/1.25-26.04
+    commit: 473696fb3f05fcc07f66670f603387370d9692a1
+    release:
+      1.25-26.04:
+        end-of-life: "2026-04-23T00:00:00Z"
+        risks:
+          - edge
+    ignored-vulnerabilities:
+      - CVE-2025-68121  # Not triaged for golang 1.25 yet. https://ubuntu.com/security/CVE-2025-68121
+      - CVE-2025-61726  # Not triaged for golang 1.25 yet. https://ubuntu.com/security/CVE-2025-61726
+      - CVE-2025-61728  # Not triaged for golang 1.25 yet. https://ubuntu.com/security/CVE-2025-61728
