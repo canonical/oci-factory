@@ -1,7 +1,7 @@
 version: 2
 upload:
   - source: canonical/vault-rock
-    commit: 1a5de6e3e67e344e3533cb5d343e2b70a0ef7f45
+    commit: defac428cddd6333eead3a6c6c9f7d470b46a5b4
     directory: .
     ignored-vulnerabilities:
       - CVE-2025-68121  # Go stdlib crypto/tls. Fixed in Go 1.24.13+. Vault 1.19.x pins older Go.
