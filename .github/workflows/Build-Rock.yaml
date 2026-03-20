@@ -107,7 +107,7 @@ jobs:
           fi
 
       - name: Cloning OCI Factory
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
         with:
           # Here we clone the oci-factory repo using the default ref of the checkout action.
           # It will be set to a ref that triggered this workflow if the workflow is run within the oci-factory repo,
@@ -127,7 +127,7 @@ jobs:
           lfs-include: ${{ inputs.lfs-include }}
 
       - name: Installing Python 
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: "3.x"
 
@@ -155,7 +155,7 @@ jobs:
     steps:
 
       - name: Cloning OCI Factory
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           repository: canonical/oci-factory
           fetch-depth: 1
@@ -214,7 +214,7 @@ jobs:
           preserve-original: false
 
       - name: Uploading Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ${{ inputs.oci-archive-name }}-${{ steps.collect-artifacts.outputs.filename }}
           path: ${{ env.ROCK_CI_FOLDER }}
@@ -235,7 +235,7 @@ jobs:
     steps:
 
       - name: Cloning OCI Factory
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           repository: canonical/oci-factory
           fetch-depth: 1
@@ -251,7 +251,7 @@ jobs:
 
       - name: Building Target
         # TODO: Replace this retry action with bash equivalent for better testing
-        uses: nick-fields/retry@v3.0.0
+        uses: nick-fields/retry@7152eba30c6575329ac0576536151aca5a72780e
         id: lpci-build
         with:
           timeout_minutes: 180
@@ -265,7 +265,7 @@ jobs:
 
       - name: Upload Build Logs
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: lpci-build-logs-${{ matrix.architecture }}
           path: ${{ steps.lpci-build.outputs.build-log }}
@@ -277,7 +277,7 @@ jobs:
           echo "filename=${{ matrix.rock-name }}_${{ matrix.architecture }}" >> $GITHUB_OUTPUT
 
       - name: Uploading Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ${{ inputs.oci-archive-name }}-${{ steps.collect-artifacts.outputs.filename }}
           path: ${{ env.ROCK_CI_FOLDER }}
@@ -294,14 +294,14 @@ jobs:
     steps:
       # Job Setup
       - name: Cloning OCI Factory
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           repository: canonical/oci-factory
           fetch-depth: 1
 
       - run: src/build_rock/assemble_rock/requirements.sh
       - name: Downloading Single Arch rocks
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         id: download
         with:
           path: ${{ env.ROCK_CI_FOLDER }}
@@ -348,7 +348,7 @@ jobs:
           preserve-original: false
 
       - name: Uploading Multi Arch rock
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ${{ inputs.oci-archive-name }}
           path: ${{ steps.final-artifact.outputs.name }}
