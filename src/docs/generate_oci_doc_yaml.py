@@ -24,6 +24,35 @@ from src.docs.schema.v2.DocSchema import DocSchema as DocSchemaV2
 
 from ..shared.logs import get_logger
 
+MOCK_RELEASE: List[Dict[str, Any]] = [
+    {
+        "track": "123.456",
+        "base": "24.04",
+        "risk": "stable",
+        "tags": ["123.0-24.04_stable", "latest", "123.0-24.04_42", "123.0"],
+        "architectures": ["amd64", "arm64"],
+        "support": {"until": "12/2099"},
+    },
+    {
+        "track": "12.345",
+        "base": "22.04",
+        "risk": "edge",
+        "tags": ["12.1-22.04_edge"],
+        "architectures": ["amd64", "arm64"],
+        "support": {"until": "12/2025"},
+        "deprecated": {"date": "12/2025"},
+    },
+    {
+        "track": "23.456",
+        "base": "20.04",
+        "risk": "beta",
+        "tags": [],
+        "architectures": ["amd64"],
+        "support": {"until": "12/2023"},
+        "deprecated": {"date": "12/2023"},
+    },
+]
+
 logger = get_logger()
 
 
@@ -73,6 +102,13 @@ def cli_args() -> argparse.ArgumentParser:
         help="Where the output YAML file will be stored",
     )
 
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Whether to run in dry-run mode, which skips fetching tags from ECR"
+        " and instead uses mock data, for testing purposes",
+    )
+
     return parser.parse_args()
 
 
@@ -83,17 +119,27 @@ class OCIDocumentationData:
     for the OCI images in the OCI Factory.
     """
 
-    def __init__(self, username, password, image_path, repository, all_revision_tags):
+    def __init__(
+        self,
+        username,
+        password,
+        image_path,
+        repository,
+        all_revision_tags,
+        dry_run=False,
+    ):
         self.username = username
         self.image_path = image_path
         self.image_name = image_path.rstrip("/").split("/")[-1]
         self.repository = repository
         self.password = password
         self.all_revision_tags = all_revision_tags
-        self.ecr_client = self._ecr_connect(self.username, self.password)
-        self.skopeo_auth_token = self.ecr_client.get_authorization_token()[
-            "authorizationData"
-        ]["authorizationToken"]
+        self.dry_run = dry_run
+        if not self.dry_run:
+            self.ecr_client = self._ecr_connect(self.username, self.password)
+            self.skopeo_auth_token = self.ecr_client.get_authorization_token()[
+                "authorizationData"
+            ]["authorizationToken"]
         self.registry_url = f"public.ecr.aws/{self.repository}/{self.image_name}"
         self.add_yaml_representer()
 
@@ -356,35 +402,40 @@ class OCIDocumentationData:
             f"{self.image_path}/documentation.yaml"
         )
 
-        # Get a list of all revision tags, eg. ["1.0-22.04_1", "1.1-23.04_42", ...]
-        all_revision_tags = shared.get_all_revision_tags(self.all_revision_tags)
+        if not self.dry_run:
+            # Get a list of all revision tags, eg. ["1.0-22.04_1", "1.1-23.04_42", ...]
+            all_revision_tags = shared.get_all_revision_tags(self.all_revision_tags)
 
-        # Extract a unique set of tracks, and their EOL, from that list
-        all_tracks = self.get_all_tracks(
-            all_revision_tags, releases_file=f"{self.image_path}/_releases.json"
-        )
+            # Extract a unique set of tracks, and their EOL, from that list
+            all_tracks = self.get_all_tracks(
+                all_revision_tags, releases_file=f"{self.image_path}/_releases.json"
+            )
 
-        override_tracks = base_doc_yaml.get("override_tracks") or {}
-        logger.info(f"Override tracks from documentation.yaml: {override_tracks}")
-        all_tracks.update({k: v["end_of_life"] for k, v in override_tracks.items()})
+            override_tracks = base_doc_yaml.get("override_tracks") or {}
+            logger.info(f"Override tracks from documentation.yaml: {override_tracks}")
+            all_tracks.update({k: v["end_of_life"] for k, v in override_tracks.items()})
 
-        # Get all the published OCI tags from ECR
-        all_ecr_tags = {"imageTagDetails": []}
-        desc_img_tags_resp = self.ecr_client.describe_image_tags(
-            repositoryName=self.image_name
-        )
-        all_ecr_tags["imageTagDetails"] = desc_img_tags_resp.get("imageTagDetails", [])
-        while next_token := desc_img_tags_resp.get("nextToken"):
+            # Get all the published OCI tags from ECR
+            all_ecr_tags = {"imageTagDetails": []}
             desc_img_tags_resp = self.ecr_client.describe_image_tags(
-                repositoryName=self.image_name, nextToken=next_token
+                repositoryName=self.image_name
             )
-            all_ecr_tags["imageTagDetails"].extend(
-                desc_img_tags_resp.get("imageTagDetails", [])
+            all_ecr_tags["imageTagDetails"] = desc_img_tags_resp.get(
+                "imageTagDetails", []
             )
+            while next_token := desc_img_tags_resp.get("nextToken"):
+                desc_img_tags_resp = self.ecr_client.describe_image_tags(
+                    repositoryName=self.image_name, nextToken=next_token
+                )
+                all_ecr_tags["imageTagDetails"].extend(
+                    desc_img_tags_resp.get("imageTagDetails", [])
+                )
 
-        logger.info("Building releases section for doc data YAML file")
+            logger.info("Building releases section for doc data YAML file")
 
-        releases = self.build_releases_data(all_tracks, all_ecr_tags)
+            releases = self.build_releases_data(all_tracks, all_ecr_tags)
+        else:
+            releases = MOCK_RELEASE
 
         base_doc_yaml["repo"] = self.image_name
         base_doc_yaml["releases"] = releases
@@ -401,11 +452,14 @@ class OCIDocumentationData:
 
 if __name__ == "__main__":
     args = cli_args()
+    if args.dry_run:
+        logger.warning("Running in dry-run mode: mock release data is used.")
     runner = OCIDocumentationData(
         args.username,
         args.password,
         args.image_path,
         args.repository,
         args.all_revision_tags,
+        args.dry_run,
     )
     runner.main(args.doc_data_dir)

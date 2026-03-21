@@ -46,6 +46,12 @@ markdown_filename="${image_doc_filename%.*}.md"
 # 1) build the docs
 (cd ${docs_dir_git} && make DATADIR="${folder_of_data}" dockerhub-docs)
 
+if [ "${DRY_RUN}" == "true" ]; then
+    mv "${docs_dir_git}/docs/docker.io/ubuntu/${markdown_filename}" "${image_doc_folder}/doc-preview.md"
+    log_warning "Running in dry-run mode: skipping publishing the docs to registries."
+    exit 0
+fi
+
 # 2) login using DockerHub API to get the token to publish the doc
 dh_jw_token=$(curl -X POST  https://hub.docker.com/v2/users/login \
                 -H "Content-Type: application/json" \
