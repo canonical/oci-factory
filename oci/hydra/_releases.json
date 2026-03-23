@@ -45,18 +45,18 @@
         }
     },
     "25-22.04": {
-        "end-of-life": "2026-05-24T00:00:00Z",
+        "end-of-life": "2026-06-23T00:00:00Z",
         "stable": {
-            "target": "86"
+            "target": "87"
         },
         "candidate": {
-            "target": "86"
+            "target": "25-22.04_stable"
         },
         "beta": {
-            "target": "86"
+            "target": "25-22.04_candidate"
         },
         "edge": {
-            "target": "86"
+            "target": "25-22.04_beta"
         }
     }
 }
