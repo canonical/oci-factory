@@ -48,10 +48,10 @@ on:
         description: "JSON string mapping target architecture to runners."
         type: string
         default: '{
-          "amd64": ["self-hosted", "linux", "X64", "large", "noble"],
-          "arm64": ["self-hosted", "linux", "ARM64", "medium", "noble"],
-          "s390x": ["self-hosted", "linux", "s390x", "noble"],
-          "ppc64el": ["self-hosted", "linux", "ppc64le", "noble"]
+          "amd64": ["self-hosted-linux-amd64-noble-large"],
+          "arm64": ["self-hosted-linux-arm64-noble-medium"],
+          "s390x": ["self-hosted-linux-s390x-noble-medium"],
+          "ppc64el": ["self-hosted-linux-ppc64el-noble-edge"]
           }'
       lpci-fallback:
         description: "Enable fallback to Launchpad build when runners for target arch are not available."
