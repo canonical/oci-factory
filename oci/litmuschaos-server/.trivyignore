@@ -25,3 +25,8 @@ CVE-2026-23960
 
 # stdlib for Go < 1.25.7 - During session resumption in crypto/tls, if the...
 CVE-2025-68121
+
+## Upstream won't fix these
+# github.com/argoproj/argo-workflows/v3
+CVE-2026-28229
+CVE-2026-31892

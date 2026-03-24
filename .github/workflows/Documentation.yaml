@@ -36,7 +36,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: Validate access to triggered image
         uses: ./.github/actions/validate-actor
@@ -91,10 +91,10 @@ jobs:
     env:
       IS_PROD: ${{ ! startsWith(needs.validate-documentation-request.outputs.oci-img-name, 'mock-') }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       # This is needed to ensure that this workflow can run when called by workflows in external repositories
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           repository: canonical/oci-factory
           path: oci-factory
@@ -104,7 +104,7 @@ jobs:
         with:
           image-name: ${{ needs.validate-documentation-request.outputs.oci-img-name }}
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: "3.x"
 
@@ -144,7 +144,7 @@ jobs:
             --doc-data-dir data
 
       - name: Upload documentation data YAML
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: '${{ needs.validate-documentation-request.outputs.oci-img-name }}.doc.yaml'
           path: "${{ steps.generate-documentation.outputs.image_doc_folder }}/*.y*ml"
@@ -176,9 +176,9 @@ jobs:
     needs: [validate-documentation-request, do-documentation]
     if: ${{ !cancelled() && contains(needs.*.result, 'failure') && github.event_name != 'workflow_dispatch' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.x'
 

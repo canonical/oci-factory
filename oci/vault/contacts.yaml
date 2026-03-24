@@ -1,0 +1,7 @@
+notify:
+  emails:
+    - canonical-tls@lists.launchpad.net
+maintainers:
+  - saltiyazan
+  - VercinGor
+  - kayra1

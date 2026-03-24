@@ -59,7 +59,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: Infer number of image triggers
         uses: tj-actions/changed-files@531f5f7d163941f0c1c04e0ff4d8bb243ac4366f
@@ -112,7 +112,7 @@ jobs:
         if: ${{ inputs.b64-image-trigger != '' }}
         run: echo ${{ inputs.b64-image-trigger }} | base64 -d > ${{ steps.validate-image.outputs.img-path }}/image.yaml
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: "3.x"
 
@@ -140,7 +140,7 @@ jobs:
     steps:
 
       - name: Cloning OCI Factory
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           fetch-depth: 1
 
@@ -212,13 +212,13 @@ jobs:
       build-matrix: ${{ steps.prepare-matrix.outputs.build-matrix }}
       revision-data-cache-key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: Use custom image trigger
         if: ${{ inputs.b64-image-trigger != '' }}
         run: echo ${{ inputs.b64-image-trigger }} | base64 -d > ${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: "3.x"
 
@@ -271,7 +271,7 @@ jobs:
           ./src/uploads/swift_lockfile_unlock.sh \
             ${{ needs.prepare-build.outputs.oci-img-name }}
 
-      - uses: actions/cache/save@v4
+      - uses: actions/cache/save@36f1e144e1c8edb0a652766b484448563d8baf46
         with:
           path: ${{ steps.prepare-matrix.outputs.revision-data-dir }}
           key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
@@ -290,9 +290,9 @@ jobs:
     outputs:
       artefacts-hashes: ${{ steps.artefacts-hashes.outputs.hashes }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: "3.10"
 
@@ -309,7 +309,7 @@ jobs:
           ./src/uploads/requirements.sh
           pip install -r src/uploads/requirements.txt -r src/image/requirements.txt
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: ${{ env.OCI_ARCHIVE_NAME }}
 
@@ -324,13 +324,13 @@ jobs:
           echo "name=${name}" >> "$GITHUB_OUTPUT"
           echo "canonical-tag=${canonical_tag}" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache/save@v4
+      - uses: actions/cache/save@36f1e144e1c8edb0a652766b484448563d8baf46
         with:
           path: ${{ steps.rename-oci-archive.outputs.name }}
           key: ${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}
 
       - name: Install Syft
-        uses: anchore/sbom-action/download-syft@v0
+        uses: anchore/sbom-action/download-syft@57aae528053a48a3f6235f2d9461b05fbcb7366d
         with:
           syft-version: "v0.75.0"
 
@@ -350,7 +350,7 @@ jobs:
           log_info "Detected architectures: ${arches}"
           echo "arches='${arches}'" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
         with:
           go-version: '1.24'
     
@@ -407,7 +407,7 @@ jobs:
 
           echo "sboms=${all_sboms_zip}" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: ${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
 
@@ -426,21 +426,21 @@ jobs:
           echo "hashes=$(sha256sum ${{ env.VULN_REPORT }} ${{ env.OCI_IMAGE_ARCHIVE }} ${{ env.SBOMS }} | base64 -w0)"
 
       - name: Login to GHCR
-        uses: docker/login-action@v2
+        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload SBOM
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ${{ steps.generate-sboms.outputs.sboms }}
           path: ${{ steps.generate-sboms.outputs.sboms }}
           if-no-files-found: error
 
       - name: Upload image
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ${{ steps.rename-oci-archive.outputs.name }}
           path: ${{ steps.rename-oci-archive.outputs.name }}
@@ -481,7 +481,7 @@ jobs:
             ${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
 
       - name: Create Git tag
-        uses: rickstaa/action-create-tag@v1
+        uses: rickstaa/action-create-tag@a1c7777fcb2fee4f19b0f283ba888afa11678b72
         with:
           tag: "${{ steps.rename-oci-archive.outputs.name }}"
           message: "upload(${{ matrix.name }}): Build and upload new image revision ${{ matrix.revision }}"
@@ -502,11 +502,11 @@ jobs:
     env:
       REVISION_DATA_DIR: revision-data
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: "3.x"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           persist-credentials: false
 
@@ -514,7 +514,7 @@ jobs:
         if: ${{ inputs.b64-image-trigger != '' }}
         run: echo ${{ inputs.b64-image-trigger }} | base64 -d > ${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml
 
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: ${{ env.REVISION_DATA_DIR }}
           key: ${{ needs.prepare-upload.outputs.revision-data-cache-key }}
@@ -550,7 +550,7 @@ jobs:
               --revision-data-file "${{ env.REVISION_DATA_DIR }}/${revision_file}"
           done
 
-      - uses: actions/cache/save@v4
+      - uses: actions/cache/save@36f1e144e1c8edb0a652766b484448563d8baf46
         with:
           path: ${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml
           key: ${{ github.run_id }}-image-trigger
@@ -569,19 +569,19 @@ jobs:
     needs: [upload]
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         id: download
         with:
           path: artifacts
 
       - name: Generate provenance
-        uses: philips-labs/slsa-provenance-action@v0.8.0
+        uses: philips-labs/slsa-provenance-action@752766b8a3b1ebd09d599e163eeec8fa39e677aa
         with:
           command: generate
           subcommand: files
           arguments: --artifact-path ${{ steps.download.outputs.download-path }} --output-path provenance.json
 
-      # - uses: sigstore/cosign-installer@v3.0.1
+      # - uses: sigstore/cosign-installer@41d4f4d837df20f1ef015f6d24b78584cb492a2d
       #   with:
       #     cosign-release: 'v2.0.0'
 
@@ -596,7 +596,7 @@ jobs:
       #     cosign sign-blob --key cosign.key --output-signature provenance.json.sig provenance.json
 
       # - name: Upload verification keys
-      #   uses: actions/upload-artifact@v4
+      #   uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       #   with:
       #     name: verify
       #     path: |
@@ -609,14 +609,14 @@ jobs:
       #   run: sha256sum * > SHA256SUMS || true
 
       # - name: Upload SHA256SUMS file
-      #   uses: actions/upload-artifact@v4
+      #   uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       #   with:
       #     name: SHA256SUMS
       #     path: SHA256SUMS
       #     if-no-files-found: error
 
       - name: Upload provenance file
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: provenance
           path: provenance.json
@@ -629,7 +629,7 @@ jobs:
   #     actions: read # Needed for detection of GitHub Actions environment.
   #     id-token: write # Needed for provenance signing and ID
   #     contents: write # Needed for release uploads
-  #   uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.5.0
+  #   uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@7f4fdb871876c23e455853d694197440c5a91506
   #   with:
   #     base64-subjects: "${{ needs.upload.outputs.artefacts-hashes }}"
 
@@ -640,9 +640,9 @@ jobs:
       [prepare-build, validate-matrix, build-rock, test-rock, prepare-upload, upload, prepare-releases, release, generate-provenance]
     if: ${{ always() && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) && github.event_name != 'pull_request' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: "3.x"
   

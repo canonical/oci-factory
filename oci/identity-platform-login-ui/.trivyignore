@@ -2,3 +2,6 @@
 
 # https://github.com/advisories/GHSA-6f52-wpx2-hvf2  - Calling Verify with a VerifyOptions.KeyUsages that contains ExtKeyUsageAny unintentionally disabledpolicy validation.
 CVE-2025-22874 
+
+# https://github.com/advisories/GHSA-j3gx-2473-5fp8 - url.Parse insufficiently validated the host/authority component and accepted some invalid URLs.
+CVE-2026-25679

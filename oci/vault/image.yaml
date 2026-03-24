@@ -1,0 +1,18 @@
+version: 2
+upload:
+  - source: canonical/vault-rock
+    commit: defac428cddd6333eead3a6c6c9f7d470b46a5b4
+    directory: .
+    ignored-vulnerabilities:
+      - CVE-2025-68121  # Go stdlib crypto/tls. Fixed in Go 1.24.13+. Vault 1.19.x pins older Go.
+      - CVE-2025-6000  # Vault code execution via audit plugin. Fixed in Vault 1.20.1.
+      - CVE-2025-11621  # Vault AWS Auth bypass. Fixed in Vault 1.21.0.
+      - CVE-2025-5999  # Vault privilege escalation via identity endpoint. Fixed in Vault 1.20.0.
+      - CVE-2025-6203  # Vault DoS via complex JSON payloads. Fixed in Vault 1.21.0.
+      - CVE-2025-63811  # jose2go DoS via crafted JWE token. Dep pinned in Vault 1.19.x.
+      - CVE-2026-24051  # otel/sdk path hijacking on macOS. Dep pinned in Vault 1.19.x.
+    release:
+      1.19-24.04:
+        end-of-life: "2026-06-10T00:00:00Z"
+        risks:
+          - edge

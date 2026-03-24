@@ -15,14 +15,14 @@ jobs:
         name: Rebuild images
         steps:
         - name: Checkout
-          uses: actions/checkout@v4
+          uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
     
-        - uses: actions/setup-python@v5
+        - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
           with:
             python-version: "3.x"
   
         - name: Setup Poetry
-          uses: abatilo/actions-poetry@v2
+          uses: abatilo/actions-poetry@a5643c67b5fcc9ac5eddb395c7f61b1b66d86034
   
         - name: Install dependencies
           continue-on-error: true
