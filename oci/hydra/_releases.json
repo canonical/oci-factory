@@ -45,9 +45,9 @@
         }
     },
     "25-22.04": {
-        "end-of-life": "2026-06-23T00:00:00Z",
+        "end-of-life": "2026-06-24T00:00:00Z",
         "stable": {
-            "target": "87"
+            "target": "89"
         },
         "candidate": {
             "target": "25-22.04_stable"
