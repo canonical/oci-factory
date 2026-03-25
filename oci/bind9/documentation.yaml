@@ -1,0 +1,94 @@
+version: 2
+
+application: bind9
+website: https://www.isc.org/bind/
+source-code: https://github.com/canonical/bind9-rock/
+issues: https://github.com/canonical/bind9-rock/issues
+description: |
+  BIND 9 provides software for Domain Name System (DNS) management including
+  both defining domain names authoritatively for a given DNS zone, and
+  recursively resolving domain names to their IP addresses.
+
+docker:
+  run_cmd: --args <bind9-args>
+  parameters: |
+    [-u bind]
+    -e TZ=UTC
+    -p 30053:53/tcp
+    -p 30053:53/udp
+    -v /path/to/config:/etc/bind/named.conf:ro
+    -v /path/to/data:/var/cache/bind
+    -v /path/to/resource:/var/lib/bind
+  run_conclusion: |
+    Access your Bind9 server at `localhost:30053`
+
+    Additionally, you can use `rndc` to manage the server:
+
+    ```bash
+    docker exec bind9-container rndc <command>
+    ```
+
+    A `rndc` key must have been previously generated either 
+    by mounting a volume containing a `rndc.key` file or
+    by running `rndc-confgen` with:
+
+    ```bash
+    docker exec bind9-container rndc-confgen -a
+    docker restart bind9-container
+    ```
+  legacy:
+    run_cmd: <bind9-args>
+    parameters: |
+      -e BIND9_USER=bind
+    run_conclusion: |
+      Access your Bind9 server at `localhost:30053`
+
+config:
+  '--user':
+    default: _daemon_
+    description: The user that the bind9 server will run as. Can optionally be set to `bind`.
+    type: other
+  port:
+    description: Expose bind9 on `localhost:30053`
+    type: port
+  env:
+    description: Timezone
+    type: env
+  config-file:
+    description: Local [configuration file](https://bind9.readthedocs.io/en/latest/reference.html) `named.conf` (try [this exmple](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/bind9/plain/examples/caching-nameserver/named.conf.options?h=9.18-22.04))
+    type: mount
+  data-dir:
+    description: Location where locally cached data can be dumped.
+    type: mount
+  resource-dir:
+    description: Location of Resource Records defining various domain information.
+    type: mount
+
+microk8s:
+  deploy:
+    link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/bind9/plain/examples/bind9-deployment.yml?h=9.18-22.04
+    access: |
+      You will now be able to connect to the bind9 server on `http://localhost:30053`.
+
+override_tracks:
+  # Tracks released from legacy repo
+  9.20-25.04:
+    end-of-life: '2026-01-15T00:00:00Z'
+  9.20-24.10:
+    end-of-life: '2025-07-10T00:00:00Z'
+  9.18-24.04:
+    end-of-life: '2029-05-31T00:00:00Z'
+  9.18-23.10:
+    end-of-life: '2024-07-11T00:00:00Z'
+  9.18-23.04:
+    end-of-life: '2024-01-25T00:00:00Z'
+  9.18-22.10:
+    end-of-life: '2023-07-20T00:00:00Z'
+  9.18-22.04:
+    end-of-life: '2027-06-01T00:00:00Z'
+  9.18-21.10:
+    end-of-life: '2022-07-14T00:00:00Z'
+  9.16-21.04:
+    end-of-life: '2022-01-20T00:00:00Z'
+  9.16-20.04:
+    end-of-life: '2025-05-29T00:00:00Z'
