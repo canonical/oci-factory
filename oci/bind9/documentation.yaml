@@ -10,15 +10,12 @@ description: |
   recursively resolving domain names to their IP addresses.
 
 docker:
-  run_cmd: --args <bind9-args>
-  parameters: |
-    [-u bind]
-    -e TZ=UTC
+  run_cmd: --args <named-args>
+  parameters: "
+    -e TZ=UTC 
     -p 30053:53/tcp
     -p 30053:53/udp
-    -v /path/to/config:/etc/bind/named.conf:ro
-    -v /path/to/data:/var/cache/bind
-    -v /path/to/resource:/var/lib/bind
+    "
   run_conclusion: |
     Access your Bind9 server at `localhost:30053`
 
@@ -37,32 +34,46 @@ docker:
     docker restart bind9-container
     ```
   legacy:
-    run_cmd: <bind9-args>
-    parameters: |
-      -e BIND9_USER=bind
+    run_cmd: <named-args>
+    parameters: "
+      -e TZ=UTC
+      -p 30053:53/tcp
+      -p 30053:53/udp
+      "
     run_conclusion: |
       Access your Bind9 server at `localhost:30053`
 
 config:
-  '--user':
+  '`-u <user>`':
+    type: other
     default: _daemon_
     description: The user that the bind9 server will run as. Can optionally be set to `bind`.
+  '`--args <named-args>`':
     type: other
-  port:
-    description: Expose bind9 on `localhost:30053`
+    default: '`-g`'
+    description: Optional arguments to override the defaults being passed to `named` when the container starts.
+  '`-p 30053:53`':
     type: port
-  env:
-    description: Timezone
+    description: Expose bind9 on `localhost:30053`
+  '`-e TZ=UTC`':
     type: env
-  config-file:
-    description: Local [configuration file](https://bind9.readthedocs.io/en/latest/reference.html) `named.conf` (try [this exmple](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/bind9/plain/examples/caching-nameserver/named.conf.options?h=9.18-22.04))
+    description: Timezone
+  '`-e BIND9_USER=<user>`':
+    type: env
+    description: |
+      The user which will start the `named` process.
+      **Deprecated on `9.20-26.04` onwards**, use `-u <user>` instead.
+  '`-v /path/to/config:/etc/bind/named.conf:ro`':
     type: mount
-  data-dir:
+    description: |
+      Local [configuration file](https://bind9.readthedocs.io/en/latest/reference.html)
+      `named.conf` (try [this exmple](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/bind9/plain/examples/caching-nameserver/named.conf.options?h=9.18-22.04))
+  '`-v /path/to/data:/var/cache/bind`':
+    type: mount
     description: Location where locally cached data can be dumped.
+  '`-v /path/to/resource:/var/lib/bind`':
     type: mount
-  resource-dir:
     description: Location of Resource Records defining various domain information.
-    type: mount
 
 microk8s:
   deploy:
