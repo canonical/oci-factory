@@ -1,10 +1,10 @@
 version: 2
 upload:
-  # - source: canonical/bind9-rock
-  #   commit: TODO
-  #   directory: bind9/9.20-26.04
-  #   release:
-  #     9.20-26.04:
-  #       end-of-life: "2031-05-29T00:00:00Z"
-  #       risks:
-  #         - edge
+  - source: canonical/bind9-rock
+    commit: e6e88d5330e8348c98e54dce0275f7dc6fe48533
+    directory: bind9/9.20-26.04
+    release:
+      9.20-26.04:
+        end-of-life: "2031-05-29T00:00:00Z"
+        risks:
+          - edge
