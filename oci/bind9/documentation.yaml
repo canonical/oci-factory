@@ -63,7 +63,7 @@ config:
     description: The user which will start the `named` process. **Deprecated on `9.20-26.04` onwards**, use `-u <user>` instead.
   '`-v /path/to/config:/etc/bind/named.conf:ro`':
     type: mount
-    description: Local [configuration file](https://bind9.readthedocs.io/en/latest/reference.html) named.conf` (try [this example](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/bind9/plain/examples/caching-nameserver/named.conf.options?h=9.18-22.04))
+    description: Local [configuration file](https://bind9.readthedocs.io/en/latest/reference.html) `named.conf` (try [this example](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/bind9/plain/examples/caching-nameserver/named.conf.options?h=9.18-22.04))
   '`-v /path/to/data:/var/cache/bind`':
     type: mount
     description: Location where locally cached data can be dumped.
