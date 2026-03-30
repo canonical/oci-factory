@@ -44,3 +44,8 @@ setup() {
   output=$(${BATS_TEST_DIRNAME}/validate-actor.sh "ROCKsBot" "true" $workdir "img")
   [[ $(echo "${output}" | tail -n 1) =~ "The workflow is triggered by ROCKsBot as the code owner" ]]
 }
+
+@test "always allow rocks team members" {
+  output=$(${BATS_TEST_DIRNAME}/validate-actor.sh "ROCKsBot" "true" $workdir "img")
+  [[ $(echo "${output}" | tail -n 1) =~ "The workflow is triggered by ROCKsBot as the code owner" ]]
+}
