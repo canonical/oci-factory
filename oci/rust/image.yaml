@@ -9,7 +9,7 @@ upload:
         risks:
           - edge
   - source: canonical/rust-rock
-    commit: 98516fe632e3b6db13f42ad9482f7e35028b7397
+    commit: 0c5ef23806cb4a9c0dce9a6f066a989914a06fc8
     directory: rust/1.75-24.04
     release:
       1.75-24.04:
