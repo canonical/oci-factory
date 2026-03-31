@@ -5,7 +5,7 @@ go 1.25.0
 require (
 	github.com/briandowns/spinner v1.23.2
 	github.com/canonical/go-flags v0.0.0-20230403090104-105d09a091b8
-	github.com/go-git/go-git/v5 v5.17.1
+	github.com/go-git/go-git/v5 v5.17.2
 	golang.org/x/term v0.41.0
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 	gopkg.in/yaml.v3 v3.0.1
