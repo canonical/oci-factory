@@ -1,35 +1,71 @@
 {
     "1-24.04": {
-        "end-of-life": "2025-08-19T00:00:00Z",
+        "end-of-life": "2026-05-15T00:00:00Z",
         "stable": {
-            "target": "6"
+            "target": "14"
         },
         "candidate": {
-            "target": "6"
+            "target": "1-24.04_stable"
         },
         "beta": {
-            "target": "6"
+            "target": "1-24.04_candidate"
         },
         "edge": {
-            "target": "6"
+            "target": "1-24.04_beta"
         }
     },
     "1.24-24.04": {
-        "end-of-life": "2025-08-19T00:00:00Z",
+        "end-of-life": "2026-05-15T00:00:00Z",
         "stable": {
-            "target": "6"
+            "target": "13"
         },
         "candidate": {
-            "target": "6"
+            "target": "1.24-24.04_stable"
         },
         "beta": {
-            "target": "6"
+            "target": "1.24-24.04_candidate"
         },
         "edge": {
-            "target": "6"
+            "target": "1.24-24.04_beta"
         }
     },
     "1.24.3-24.04": {
-        "end-of-life": "2025-02-19T00:00:00Z"
+        "end-of-life": "2026-02-12T00:00:00Z"
+    },
+    "1.23-24.04": {
+        "end-of-life": "2026-05-15T00:00:00Z",
+        "stable": {
+            "target": "12"
+        },
+        "candidate": {
+            "target": "1.23-24.04_stable"
+        },
+        "beta": {
+            "target": "1.23-24.04_candidate"
+        },
+        "edge": {
+            "target": "1.23-24.04_beta"
+        }
+    },
+    "1.26-24.04": {
+        "end-of-life": "2026-05-15T00:00:00Z",
+        "stable": {
+            "target": "14"
+        },
+        "candidate": {
+            "target": "1.26-24.04_stable"
+        },
+        "beta": {
+            "target": "1.26-24.04_candidate"
+        },
+        "edge": {
+            "target": "1.26-24.04_beta"
+        }
+    },
+    "1.23.3-24.04": {
+        "end-of-life": "2026-02-12T00:00:00Z"
+    },
+    "1.26.1-24.04": {
+        "end-of-life": "2026-02-12T00:00:00Z"
     }
 }
