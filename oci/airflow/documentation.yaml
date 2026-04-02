@@ -112,3 +112,7 @@ parameters:
     value: 'AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG=16'
     description: >
       The maximum number of task instances allowed to run concurrently in each dag run. 
+
+override_tracks:
+  3-24.04:
+    end_of_life: "2026-04-02"
