@@ -15,17 +15,16 @@ description: |
 
 docker:
   parameters: -e TZ=UTC
-  run_cmd: exec dotnet --info
+  run_cmd: exec dotnet
   run_conclusion: |
     The container logs will show the .NET runtime information and help message.
     This is because the container expects an application to be given.
 
   legacy:
     parameters: -e TZ=UTC
-    run_cmd: dotnet --info
     run_conclusion: |
-      The container logs will show the .NET runtime information and help message.
-      This is because the container expects an application to be given.
+      The container logs shows the .NET runtime information, as the container has `/usr/bin/dotnet` as the entrypoint,
+      and `--info` as the default argument.
 
   dockerfile: |
     Here is an example using a Dockerfile to build a Hello World web application image on top of a dotnet-aspnet image:
