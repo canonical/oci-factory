@@ -71,3 +71,9 @@ CVE-2025-22868
 CVE-2025-22869
 # github.com/golang-jwt/jwt/v4 - golang-jwt/jwt: jwt-go allows excessive memory allocation during header parsing
 CVE-2025-30204
+# github.com/go-jose/go-jose/v4 - go-jose: DoS via panic when decrypting JWE with key wrapping algorithm and empty encrypted_key
+CVE-2026-34986
+# github.com/moby/moby - moby: authorization plugin bypass vulnerability
+CVE-2026-34040
+# go.opentelemetry.io/otel/sdk - opentelemetry-go: Path Hijacking via untrusted search path on macOS/Darwin
+CVE-2026-24051
