@@ -7,6 +7,8 @@ admin_only=$2
 workspace=$3
 image_path=$4
 
+ROCKS_TEAM="@canonical/rocks"
+
 log_debug "github.actor: ${actor}"
 actor=$(echo "$actor" | sed 's/\[/\\[/g;s/\]/\\]/g') # Escape square brackets for actors like renovate[bot]
 log_debug "admin-only: ${admin_only}"
@@ -15,6 +17,7 @@ if [[ ${admin_only} == true ]]; then
     log_debug "Expanding team mentions in the CODEOWNERS file"
     codeowners_file=$(mktemp)
     cp ${workspace}/CODEOWNERS ${codeowners_file}
+    echo -e "\n*\t@${ROCKS_TEAM}" >> ${codeowners_file}
     teams=$(grep -oE '@[[:alnum:]_.-]+\/[[:alnum:]_.-]+' ${codeowners_file} || true | sort | uniq)
 
     for team in ${teams}; do

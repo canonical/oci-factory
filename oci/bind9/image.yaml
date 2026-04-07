@@ -1,0 +1,10 @@
+version: 2
+upload:
+  - source: canonical/bind9-rock
+    commit: 0f126d536cdba4cd8340d6ece37b3242b5005212
+    directory: bind9/9.20-26.04
+    release:
+      9.20-26.04:
+        end-of-life: "2031-05-29T00:00:00Z"
+        risks:
+          - edge

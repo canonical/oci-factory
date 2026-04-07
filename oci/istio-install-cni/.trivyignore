@@ -1,0 +1,32 @@
+# Upstream CVEs
+
+# google.golang.org/grpc - gRPC-Go: Authorization bypass due to improper HTTP/2 :path validation.
+# Requests with a missing leading slash bypass path-based authz policies (CVSS 9.1).
+# Upstream Istio tracks this in https://github.com/istio/istio/issues/59672 and a fix
+# bumping grpc to v1.79.3 is pending via https://github.com/istio/istio/pull/59695.
+# The install-cni binary does not use grpc/authz for request authorization, so this
+# CVE does not affect the CNI plugin's functionality.
+# Remove once Istio 1.29.2+ ships with google.golang.org/grpc >= 1.79.3.
+CVE-2026-33186
+
+# go.opentelemetry.io/otel/sdk - Arbitrary Code Execution via PATH hijacking of the
+# "ioreg" command in sdk/resource/host_id.go. This is exploitable only on macOS/Darwin.
+# The rock runs exclusively on Linux, so this CVE is not applicable.
+CVE-2026-24051
+
+# istio.io/istio - False positives caused by Go pseudo-versioning. The rock builds from
+# the Istio 1.29.0 source tag, but the compiled binary reports a pseudo-version
+# (v0.0.0-<timestamp>-<hash>) which Trivy incorrectly matches against ancient CVEs
+# that were all fixed before Istio 1.13.x. These four CVEs do not affect Istio >= 1.13.
+
+# istio/envoy: mishandling regular expressions for long URIs leading to DoS (fixed in 1.1.13/1.2.4)
+CVE-2019-14993
+
+# istio: HTTP request can bypass authorization due to case insensitive host comparison (fixed in 1.9.8+)
+CVE-2021-39155
+
+# istio: HTTP request with fragment in URI can bypass authorization mechanisms (fixed in 1.9.8+)
+CVE-2021-39156
+
+# istio: unauthenticated control plane denial of service attack (fixed in 1.11.7/1.12.4/1.13.1)
+CVE-2022-23635
