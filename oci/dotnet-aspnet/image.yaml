@@ -1,10 +1,10 @@
 version: 1
 upload:
   - source: canonical/dotnet-aspnet-rock
-    commit: 39e4e78d8347ccd1f459a114572a1c9e91660a0f
-    directory: dotnet-aspnet-rock/9.0-25.04
+    commit: 70571d162b131fbdfef0016b9b6d8c989dac2782
+    directory: dotnet-aspnet-rock/10.0-26.04
     release:
-      9.0-25.04:
-        end-of-life: '2026-01-15T00:00:00Z'
+      10.0-26.04:
+        end-of-life: '2026-04-23T00:00:00Z'
         risks:
           - edge
