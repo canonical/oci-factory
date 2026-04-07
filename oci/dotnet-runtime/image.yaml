@@ -1,10 +1,10 @@
 version: 1
 upload:
   - source: canonical/dotnet-runtime-rock
-    commit: e9361aa184b2a0c00d1e79c9a4da93ce552405e4
-    directory: dotnet-runtime-rock/9.0-25.04
+    commit: b2e674fc3ca59649ad4ddee917f581234c5d62f6
+    directory: dotnet-runtime-rock/10.0-26.04
     release:
-      9.0-25.04:
-        end-of-life: '2026-01-15T00:00:00Z'
+      10.0-26.04:
+        end-of-life: '2026-04-23T00:00:00Z'
         risks:
           - edge

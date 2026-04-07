@@ -1,7 +1,6 @@
-version: 1
+version: 2
 
 application: dotnet-runtime
-is_chiselled: true
 description: |
   .NET is a free, cross-platform, open source developer platform for building many different types of applications. With .NET, you can use multiple languages, editors, and libraries to build for web, mobile, desktop, games, IoT, and more.
   Read [the .NET documentation](https://docs.microsoft.com/en-us/dotnet/core/deploying/) to learn how to deploy your .NET application with container images.
@@ -14,94 +13,77 @@ description: |
   If you're looking to publish a self-contained .NET app, please have a look at the `ubuntu/dotnet-deps` repository.
   If you're looking to publish an ASP.NET app, please then look at the `ubuntu/dotnet-aspnet` repository.
 
-# "Launch the image locally" section is automatically generated for the rock-based images.
-# For the Dockerfile-based images, it is manually written.
 docker:
-  parameters:
-    - -e TZ=UTC
-  access: |
-    ### New entrypoint `pebble`
-
-    Please note that the images tagged 6.0, 8.0 and 9.0-24.10 are Dockerfile-based images,
-    whereas from version 9.0-25.04 onward the images are now rocks. As such the
-    entrypoint is now Pebble. Read more on the
-    [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
-
-    Versions 6.0, 8.0 and 9.0-24.10 images have `dotnet` as the entrypoint.
-
-    ```sh
-    $ docker run --rm ubuntu/dotnet-runtime:8.0-24.04_stable
-    Host:
-    Version:      8.0.16
-    ...
-    ```
-
-    Versions 9.0-25.04 and later images have `pebble enter` as the entrypoint. You can
-    access the `dotnet` with the following command:
-    ```sh
-    $ docker run --rm ubuntu/dotnet-runtime:9.0-25.04_edge exec dotnet
-    Usage: dotnet [options]
-    ...
-    ```
-
-    The container logs simply show the .NET help message.
-    This is because the container expects a .NET application to be given.
+  parameters: -e TZ=UTC
+  run_cmd: exec dotnet /app/HelloWorld.dll
+  run_conclusion: |
+    The container will run the .NET application specified by the path.
+    The container expects a published .NET application to be mounted or copied into the image.
 
     ### Run a .NET application
 
     Let's use the following HelloWorld application as an example:
 
-    #### Using the images tagged with versions 6.0, 8.0 and 9.0-24.10
-
     ```bash
     $ # Create a HelloWorld.csproj file with the following content
-    $ cat HelloWorld.csproj
+    $ cat <<EOF > HelloWorld.csproj
     <Project Sdk="Microsoft.NET.Sdk">
 
       <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
       </PropertyGroup>
 
     </Project>
+    EOF
 
     # Create a Program.cs file with the following code
-    $ cat Program.cs
+    $ cat <<EOF > Program.cs
     Console.WriteLine("Hello, World!");
+    EOF
 
-    # Publish the .NET application (you need the "dotnet8" package)
+    # Publish the .NET application (you need the "dotnet10" package)
     $ dotnet publish -c Release -o app
     MSBuild version 17.8.27+3ab07f0cf for .NET
       Determining projects to restore...
       Restored /tmp/demo/HelloWorld.csproj (in 59 ms).
-      HelloWorld -> /tmp/demo/bin/Release/net8.0/HelloWorld.dll
-      HelloWorld -> /tmp/demo/bin/Release/net8.0/publish/
+      HelloWorld -> /tmp/demo/bin/Release/net10.0/HelloWorld.dll
+      HelloWorld -> /tmp/demo/bin/Release/net10.0/publish/
 
-    # Now you can run the app with "ubuntu/dotnet-runtime:8.0-24.04_stable"
-    $ docker run --rm -v $PWD/app:/app ubuntu/dotnet-runtime:8.0-24.04_stable /app/HelloWorld.dll
+    # Now you can run the app with "ubuntu/dotnet-runtime:10.0-26.04_edge"
+    $ docker run --rm -v $PWD/app:/app ubuntu/dotnet-runtime:10.0-26.04_edge exec dotnet /app/HelloWorld.dll
     Hello, World!
     ```
 
-    #### Using the images tagged with versions 9.0-25.04 and later
+  dockerfile: |
+    Here is an example Dockerfile to build your own .NET application image on top of a dotnet-runtime image:
 
-    Use the same example, but change the TargetFramework to `net9.0` in the
-    `HelloWorld.csproj` file, and then run the following commands:
+    #### For rocks (9.0-25.04 and later)
 
-    ```bash
-    $ # Publish the .NET application (you need the "dotnet9" package)
-    $ dotnet publish -c Release -o app
-    $ docker run --rm -v $PWD/app:/app ubuntu/dotnet-runtime:9.0-25.04_edge exec dotnet /app/HelloWorld.dll
-    Hello, World!
+    ```docker
+    FROM ubuntu:26.04 AS builder
+
+    RUN apt-get update && apt-get install -y dotnet10 ca-certificates
+
+    # add your application code (the HelloWorld example from above),
+    # and change the TargetFramework to net10.0 in the HelloWorld.csproj
+    WORKDIR /source
+    COPY . .
+
+    # publish your .NET app
+    RUN dotnet publish -c Release -o /app
+
+    FROM ubuntu/dotnet-runtime:10.0-26.04_edge
+
+    WORKDIR /app
+    COPY --from=builder /app ./
+
+    CMD ["exec", "dotnet", "/app/HelloWorld.dll"]
     ```
 
-    ### Build a .NET application image
-
-    #### Using the images tagged 6.0, 8.0 and 9.0-24.10
-
-    Here's the same example as above, but for building your own .NET application image, by building the .NET 8 HelloWorld app on Ubuntu 24.04 and packaging it on top of ubuntu/dotnet-runtime:8.0-24.04_stable:
-
+    #### For Legacy images (6.0, 8.0, 9.0-24.10)
     ```Dockerfile
     FROM ubuntu:24.04 AS builder
 
@@ -124,39 +106,65 @@ docker:
     ENTRYPOINT ["dotnet", "/app/HelloWorld.dll"]
     ```
 
-    #### Using the images tagged 9.0-25.04 and later
+  legacy:
+    parameters: -e TZ=UTC
+    run_cmd: /app/HelloWorld.dll
+    run_conclusion: |
+      The container will run the .NET application specified by the path.
 
-    Here is the example Dockerfile to build your own .NET application image on top of `ubuntu/dotnet-runtime:9.0-25.04_edge`. You need to replace the `net8.0` in the `HelloWorld.csproj` file with `net9.0`:
+      **Note:** Images tagged 6.0, 8.0 and 9.0-24.10 are Dockerfile-based images with `dotnet` as the entrypoint.
+      From version 9.0-25.04 onward, images are rocks with `pebble enter` as the entrypoint.
+      Read more on the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
 
-    ```docker
-    FROM ubuntu:25.04 AS builder
+      ### Run a .NET application (Legacy images: 6.0, 8.0, 9.0-24.10)
 
-    RUN apt-get update && apt-get install -y dotnet9 ca-certificates
+      Let's use the following HelloWorld application as an example:
 
-    # add your application code (the HelloWorld example from above),
-    # and change the TargetFramework to net9.0 in the HelloWorld.csproj
-    WORKDIR /source
-    COPY . .
+      ```bash
+      $ # Create a HelloWorld.csproj file with the following content
+      $ cat <<EOF > HelloWorld.csproj
+      <Project Sdk="Microsoft.NET.Sdk">
 
-    # publish your .NET app
-    RUN dotnet publish -c Release -o /app
+        <PropertyGroup>
+          <OutputType>Exe</OutputType>
+          <TargetFramework>net8.0</TargetFramework>
+          <ImplicitUsings>enable</ImplicitUsings>
+          <Nullable>enable</Nullable>
+        </PropertyGroup>
 
-    FROM ubuntu/dotnet-runtime:9.0-25.04_edge
+      </Project>
+      EOF
 
-    WORKDIR /app
-    COPY --from=builder /app ./
+      # Create a Program.cs file with the following code
+      $ cat <<EOF > Program.cs
+      Console.WriteLine("Hello, World!");
+      EOF
+      # Publish the .NET application (you need the "dotnet8" package)
+      $ dotnet publish -c Release -o app
+      MSBuild version 17.8.27+3ab07f0cf for .NET
+        Determining projects to restore...
+        Restored /tmp/demo/HelloWorld.csproj (in 59 ms).
+        HelloWorld -> /tmp/demo/bin/Release/net8.0/HelloWorld.dll
+        HelloWorld -> /tmp/demo/bin/Release/net8.0/publish/
 
-    CMD ["exec", "dotnet", "/app/HelloWorld.dll"]
-    ```
+      # Now you can run the app with "ubuntu/dotnet-runtime:8.0-24.04_stable"
+      $ docker run --rm -v $PWD/app:/app ubuntu/dotnet-runtime:8.0-24.04_stable /app/HelloWorld.dll
+      Hello, World!
+      ```
 
-    # Debug docs will be automatically generated for the rock-based images.
-    debug:
-      text: |
-        To debug the container for versions 9.0-25.04 and later:
+website: https://dotnet.microsoft.com/
+issues: https://github.com/canonical/dotnet-runtime-rock/issues
+source-code: https://github.com/canonical/dotnet-runtime-rock
 
-        ```bash
-        docker exec -it dotnet-runtime-container pebble logs
-        ```
+config:
+  TZ:
+    description: Set the timezone for the container
+    type: env
+    default: UTC
+  DOTNET_SYSTEM_GLOBALIZATION_INVARIANT:
+    description: Whether to use invariant globalization mode.
+    type: env
+    default: 'true'
 
 override_tracks:
   # Tracks release from legacy repo
