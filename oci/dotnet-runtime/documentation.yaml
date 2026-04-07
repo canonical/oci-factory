@@ -15,17 +15,18 @@ description: |
 
 docker:
   parameters: -e TZ=UTC
-  run_cmd: exec dotnet /app/HelloWorld.dll
+  run_cmd: exec dotnet
   run_conclusion: |
-    The container will run the .NET application specified by the path.
-    The container expects a published .NET application to be mounted or copied into the image.
+    The container logs simply show the .NET help message.
+    This is because the container expects a .NET application to be given.
 
-    ### Run a .NET application
+  dockerfile: |
+    Here is an example using a Dockerfile to build a .NET application image on top of a dotnet-runtime image:
 
-    Let's use the following HelloWorld application as an example:
+    #### For rocks (9.0-25.04 and later)
 
     ```bash
-    $ # Create a HelloWorld.csproj file with the following content
+    # Create a HelloWorld.csproj file with the following content
     $ cat <<EOF > HelloWorld.csproj
     <Project Sdk="Microsoft.NET.Sdk">
 
@@ -44,31 +45,12 @@ docker:
     Console.WriteLine("Hello, World!");
     EOF
 
-    # Publish the .NET application (you need the "dotnet10" package)
-    $ dotnet publish -c Release -o app
-    MSBuild version 17.8.27+3ab07f0cf for .NET
-      Determining projects to restore...
-      Restored /tmp/demo/HelloWorld.csproj (in 59 ms).
-      HelloWorld -> /tmp/demo/bin/Release/net10.0/HelloWorld.dll
-      HelloWorld -> /tmp/demo/bin/Release/net10.0/publish/
-
-    # Now you can run the app with "ubuntu/dotnet-runtime:10.0-26.04_edge"
-    $ docker run --rm -v $PWD/app:/app ubuntu/dotnet-runtime:10.0-26.04_edge exec dotnet /app/HelloWorld.dll
-    Hello, World!
-    ```
-
-  dockerfile: |
-    Here is an example Dockerfile to build your own .NET application image on top of a dotnet-runtime image:
-
-    #### For rocks (9.0-25.04 and later)
-
-    ```docker
+    cat <<EOF > Dockerfile
     FROM ubuntu:26.04 AS builder
 
     RUN apt-get update && apt-get install -y dotnet10 ca-certificates
 
-    # add your application code (the HelloWorld example from above),
-    # and change the TargetFramework to net10.0 in the HelloWorld.csproj
+    # add your application code
     WORKDIR /source
     COPY . .
 
@@ -81,17 +63,42 @@ docker:
     COPY --from=builder /app ./
 
     CMD ["exec", "dotnet", "/app/HelloWorld.dll"]
+    EOF
+
+    $ docker build -t hello-world-app .
+    $ docker run --rm hello-world-app  # This prints "Hello, World!"
     ```
 
     #### For Legacy images (6.0, 8.0, 9.0-24.10)
-    ```Dockerfile
+    ```bash
+    # Using .NET8 as an example
+    # Create a HelloWorld.csproj file with the following content
+    $ cat <<EOF > HelloWorld.csproj
+    <Project Sdk="Microsoft.NET.Sdk">
+
+      <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+      </PropertyGroup>
+
+    </Project>
+    EOF
+
+    # Create a Program.cs file with the following code
+    $ cat <<EOF > Program.cs
+    Console.WriteLine("Hello, World!");
+    EOF
+
+    cat <<EOF > Dockerfile
     FROM ubuntu:24.04 AS builder
 
     # install the .NET 8 SDK from the Ubuntu archive
     # (no need to clean the apt cache as this is an unpublished stage)
     RUN apt-get update && apt-get install -y dotnet8 ca-certificates
 
-    # add your application code (the HelloWorld example from above)
+    # add your application code
     WORKDIR /source
     COPY . .
 
@@ -104,53 +111,17 @@ docker:
     COPY --from=builder /app ./
 
     ENTRYPOINT ["dotnet", "/app/HelloWorld.dll"]
+    EOF
+
+    $ docker build -t hello-world-app .
+    $ docker run --rm hello-world-app  # This prints "Hello, World!"
     ```
 
   legacy:
     parameters: -e TZ=UTC
-    run_cmd: /app/HelloWorld.dll
     run_conclusion: |
-      The container will run the .NET application specified by the path.
-
-      **Note:** Images tagged 6.0, 8.0 and 9.0-24.10 are Dockerfile-based images with `dotnet` as the entrypoint.
-      From version 9.0-25.04 onward, images are rocks with `pebble enter` as the entrypoint.
-      Read more on the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
-
-      ### Run a .NET application (Legacy images: 6.0, 8.0, 9.0-24.10)
-
-      Let's use the following HelloWorld application as an example:
-
-      ```bash
-      $ # Create a HelloWorld.csproj file with the following content
-      $ cat <<EOF > HelloWorld.csproj
-      <Project Sdk="Microsoft.NET.Sdk">
-
-        <PropertyGroup>
-          <OutputType>Exe</OutputType>
-          <TargetFramework>net8.0</TargetFramework>
-          <ImplicitUsings>enable</ImplicitUsings>
-          <Nullable>enable</Nullable>
-        </PropertyGroup>
-
-      </Project>
-      EOF
-
-      # Create a Program.cs file with the following code
-      $ cat <<EOF > Program.cs
-      Console.WriteLine("Hello, World!");
-      EOF
-      # Publish the .NET application (you need the "dotnet8" package)
-      $ dotnet publish -c Release -o app
-      MSBuild version 17.8.27+3ab07f0cf for .NET
-        Determining projects to restore...
-        Restored /tmp/demo/HelloWorld.csproj (in 59 ms).
-        HelloWorld -> /tmp/demo/bin/Release/net8.0/HelloWorld.dll
-        HelloWorld -> /tmp/demo/bin/Release/net8.0/publish/
-
-      # Now you can run the app with "ubuntu/dotnet-runtime:8.0-24.04_stable"
-      $ docker run --rm -v $PWD/app:/app ubuntu/dotnet-runtime:8.0-24.04_stable /app/HelloWorld.dll
-      Hello, World!
-      ```
+      The container logs shows the .NET runtime information, as the container has `/usr/bin/dotnet` as the entrypoint,
+      and `--info` as the default argument.
 
 website: https://dotnet.microsoft.com/
 issues: https://github.com/canonical/dotnet-runtime-rock/issues
