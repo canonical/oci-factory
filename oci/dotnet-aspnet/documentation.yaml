@@ -28,9 +28,46 @@ docker:
       This is because the container expects an application to be given.
 
   dockerfile: |
-    ### Run an ASP.NET application
+    Here is an example using a Dockerfile to build a Hello World web application image on top of a dotnet-aspnet image:
 
-    Here is an example using a Dockerfile to build a HelloWorld web application image on top of a dotnet-aspnet image:
+    #### For rocks (`9.0-25.04` and later)
+
+    ```bash
+    # Clone an existing sample of a .NET Core MVC web app
+    $ git clone https://github.com/Azure-Samples/dotnetcore-docs-hello-world
+    $ cd dotnetcore-docs-hello-world
+
+    # Let's make sure we use a commit that was designed to work with .NET10.0
+    $ git checkout 64b101351a364dd1e0c845b64013507e855a6e08
+
+    cat <<EOF > Dockerfile
+    FROM ubuntu:26.04 AS builder
+
+    # install the .NET 10 SDK from the Ubuntu archive
+    # (no need to clean the apt cache as this is an unpublished stage)
+    RUN apt-get update && apt-get install -y dotnet10 ca-certificates
+
+    # add your application code
+    WORKDIR /source
+    # using https://github.com/Azure-Samples/dotnetcore-docs-hello-world
+    COPY . .
+
+    # publish your ASP.NET app
+    RUN dotnet publish -c Release --self-contained false -o /app
+
+    FROM ubuntu/dotnet-aspnet:10.0-26.04_edge
+
+    WORKDIR /app
+    COPY --from=builder /app ./
+
+    CMD ["exec", "dotnet", "/app/dotnetcoresample.dll"]
+    EOF
+
+    $ docker build -t dotnet-hello-world .
+    $ docker run --rm -p 8080:8080 dotnet-hello-world
+    ```
+
+    Access your web app at `localhost:8080`.
 
     #### For Legacy images (`6.0`, `8.0`, `9.0-24.10`)
   
@@ -73,46 +110,6 @@ docker:
     ```
     Access your web app at `localhost:8080`.
 
-    #### For rocks (`9.0-25.04` and later)
-
-    To run the same application with .NET 10 and package it on top of `ubuntu/dotnet-aspnet:10.0-26.04_edge`, you can use the following commands:
-
-    ```bash
-    # Clone an existing sample of a .NET Core MVC web app
-    $ git clone https://github.com/Azure-Samples/dotnetcore-docs-hello-world
-    $ cd dotnetcore-docs-hello-world
-
-    # Let's make sure we use a commit that was designed to work with .NET10.0
-    $ git checkout 64b101351a364dd1e0c845b64013507e855a6e08
-
-    cat <<EOF > Dockerfile
-    FROM ubuntu:26.04 AS builder
-
-    # install the .NET 10 SDK from the Ubuntu archive
-    # (no need to clean the apt cache as this is an unpublished stage)
-    RUN apt-get update && apt-get install -y dotnet10 ca-certificates
-
-    # add your application code
-    WORKDIR /source
-    # using https://github.com/Azure-Samples/dotnetcore-docs-hello-world
-    COPY . .
-
-    # publish your ASP.NET app
-    RUN dotnet publish -c Release --self-contained false -o /app
-
-    FROM ubuntu/dotnet-aspnet:10.0-26.04_edge
-
-    WORKDIR /app
-    COPY --from=builder /app ./
-
-    CMD ["exec", "dotnet", "/app/dotnetcoresample.dll"]
-    EOF
-
-    $ docker build -t dotnet-hello-world .
-    $ docker run --rm -p 8080:8080 dotnet-hello-world
-    ```
-
-    Access your web app at `localhost:8080`.
 
 config:
   TZ:
