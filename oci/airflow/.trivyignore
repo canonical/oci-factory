@@ -207,3 +207,7 @@ CVE-2026-27459
 # (tornado): The DoS via large multipart bodies is mitigated by the fact that the Airflow API and Webserver are placed behind a gateway (like Traefik) that enforces body size limits.
 
 CVE-2026-31958
+
+# (pyasn1):  Denial of Service in pyasn1 via Unbounded Recursion
+# This is a dependency for breeze (an Airflow dev tool) that is not included in the image
+CVE-2026-30922
