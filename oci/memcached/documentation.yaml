@@ -4,7 +4,6 @@ application: Memcached
 website: https://memcached.org/
 source-code: https://github.com/canonical/memcached-rock
 issues: https://github.com/canonical/memcached-rock/issues
-is_chiselled: true
 description: |
   Memcached is a high-performance, distributed memory object caching system.
 
