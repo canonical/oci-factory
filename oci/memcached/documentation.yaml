@@ -7,7 +7,7 @@ issues: https://github.com/canonical/memcached-rock/issues
 description: |
   Memcached is a high-performance, distributed memory object caching system.
 
-  This image is a chiselled Ubuntu rock. It contains a minimal memcached
+  This image is a chiseled Ubuntu rock. It contains a minimal Memcached
   installation and the necessary tools to run and manage Memcached instances.
 
 docker:
