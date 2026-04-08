@@ -50,4 +50,11 @@ upload:
           - edge
 
   # 26.04 LTS
-  # ...
+  - source: canonical/rust-rock
+    commit: 72f4e3f1b08213a41881a3865b62f74af21b2cb1
+    directory: rust/1.93-26.04
+    release:
+      1.93-26.04:
+        end-of-life: "2031-05-29T00:00:00Z"
+        risks:
+          - edge
