@@ -36,11 +36,7 @@ config:
   '`-e TZ=UTC`':
     type: env
     description: Timezone.
-  '`--args -m <megabytes>`':
+  '`--args <memcached-args>`':
     type: other
     default: '`64`'
-    description: Maximum memory to use for item storage, in megabytes.
-  '`--args -c <connections>`':
-    type: other
-    default: '`1024`'
-    description: Maximum number of simultaneous connections.
+    description: Specific `memcached` arguments
