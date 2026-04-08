@@ -1,0 +1,11 @@
+version: 1
+
+upload:
+  - source: canonical/busybox-rock
+    commit: 746497875b2c4c13d6f41b50b056c742ca263041
+    directory: busybox/1.37-26.04/
+    release:
+      1.37-26.04:
+        end-of-life: "2031-04-01T00:00:00Z"
+        risks:
+          - edge

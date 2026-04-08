@@ -1,0 +1,20 @@
+version: 2
+
+application: busybox
+website: https://www.busybox.net/
+source-code: https://github.com/canonical/busybox-rock/
+issues: https://github.com/canonical/busybox-rock/issues
+description: |
+ BusyBox combines tiny versions of many common UNIX utilities into a single
+ small executable. It provides minimalist replacements for the most common
+ utilities you would usually find on your desktop system (i.e., ls, cp, mv,
+ mount, tar, etc.). 
+ 
+ This is a minimal rock containing **only** the BusyBox binary and the
+ symlinks for all of its supported utilities.
+
+docker:
+  run_cmd: exec <command>
+  run_conclusion: |
+    The `<command>` can be any of the supported utilities provided by BusyBox.
+    For example, to list files in `/`, the `<command>` would be `ls /`.
