@@ -38,5 +38,4 @@ config:
     description: Timezone.
   '`--args <memcached-args>`':
     type: other
-    default: '`64`'
     description: Specific `memcached` arguments
