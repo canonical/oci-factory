@@ -6,6 +6,6 @@ upload:
     directory: busybox/1.37-26.04/
     release:
       1.37-26.04:
-        end-of-life: "2031-04-01T00:00:00Z"
+        end-of-life: "2026-04-01T00:00:00Z"
         risks:
           - edge
