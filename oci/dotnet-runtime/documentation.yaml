@@ -136,6 +136,10 @@ config:
     description: Whether to use invariant globalization mode.
     type: env
     default: 'true'
+  ASPNETCORE_URLS:
+    description: The URLs that the ASP.NET Core app should listen on.
+    type: env
+    default: 'http://+:8080'
 
 override_tracks:
   # Tracks release from legacy repo
