@@ -1,13 +1,6 @@
 version: 1
 upload:
-  - source: canonical/rust-rock
-    commit: 61b9b21a7d7fc334bbd576bad731b65b54b80838
-    directory: rust/1.84-25.04
-    release:
-      1.84-25.04:
-        end-of-life: "2026-01-15T00:00:00Z"
-        risks:
-          - edge
+  # 24.04 LTS 
   - source: canonical/rust-rock
     commit: 81552f9d7113cd20e972a0c1d860b13113a918d8
     directory: rust/1.75-24.04
@@ -18,4 +11,40 @@ upload:
           - stable
           - candidate
           - beta
+          - edge
+  - source: canonical/rust-rock
+    commit: 72f4e3f1b08213a41881a3865b62f74af21b2cb1
+    directory: rust/1.85-24.04
+    release:
+      1.85-24.04:
+        end-of-life: "2029-05-31T00:00:00Z"
+        risks:
+          - edge
+
+  # 25.10
+  - source: canonical/rust-rock
+    commit: 72f4e3f1b08213a41881a3865b62f74af21b2cb1
+    directory: rust/1.85-25.10
+    release:
+      1.85-25.10:
+        end-of-life: "2026-07-09T00:00:00Z"
+        risks:
+          - edge
+  - source: canonical/rust-rock
+    commit: 72f4e3f1b08213a41881a3865b62f74af21b2cb1
+    directory: rust/1.88-25.10
+    release:
+      1.88-25.10:
+        end-of-life: "2026-07-09T00:00:00Z"
+        risks:
+          - edge
+
+  # 26.04 LTS
+  - source: canonical/rust-rock
+    commit: 72f4e3f1b08213a41881a3865b62f74af21b2cb1
+    directory: rust/1.93-26.04
+    release:
+      1.93-26.04:
+        end-of-life: "2031-05-29T00:00:00Z"
+        risks:
           - edge

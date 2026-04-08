@@ -207,3 +207,17 @@ CVE-2026-27459
 # (tornado): The DoS via large multipart bodies is mitigated by the fact that the Airflow API and Webserver are placed behind a gateway (like Traefik) that enforces body size limits.
 
 CVE-2026-31958
+
+# (pyasn1):  Denial of Service in pyasn1 via Unbounded Recursion
+# This is a dependency for breeze (an Airflow dev tool) that is not included in the image
+CVE-2026-30922
+
+# (litellm): LiteLLM: Authentication bypass via OIDC userinfo cache key collision
+# Bump to patched version (1.83.0) merged upstream in `main`
+# Upstream PR: https://github.com/apache/airflow/pull/64701
+CVE-2026-35030
+CVE-2026-35029
+
+# (tornado): Tornado has cookie attribute injection via .RequestHandler.set_cookie
+# upstream `main` branch already updated tornado to 6.5.5 (where CVE is patched)
+CVE-2026-35536

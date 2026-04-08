@@ -38,7 +38,7 @@ docker:
     The rock is built from Airflow with many providers pre-installed (Amazon, GCP, Kubernetes, MySQL, Postgres, etc.), so common integrations work out of the box without requiring `pip install` inside the container.
 
     ### Full Configuration Reference:
-    Airflow offers a large number of configuration options that can be set via environment variables or `airflow.cfg`. 
+    Airflow offers a large number of configuration options that can be set via environment variables or `airflow.cfg`.
     For the complete list of configurable settings, consult the official [configuration reference](https://airflow.apache.org/docs/apache-airflow/stable/configurations-ref.html)
 
 parameters:
@@ -66,19 +66,19 @@ parameters:
   - type: -p
     value: '8080:8080'
     description: >
-      Airflow Webserver UI (HTTP). 
-      This is what you open in the browser. 
+      Airflow Webserver UI (HTTP).
+      This is what you open in the browser.
       These are documented in the [upstream Helm chart](https://airflow.apache.org/docs/helm-chart/stable/parameters-ref.html).
   - type: -p
     value: '8794:8794'
     description: >
-      Triggerer log server port. Used for log streaming and collection by the Airflow triggerer. 
-      Officially defined in the Airflow Helm Chart as `ports.triggererLogs`. 
+      Triggerer log server port. Used for log streaming and collection by the Airflow triggerer.
+      Officially defined in the Airflow Helm Chart as `ports.triggererLogs`.
       These are documented in the [upstream Helm chart](https://airflow.apache.org/docs/helm-chart/stable/parameters-ref.html).
   - type: -p
     value: '8793:8793'
     description: >
-       Worker log server port. Used for log streaming and collection by Airflow workers in distributed setups. 
+       Worker log server port. Used for log streaming and collection by Airflow workers in distributed setups.
        Officially defined in the Airflow Helm Chart as `ports.workerLogs`.
        These are documented in the [upstream Helm chart](https://airflow.apache.org/docs/helm-chart/stable/parameters-ref.html).
   - type: -v
@@ -111,4 +111,8 @@ parameters:
   - type: -e
     value: 'AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG=16'
     description: >
-      The maximum number of task instances allowed to run concurrently in each dag run. 
+      The maximum number of task instances allowed to run concurrently in each dag run.
+
+override_tracks:
+  3-24.04:
+    end-of-life: "2026-04-02"
