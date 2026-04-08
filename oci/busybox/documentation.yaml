@@ -14,7 +14,7 @@ description: |
  symlinks for all of its supported utilities.
 
 docker:
-  run_cmd: exec <command>
+  run_cmd: exec busybox
   run_conclusion: |
-    The `<command>` can be any of the supported utilities provided by BusyBox.
-    For example, to list files in `/`, the `<command>` would be `ls /`.
+    The container outputs the help message of `busybox`, with the
+    available commands provided by `busybox`.
