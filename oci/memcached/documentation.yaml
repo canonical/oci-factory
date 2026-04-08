@@ -1,6 +1,9 @@
 version: 2
 
 application: Memcached
+website: https://memcached.org/
+source-code: https://github.com/canonical/memcached-rock
+issues: https://github.com/canonical/memcached-rock/issues
 is_chiselled: true
 description: |
   Memcached is a high-performance, distributed memory object caching system.
@@ -31,3 +34,14 @@ config:
   '`-p 11211:11211`':
     type: port
     description: Expose Memcached on `localhost:11211`
+  '`-e TZ=UTC`':
+    type: env
+    description: Timezone.
+  '`--args -m <megabytes>`':
+    type: other
+    default: '`64`'
+    description: Maximum memory to use for item storage, in megabytes.
+  '`--args -c <connections>`':
+    type: other
+    default: '`1024`'
+    description: Maximum number of simultaneous connections.
