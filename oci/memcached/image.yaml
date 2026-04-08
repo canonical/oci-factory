@@ -1,0 +1,10 @@
+version: 1
+upload:
+  - source: canonical/memcached-rock
+    commit: a65348a66cecb4dfea4bfe14bd39e9248324f016
+    directory: memcached/1.6-26.04
+    release:
+      1.6-26.04:
+        end-of-life: "2031-05-29T00:00:00Z"
+        risks:
+          - edge

@@ -1,0 +1,31 @@
+version: 1
+
+application: Memcached
+is_chiselled: true
+description: |
+    Memcached is a high-performance, distributed memory object caching system.
+
+    This image is a chiselled Ubuntu rock. It contains a minimal memcached
+    installation and the necessary tools to run and manage Memcached instances.
+
+debug:
+  text: |
+    Launch a memcached instance with the image:
+
+    ```bash
+    docker run --rm -d --name memcached-rock -p 11211:11211 ubuntu/memcached:1.6-26.04
+    ```
+
+    Get instance stats:
+
+    ```bash
+    printf "stats\r\n" | nc -q 1 -w 1 127.0.0.1 11211
+    curl telnet://127.0.0.1:11211 --data "stats"
+    ```
+
+    Write and read a value:
+
+    ```bash
+    printf "set my_key 0 60 11\r\nhello world\r\n" | nc -q 1 127.0.0.1 11211
+    printf "get my_key\r\n" | nc -q 1 127.0.0.1 11211 | grep "hello world"
+    ```
