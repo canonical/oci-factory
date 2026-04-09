@@ -40,8 +40,11 @@ docker:
 
     # Let's make sure we use a commit that was designed to work with .NET10.0
     $ git checkout 64b101351a364dd1e0c845b64013507e855a6e08
+    ```
+    
+    Create a Dockerfile with the following content:
 
-    cat <<EOF > Dockerfile
+    ```Dockerfile
     FROM ubuntu:26.04 AS builder
 
     # install the .NET 10 SDK from the Ubuntu archive
@@ -62,8 +65,11 @@ docker:
     COPY --from=builder /app ./
 
     CMD ["exec", "/app/dotnetcoresample"]
-    EOF
+    ```
 
+    Build and run the image with the following commands:
+
+    ```bash
     $ docker build -t dotnet-hello-world .
     $ docker run --rm -p 8080:8080 dotnet-hello-world
     ```
@@ -79,8 +85,11 @@ docker:
 
     # Let's make sure we use a commit that was designed to work with .NET8.0
     $ git checkout 95b862ca3580c82835322d9eb45eb9ecfd731370
+    ```
 
-    cat <<EOF > Dockerfile
+    Create a Dockerfile with the following content:
+
+    ```Dockerfile
     FROM ubuntu:24.04 AS builder
 
     # install the .NET 8 SDK from the Ubuntu archive
@@ -104,8 +113,11 @@ docker:
     EXPOSE 8080
 
     ENTRYPOINT ["dotnet", "/app/dotnetcoresample.dll"]
-    EOF
+    ```
 
+    Build and run the image with the following commands:
+
+    ```bash
     $ docker build -t dotnet-hello-world .
     $ docker run --rm -p 8080:8080 dotnet-hello-world
     ```
