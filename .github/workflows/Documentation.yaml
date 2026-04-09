@@ -115,20 +115,6 @@ jobs:
       - name: Setup environment
         run: pip install -r ./src/image/requirements.txt -r ./src/docs/requirements.txt
 
-      - name: Get all revisions per track
-        id: get-all-canonical-tags
-        if: ${{ github.event_name != 'pull_request' }}
-        env:
-          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
-          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
-          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
-          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
-          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
-          IMAGE_NAME: "${{ needs.validate-documentation-request.outputs.oci-img-name }}"
-          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
-        run: |
-          ./src/image/get_canonical_tags_from_swift.sh
-
       - name: Generate documentation for ${{ needs.validate-documentation-request.outputs.oci-img-name }}
         id: generate-documentation
         env:
@@ -142,7 +128,6 @@ jobs:
             set -x
           fi
           python3 -m src.docs.generate_oci_doc_yaml \
-            --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
             --ecr-api-key "${ECR_CREDS_USR}" \
             --ecr-api-secret "${ECR_CREDS_PSW}" \
             --oci-image-path "${{ needs.validate-documentation-request.outputs.oci-img-path }}" \

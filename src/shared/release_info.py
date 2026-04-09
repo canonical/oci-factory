@@ -47,20 +47,6 @@ def get_tag_mapping_from_all_releases(all_releases_dict: dict) -> dict:
     return mapping_from_all_releases
 
 
-def get_all_revision_tags(file_all_revision_tags: str) -> list:
-    """
-    Reads the specified file (which must contain
-    1 text line with all the revision tags,
-    eg. '1.0-22.04_1,1.2-20.04_76') and processes
-    its contents to extract revision tags.
-    The tags are returned as a list after
-    removing leading and trailing commas
-    and any leading or trailing whitespace.
-    """
-    with open(file_all_revision_tags, encoding="UTF-8") as rev_tags_f:
-        return rev_tags_f.read().strip().rstrip(",").lstrip(",").split(",")
-
-
 def get_revision_to_track(all_revisions_tags: list) -> dict:
     """
     Iterates over a list of track_revision
