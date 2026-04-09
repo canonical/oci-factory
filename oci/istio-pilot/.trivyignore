@@ -12,6 +12,12 @@ CVE-2026-33186
 # The rock runs exclusively on Linux, so this CVE is not applicable.
 CVE-2026-24051
 
+# go.opentelemetry.io/otel/sdk - PATH hijacking of the "kenv" command in
+# sdk/resource/host_id_bsd.go. This is exploitable only on BSD/Solaris platforms.
+# The rock runs exclusively on Linux, so this CVE is not applicable.
+# Fixed in otel/sdk v1.43.0. Remove once Istio bumps to >= v1.43.0.
+CVE-2026-39883
+
 # github.com/docker/cli - Local Privilege Escalation via uncontrolled search path in
 # Docker CLI plugin directory (C:\ProgramData\Docker\cli-plugins). This vulnerability
 # is Windows-only. The rock runs exclusively on Linux, so this CVE is not applicable.
