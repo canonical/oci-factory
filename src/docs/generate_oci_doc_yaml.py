@@ -71,12 +71,6 @@ def cli_args() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
-        "--all-revision-tags",
-        help="File w/ comma-separated list of all revision (<track>_<rev>) tags",
-        required=True,
-    )
-
-    parser.add_argument(
         "--ecr-api-secret",
         dest="password",
         help="password/token on ECR",
@@ -125,7 +119,6 @@ class OCIDocumentationData:
         password,
         image_path,
         repository,
-        all_revision_tags,
         dry_run=False,
     ):
         self.username = username
@@ -133,7 +126,6 @@ class OCIDocumentationData:
         self.image_name = image_path.rstrip("/").split("/")[-1]
         self.repository = repository
         self.password = password
-        self.all_revision_tags = all_revision_tags
         self.dry_run = dry_run
         if not self.dry_run:
             self.ecr_client = self._ecr_connect(self.username, self.password)
@@ -367,16 +359,13 @@ class OCIDocumentationData:
             yaml.dump(content, fp, sort_keys=False)
 
     @staticmethod
-    def get_all_tracks(
-        all_revision_tags: list, releases_file: str = ""
-    ) -> Dict[str, str]:
+    def get_all_tracks(releases_file: str = "") -> Dict[str, str]:
         """
         Given a list of all the existing revision tags for a rock, get the
         corresponding track names and their end-of-life dates.
 
         It returns a Dict {"track": "eol", ...}.
 
-        :param all_revision_tags: all existing revision tags for a rock
         :param release_file: the path to the _releases.json file for that rock
         """
         _releases = {}
@@ -385,12 +374,13 @@ class OCIDocumentationData:
                 with open(releases_file) as rf:
                     _releases = json.load(rf)
             except FileNotFoundError:
-                logger.warning(f"Unable to load _releases.json and EOL dates")
+                logger.warning("Unable to load _releases.json and EOL dates")
                 pass
 
-        all_tracks = {}
-        for track in set(map(lambda t: t.rsplit("_", 1)[0], all_revision_tags)):
-            all_tracks[track] = _releases.get(track, {}).get("end-of-life")
+        all_tracks = {
+            track: track_entry.get("end-of-life")
+            for track, track_entry in _releases.items()
+        }
 
         return all_tracks
 
@@ -403,12 +393,9 @@ class OCIDocumentationData:
         )
 
         if not self.dry_run:
-            # Get a list of all revision tags, eg. ["1.0-22.04_1", "1.1-23.04_42", ...]
-            all_revision_tags = shared.get_all_revision_tags(self.all_revision_tags)
-
             # Extract a unique set of tracks, and their EOL, from that list
             all_tracks = self.get_all_tracks(
-                all_revision_tags, releases_file=f"{self.image_path}/_releases.json"
+                releases_file=f"{self.image_path}/_releases.json"
             )
 
             override_tracks = base_doc_yaml.get("override_tracks") or {}
@@ -459,7 +446,6 @@ if __name__ == "__main__":
         args.password,
         args.image_path,
         args.repository,
-        args.all_revision_tags,
         args.dry_run,
     )
     runner.main(args.doc_data_dir)
