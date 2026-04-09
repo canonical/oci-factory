@@ -44,8 +44,11 @@ docker:
     $ cat <<EOF > Program.cs
     Console.WriteLine("Hello, World!");
     EOF
+    ```
 
-    cat <<EOF > Dockerfile
+    Create a Dockerfile with the following content:
+
+    ```Dockerfile
     FROM ubuntu:26.04 AS builder
 
     RUN apt-get update && apt-get install -y dotnet10 ca-certificates
@@ -63,8 +66,11 @@ docker:
     COPY --from=builder /app ./
 
     CMD ["exec", "dotnet", "/app/HelloWorld.dll"]
-    EOF
+    ```
 
+    Build and run the Docker image with the following commands:
+
+    ```bash
     $ docker build -t hello-world-app .
     $ docker run --rm hello-world-app  # This prints "Hello, World!"
     ```
@@ -90,8 +96,11 @@ docker:
     $ cat <<EOF > Program.cs
     Console.WriteLine("Hello, World!");
     EOF
+    ```
 
-    cat <<EOF > Dockerfile
+    Create a Dockerfile with the following content:
+
+    ```Dockerfile
     FROM ubuntu:24.04 AS builder
 
     # install the .NET 8 SDK from the Ubuntu archive
@@ -111,8 +120,11 @@ docker:
     COPY --from=builder /app ./
 
     ENTRYPOINT ["dotnet", "/app/HelloWorld.dll"]
-    EOF
+    ```
 
+    Build and run the Docker image with the following commands:
+
+    ```bash
     $ docker build -t hello-world-app .
     $ docker run --rm hello-world-app  # This prints "Hello, World!"
     ```
