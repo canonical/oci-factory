@@ -388,9 +388,14 @@ class OCIDocumentationData:
                 logger.warning(f"Unable to load _releases.json and EOL dates")
                 pass
 
-        all_tracks = {}
-        for track in set(map(lambda t: t.rsplit("_", 1)[0], all_revision_tags)):
-            all_tracks[track] = _releases.get(track, {}).get("end-of-life")
+        # all_tracks = {}
+        # for track in set(map(lambda t: t.rsplit("_", 1)[0], all_revision_tags)):
+        #     all_tracks[track] = _releases.get(track, {}).get("end-of-life")
+
+        all_tracks = {
+            track: track_entry.get("end-of-life")
+            for track, track_entry in _releases.items()
+        }
 
         return all_tracks
 
