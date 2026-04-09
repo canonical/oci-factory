@@ -39,3 +39,26 @@ config:
   '`--args <memcached-args>`':
     type: other
     description: Specific `memcached` arguments
+
+override_tracks:
+  # Tracks released from legacy repo
+  1.6-25.04:
+    end-of-life: '2026-01-15T00:00:00Z'
+  1.6-24.10:
+    end-of-life: '2025-07-10T00:00:00Z'
+  1.6-24.04:
+    end-of-life: '2029-05-31T00:00:00Z'
+  1.6-23.10:
+    end-of-life: '2024-07-11T00:00:00Z'
+  1.6-23.04:
+    end-of-life: '2024-01-25T00:00:00Z'
+  1.6-22.10:
+    end-of-life: '2023-07-20T00:00:00Z'
+  1.6-22.04:
+    end-of-life: '2027-06-01T00:00:00Z'
+  1.6-21.10:
+    end-of-life: '2022-07-14T00:00:00Z'
+  1.6-21.04:
+    end-of-life: '2022-01-20T00:00:00Z'
+  1.5-20.04:
+    end-of-life: '2025-05-29T00:00:00Z'
