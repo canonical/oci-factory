@@ -68,7 +68,7 @@ docker:
     CMD ["exec", "dotnet", "/app/HelloWorld.dll"]
     ```
 
-    Build and run the Docker image with the following commands:
+    Build and run the image with the following commands:
 
     ```bash
     $ docker build -t hello-world-app .
@@ -122,7 +122,7 @@ docker:
     ENTRYPOINT ["dotnet", "/app/HelloWorld.dll"]
     ```
 
-    Build and run the Docker image with the following commands:
+    Build and run the image with the following commands:
 
     ```bash
     $ docker build -t hello-world-app .
