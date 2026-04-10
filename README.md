@@ -332,28 +332,16 @@ config:
     type: other
     default: _daemon_
     description: The user that the bind9 server will run as. Can optionally be set to `bind`.
-  '`--args <named-args>`':
-    type: other
-    default: '`-g`'
-    description: Optional arguments to override the defaults being passed to `named` when the container starts.
   '`-p 30053:53`':
     type: port
     description: Expose bind9 on `localhost:30053`
   '`-e TZ=UTC`':
     type: env
     description: Timezone
-  '`-e BIND9_USER=<user>`':
-    type: env
-    description: The user which will start the `named` process. **Deprecated on `9.20-26.04` onwards**, use `-u <user>` instead.
   '`-v /path/to/config:/etc/bind/named.conf:ro`':
     type: mount
     description: Local [configuration file](https://bind9.readthedocs.io/en/latest/reference.html) `named.conf` (try [this example](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/bind9/plain/examples/caching-nameserver/named.conf.options?h=9.18-22.04))
-  '`-v /path/to/data:/var/cache/bind`':
-    type: mount
-    description: Location where locally cached data can be dumped.
-  '`-v /path/to/resource:/var/lib/bind`':
-    type: mount
-    description: Location of Resource Records defining various domain information.
+# Further config parameters are omitted in this example
 
 microk8s:
   deploy:
@@ -365,24 +353,7 @@ override_tracks:
   # Tracks released from legacy repo
   9.20-25.04:
     end-of-life: '2026-01-15T00:00:00Z'
-  9.20-24.10:
-    end-of-life: '2025-07-10T00:00:00Z'
-  9.18-24.04:
-    end-of-life: '2029-05-31T00:00:00Z'
-  9.18-23.10:
-    end-of-life: '2024-07-11T00:00:00Z'
-  9.18-23.04:
-    end-of-life: '2024-01-25T00:00:00Z'
-  9.18-22.10:
-    end-of-life: '2023-07-20T00:00:00Z'
-  9.18-22.04:
-    end-of-life: '2027-06-01T00:00:00Z'
-  9.16-21.10:
-    end-of-life: '2022-07-14T00:00:00Z'
-  9.16-21.04:
-    end-of-life: '2022-01-20T00:00:00Z'
-  9.16-20.04:
-    end-of-life: '2025-05-29T00:00:00Z'
+# Further override_tracks are omitted in this example
 ```
 
 ### Other files
