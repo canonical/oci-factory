@@ -12,9 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Test
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - name: Set up Go 1.22
-        uses: actions/setup-go@bfdd3570ce990073878bf10f6b2d79082de49492
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c
         with:
           go-version: 1.22
       - name: Test
@@ -26,12 +26,12 @@ jobs:
     runs-on: ubuntu-latest
     name: Snap build
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - uses: snapcore/action-build@3bdaa03e1ba6bf59a65f84a751d943d549a54e79
         id: snapcraft
         with:
           path: tools/cli-client
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: snap
           path: ${{ steps.snapcraft.outputs.snap }}

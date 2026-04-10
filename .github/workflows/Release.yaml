@@ -37,7 +37,7 @@ jobs:
       - name: ${{ inputs.external_ref_id }}  # (2)
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
         
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Validate access to triggered image
         uses: ./.github/actions/validate-actor
@@ -48,7 +48,7 @@ jobs:
           github-token: ${{ secrets.ROCKSBOT_TOKEN }}
 
       - name: Infer number of image triggers
-        uses: tj-actions/changed-files@531f5f7d163941f0c1c04e0ff4d8bb243ac4366f
+        uses: tj-actions/changed-files@22103cc46bda19c2b464ffe86db46df6922fd323
         id: changed-files
         with:
           dir_names: "true"
@@ -84,7 +84,7 @@ jobs:
       RELEASES_BRANCH: _releases
       RELEASE_REPO_DIR: oci-factory-releases
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Fetch _releases.json
         uses: ./.github/actions/fetch-releases-json
@@ -93,14 +93,14 @@ jobs:
           releases-branch: ${{ env.RELEASES_BRANCH }}
           directory: ${{ env.RELEASE_REPO_DIR }}
 
-      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+      - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7
         if: ${{ inputs.image-trigger-cache-key != '' }}
         with:
           path: oci/${{ inputs.oci-image-name }}/image.yaml
           key: ${{ inputs.image-trigger-cache-key }}
           fail-on-cache-miss: true
 
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: "3.x"
 
@@ -206,12 +206,12 @@ jobs:
       fail-fast: true
       matrix: ${{ fromJSON(needs.do-releases.outputs.gh-releases-matrix) }}
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
           ref: ${{ matrix.canonical-tag }}
 
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           pattern: '*.sbom_preview.spdx.zip'
           path: sbom

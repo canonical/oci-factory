@@ -38,7 +38,7 @@ runs:
   using: "composite"
   steps:
     - name: Download Rock
-      uses: actions/download-artifact@484a0b528fb4d7bd804637ccb632e47a0e638317
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
       with:
         name: ${{ inputs.artifact_name }}
         run-id: ${{ inputs.run-id }}

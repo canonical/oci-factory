@@ -12,11 +12,11 @@ jobs:
       changed-files-matrix: ${{ steps.changed-files-matrix.outputs.matrix }}
       image-name: ${{ steps.changed-files-dir-names.outputs.all_changed_files }}
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@531f5f7d163941f0c1c04e0ff4d8bb243ac4366f
+        uses: tj-actions/changed-files@22103cc46bda19c2b464ffe86db46df6922fd323
         with:
           json: true
           files: |
@@ -24,7 +24,7 @@ jobs:
 
       - name: Get image name
         id: changed-files-dir-names
-        uses: tj-actions/changed-files@531f5f7d163941f0c1c04e0ff4d8bb243ac4366f
+        uses: tj-actions/changed-files@22103cc46bda19c2b464ffe86db46df6922fd323
         with:
           dir_names: "true"
           files: |
@@ -56,16 +56,16 @@ jobs:
     # temporarily continue on error, until the Notification and Doc update jobs are set
     continue-on-error: true
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Check if documentation.yaml exists
-        uses: andstor/file-existence-action@20b4d2e596410855db8f9ca21e96fbe18e12930b
+        uses: andstor/file-existence-action@558493d6c74bf472d87c84eab196434afc2fa029
         with:
           files: "${{ needs.get-submitted-files.outputs.image-name }}/documentation.yaml"
           fail: true
 
       - name: Check if contacts.yaml exists
-        uses: andstor/file-existence-action@20b4d2e596410855db8f9ca21e96fbe18e12930b
+        uses: andstor/file-existence-action@558493d6c74bf472d87c84eab196434afc2fa029
         with:
           files: "${{ needs.get-submitted-files.outputs.image-name }}/contacts.yaml"
           fail: true
@@ -78,9 +78,9 @@ jobs:
       fail-fast: true
       matrix: ${{ fromJSON(needs.get-submitted-files.outputs.changed-files-matrix) }}
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: "3.x"
 
@@ -129,7 +129,7 @@ jobs:
 
       - name: Comment PR if repo does not exist
         if: ${{ steps.validate-registry-has-repo.outputs.docker-repo-exists == 'false' }}
-        uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6
+        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b
         with:
           message: |
             The Docker repository for this image does not exist yet. Merging of this repo is blocked.
@@ -147,10 +147,10 @@ jobs:
     permissions: 
       pull-requests: write 
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Comment PR
-        uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6
+        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b
         with:
           message: |
             One or more files in this PR are not valid! :grimacing:
