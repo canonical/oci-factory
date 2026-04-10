@@ -250,16 +250,23 @@ for the "ubuntu" namespace, as is as follows:
 | version | True | int | The file schema's version for allowing future schema modification without regressions. |
 | application | True | str | Human-readable name of the container image. |
 | description | True | str | Long image description. |
-| is_chiselled | False | bool | Whether the OCI image is chiselled or not, since the self-generated documentation for Chiselled images is different. |
-| docker | False | Dict[str, Any] | Minimal `docker run` example for the image. |
-| docker.parameters | True | conlist[str, min_items=1] | Additional `docker run` parameters for the example. |
-| docker.access | False | str | Additional information for accessing the Docker container from the example. |
-| parameters | False | conlist[Dict[str, str], min_items=1] | Full list of relevant parameters for container deployment. |
-| parameters[*].type | True | str | Can either be a `docker run` option or a `CMD` command. |
-| parameters[*].value | True | str | The actual `CMD`, or the value for the given Docker option. |
-| parameters[*].description | True | str | Description of the parameter.|
-| debug | False | Dict[str, str] | Extra debugging information, if needed. |
-| debug.text | True | str | The additional debugging information (Markdown syntax supported).
+| website | True | url | The link to the original software's web pages. |
+| issues | False | url | The link for submitting issues, bugs, and feature requests. Defaults to https://bugs.launchpad.net/ubuntu-docker-images if not provided. |
+| source-code | False | url | The links to the source code of the rock or the original product, where people can make a contribution. |
+| docker | True | Dict[str, Any] | Minimal `docker run` example for the image. |
+| docker.parameters | False | str | Additional `docker run` parameters for the example. As in `docker run <params> rock …` |
+| docker.run_cmd | False | str | Example of a `docker run` command. |
+| docker.run_conclusion | False* (at least one of `docker.run_conclusion` or `docker.dockerfile` must be provided) | str | A free-text example of what to expect after the `docker.run` command (e.g. "Access the web application at `localhost:8080` or "You'll see 'Foo Bar' printed to STDOUT"). |
+| docker.legacy | False | Dict[str, Dict[str, str]] | To be used when there are both Docker images and rocks in the same registry repository. If defined, this field will populate the "run" instructions for an older Docker image. |
+| docker.legacy.parameters | False | str | Additional `docker run` parameters for the example. As in `docker run <params> rock …` |
+| docker.legacy.run_cmd | False | str | Example of a `docker run` command, for an existing Docker image. |
+| docker.legacy.run_conclusion | False (must be `True` if any of `docker.legacy.*` are `True`.)| str | A free-text example of what to expect after the docker.run command (e.g. "Access the web application at `localhost:8080`" or "You'll see 'Foo Bar' printed to STDOUT"). Applicable for an existing Docker image. |
+| docker.dockerfile | False* (at least one of `docker.run_conclusion` or `docker.dockerfile` must be provided.) | str | Example of a full Dockerfile showing the rock being used as a base for other applications. This is especially useful for rocks like the Ubuntu base and runtimes. |
+| config | False | Dict[str, Dict[str, str]] | List of relevant runtime configurations for the rock (replaces `parameters`). |
+| config.\<option name\> | True | Dict[str, str] | The name of the configuration option. |
+| config.\<option name\>.default | False | str | The default value for this option, if any. |
+| config.\<option name\>.description | True | str | A short description of the configuration option. |
+| config.\<option name\>.type | True | One of "env", "mount", "port", "app", "other" | The type of config: <ul><li>env: an environment variable</li><li>mount: a data mount (like a volume)</li><li>port: a port mapping</li><li>app: an application input</li><li>other: misc.</li></ul> |
 | microk8s | False | Dict[Dict[str, Any]] | Specific information for Kubernetes deployments. |
 | microk8s.configmap | False | Dict[str, Any] | List of configmaps needed for deployment. |
 | microk8s.configmap.name | False | str | Name of the ConfigMap resource. Defaults to `<image-name>-config`. |
@@ -277,59 +284,105 @@ for the "ubuntu" namespace, as is as follows:
 ##### Example: *documentation.yaml*
 
 ```yaml
-version: 1
-# --- OVERVIEW INFORMATION ---
-repo: apache2
-description: >
-  The Apache HTTP Server Project's goal is to build a secure, efficient and
-  extensible HTTP server as standards-compliant open source software. The
-  result has long been the number one web server on the Internet. Read more on
-  the [apache2 website](https://httpd.apache.org/).
-# --- USAGE INFORMATION ---
-docker:
-  parameters:
-    - -p 8080:80
-  access: Access your Apache2 server at `http://localhost:8080`.
-parameters:
-  - type: -e
-    value: TZ=UTC
-    description: Timezone.
-  - type: -p
-    value: '8080:80'
-    description: Expose Apache2 on `localhost:8080`.
-  - type: -v
-    value: /local/path/to/website:/var/www/html
-    description: Mount and serve a local website.
-  - type: -v
-    value: /path/to/apache2.conf:/etc/apache2/apache2.conf
-    description: Local [configuration file](https://httpd.apache.org/docs/2.4/) `apache2.conf` (try [this example](https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/apache2/plain/examples/config/apache2.conf?h=2.4-22.04)).
-  - type: CMD
-    value: apache2-foreground
-    description: Runs `apache2` in the foreground.
-debug:
-  text: |
-    ### Example
+version: 2
 
-    This is just an example:
+application: bind9
+website: https://www.isc.org/bind/
+source-code: https://github.com/canonical/bind9-rock/
+issues: https://github.com/canonical/bind9-rock/issues
+description: |
+  BIND 9 provides software for Domain Name System (DNS) management including
+  both defining domain names authoritatively for a given DNS zone, and
+  recursively resolving domain names to their IP addresses.
+
+docker:
+  run_cmd: --args <named-args>
+  parameters: >-
+    -e TZ=UTC 
+    -p 30053:53/tcp
+    -p 30053:53/udp
+  run_conclusion: |
+    Access your Bind9 server at `localhost:30053`
+
+    Additionally, you can use `rndc` to manage the server:
 
     ```bash
-    hello
+    docker exec bind9-container rndc <command>
     ```
+
+    A `rndc` key must have been previously generated either 
+    by mounting a volume containing a `rndc.key` file or
+    by running `rndc-confgen` with:
+
+    ```bash
+    docker exec bind9-container rndc-confgen -a
+    docker restart bind9-container
+    ```
+  legacy:
+    run_cmd: <named-args>
+    parameters: >-
+      -e TZ=UTC
+      -p 30053:53/tcp
+      -p 30053:53/udp
+    run_conclusion: |
+      Access your Bind9 server at `localhost:30053`
+
+config:
+  '`-u <user>`':
+    type: other
+    default: _daemon_
+    description: The user that the bind9 server will run as. Can optionally be set to `bind`.
+  '`--args <named-args>`':
+    type: other
+    default: '`-g`'
+    description: Optional arguments to override the defaults being passed to `named` when the container starts.
+  '`-p 30053:53`':
+    type: port
+    description: Expose bind9 on `localhost:30053`
+  '`-e TZ=UTC`':
+    type: env
+    description: Timezone
+  '`-e BIND9_USER=<user>`':
+    type: env
+    description: The user which will start the `named` process. **Deprecated on `9.20-26.04` onwards**, use `-u <user>` instead.
+  '`-v /path/to/config:/etc/bind/named.conf:ro`':
+    type: mount
+    description: Local [configuration file](https://bind9.readthedocs.io/en/latest/reference.html) `named.conf` (try [this example](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/bind9/plain/examples/caching-nameserver/named.conf.options?h=9.18-22.04))
+  '`-v /path/to/data:/var/cache/bind`':
+    type: mount
+    description: Location where locally cached data can be dumped.
+  '`-v /path/to/resource:/var/lib/bind`':
+    type: mount
+    description: Location of Resource Records defining various domain information.
+
 microk8s:
-  configmap:
-    files:
-      - key: apache2
-        name: apache2.conf
-        link: https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/apache2/plain/examples/config/apache2.conf?h=2.4-22.04
-      - key: apache2-site
-        name: index.html
-        link: https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/apache2/plain/examples/config/html/index.html?h=2.4-22.04
   deploy:
-    link: https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/apache2/plain/examples/apache2-deployment.yml?h=2.4-22.04
-    access: You will now be able to connect to the apache2 server on `http://localhost:30080`.
+    link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/bind9/plain/examples/bind9-deployment.yml?h=9.18-22.04
+    access: |
+      You will now be able to connect to the bind9 server on `http://localhost:30053`.
+
 override_tracks:
-  2.4-21.04:
-    end_of_life: "2022-01-20"
+  # Tracks released from legacy repo
+  9.20-25.04:
+    end-of-life: '2026-01-15T00:00:00Z'
+  9.20-24.10:
+    end-of-life: '2025-07-10T00:00:00Z'
+  9.18-24.04:
+    end-of-life: '2029-05-31T00:00:00Z'
+  9.18-23.10:
+    end-of-life: '2024-07-11T00:00:00Z'
+  9.18-23.04:
+    end-of-life: '2024-01-25T00:00:00Z'
+  9.18-22.10:
+    end-of-life: '2023-07-20T00:00:00Z'
+  9.18-22.04:
+    end-of-life: '2027-06-01T00:00:00Z'
+  9.16-21.10:
+    end-of-life: '2022-07-14T00:00:00Z'
+  9.16-21.04:
+    end-of-life: '2022-01-20T00:00:00Z'
+  9.16-20.04:
+    end-of-life: '2025-05-29T00:00:00Z'
 ```
 
 ### Other files
