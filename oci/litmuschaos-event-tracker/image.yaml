@@ -1,0 +1,18 @@
+version: 1
+upload:
+  - source: canonical/litmus-rocks
+    commit: e0a4626f8f82670278959806cd54dda57d949e71
+    directory: litmuschaos-event-tracker/3.26.0
+    release:
+      3-24.04:
+        end-of-life: '2026-07-10T00:00:00Z'
+        risks:
+          - edge
+      3.26-24.04:
+        end-of-life: '2026-07-10T00:00:00Z'
+        risks:
+          - edge
+      3.26.0-24.04:
+        end-of-life: '2026-04-11T00:00:00Z'
+        risks:
+          - edge
