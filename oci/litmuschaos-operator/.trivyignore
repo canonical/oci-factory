@@ -1,0 +1,5 @@
+# Upstream CVEs
+
+# golang.org/x/oauth2/jws: Unexpected memory consumption during token parsing
+# Not in use as shown by govulncheck
+CVE-2025-22868
