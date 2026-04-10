@@ -1,7 +1,7 @@
 version: 1
 upload:
   - source: canonical/litmus-rocks
-    commit: e0a4626f8f82670278959806cd54dda57d949e71
+    commit: 8492a9a6438ccb5402cc4400013ca52e650a5a13
     directory: litmuschaos-event-tracker/3.26.0
     release:
       3-24.04:
