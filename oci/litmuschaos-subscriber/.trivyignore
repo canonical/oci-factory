@@ -1,0 +1,29 @@
+# Upstream CVEs
+
+# github.com/argoproj/argo-workflows/v3: Argo Workflow has a Zipslip Vulnerability
+# Subscriber does not handle zip artifacts; only server-side code paths are affected
+CVE-2025-62156
+
+# github.com/argoproj/argo-workflows/v3: Argo Workflow may expose artifact repository credentials
+# Subscriber does not manage artifact repositories; only server-side code paths are affected
+CVE-2025-62157
+
+# github.com/argoproj/argo-workflows/v3: RCE via ZipSlip and symbolic links in argoproj/argo-workflows
+# Subscriber does not extract zip archives; only server-side code paths are affected
+CVE-2025-66626
+
+# github.com/argoproj/argo-workflows/v3: Argo Workflows affected by stored XSS in the artifact directory listing
+# Subscriber has no web server; only server-side UI code paths are affected
+CVE-2026-23960
+
+# github.com/argoproj/argo-workflows/v3: Argo Workflows has unauthorized access to Argo Workflows Template
+# Subscriber does not manage workflow templates; only server-side code paths are affected
+CVE-2026-28229
+
+# github.com/argoproj/argo-workflows/v3: Argo Workflows: Security bypass allows privilege escalation via podSpecPatch field
+# Subscriber does not perform admission control; only server-side code paths are affected
+CVE-2026-31892
+
+# google.golang.org/grpc: gRPC-Go: Authorization bypass due to improper HTTP/2 path validation
+# Not in use as shown by govulncheck (grpc/authz package is not called)
+CVE-2026-33186
