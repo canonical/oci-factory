@@ -10,7 +10,6 @@ description: >
   Read more in the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
 # --- USAGE INFORMATION ---
 docker:
-  parameters: []
   access: This image is intended to be deployed as a Kubernetes controller within a LitmusChaos installation.
 debug:
   text: |
