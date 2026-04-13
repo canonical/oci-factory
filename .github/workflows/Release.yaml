@@ -224,14 +224,13 @@ jobs:
           sbom_target_dir="$(pwd)/sbom"
           find sbom -type f -name '*.spdx.zip' -exec unzip {} -d ${sbom_target_dir} \;
 
-      - uses: dev-drprasad/delete-tag-and-release@7550ea180f81ca0a875ee3c135b1f72ef66ff4b1
-        # We force delete an existing tag because otherwise we won't get
-        # an email notification and the GH release will have the date from when
-        # it was created the first time (i.e. force-push won't update the date)
+      # We force delete an existing tag because otherwise we won't get
+      # an email notification and the GH release will have the date from when
+      # it was created the first time (i.e. force-push won't update the date)
+      - run: gh release delete ${{ matrix.release-name }} --yes --cleanup-tag
         continue-on-error: true
-        with:
-          tag_name: ${{ matrix.release-name }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Create Git tag
         uses: rickstaa/action-create-tag@a1c7777fcb2fee4f19b0f283ba888afa11678b72
@@ -242,7 +241,7 @@ jobs:
           commit_sha: ${{ matrix.canonical-tag }}
           force_push_tag: true
 
-      - uses: "softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844"
+      - uses: "softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda"  # v3.0.0
         with:
           name: "${{ matrix.release-name }}"
           tag_name: "${{ matrix.release-name }}"
