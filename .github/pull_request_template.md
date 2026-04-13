@@ -1,8 +1,6 @@
 - [ ] I have signed the [CLA](http://www.ubuntu.com/legal/contributors/)?
 - [ ] I am following the [CONTRIBUTING](https://github.com/canonical/oci-factory/blob/main/CONTRIBUTING.md) guidelines
 
-*Ping the @canonical/rocks team.*
-
 ---
 
 ## Description
