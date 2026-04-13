@@ -1,4 +1,4 @@
-version: 2
+version: '2'
 
 application: litmuschaos-event-tracker
 website: https://litmuschaos.io/
@@ -14,8 +14,5 @@ docker:
   run_conclusion: |
     The litmuschaos-event-tracker is designed to run as a Kubernetes controller and
     requires a Kubernetes environment to function properly.
-
-    To inspect the running service:
-    ```bash
-    docker exec -it <event-tracker-container> pebble logs -f event-tracker
-    ```
+    Refer to the [official installation guide](https://docs.litmuschaos.io/docs/getting-started/installation)
+    for deployment instructions.
