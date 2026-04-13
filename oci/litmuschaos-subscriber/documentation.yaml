@@ -1,17 +1,21 @@
-version: 1
-# --- OVERVIEW INFORMATION ---
+version: '2'
+
 application: litmuschaos-subscriber
-description: >
+website: https://litmuschaos.io/
+source-code: https://github.com/canonical/litmus-rocks
+issues: https://github.com/canonical/litmus-rocks/issues
+description: |
   Litmus subscriber is an execution-plane agent that connects to the Litmus ChaosCenter via WebSocket.
   It runs inside a target Kubernetes cluster and relays chaos experiment status and results back to ChaosCenter.
   Read more in the [official documentation](https://github.com/litmuschaos/litmus).
+
   Please note that this repository holds a rock instead of a Dockerfile-based image.
   As such, the entrypoint is Pebble.
   Read more in the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
-debug:
-  text: |
-    ### Debugging
 
+docker:
+  run_conclusion: |
+    The subscriber is designed to be deployed as part of a Kubernetes cluster.
     To inspect the running service:
     ```bash
     docker exec -it <container> pebble logs -f subscriber
