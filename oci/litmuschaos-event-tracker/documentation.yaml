@@ -1,17 +1,19 @@
-version: 1
-# --- OVERVIEW INFORMATION ---
+version: 2
+
 application: litmuschaos-event-tracker
-description: >
-  Litmus event tracker is a component of the LitmusChaos solution, an open source platform used for chaos testing.
-  It is a Kubernetes controller that tracks deployment events and forwards them to the Litmus ChaosCenter backend.
-  Read more in the [official documentation](https://github.com/litmuschaos/litmus)
-  Please note that this repository holds a rock instead of a Dockerfile-based image.
-  As such, the entrypoint is Pebble.
-  Read more in the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
-# --- USAGE INFORMATION ---
-debug:
-  text: |
-    ### Debugging
+website: https://litmuschaos.io/
+source-code: https://github.com/canonical/litmus-rocks
+issues: https://github.com/canonical/litmus-rocks/issues
+description: |
+  Litmus event tracker is a component of the LitmusChaos solution, an open source
+  platform used for chaos testing. It is a Kubernetes controller that tracks deployment
+  events and forwards them to the Litmus ChaosCenter backend.
+  Read more in the [official documentation](https://github.com/litmuschaos/litmus).
+
+docker:
+  run_conclusion: |
+    The litmuschaos-event-tracker is designed to run as a Kubernetes controller and
+    requires a Kubernetes environment to function properly.
 
     To inspect the running service:
     ```bash
