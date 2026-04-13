@@ -1,17 +1,20 @@
-version: 1
-# --- OVERVIEW INFORMATION ---
+version: 2
+
 application: litmuschaos-operator
-description: >
-  Litmus Chaos Operator is a Kubernetes operator that orchestrates chaos experiments
-  for the LitmusChaos platform. It manages the lifecycle of ChaosEngine resources
-  and schedules chaos experiments defined by ChaosExperiment custom resources.
-  Read more in the [official documentation](https://github.com/litmuschaos/litmus).
-  Please note that this repository holds a rock instead of a Dockerfile-based image.
-  As such, the entrypoint is Pebble.
-  Read more in the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
-debug:
-  text: |
-    ### Debugging
+website: https://litmuschaos.io/
+source-code: https://github.com/canonical/litmus-rocks
+issues: https://github.com/canonical/litmus-rocks/issues
+description: |
+  Litmus Chaos Operator is a Kubernetes operator that orchestrates chaos
+  experiments for the LitmusChaos platform. It manages the lifecycle of
+  ChaosEngine resources and schedules chaos experiments defined by
+  ChaosExperiment custom resources.
+
+docker:
+  run_conclusion: |
+    The Litmus Chaos Operator is intended to be deployed as a Kubernetes
+    operator. Refer to the [official documentation](https://litmuschaos.io/)
+    for deployment instructions.
 
     To inspect the running service:
     ```bash
