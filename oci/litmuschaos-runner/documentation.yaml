@@ -13,8 +13,3 @@ docker:
     The Litmus Chaos Runner is intended to be deployed as a Kubernetes
     controller. Refer to the [official documentation](https://litmuschaos.io/)
     for deployment instructions.
-
-    To inspect the running service:
-    ```bash
-    docker exec -it <container> pebble logs -f chaos-runner
-    ```

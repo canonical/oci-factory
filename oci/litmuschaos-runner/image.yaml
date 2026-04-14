@@ -1,7 +1,7 @@
 version: 1
 upload:
   - source: canonical/litmus-rocks
-    commit: 8492a9a6438ccb5402cc4400013ca52e650a5a13
+    commit: 2d1b7a733557d093c04ffac6853f38f04d45fc0d
     directory: litmuschaos-runner/3.26.0
     release:
       3-24.04:
