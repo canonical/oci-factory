@@ -15,11 +15,6 @@ docker:
   run_conclusion: |
     Access Prometheus metrics at `http://localhost:8080/metrics`.
 
-    To inspect the running service:
-    ```bash
-    docker exec -it <container> pebble logs -f chaos-exporter
-    ```
-
 config:
   '`-e WATCH_NAMESPACE=<namespace>`':
     type: env
