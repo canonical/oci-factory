@@ -30,3 +30,9 @@ CVE-2024-34156
 CVE-2024-45338
 # pkg:golang/stdlib@1.23.11 - database/sql: Postgres Scan Race Condition
 CVE-2025-47907
+# github.com/buger/jsonparser - jsonparser: DoS via malformed JSON causing runtime panic in Delete function
+CVE-2026-32285
+# github.com/docker/docker - moby: Authorization plugin (AuthZ) bypass
+CVE-2026-34040
+# go.opentelemetry.io/otel/sdk - opentelemetry-go: PATH hijacking via untrusted kenv command on BSD/Solaris
+CVE-2026-39883
