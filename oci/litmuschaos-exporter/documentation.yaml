@@ -26,10 +26,10 @@ config:
     description: Kubernetes namespace to watch for ChaosResult resources. Watches all namespaces if unset.
   '`-e CLUSTER_NAME=<name>`':
     type: env
-    description: Name of the cluster, used as a label in exported CloudWatch metrics.
+    description: Name of the cluster, used as a label in exported metrics.
   '`-e APP_NAME=<name>`':
     type: env
-    description: Application name, used as a label in exported CloudWatch metrics.
+    description: Application name, used as a label in exported metrics.
   '`-p 8080:8080`':
     type: port
     description: Access Prometheus metrics at `http://localhost:8080/metrics`.
