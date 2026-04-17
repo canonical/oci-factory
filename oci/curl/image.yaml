@@ -1,4 +1,4 @@
-version: 1
+version: 2
 
 upload:
   - source: canonical/curl-rock
