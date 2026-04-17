@@ -1,0 +1,11 @@
+version: 1
+
+upload:
+  - source: canonical/curl-rock
+    commit: 61187f2180b06f8525ffdc53d5e3beb63d83cc23
+    directory: curl/8.18-26.04/
+    release:
+      8.18-26.04:
+        end-of-life: "2026-05-01T00:00:00Z"
+        risks:
+          - edge

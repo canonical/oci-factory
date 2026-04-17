@@ -1,0 +1,20 @@
+version: 2
+
+application: curl
+website: https://curl.se/
+source-code: https://github.com/canonical/curl-rock/
+issues: https://github.com/canonical/curl-rock/issues
+description: |
+  Curl is a command-line tool for transferring data with URL syntax.
+  It supports various protocols, including HTTP, HTTPS, FTP, and more.
+  It also support features like SSL/TLS, authentication, and proxy support.
+
+  Curl is widely used for testing and interacting with APIs, downloading files,
+  and performing network diagnostics.
+
+  This is a minimal rock containing **only** the Curl command-line tool.
+
+docker:
+  run_cmd: exec curl -I https://ubuntu.com/
+  run_conclusion: |
+    The container outputs the HTTP response headers of "https://ubuntu.com/", using `curl`.
