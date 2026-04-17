@@ -14,7 +14,7 @@ docker:
     -p 9090:9090
   run_conclusion: |
     Prometheus starts on port 9090.
-    Access your Prometheus instance at http://localhost:9090 after running with a port mapping.
+    Access your Prometheus instance at `http://localhost:9090`.
 
 config:
   TZ:
