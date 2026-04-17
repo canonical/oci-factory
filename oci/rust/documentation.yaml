@@ -2,16 +2,12 @@ version: 2
 
 application: Rust
 description: |
-  Rust is a rock for rust maintained by [Canonical](https://canonical.com).
-
   Rust is a modern memory-safe systems programming language focused on performance and reliability.
 website: https://www.rust-lang.org/
 issues: https://github.com/canonical/rust-rock/issues
 source-code: https://github.com/canonical/rust-rock
 
 docker:
-  run_cmd: --args <named-args>
-  parameters: -d --name rust-container
   run_conclusion: |
     The container starts in detached mode.
 
