@@ -24,4 +24,4 @@ config:
     default: 'UTC'
   '`-p <port>:9009`':
     type: port
-    description: Expose Mimir on localhost:9009.
+    description: Expose port 9009 on the host.
