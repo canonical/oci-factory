@@ -10,7 +10,6 @@ issues: https://github.com/canonical/mimir-rock/issues
 source-code: https://github.com/canonical/mimir-rock
 
 docker:
-  run_cmd: --args <named-args>
   parameters: >-
     -e TZ=UTC
     -p 9009:9009
@@ -19,9 +18,10 @@ docker:
     Access the instance at http://localhost:9009.
 
 config:
-  '`-e TZ=UTC`':
+  TZ:
     type: env
     description: Timezone.
-  '`-p 9009:9009`':
+    default: 'UTC'
+  '`-p <port>:9009`':
     type: port
     description: Expose Mimir on localhost:9009.
