@@ -8,8 +8,11 @@ issues: https://github.com/canonical/rust-rock/issues
 source-code: https://github.com/canonical/rust-rock
 
 docker:
+  parameters: --rm -v /path/to/your/rust/project:/work -w /work
+  run_cmd: exec cargo build --release
   run_conclusion: |
-    The container starts in detached mode.
+    The project within the current working directory will be built with Cargo.
+    The resulting binary will be placed in the current working directory.
 
 override_tracks:
   # Tracks with different tag than build-base
