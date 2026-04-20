@@ -1,9 +1,15 @@
 # Upstream CVEs
 
-
 github.com/golang-jwt/jwt/v4 - jwt-go allows excessive memory allocation during header parsing
 # no code path in v4.4.0 calls this vulnerability
 CVE-2025-30204	
-
 # stdlib - crypto/tls: Unexpected session resumption in crypto/tls
 CVE-2025-68121
+
+## Not affecting the binary as per govulncheck
+## stdlib
+CVE-2025-58183
+CVE-2025-61726
+CVE-2025-61728
+CVE-2025-61729
+CVE-2025-61730
