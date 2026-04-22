@@ -20,7 +20,7 @@ def mock_get_arches(monkeypatch):
 
 @pytest.fixture
 def releases_json():
-    f = tempfile.NamedTemporaryFile(delete_on_close=False)
+    f = tempfile.NamedTemporaryFile(delete=False)
     json_content = dedent(
         """\
         {
@@ -50,7 +50,7 @@ def releases_json():
 
 @pytest.fixture
 def release_json_track_has_alias():
-    f = tempfile.NamedTemporaryFile(delete_on_close=False)
+    f = tempfile.NamedTemporaryFile(delete=False)
     json_content = dedent(
         """\
         {
@@ -78,9 +78,11 @@ def release_json_track_has_alias():
     return f.name
 
 
+# TODO: This test case won't be used in this PR for now, as this is pending
+# the feature of grouping the tags by sha and eol.
 @pytest.fixture
 def release_json_same_target_has_different_eol():
-    f = tempfile.NamedTemporaryFile(delete_on_close=False)
+    f = tempfile.NamedTemporaryFile(delete=False)
     json_content = dedent(
         """\
         {
@@ -109,14 +111,38 @@ def release_json_same_target_has_different_eol():
 
 
 @pytest.mark.parametrize(
-    "releases_file",
+    ("releases_file", "expected_releases"),
     [
-        "releases_json",
-        "release_json_track_has_alias",
-        "release_json_same_target_has_different_eol",
+        (
+            "releases_json",
+            [
+                {
+                    "risk": "beta",
+                    "track": "3.1",
+                    "base": "24.04",
+                    "tags": ["3-24.04_edge", "3.1-24.04_edge"],
+                    "architectures": ["amd64", "arm64"],
+                    "support": {"until": "03/2099"},
+                }
+            ],
+        ),
+        (
+            "release_json_track_has_alias",
+            [
+                {
+                    "risk": "beta",
+                    "track": "3.1",
+                    "base": "24.04",
+                    "tags": ["3-24.04_edge", "3.1-24.04_edge"],
+                    "architectures": ["amd64", "arm64"],
+                    "support": {"until": "03/2099"},
+                }
+            ],
+        ),
     ],
 )
-def test_get_oci_doc_yaml_data(releases_file):
+def test_get_oci_doc_yaml_data(releases_file, request, expected_releases):
+    releases_file = request.getfixturevalue(releases_file)
     all_tracks = OCIDocumentationData.get_all_tracks(releases_file)
 
     all_ecr_tags = {
@@ -146,12 +172,4 @@ def test_get_oci_doc_yaml_data(releases_file):
 
     releases = runner.build_releases_data(all_tracks, all_ecr_tags)
 
-    assert releases == [
-        {
-            "risk": "beta",
-            "track": "3.1",
-            "base": "24.04",
-            "tags": ["3-24.04_edge", "3.1-24.04_edge"],
-            "architectures": ["amd64", "arm64"],
-        }
-    ]
+    assert releases == expected_releases
