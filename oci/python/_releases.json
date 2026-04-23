@@ -62,16 +62,16 @@
     "3.13-25.10": {
         "end-of-life": "2026-07-09T00:00:00Z",
         "stable": {
-            "target": "236"
+            "target": "239"
         },
         "candidate": {
-            "target": "236"
+            "target": "239"
         },
         "beta": {
-            "target": "236"
+            "target": "239"
         },
         "edge": {
-            "target": "236"
+            "target": "239"
         }
     }
 }
