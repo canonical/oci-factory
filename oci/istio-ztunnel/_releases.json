@@ -2,31 +2,31 @@
     "1-24.04": {
         "end-of-life": "2026-07-08T00:00:00Z",
         "stable": {
-            "target": "58"
+            "target": "62"
         },
         "candidate": {
-            "target": "58"
+            "target": "62"
         },
         "beta": {
-            "target": "58"
+            "target": "62"
         },
         "edge": {
-            "target": "58"
+            "target": "62"
         }
     },
     "1.24-24.04": {
         "end-of-life": "2026-05-15T00:00:00Z",
         "stable": {
-            "target": "56"
+            "target": "60"
         },
         "candidate": {
-            "target": "56"
+            "target": "60"
         },
         "beta": {
-            "target": "56"
+            "target": "60"
         },
         "edge": {
-            "target": "56"
+            "target": "60"
         }
     },
     "1.24.3-24.04": {
@@ -35,31 +35,31 @@
     "1.23-24.04": {
         "end-of-life": "2026-05-15T00:00:00Z",
         "stable": {
-            "target": "55"
+            "target": "59"
         },
         "candidate": {
-            "target": "55"
+            "target": "59"
         },
         "beta": {
-            "target": "55"
+            "target": "59"
         },
         "edge": {
-            "target": "55"
+            "target": "59"
         }
     },
     "1.26-24.04": {
         "end-of-life": "2026-05-15T00:00:00Z",
         "stable": {
-            "target": "57"
+            "target": "61"
         },
         "candidate": {
-            "target": "57"
+            "target": "61"
         },
         "beta": {
-            "target": "57"
+            "target": "61"
         },
         "edge": {
-            "target": "57"
+            "target": "61"
         }
     },
     "1.23.3-24.04": {
@@ -71,16 +71,16 @@
     "1.29-24.04": {
         "end-of-life": "2026-07-08T00:00:00Z",
         "stable": {
-            "target": "58"
+            "target": "62"
         },
         "candidate": {
-            "target": "58"
+            "target": "62"
         },
         "beta": {
-            "target": "58"
+            "target": "62"
         },
         "edge": {
-            "target": "58"
+            "target": "62"
         }
     },
     "1.29.0-24.04": {
