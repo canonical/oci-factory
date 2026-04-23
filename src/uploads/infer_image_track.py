@@ -30,9 +30,23 @@ def get_base_and_track(rockcraft_yaml) -> tuple[str, str]:
     )
 
     if rock_base == "devel":
-        rock_base = subprocess.check_output(
-            ["ubuntu-distro-info", "--devel", "--release"], universal_newlines=True
-        ).split()[0]
+        try:
+            distro_info = subprocess.check_output(
+                ["ubuntu-distro-info", "--devel", "--release"],
+                universal_newlines=True,
+                stderr=subprocess.STDOUT,
+            )
+        except subprocess.CalledProcessError as e:
+            if e.returncode == 1 and "Distribution data outdated" in e.output:
+                logger.warning(
+                    "devel is outdated. Using the latest release instead."
+                )
+                distro_info = subprocess.check_output(
+                    ["ubuntu-distro-info", "--latest", "--release"], universal_newlines=True
+                )
+            else:
+                raise e
+        rock_base = distro_info.split()[0]
 
     try:
         base_release = float(rock_base.replace(":", "@").split("@")[-1])
