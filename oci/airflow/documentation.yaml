@@ -20,7 +20,7 @@ docker:
     -v /path/to/airflow.cfg:/opt/airflow/airflow.cfg
   run_conclusion: |
     Pebble (PID 1) launches the `airflow` service, which runs `airflow standalone`. This
-    initialises a local SQLite metadata database, creates a default admin user, and starts
+    initializes a local SQLite metadata database, creates a default admin user, and starts
     the webserver and scheduler in a single process group (intended for development use).
     The generated admin password is printed in the container logs.
     Access the Airflow web UI at http://localhost:8080.
