@@ -24,12 +24,12 @@ config:
     default: 'UTC'
   '`-v <path>:/etc/grafana/provisioning/`':
     type: mount
-    description: >
+    description: >-
       Directory to provision Grafana (see
       [documentation](https://grafana.com/docs/grafana/latest/administration/provisioning/)).
   '`-v <path>:/var/lib/grafana`':
     type: mount
-    description: >
+    description: >-
       Persist data with a volume instead of initializing a new database for
       each newly launched container.
   '`-p <port>:3000`':
