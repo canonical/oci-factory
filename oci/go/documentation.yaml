@@ -16,4 +16,17 @@ docker:
     The project within the current working directory will be built with the `go build` command.
     The resulting binary will be placed in the current working directory.
 
+config:
+  GOTOOLCHAIN:
+    type: env
+    default: 'local'
+    description: |
+      The Go toolchain to use.
+
+
 website: https://go.dev/
+source-code: https://github.com/canonical/golang-rock
+issues: https://github.com/canonical/golang-rock/issues
+override_tracks:
+  1.24-25.04:
+    end-of-life: '2026-01-15'
