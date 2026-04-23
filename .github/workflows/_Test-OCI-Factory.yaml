@@ -57,6 +57,9 @@ jobs:
       # build_rock/configure requirements
       - run: pip install -r src/build_rock/configure/requirements.txt
 
+      # docs requirements
+      - run: pip install -r src/docs/requirements.txt
+
       - name: Run pytest
         continue-on-error: true
         run: |
