@@ -40,7 +40,7 @@ def get_base_and_track(rockcraft_yaml) -> tuple[str, str]:
                     "devel is outdated. Using the latest release instead."
                 )
                 distro_info = subprocess.check_output(
-                    ["ubuntu-distro-info", "--latest", "--codename"], universal_newlines=True
+                    ["ubuntu-distro-info", "--latest", "--release"], universal_newlines=True
                 )
             else:
                 raise e
