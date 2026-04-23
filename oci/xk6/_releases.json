@@ -23,31 +23,31 @@
     "1-24.04": {
         "end-of-life": "2026-07-14T00:00:00Z",
         "stable": {
-            "target": "12"
+            "target": "13"
         },
         "candidate": {
-            "target": "12"
+            "target": "13"
         },
         "beta": {
-            "target": "12"
+            "target": "13"
         },
         "edge": {
-            "target": "12"
+            "target": "13"
         }
     },
     "1.7-24.04": {
         "end-of-life": "2026-07-14T00:00:00Z",
         "stable": {
-            "target": "12"
+            "target": "13"
         },
         "candidate": {
-            "target": "12"
+            "target": "13"
         },
         "beta": {
-            "target": "12"
+            "target": "13"
         },
         "edge": {
-            "target": "12"
+            "target": "13"
         }
     },
     "1.7.1-24.04": {
