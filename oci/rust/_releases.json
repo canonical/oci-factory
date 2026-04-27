@@ -8,40 +8,40 @@
     "1.75-24.04": {
         "end-of-life": "2029-05-31T00:00:00Z",
         "edge": {
-            "target": "48"
+            "target": "53"
         },
         "stable": {
-            "target": "48"
+            "target": "53"
         },
         "candidate": {
-            "target": "48"
+            "target": "53"
         },
         "beta": {
-            "target": "48"
+            "target": "53"
         }
     },
     "1.85-24.04": {
         "end-of-life": "2029-05-31T00:00:00Z",
         "edge": {
-            "target": "49"
+            "target": "54"
         }
     },
     "1.85-25.10": {
         "end-of-life": "2026-07-09T00:00:00Z",
         "edge": {
-            "target": "45"
+            "target": "50"
         }
     },
     "1.88-25.10": {
         "end-of-life": "2026-07-09T00:00:00Z",
         "edge": {
-            "target": "46"
+            "target": "51"
         }
     },
     "1.93-26.04": {
         "end-of-life": "2031-05-29T00:00:00Z",
         "edge": {
-            "target": "47"
+            "target": "52"
         }
     }
 }
