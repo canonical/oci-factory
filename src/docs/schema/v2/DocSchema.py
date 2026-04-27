@@ -128,5 +128,5 @@ class DocSchema(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
     @field_serializer("website", "issues", "source_code")
-    def serialize_url(self, url: AnyUrl) -> str:
-        return str(url)
+    def serialize_url(self, url: AnyUrl | None) -> str | None:
+        return str(url) if url else url
