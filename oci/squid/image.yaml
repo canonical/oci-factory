@@ -1,0 +1,10 @@
+version: 2
+upload:
+  - source: canonical/squid-rock
+    commit: 7c89bdaae1e42f9edf49bc2db097eab095bc5abb
+    directory: squid/7.2-26.04
+    release:
+      7.2-26.04:
+        end-of-life: "2026-05-01T00:00:00Z"
+        risks:
+          - edge
