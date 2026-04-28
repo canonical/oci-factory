@@ -1,10 +1,12 @@
-version: 1
+version: 2
 upload:
   - source: canonical/airflow-rocks
-    commit: 164d17047bb685e4eb6fa2fec42cea05fba6c9ed # 3.1.8
     directory: 3.1
+    commit: 164d17047bb685e4eb6fa2fec42cea05fba6c9ed # 3.1.8
     release:
       3.1-24.04:
         end-of-life: "2026-04-14T00:00:00Z"
         risks:
           - edge
+    ignored-vulnerabilities:
+      - CVE-2025-57735 # Apache Airflow (pip), fixed in <3.2.0.
