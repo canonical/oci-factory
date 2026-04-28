@@ -15,23 +15,23 @@ docker:
   parameters: >-
     -p 3128:3128
   run_conclusion: |
-    Access your Squid proxy at `localhost:3128`.
+    Access the Squid proxy at `localhost:3128`.
 
 config:
   TZ:
     type: env
     description: Timezone.
     default: UTC
-  '`-v /path/to/logs:/var/log/squid`':
+  '`-v <path>:/var/log/squid`':
     type: mount
     description: Volume to store squid logs.
-  '`-v /path/to/cache:/var/spool/squid`':
+  '`-v <path>:/var/spool/squid`':
     type: mount
     description: Volume to store the squid cache.
-  '`-v /path/to/main/config:/etc/squid/squid.conf`':
+  '`-v <path>:/etc/squid/squid.conf`':
     type: mount
     description: Main squid configuration file.
-  '`-v /path/to/config/snippet:/etc/squid/conf.d/snippet.conf`':
+  '`-v <path>:/etc/squid/conf.d/snippet.conf`':
     type: mount
     description: Configuration snippets included by squid.conf.
   '`-p <port>:3128`':
@@ -42,7 +42,7 @@ microk8s:
   deploy:
     link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/squid/plain/examples/squid-deployment.yml?h=6.1-23.10
     access: |
-      You can now access the squid proxy on port 3128.
+      Access the Squid proxy on port 3128.
   configmap:
     files:
       - key: squid-config
