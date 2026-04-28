@@ -12,17 +12,13 @@ issues: https://github.com/canonical/openfga-rock/issues
 source-code: https://github.com/canonical/openfga-rock
 
 docker:
-  run_cmd: --args <named-args>
   parameters: >-
-    -p 8080:8080  # http
-    -p 8081:8081  # grpc
-    -p 3000:3000  # playground
-    -p 2112:2112  # prometheus metrics
+    -p 8080:8080 
+    -p 8081:8081
+    -p 3000:3000
+    -p 2112:2112
   run_conclusion: |
-    OpenFGA starts and exposes HTTP, gRPC, playground, and metrics endpoints.
-    Access HTTP at http://localhost:8080, gRPC at localhost:8081, playground at http://localhost:3000,
-    and metrics at http://localhost:2112/metrics when running with port mappings, for example:
-    docker run --rm -p 8080:8080 -p 8081:8081 -p 3000:3000 -p 2112:2112 ubuntu/openfga:latest
+    Access the API either on http via `http://localhost:8080` or grpc on `localhost:8081`, UI playground on `http://localhost:3000`. Prometheus metrics are available at `http://localhost:2112/metrics`.
 
 config:
   OPENFGA_DATASTORE_ENGINE:
@@ -30,22 +26,22 @@ config:
     description: Datastore type, currently supports postgresql, mysql and sqlite (beta).
   OPENFGA_DATASTORE_URI:
     type: env
-    description: Database connection string.
+    description: Database connection string, e.g., `postgres://postgres:password@postgres:5432/postgres?sslmode=disable`.
   OPENFGA_PLAYGROUND_ENABLED:
     type: env
-    description: Allow playground UI.
+    description: Allow playground UI, e.g., `true`.
   '`-p <port>:8080`':
     type: port
-    description: HTTP API port.
+    description: Expose the container's port 8080 on the host's `<port>` for HTTP connections.
   '`-p <port>:8081`':
     type: port
-    description: gRPC API port.
+    description: Expose the container's port 8081 on the host's `<port>` for gRPC connections.
   '`-p <port>:3000`':
     type: port
-    description: Expose the playground UI.
+    description: Expose the container's port 3000 on the host's `<port>` for the playground UI.
   '`-p <port>:2112`':
     type: port
-    description: Expose Prometheus metrics endpoint.
+    description: Expose the container's port 2112 on the host's `<port>` for Prometheus metrics endpoint.
   '`openfga run`':
     type: app
     description: Launch OpenFGA server(s) using a mix of environment variables.
