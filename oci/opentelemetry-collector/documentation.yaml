@@ -5,7 +5,6 @@ description: |
   process and export telemetry data. In addition, it removes the need to run, operate and 
   maintain multiple agents/collectors in order to support open-source telemetry data formats 
   (e.g. Jaeger, Prometheus, etc.) to multiple open-source or commercial back-ends.
-  Read more on the [official documentation](https://opentelemetry.io/docs/collector/)
 website: https://opentelemetry.io/docs/collector/
 issues: https://github.com/canonical/opentelemetry-collector-rock/issues
 source-code: https://github.com/canonical/opentelemetry-collector-rock
@@ -14,8 +13,7 @@ docker:
   parameters: >-
     -p 4318:4318
   run_conclusion: |
-    OpenTelemetry Collector starts on port 4318.
-    Access your OpenTelemetry Collector instance at http://localhost:4318 after running with a port mapping.
+    Access the OpenTelemetry Collector instance at `http://localhost:4318`.
 
 config:
   TZ:
@@ -27,7 +25,4 @@ config:
     description: Local configuration file for OpenTelemetry Collector.
   '`-p <port>:4318`':
     type: port
-    description: Expose OpenTelemetry Collector on localhost:4318.
-  '`--args --config <path>`':
-    description: Path to the configuration file for OpenTelemetry Collector to use.
-    default: '`/etc/otelcol/config.yaml`'
+    description: Expose the container's port `4318` on the host's `<port>`.
