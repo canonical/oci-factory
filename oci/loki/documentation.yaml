@@ -6,7 +6,6 @@ description: |
   aggregation system inspired by Prometheus. It is designed to be very cost
   effective and easy to operate. It does not index the contents of the logs,
   but rather a set of labels for each log stream.
-  Read more in the [official website](https://grafana.com/oss/loki/).
 website: https://grafana.com/oss/loki/
 issues: https://github.com/canonical/loki-rock/issues
 source-code: https://github.com/canonical/loki-rock
@@ -18,8 +17,7 @@ docker:
     -v /path/to/config/file:/etc/loki/local-config.yaml
     -v lokidata:/loki
   run_conclusion: |
-    Loki starts on port 3100.
-    Access the instance at http://localhost:3100.
+    Access the Loki instance at http://localhost:3100.
 
 config:
   TZ:
@@ -34,4 +32,4 @@ config:
     description: Persist data in a docker volume named lokidata.
   '`-p <port>:3100`':
     type: port
-    description: Expose Loki on localhost:3100.
+    description: Expose the container's port `3100` on the host's `<port>`.
