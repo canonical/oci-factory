@@ -226,5 +226,23 @@ GHSA-69x8-hrgq-fjj8
 # upstream `main` branch already updated tornado to 6.5.5 (where CVE is patched)
 CVE-2026-35536
 
-# Apache Airflow (pip), fixed in <3.2.0
+# Apache Airflow (pip), Auth Bypass Vulnerability, fixed in <3.2.0
 CVE-2025-57735
+
+#  (Apache Airflow): RCE by race condition in example_xcom dag, fixed in <3.2.0
+CVE-2025-54550
+
+#  (Apache Airflow): Unsafe Deserialization via Legacy Serialization Keys (__type/__var) Bypass in XCom API, fixed in <3.2.0 
+CVE-2026-33858
+
+#  (Apache Airflow): allows code execution through crafted XCom payloads, fixed in <3.2.0
+CVE-2026-25917
+
+#  (Apache Airflow): allows users with asset materialize permissions to trigger DAGs outside of their permissions, fixed in <3.2.0
+CVE-2026-32228
+
+# (LiteLLM): Server-Side Template Injection in /prompts/test endpoint
+GHSA-xqmj-j6mv-4862
+
+# (lxml): Default configuration of iterparse() and ETCompatXMLParser() allows XXE to local files
+CVE-2026-41066
