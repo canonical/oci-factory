@@ -16,8 +16,7 @@ docker:
   parameters: >-
     -p 2181:2181
   run_conclusion: |
-    ZooKeeper starts and serves client traffic on port 2181.
-    Access your ZooKeeper server at localhost:2181 after running with a port mapping.
+    Access the ZooKeeper server at `localhost:2181`.
 
 config:
   TZ:
@@ -35,4 +34,4 @@ config:
     description: Persist data in a Docker volume named zookeeperLogData. Keep the mount point consistent with the configuration property dataLogDir.
   '`-p <port>:2181`':
     type: port
-    description: Expose port 2181 on the local host.
+    description: Expose the container's port `2181` on the host's `<port>`.
