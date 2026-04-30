@@ -12,8 +12,7 @@ docker:
   parameters: >-
     -p 6565:6565
   run_conclusion: |
-    xk6 starts and exposes its API on port 6565 while running.
-    Access your k6 instance at http://localhost:6565 after running with a port mapping.
+    Access the k6 instance at `http://localhost:6565`.
 
 config:
   TZ:
@@ -22,4 +21,4 @@ config:
     default: 'UTC'
   '`-p <port>:6565`':
     type: port
-    description: Expose port 6565 on local host.
+    description: Expose the container's port `6565` on the host's `<port>`.
