@@ -16,7 +16,7 @@ docker:
     -p 4318:4318
     -p 9411:9411
   run_conclusion: |
-    Tempo starts and exposes its API at http://localhost:3200.
+    Access the Tempo API at `http://localhost:3200`.
     Ingestion endpoints for each format open separate ports.
 
 config:
@@ -26,19 +26,19 @@ config:
     default: 'UTC'
   '`-p <port>:3200`':
     type: port
-    description: Tempo HTTP API port.
+    description: Expose the container's port `3200` on the host's `<port>` for the Tempo HTTP API.
   '`-p <port>:9095`':
     type: port
-    description: Tempo GRPC API port.
+    description: Expose the container's port `9095` on the host's `<port>` for the Tempo GRPC API.
   '`-p <port>:14268`':
     type: port
-    description: Jaeger thrift format ingestion port.
+    description: Expose the container's port `14268` on the host's `<port>` for Jaeger thrift format ingestion.
   '`-p <port>:4317`':
     type: port
-    description: OpenTelemetry GRPC ingestion port.
+    description: Expose the container's port `4317` on the host's `<port>` for OpenTelemetry GRPC ingestion.
   '`-p <port>:4318`':
     type: port
-    description: OpenTelemetry HTTP ingestion port.
+    description: Expose the container's port `4318` on the host's `<port>` for OpenTelemetry HTTP ingestion.
   '`-p <port>:9411`':
     type: port
-    description: Zipkin format ingestion port.
+    description: Expose the container's port `9411` on the host's `<port>` for Zipkin format ingestion.
