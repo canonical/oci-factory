@@ -8,3 +8,6 @@ CVE-2025-22874
 
 # https://github.com/advisories/GHSA-j3gx-2473-5fp8 - url.Parse insufficiently validated the host/authority component and accepted some invalid URLs.
 CVE-2026-25679
+
+# https://github.com/advisories/GHSA-x744-4wpc-v9h2 - Moby has AuthZ plugin bypass when provided oversized request bodies
+CVE-2026-34040
