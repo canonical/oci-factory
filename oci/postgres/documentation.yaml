@@ -10,13 +10,13 @@ source-code: https://github.com/canonical/postgresql-rock
 
 docker:
   parameters: >-
-    --detach
+    -d
     -e TZ=UTC
     -e POSTGRES_PASSWORD=My:S3cr3t
     -p 30432:5432
   run_conclusion: |
     PostgreSQL starts on port 5432.
-    Access your PostgreSQL server at localhost:30432 after running with the given port mapping.
+    Access your PostgreSQL server at `localhost:30432`.
 
 config:
   TZ:
@@ -43,7 +43,8 @@ config:
     description: Set the auth-method for host connections for all databases, all users, and all addresses. The following will be added to the pg_hba.conf if this option is passed 'host all all all $POSTGRES_HOST_AUTH_METHOD'.
   PGDATA:
     type: env
-    description: Set the location of the database files. The default is '/var/lib/postgresql/data'.
+    default: /var/lib/postgresql/data
+    description: Set the location of the database files.
   '`-v <path>:/etc/postgresql/postgresql.conf`':
     type: mount
     description: Local configuration file postgresql.conf.
