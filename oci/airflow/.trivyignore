@@ -225,3 +225,6 @@ GHSA-69x8-hrgq-fjj8
 # (tornado): Tornado has cookie attribute injection via .RequestHandler.set_cookie
 # upstream `main` branch already updated tornado to 6.5.5 (where CVE is patched)
 CVE-2026-35536
+
+# Apache Airflow (pip), fixed in <3.2.0
+CVE-2025-57735
