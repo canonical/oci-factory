@@ -15,7 +15,6 @@ docker:
     -e POSTGRES_PASSWORD=My:S3cr3t
     -p 30432:5432
   run_conclusion: |
-    PostgreSQL starts on port 5432.
     Access your PostgreSQL server at `localhost:30432`.
 
 config:
@@ -25,16 +24,16 @@ config:
     default: 'UTC'
   POSTGRES_PASSWORD:
     type: env
-    description: Set the password for the superuser (postgres by default). This option is mandatory and must not be empty. Required to connect from external hosts.
+    description: Set the password for the superuser (postgres by default). This option is mandatory and must not be empty. Required to connect from external hosts, e.g., `my_secret_password`.
   POSTGRES_USER:
     type: env
-    description: Create a new user with superuser privileges. Used in conjunction with POSTGRES_PASSWORD.
+    description: Create a new user with superuser privileges, e.g., `john`. Used in conjunction with POSTGRES_PASSWORD.
   POSTGRES_DB:
     type: env
-    description: Set the name of the default database.
+    description: Set the name of the default database, e.g., `db_test`.
   POSTGRES_INITDB_ARGS:
     type: env
-    description: Pass arguments to the postgres initdb call.
+    description: Pass arguments to the postgres initdb call, e.g., `--data-checksums`.
   POSTGRES_INITDB_WALDIR:
     type: env
     description: Set the location of the Postgres transaction log. By default it is stored in a subdirectory of the main Postgres data folder (PGDATA).
@@ -53,4 +52,4 @@ config:
     description: Persist data instead of initializing a new database every time you launch a new container.
   '`-p <port>:5432`':
     type: port
-    description: Expose Postgres on localhost:30432.
+    description: Expose the container's port `5432` on the host's `<port>`.
