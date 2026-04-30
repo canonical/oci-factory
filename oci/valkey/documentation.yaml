@@ -9,18 +9,24 @@ issues: https://github.com/canonical/charmed-valkey-rock/issues
 source-code: https://github.com/canonical/charmed-valkey-rock
 
 docker:
-  run_cmd: --name valkey
   parameters: >-
     -p 6379:6379
   run_conclusion: |
-    Valkey starts on port 6379.
-    Access your Valkey server at localhost:6379 after running with a port mapping.
+    Access the Valkey server at `http://localhost:6379`.
+
+    Commands can be run using `valkey-cli` inside the container, e.g., to check Valkey's status:
+    ```shell
+    $ docker exec valkey-container valkey-cli ping
+    ```
 
 config:
   TZ:
     type: env
     description: Timezone.
     default: 'UTC'
+  '`-v <volume>:/var/lib/valkey`':
+    type: mount
+    description: Valkey Server's data directory. A config file can be mounted here to configure Valkey.
   '`-p <port>:6379`':
     type: port
-    description: Expose port 6379 on the local host.
+    description: Expose the container's port `6379` on the host's `<port>`.
