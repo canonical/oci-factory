@@ -13,47 +13,56 @@ source-code: https://github.com/canonical/identity-platform-login-ui
 
 docker:
   run_cmd: -d --name
-  parameters:
-    - -p 8080:8080
+  parameters: >-
+    - p 8080:8080
   run_conclusion: |
     The Login UI API starts on port 8080.
     Access it at http://localhost:8080 after running.
 
 config:
-  TRACING_ENABLED:
+  '`TRACING_ENABLED`':
     type: env
     description: Tracing enablement.
-  OTEL_GRPC_ENDPOINT:
+    default: 'true'
+  '`OTEL_GRPC_ENDPOINT`':
     type: env
     description: Tracing server GRPC endpoint, has priority on OTEL_HTTP_ENDPOINT.
-  OTEL_HTTP_ENDPOINT:
+    default: 'tempo-0.tempo-endpoints.stg-identity-jaas-dev.svc.cluster.local:4317'
+  '`OTEL_HTTP_ENDPOINT`':
     type: env
     description: Tracing server HTTP endpoint.
-  MFA_ENABLED:
+    default: 'http://tempo-0.tempo-endpoints.stg-identity-jaas-dev.svc.cluster.local:4318'
+  '`MFA_ENABLED`':
     type: env
     description: Enable MFA validation on logins.
-  HYDRA_ADMIN_URL:
+    default: '"true"'
+  '`HYDRA_ADMIN_URL`':
     type: env
     description: Hydra Admin API URL, used to validate logins
-  KRATOS_ADMIN_URL:
+    default: 'http://hydra.io:4445'
+  '`KRATOS_ADMIN_URL`':
     type: env
     description: Kratos Admin API URL, used to manage identities
-  KRATOS_PUBLIC_URL:
+    default: 'http://kratos.io:4434'
+  '`KRATOS_PUBLIC_URL`':
     type: env
     description: Kratos Public API URL, used to manage identities
-  BASE_URL:
+    default: 'http://kratos.io:4433'
+  '`BASE_URL`':
     type: env
     description: Public URL Login UI will be served from.
-  LOG_FILE:
+    default: 'https://iam.io/dev/path'
+  '`LOG_FILE`':
     type: env
     description: Destination file for logs.
-  LOG_LEVEL:
+    default: 'log.txt'
+  '`LOG_LEVEL`':
     type: env
     description: Log level.
+    default: 'error'
   '`-p <port>:8080`':
     type: port
-    description: Server API port.
+    description: Expose server API on port 8080.
   '`/usr/bin/identity-platform-login-ui serve`':
-    type: app
-    description: >
-      Launch Login UI web server(s) using environment variables.
+    type: other
+    description: Launch Login UI web server(s) using environment variables.
