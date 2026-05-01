@@ -6,139 +6,165 @@ description: |
 
   It provides a set of API to view,modify and delete resources on Ory Kratos, Ory Hydra
   Ory Oathkeeper and OpenFGA
-
-  For further information check our repository on Github https://github.com/canonical/identity-platform-admin-ui
 website: https://github.com/canonical/identity-platform-admin-ui
 issues: https://github.com/canonical/identity-platform-admin-ui/issues
 source-code: https://github.com/canonical/identity-platform-admin-ui
 
 docker:
   run_cmd: -d --name
-  parameters:
-    - -p 8080:8080
+  parameters: >-
+    - p 8080:8080
   run_conclusion: |
     The Admin UI API starts on port 8080.
     Access it at http://localhost:8080 after running.
 
 config:
-  TRACING_ENABLED:
+  '`TRACING_ENABLED`':
     type: env
-    description: Tracing enablement.
-  OTEL_GRPC_ENDPOINT:
+    description: Tracing enablement, e.g., `true`.
+    default: 'true'
+  '`OTEL_GRPC_ENDPOINT`':
     type: env
     description: Tracing server GRPC endpoint, has priority on OTEL_HTTP_ENDPOINT.
-  OTEL_HTTP_ENDPOINT:
+    default: 'tempo-0.tempo-endpoints.stg-identity-jaas-dev.svc.cluster.local:4317'
+  '`OTEL_HTTP_ENDPOINT`':
     type: env
     description: Tracing server HTTP endpoint.
-  MFA_ENABLED:
+    default: 'http://tempo-0.tempo-endpoints.stg-identity-jaas-dev.svc.cluster.local:4318'
+  '`MFA_ENABLED`':
     type: env
     description: Enable MFA validation on logins.
-  HYDRA_ADMIN_URL:
+    default: '"true"'
+  '`HYDRA_ADMIN_URL`':
     type: env
-    description: Hydra Admin API URL, used to manage clients
-  KRATOS_ADMIN_URL:
+    description: Hydra Admin API URL, used to manage clients.
+    default: 'http://hydra.io:4445'
+  '`KRATOS_ADMIN_URL`':
     type: env
-    description: Kratos Admin API URL, used to manage identities
-  KRATOS_PUBLIC_URL:
+    description: Kratos Admin API URL, used to manage identities.
+    default: 'http://kratos.io:4434'
+  '`KRATOS_PUBLIC_URL`':
     type: env
-    description: Kratos Public API URL, used to manage identities
-  OATHKEEPER_PUBLIC_URL:
+    description: Kratos Public API URL, used to manage identities.
+    default: 'http://kratos.io:4433'
+  '`OATHKEEPER_PUBLIC_URL`':
     type: env
-    description: Oathkeeper Public API URL, used to manage rules
-  BASE_URL:
+    description: Oathkeeper Public API URL, used to manage rules.
+    default: 'http://oathkeeper.io:4455'
+  '`BASE_URL`':
     type: env
     description: Public URL Login UI will be served from.
-  ACCESS_TOKEN_VERIFICATION_STRATEGY:
+    default: 'https://iam.io/dev/path'
+  '`ACCESS_TOKEN_VERIFICATION_STRATEGY`':
     type: env
     description: Strategy used to verify JWT tokens.
-  AUTHENTICATION_ENABLED:
+    default: 'jwks'
+  '`AUTHENTICATION_ENABLED`':
     type: env
     description: Authentication enable flag.
-  AUTHORIZATION_ENABLED:
+    default: '"true"'
+  '`AUTHORIZATION_ENABLED`':
     type: env
     description: Authorization enable flag.
-  CONTEXT_PATH:
+    default: '"true"'
+  '`CONTEXT_PATH`':
     type: env
     description: Path needed by the UI to work behind an ingress proxy.
-  IDP_CONFIGMAP_NAME:
+    default: '/dev/path'
+  '`IDP_CONFIGMAP_NAME`':
     type: env
     description: Name of kubernetes configmap where Kratos IDP are configured.
-  IDP_CONFIGMAP_NAMESPACE:
+    default: 'providers'
+  '`IDP_CONFIGMAP_NAMESPACE`':
     type: env
     description: Namespace of kubernetes configmap where Kratos IDP are configured.
-  RULES_CONFIGMAP_NAME:
+    default: 'default'
+  '`RULES_CONFIGMAP_NAME`':
     type: env
     description: Name of kubernetes configmap where Oathkeeper rules are configured.
-  RULES_CONFIGMAP_NAMESPACE:
+    default: 'rules'
+  '`RULES_CONFIGMAP_NAMESPACE`':
     type: env
     description: Namespace of kubernetes configmap where Oathkeeper rules are configured.
-  RULES_CONFIGMAP_FILENAME:
+    default: 'default'
+  '`RULES_CONFIGMAP_FILENAME`':
     type: env
     description: Name of the file where Oathkeeper rules are configured.
-  SCHEMAS_CONFIGMAP_NAME:
+    default: 'rules.yaml'
+  '`SCHEMAS_CONFIGMAP_NAME`':
     type: env
     description: Name of kubernetes configmap where Kratos identity schemas are configured.
-  SCHEMAS_CONFIGMAP_NAMESPACE:
+    default: 'schemas'
+  '`SCHEMAS_CONFIGMAP_NAMESPACE`':
     type: env
     description: Namespace of kubernetes configmap where Kratos identity schemas are configured.
-  MAIL_FROM_ADDRESS:
+    default: 'default'
+  '`MAIL_FROM_ADDRESS`':
     type: env
-    description: Email sender
-  MAIL_HOST:
+    description: Email sender.
+  '`MAIL_HOST`':
     type: env
-    description: SMPT server host
-  MAIL_PASSWORD:
+    description: SMPT server host.
+    default: 'smtp.io'
+  '`MAIL_PASSWORD`':
     type: env
-    description: SMTP password
-  MAIL_PORT:
+    description: SMTP password.
+  '`MAIL_PORT`':
     type: env
-    description: SMTP server port
-  MAIL_USERNAME:
+    description: SMTP server port.
+    default: '"1025"'
+  '`MAIL_USERNAME`':
     type: env
-    description: SMTP username
-  OAUTH2_AUTH_COOKIES_ENCRYPTION_KEY:
+    description: SMTP username.
+  '`OAUTH2_AUTH_COOKIES_ENCRYPTION_KEY`':
     type: env
-    description: Key used to encrypt authentication cookies
-  OAUTH2_CLIENT_ID:
+    description: Key used to encrypt authentication cookies.
+  '`OAUTH2_CLIENT_ID`':
     type: env
-    description: OAuth2 client ID, needed for OIDC authentication
-  OAUTH2_CLIENT_SECRET:
+    description: OAuth2 client ID, needed for OIDC authentication.
+  '`OAUTH2_CLIENT_SECRET`':
     type: env
-    description: OAuth2 client secret, needed for OIDC authentication
-  OAUTH2_CODEGRANT_SCOPES:
+    description: OAuth2 client secret, needed for OIDC authentication.
+  '`OAUTH2_CODEGRANT_SCOPES`':
     type: env
-    description: OAuth2 scopes needed by the application, needed for OIDC authentication
-  OAUTH2_REDIRECT_URI:
+    description: OAuth2 scopes needed by the application, needed for OIDC authentication.
+    default: 'openid,email,profile,offline_access'
+  '`OAUTH2_REDIRECT_URI`':
     type: env
-    description: OAuth2 redirect uri where /api/v0/auth/callback is the endpoint used by the application, needed for OIDC authentication
-  OIDC_ISSUER:
+    description: OAuth2 redirect uri where /api/v0/auth/callback is the endpoint used by the application, needed for OIDC authentication.
+    default: 'https://iam..io/dev/api/v0/auth/callback'
+  '`OIDC_ISSUER`':
     type: env
-    description: OAuth2 server issuer
-  OPENFGA_API_HOST:
+    description: OAuth2 server issuer.
+    default: 'https://iam.dev.canonical.com/stg-identity-jaas-dev-hydra'
+  '`OPENFGA_API_HOST`':
     type: env
-    description: OpenFGA server address
-  OPENFGA_API_SCHEME:
+    description: OpenFGA server address.
+    default: 'openfga:8443'
+  '`OPENFGA_API_SCHEME`':
     type: env
-    description: OpenFGA server scheme
-  OPENFGA_API_TOKEN:
+    description: OpenFGA server scheme.
+    default: 'http'
+  '`OPENFGA_API_TOKEN`':
     type: env
-    description: OpenFGA server API token, needed for authentication to the server
-  OPENFGA_AUTHORIZATION_MODEL_ID:
+    description: OpenFGA server API token, needed for authentication to the server.
+  '`OPENFGA_AUTHORIZATION_MODEL_ID`':
     type: env
-    description: OpenFGA model ID
-  OPENFGA_STORE_ID:
+    description: OpenFGA model ID.
+  '`OPENFGA_STORE_ID`':
     type: env
-    description: OpenFGA store ID
-  LOG_FILE:
+    description: OpenFGA store ID.
+  '`LOG_FILE`':
     type: env
     description: Destination file for logs.
-  LOG_LEVEL:
+    default: 'log.txt'
+  '`LOG_LEVEL`':
     type: env
     description: Log level.
+    default: 'error'
   '`-p <port>:8080`':
     type: port
-    description: Server API port.
+    description: Expose server API on port 8080.
   '`/usr/bin/identity-platform-admin-ui serve`':
     type: app
-    description: >
-      Launch Admin UI web server(s) using environment variables.
+    description: Launch Admin UI web server(s) using environment variables.
