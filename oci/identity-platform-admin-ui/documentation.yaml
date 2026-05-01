@@ -166,5 +166,5 @@ config:
     type: port
     description: Expose server API on port 8080.
   '`/usr/bin/identity-platform-admin-ui serve`':
-    type: app
+    type: other
     description: Launch Admin UI web server(s) using environment variables.
