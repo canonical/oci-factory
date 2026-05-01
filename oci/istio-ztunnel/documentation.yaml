@@ -1,18 +1,18 @@
 version: 2
 application: ztunnel
 description: |
-  ztunnel is a purpose-built node proxy component for Istio ambient mesh.
+  Ztunnel is a purpose-built node proxy component for Istio ambient mesh.
 website: https://github.com/istio/ztunnel
 issues: https://github.com/canonical/istio-ztunnel-rock/issues
 source-code: https://github.com/canonical/istio-ztunnel-rock
 
 docker:
+  run_cmd: -d
   parameters: >-
-    -e TZ=UTC
     -p 15020:15020
   run_conclusion: |
     Ztunnel starts in proxy mode and listens on port 15020.
-    Access your ztunnel instance at http://localhost:15020
+    Access your ztunnel instance at 'http://localhost:15020'.
 
 config:
   TZ:
@@ -21,7 +21,7 @@ config:
     default: 'UTC'
   '`-p <port>:15020`':
     type: port
-    description: Port mapping for the ztunnel process.
+    description: Exposes port 15020 for the ztunnel process.
   '`ztunnel proxy`':
-    type: app
+    type: other
     description: Launch ztunnel in proxy mode.
