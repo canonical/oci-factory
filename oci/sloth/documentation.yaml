@@ -9,13 +9,14 @@ issues: https://github.com/canonical/sloth-rock/issues
 source-code: https://github.com/canonical/sloth-rock
 
 docker:
-  run_cmd: sloth generate -i ./input.yaml -o ./output.yaml
+  run_cmd: --args sloth generate -i ./input.yaml -o ./output.yaml
   parameters: >-
     -v ./input.yaml:/input.yaml
     -v ./output.yaml:/output.yaml
   run_conclusion: |
-    Sloth generates Prometheus rules from your SLO spec.
-    After running with mounted files, the generated rules are written to ./output.yaml.
+    Sloth generates Prometheus rules from the given SLO spec file (`input.yaml`) and writes them to `output.yaml`.
+    
+     An example SLO spec file is available in the upstream [`examples/` folder](https://github.com/slok/sloth/tree/3757b6607160646ce3a78114d077992663d5c9b7/examples).
 
 config:
   '`-v <path>:/input.yaml`':
