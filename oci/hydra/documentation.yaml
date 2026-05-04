@@ -12,32 +12,31 @@ issues: https://github.com/canonical/hydra-rock/issues
 source-code: https://github.com/canonical/hydra-rock
 
 docker:
-  run_cmd: -d
   parameters: >-
     -p 4444:4444
     -p 4445:4445
   run_conclusion: |
-    Hydra starts with public and admin APIs exposed on ports 4444 and 4445.
+    Access the Hydra Public API at `http://localhost:4444`, Admin API at `http://localhost:4445`.
 
 config:
   TRACING_ENABLED:
     type: env
-    description: Tracing enablement.
+    description: Tracing enablement, e.g., `true`.
   TRACING_PROVIDER:
     type: env
-    description: Tracing protocol to be used.
+    description: Tracing protocol to be used, e.g., `otel`.
   TRACING_PROVIDERS_OTLP_INSECURE:
     type: env
-    description: Allow Tracing via non TLS/insecure communication.
+    description: Allow Tracing via non TLS/insecure communication, e.g., `true`.
   TRACING_PROVIDERS_OTLP_SAMPLING_SAMPLING_RATIO:
     type: env
-    description: Tracing sampling ratio.
+    description: Tracing sampling ratio, e.g., `1.0`.
   TRACING_PROVIDERS_OTLP_SERVER_URL:
     type: env
-    description: Tracing server url and port.
+    description: Tracing server url and port, e.g., `tempo.server.io:4318`.
   '`-v <path>:/hydra.yaml`':
     type: mount
-    description: >
+    description: >-
       Hydra config contains all the information needed to successfully configure it as an OIDC
       Provider, see https://github.com/ory/hydra/blob/master/internal/config/config.yaml as a reference
   '`-p <port>:4444`':
@@ -47,6 +46,6 @@ config:
     type: port
     description: Expose Hydra Admin API port 4445 on the host's `<port>` .
   '`--args hydra -- serve all --config /hydra.yaml`':
-    type: other
-    description: >
+    type: app
+    description: >-
       Launch Hydra web server(s) using a mix of environment variables and the config mounted via volume.
