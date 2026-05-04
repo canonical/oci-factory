@@ -11,12 +11,10 @@ issues: https://github.com/canonical/identity-platform-admin-ui/issues
 source-code: https://github.com/canonical/identity-platform-admin-ui
 
 docker:
-  run_cmd: -d --name
   parameters: >-
     -p 8080:8080
   run_conclusion: |
-    The Admin UI API starts on port 8080.
-    Access it at http://localhost:8080 after running.
+    Access the API at `http://localhost:8080`.
 
 config:
   '`OTEL_GRPC_ENDPOINT`':
@@ -137,5 +135,5 @@ config:
     type: port
     description: Expose the container's port `8080` on the host's `<port>`.
   '`/usr/bin/identity-platform-admin-ui serve`':
-    type: other
+    type: app
     description: Launch Admin UI web server(s) using environment variables.
