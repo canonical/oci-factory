@@ -21,17 +21,16 @@ docker:
 config:
   TZ:
     type: env
-    description: jre is configurable with a timezone value for Java process execution.
-    default: 'UTC'
+    description: Configures the timezone value for Java process execution.
   '`-v <host-path>:/app`':
     type: mount
-    description: jre is configurable with a host mount to provide compiled classes or application files.
+    description: Configure with a host mount to provide compiled classes or application files.
   '`exec java <args>`':
     type: app
-    description: jre is executed with Java command arguments or classpath options.
+    description: Execute with Java command arguments or classpath options.
   '`--rm`':
     type: other
-    description: jre is runnable with automatic container cleanup after exit.
+    description: Run with automatic container cleanup after exit.
 
 override_tracks:
   # Tracks release from legacy repo
