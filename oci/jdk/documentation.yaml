@@ -22,7 +22,16 @@ docker:
   run_conclusion: |
     JDK starts and runs the Hello World Java application as defined below, and outputs `"Hello, World"` to the terminal.
     
-    
+        ```java
+    // HelloWorld.java
+    class HelloWorld
+    {
+        public static void main(String args[])
+        {
+            System.out.println("Hello, World");
+        }
+    }
+    ```
 
 config:
   TZ:
