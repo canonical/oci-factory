@@ -30,12 +30,10 @@ config:
     description: Tracing enablement, e.g., `true`.
   '`LOG_FILE`':
     type: env
-    description: Destination file for logs.
-    default: 'log.txt'
+    description: Destination file for logs, e.g., `log.txt`.
   '`LOG_LEVEL`':
     type: env
-    description: Log level.
-    default: 'error'
+    description: Log level, e.g., `error`.
   '`HYDRA_ADMIN_URL`':
     type: env
     description: Hydra Admin API URL, used to manage clients, e.g., `http://hydra.io:4445`.
@@ -95,7 +93,6 @@ config:
   '`MAIL_PORT`':
     type: env
     description: SMTP server port. Required.
-    default: '"1025"'
   '`MAIL_USERNAME`':
     type: env
     description: SMTP username. If present, both username and password are used.
@@ -138,7 +135,7 @@ config:
     description: OpenFGA store ID.
   '`-p <port>:8080`':
     type: port
-    description: Expose server API on port 8080.
+    description: Expose the container's port `8080` on the host's `<port>`.
   '`/usr/bin/identity-platform-admin-ui serve`':
     type: other
     description: Launch Admin UI web server(s) using environment variables.
