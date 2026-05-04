@@ -3,7 +3,6 @@ application: kafka
 description: |
   Apache Kafka is an open-source distributed event streaming platform for
   high-performance data pipelines, streaming analytics and integrations.
-  Read more on the [Apache Kafka website](https://kafka.apache.org/).
   
   Please note that the images tagged up to 3.1 are Dockerfile-base images,
   whereas from version 3.6.1 onward the images are now rocks.
@@ -20,27 +19,27 @@ docker:
 config:
   TZ:
     type: env
-    description: kafka is configurable with a container timezone value.
-    default: 'UTC'
+    description: Configure the container timezone value.
   ZOOKEEPER_HOST:
     type: env
-    description: kafka is configurable with the ZooKeeper hostname for Apache Kafka 3.
+    description: Configure the ZooKeeper hostname for Apache Kafka 3.
+    default: 'zookeeper'
   ZOOKEEPER_PORT:
     type: env
-    description: kafka is configurable with the ZooKeeper port for Apache Kafka 3.
+    description: Configure the ZooKeeper port for Apache Kafka 3.
     default: '2181'
   '`-v <path>:/etc/kafka/server.properties`':
     type: mount
-    description: kafka is configurable with a mounted Kafka server configuration file.
+    description: Configure with a mounted Kafka server configuration file.
   '`-v <volume>:/var/lib/kafka`':
     type: mount
-    description: kafka is configurable with a mounted volume for persistent broker data.
+    description: Configure with a mounted volume for persistent broker data.
   '`-p <port>:9092`':
     type: port
-    description: kafka is configurable to expose the Apache Kafka broker port on localhost.
+    description: Expose the Apache Kafka broker port 9092 on the host.
   '`--detach`':
     type: other
-    description: kafka is runnable in background mode.
+    description: Run Kafka in background mode.
   '`--name <container-name>`':
     type: other
-    description: kafka is runnable with a custom container name.
+    description: Run Kafka with a custom container name.
