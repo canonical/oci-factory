@@ -1,18 +1,10 @@
-version: 1
+version: 2
 upload:
   - source: canonical/tempo-rock
-    commit: ab99969db54ea51f35fdb507a36bb61de5f60803
-    directory: 2.10.1
+    commit: ee9a4f344fac5b3a7760f55e6998652e45efdfc8
+    directory: 2.9.2
     release:
-      2-24.04:
-        end-of-life: '2026-05-21T00:00:00Z'
-        risks:
-          - stable
-      2.10-24.04:
-        end-of-life: '2026-05-21T00:00:00Z'
-        risks:
-          - stable
-      2.10.1-24.04:
-        end-of-life: '2026-02-18T00:00:00Z'
+      2.9-24.04:
+        end-of-life: '2026-08-03T00:00:00Z'
         risks:
           - stable
