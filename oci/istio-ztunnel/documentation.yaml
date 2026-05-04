@@ -21,7 +21,7 @@ config:
     default: 'UTC'
   '`-p <port>:15020`':
     type: port
-    description: Exposes port 15020 for the ztunnel process.
+    description: Expose the container's port `15020` on the host's `<port>`.
   '`ztunnel proxy`':
     type: other
     description: Launch ztunnel in proxy mode.
