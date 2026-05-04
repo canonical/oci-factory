@@ -20,20 +20,21 @@ config:
   '`TZ`':
     type: env
     description: Configure the container timezone value.
-  ZOOKEEPER_HOST:
+    default: 'UTC'
+  '`ZOOKEEPER_HOST`':
     type: env
     description: Hostname for the related Zookeeper instance. Only used in Apache Kafka 3.
     default: 'zookeeper'
-  ZOOKEEPER_PORT:
+  '`ZOOKEEPER_PORT`':
     type: env
-    description:  Port for the related Zookeeper instance. Only used in Apache Kafka 3.
+    description: Port for the related Zookeeper instance. Only used in Apache Kafka 3.
     default: '2181'
   '`-v <path>:/etc/kafka/server.properties`':
     type: mount
     description: Override Kafka server configuration file.
   '`-v <volume>:/var/lib/kafka`':
     type: mount
-    description:  >-
+    description: >-
       Persist data in a docker `<volume>`. 
       Make sure that the mount point is consistent with the configuration property `logs.dirs`.
   '`-p <port>:9092`':
