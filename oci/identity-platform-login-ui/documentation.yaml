@@ -13,7 +13,7 @@ source-code: https://github.com/canonical/identity-platform-login-ui
 
 docker:
   parameters: >-
-    - p 8080:8080
+    -p 8080:8080
   run_conclusion: |
     Access the API at `http://localhost:8080`.
 
