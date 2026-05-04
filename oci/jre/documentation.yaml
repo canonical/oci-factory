@@ -2,7 +2,7 @@ version: 2
 application: jre
 description: |
   OpenJDK is the official reference implementation of Java SE since
-  version 7. [Read more](https://openjdk.org/).This image packs the Java Runtime Environment, coming
+  version 7. This image packs the Java Runtime Environment, coming
   from the [OpenJDK project](https://www.openjdk.org/), a free and open
   source implementation of the Java Platform, Standard Edition (Java SE).
   
@@ -17,11 +17,6 @@ docker:
     --rm
   run_conclusion: |
     jre starts and runs the Java command inside the container.
-    For example, running:
-    docker run --rm ubuntu/jre:21-24.04_edge exec java
-    prints the Java usage help output.
-    You can also run an application class with:
-    docker run --rm -e TZ=UTC -v "$(pwd)":/app ubuntu/jre:21-24.04_edge exec java -cp /app HelloWorld
 
 config:
   TZ:
@@ -40,7 +35,7 @@ config:
 
 override_tracks:
   # Tracks release from legacy repo
-  #(https://github.com/rockcrafters/chiselled-jre/)
+  # (https://github.com/rockcrafters/chiselled-jre/)
   8-22.04:
     end-of-life: "2027-06-01T00:00:00Z"
   17-22.04:
