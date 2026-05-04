@@ -14,32 +14,28 @@ docker:
   parameters: >-
     -p 9092:9092
   run_conclusion: |
-    Kafka starts and exposes broker port 9092.
+    Access the Apache Kafka server at `localhost:9092`.
 
 config:
-  TZ:
+  '`TZ`':
     type: env
     description: Configure the container timezone value.
   ZOOKEEPER_HOST:
     type: env
-    description: Configure the ZooKeeper hostname for Apache Kafka 3.
+    description: Hostname for the related Zookeeper instance. Only used in Apache Kafka 3.
     default: 'zookeeper'
   ZOOKEEPER_PORT:
     type: env
-    description: Configure the ZooKeeper port for Apache Kafka 3.
+    description:  Port for the related Zookeeper instance. Only used in Apache Kafka 3.
     default: '2181'
   '`-v <path>:/etc/kafka/server.properties`':
     type: mount
-    description: Configure with a mounted Kafka server configuration file.
+    description: Override Kafka server configuration file.
   '`-v <volume>:/var/lib/kafka`':
     type: mount
-    description: Configure with a mounted volume for persistent broker data.
+    description:  >-
+      Persist data in a docker `<volume>`. 
+      Make sure that the mount point is consistent with the configuration property `logs.dirs`.
   '`-p <port>:9092`':
     type: port
-    description: Expose the Apache Kafka broker port 9092 on the host.
-  '`--detach`':
-    type: other
-    description: Run Kafka in background mode.
-  '`--name <container-name>`':
-    type: other
-    description: Run Kafka with a custom container name.
+    description: Expose the container's port `9092` on the host's `<port>`.
