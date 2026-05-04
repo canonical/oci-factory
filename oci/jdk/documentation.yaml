@@ -34,16 +34,10 @@ docker:
     ```
 
 config:
-  TZ:
+  '`TZ`':
     type: env
-    description: jdk is configurable with a timezone value for Java process execution.
+    description: Timezone.
     default: 'UTC'
-  '`-v <host-path>:/tmp`':
-    type: mount
-    description: jdk is configurable with a host mount to provide Java source files to the container.
-  '`exec java <file-or-args>`':
+  '`exec java [options] <args>`':
     type: app
-    description: jdk is executed with Java command arguments or a Java file path.
-  '`--rm`':
-    type: other
-    description: jdk is runnable with automatic container cleanup after exit.
+    description: Java runtime command.
