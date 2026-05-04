@@ -13,7 +13,7 @@ source-code: https://github.com/canonical/identity-platform-admin-ui
 docker:
   run_cmd: -d --name
   parameters: >-
-    - p 8080:8080
+    -p 8080:8080
   run_conclusion: |
     The Admin UI API starts on port 8080.
     Access it at http://localhost:8080 after running.
@@ -38,11 +38,13 @@ config:
     default: 'error'
   '`HYDRA_ADMIN_URL`':
     type: env
+    description: Hydra Admin API URL, used to manage clients, e.g., `http://hydra.io:4445`.
   '`KRATOS_ADMIN_URL`':
     type: env
     description: Kratos Admin API URL, used to manage identities, e.g., `http://kratos.io:4434`.
   '`KRATOS_PUBLIC_URL`':
     type: env
+    description: Kratos Public API URL, used to manage identities, e.g., `http://kratos.io:4433`.
   '`OATHKEEPER_PUBLIC_URL`':
     type: env
     description: Oathkeeper Public API URL, used to manage rules.
