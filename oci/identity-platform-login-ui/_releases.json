@@ -1,8 +1,8 @@
 {
     "0-22.04": {
-        "end-of-life": "2026-08-24T00:00:00Z",
+        "end-of-life": "2026-11-05T00:00:00Z",
         "stable": {
-            "target": "87"
+            "target": "89"
         },
         "candidate": {
             "target": "0-22.04_stable"
