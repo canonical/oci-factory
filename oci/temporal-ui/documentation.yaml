@@ -9,26 +9,25 @@ source-code: https://github.com/canonical/temporal-rocks
 
 docker:
   parameters: >-
-    - -p 8081:8081
+    -p 8081:8081
   run_conclusion: |
-    temporal-ui starts under Pebble and serves the UI on port 8081.
+    The temporal UI service is started by Pebble and serves the UI on port 8081.
 
 config:
   TEMPORAL_ROOT:
     type: env
-    description: temporal-ui is configurable with the root directory of the execution environment.
-    default: /home/ui-server
+    description: Root directory of execution environment.
   TEMPORAL_CONFIG_DIR:
     type: env
-    description: temporal-ui is configurable with a config directory path relative to the root directory.
-    default: config
+    description: Config directory path relative to `TMEMPORAL_ROOT`.
   TEMPORAL_ENVIRONMENT:
     type: env
-    description: temporal-ui is configurable with a runtime environment name.
-    default: development
+    description: Runtime environment.
   '`-v <path>:/home/ui-server/config`':
     type: mount
-    description: temporal-ui is configurable with a mounted UI server configuration directory.
+    description: >-
+      Temporal UI server configuration directory.
+      Replace the target path if `TEMPORAL_ROOT` and `TEMPORAL_CONFIG_DIR` are set to different values from `/home/ui-server` and `config`.
   '`-p <port>:8081`':
     type: port
     description: temporal-ui is configurable to expose the web interface on localhost.
