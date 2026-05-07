@@ -2,7 +2,7 @@ version: 1
 
 upload:
   - source: canonical/python-rock
-    commit: 1480908ccd958b861f6dd8d9983fc939b717aedf
+    commit: 4aac7806bd31ef9eb4f0e778a1257eff2aee57ae
     directory: python/3.8-20.04/
     release:
       3.8-20.04:
@@ -13,7 +13,7 @@ upload:
           - beta
           - edge
   - source: canonical/python-rock
-    commit: 1480908ccd958b861f6dd8d9983fc939b717aedf
+    commit: 4aac7806bd31ef9eb4f0e778a1257eff2aee57ae
     directory: python/3.10-22.04/
     release:
       3.10-22.04:
@@ -24,7 +24,7 @@ upload:
           - beta
           - edge
   - source: canonical/python-rock
-    commit: 1480908ccd958b861f6dd8d9983fc939b717aedf
+    commit: 4aac7806bd31ef9eb4f0e778a1257eff2aee57ae
     directory: python/3.12-24.04/
     release:
       3.12-24.04:
@@ -35,7 +35,7 @@ upload:
           - beta
           - edge
   - source: canonical/python-rock
-    commit: 98ef12e107338fc710edb43e78cddff58d4d299e
+    commit: 4aac7806bd31ef9eb4f0e778a1257eff2aee57ae
     directory: python/3.13-25.10/
     release:
       3.13-25.10:
@@ -44,4 +44,12 @@ upload:
           - stable
           - candidate
           - beta
+          - edge
+  - source: canonical/python-rock
+    commit: 4aac7806bd31ef9eb4f0e778a1257eff2aee57ae
+    directory: python/3.14-26.04/
+    release:
+      3.14-26.04:
+        end-of-life: "2026-05-20T00:00:00Z"
+        risks:
           - edge
