@@ -13,6 +13,14 @@ upload:
           - stable
   - source: canonical/php-rock
     commit: ab396cf8e42b3bb22487851999c3bfc8fd17dac6
+    directory: php/8.4-25.10
+    release:
+      8.4-25.10:
+        end-of-life: "2026-07-09T00:00:00Z"
+        risks:
+          - edge
+  - source: canonical/php-rock
+    commit: ab396cf8e42b3bb22487851999c3bfc8fd17dac6
     directory: php/8.5-26.04
     release:
       8.5-26.04:
