@@ -1,18 +1,14 @@
-version: 1
+version: 2
 upload:
   - source: canonical/parca-rock
-    commit: dd1a7b424b3fe57c6ce2207f05073d6ce7925391
-    directory: 0.24.2
+    commit: bee1931e70efb7d831d366a2d0956e8ebb1a41aa
+    directory: 0.27.1
     release:
       0-24.04:
-        end-of-life: '2025-12-12T00:00:00Z'
+        end-of-life: '2026-08-03T00:00:00Z'
         risks:
           - stable
-      0.24-24.04:
-        end-of-life: '2025-12-12T00:00:00Z'
-        risks:
-          - stable
-      0.24.2-24.04:
-        end-of-life: '2025-09-11T00:00:00Z'
+      0.27-24.04:
+        end-of-life: '2026-08-03T00:00:00Z'
         risks:
           - stable
