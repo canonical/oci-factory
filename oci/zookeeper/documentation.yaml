@@ -28,10 +28,10 @@ config:
     description: Local ZooKeeper configuration file.
   '`-v <volume>:/var/lib/zookeeper/data`':
     type: mount
-    description: Persist data in a Docker volume named zookeeperData. Keep the mount point consistent with the configuration property dataDir.
+    description: Persist data mounted into the container. The mount point should be consistent with the configuration property `dataDir`.
   '`-v <volume>:/var/lib/zookeeper/data-log`':
     type: mount
-    description: Persist data in a Docker volume named zookeeperLogData. Keep the mount point consistent with the configuration property dataLogDir.
+    description: Persist data mounted inside the container. The mount point should be consistent with the configuration property `dataLogDir`.
   '`-p <port>:2181`':
     type: port
     description: Expose the container's port `2181` on the host's `<port>`.
