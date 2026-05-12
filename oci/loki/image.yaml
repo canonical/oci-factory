@@ -1,25 +1,14 @@
 version: 2
 upload:
   - source: canonical/loki-rock
-    commit: e03a03d797934b84ca0ef55366996d5a4a41da4f
+    commit: 6d786185ca06392866111ce71035600e7cc7d46b
     directory: 3.7.1
     release:
-      3-24.04:
-        end-of-life: '2026-07-14T00:00:00Z'
+      3-26.04:
+        end-of-life: '2026-08-11T00:00:00Z'
         risks:
           - stable
-      3.7-24.04:
-        end-of-life: '2026-07-14T00:00:00Z'
+      3.7-26.04:
+        end-of-life: '2026-08-11T00:00:00Z'
         risks:
           - stable
-      3.7.1-24.04:
-        end-of-life: '2026-04-12T00:00:00Z'
-        risks:
-          - stable
-    ignored-vulnerabilities:
-      - CVE-2026-32285  # Needs evaluation. https://ubuntu.com/security/CVE-2026-32285
-      - CVE-2026-34986  # Needs evaluation. https://ubuntu.com/security/CVE-2026-34986
-      - CVE-2026-39883  # Needs evaluation. https://ubuntu.com/security/CVE-2026-39883
-      - CVE-2026-33186  # Needs evaluation. https://ubuntu.com/security/CVE-2026-33186
-      - CVE-2026-34040  # Needs evaluation. https://ubuntu.com/security/CVE-2026-34040
-      - CVE-2026-24051  # Not affected. https://ubuntu.com/security/CVE-2026-24051
