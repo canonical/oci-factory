@@ -1,18 +1,14 @@
-version: 1
+version: 2
 upload:
   - source: canonical/xk6-rock
-    commit: 1e3361ae2b9fda84083d53269712d05ac9cca6a3
+    commit: 3d183ca1e8b1980fca3625cd78da224ef19c1d86
     directory: 1.7.1
     release:
-      1-24.04:
-        end-of-life: '2026-07-14T00:00:00Z'
+      1-26.04:
+        end-of-life: '2026-08-11T00:00:00Z'
         risks:
           - stable
-      1.7-24.04:
-        end-of-life: '2026-07-14T00:00:00Z'
-        risks:
-          - stable
-      1.7.1-24.04:
-        end-of-life: '2026-04-13T00:00:00Z'
+      1.7-26.04:
+        end-of-life: '2026-08-11T00:00:00Z'
         risks:
           - stable
