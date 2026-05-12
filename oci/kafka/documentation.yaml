@@ -91,10 +91,14 @@ config:
     type: env
     description: Port for the related Zookeeper instance. Only used in Apache Kafka 3.
     default: '2181'
+  '`JAVA_HOME`':
+    type: env
+    description: Directory in which Java is installed.
+    default: '/usr/lib/jvm/java-18-openjdk-amd64'
   '`-v <path>:/etc/kafka/server.properties`':
     type: mount
     description: Override Kafka server configuration file.
-  '`-v <volume>:/var/lib/kafka`':
+  '`-v <path>:/var/lib/kafka`':
     type: mount
     description: >-
       Persist data in a docker `<volume>`. 
