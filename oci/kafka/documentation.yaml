@@ -101,8 +101,8 @@ config:
   '`-v <path>:/var/lib/kafka`':
     type: mount
     description: >-
-      Persist data in a docker `<volume>`. 
-      Make sure that the mount point is consistent with the configuration property `logs.dirs`.
+      Persist data mounted inside the container. 
+      The mount point should be consistent with the configuration property `logs.dirs`.
   '`-p <port>:9092`':
     type: port
     description: Expose the container's port `9092` on the host's `<port>`.
