@@ -1,18 +1,14 @@
-version: 1
+version: 2
 upload:
   - source: canonical/node-exporter-rock
-    commit: 2d4179e10e761a56e54adb3a3ca43777636a3bd4
-    directory: 1.9.1
+    commit: aaad6b8798b4de5e2648105821c493a8ebea345e
+    directory: 1.10.2
     release:
-      1-24.04:
-        end-of-life: '2025-07-14T00:00:00Z'
+      1-26.04:
+        end-of-life: '2026-08-11T00:00:00Z'
         risks:
           - stable
-      1.9-24.04:
-        end-of-life: '2025-07-14T00:00:00Z'
-        risks:
-          - stable
-      1.9.1-24.04:
-        end-of-life: '2025-04-16T00:00:00Z'
+      1.10-26.04:
+        end-of-life: '2026-08-11T00:00:00Z'
         risks:
           - stable
