@@ -1,18 +1,14 @@
-version: 1
+version: 2
 upload:
   - source: canonical/grafana-rock
-    commit: acb0ed80cef195e8f26d69f57a0995ea6b948119
+    commit: a65643bcf59748779c1419adb831ad6e2e5c1e34
     directory: 12.4.2
     release:
-      12-24.04:
-        end-of-life: '2026-07-07T00:00:00Z'
+      12-26.04:
+        end-of-life: '2026-08-11T00:00:00Z'
         risks:
           - stable
-      12.4-24.04:
-        end-of-life: '2026-07-07T00:00:00Z'
-        risks:
-          - stable
-      12.4.2-24.04:
-        end-of-life: '2026-04-09T00:00:00Z'
+      12.4-26.04:
+        end-of-life: '2026-08-11T00:00:00Z'
         risks:
           - stable
