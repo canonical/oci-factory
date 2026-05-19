@@ -29,13 +29,18 @@ upload:
       - CVE-2026-32281  # Needs evaluation. https://ubuntu.com/security/CVE-2026-32281
       - CVE-2026-32282  # Needs evaluation. https://ubuntu.com/security/CVE-2026-32282
       - CVE-2026-32283  # Needs evaluation. https://ubuntu.com/security/CVE-2026-32283
+      - CVE-2026-33811  # Needs evaluation. https://ubuntu.com/security/CVE-2026-33811
+      - CVE-2026-33814  # Needs evaluation. https://ubuntu.com/security/CVE-2026-33814
+      - CVE-2026-39820  # Needs evaluation. https://ubuntu.com/security/CVE-2026-39820
+      - CVE-2026-39836  # Needs evaluation. https://ubuntu.com/security/CVE-2026-39836
+      - CVE-2026-42499  # Needs evaluation. https://ubuntu.com/security/CVE-2026-42499
 
   - source: canonical/golang-rock
     directory: go-rock/1.25-26.04
     commit: 473696fb3f05fcc07f66670f603387370d9692a1
     release:
       1.25-26.04:
-        end-of-life: "2026-04-23T00:00:00Z"
+        end-of-life: "2026-05-30T00:00:00Z"
         risks:
           - edge
     ignored-vulnerabilities:
