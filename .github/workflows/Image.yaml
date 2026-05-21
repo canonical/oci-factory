@@ -49,6 +49,8 @@ jobs:
   prepare-build:
     runs-on: ubuntu-22.04
     name: Prepare build
+    permissions:
+      actions: write  # for `enforce-actor-permitted`
     outputs:
       build-matrix: ${{ steps.prepare-matrix.outputs.build-matrix }}
       release-to: ${{ steps.prepare-matrix.outputs.release-to }}
@@ -101,12 +103,16 @@ jobs:
           echo "img-path=${img_path}" >> "$GITHUB_OUTPUT"
 
       - name: Validate access to triggered image
+        id: validate-actor
         uses: ./.github/actions/validate-actor
         if: ${{ github.repository == 'canonical/oci-factory' && !github.event.pull_request.head.repo.fork }}
         with:
           admin-only: true
           image-path: ${{ steps.validate-image.outputs.img-path }}
           github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+      - uses: ./.github/actions/enforce-actor-permitted
+        with:
+          permitted: ${{ steps.validate-actor.outputs.permitted }}
 
       - name: Use custom image trigger
         if: ${{ inputs.b64-image-trigger != '' }}
@@ -565,6 +571,7 @@ jobs:
     needs: [prepare-build, prepare-releases]
     permissions:
       contents: write
+      actions: write  # passthrough for `enforce-actor-permitted` in `Release.yaml`
     uses: ./.github/workflows/Release.yaml
     with:
       oci-image-name: "${{ needs.prepare-build.outputs.oci-img-name }}"

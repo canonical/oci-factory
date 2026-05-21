@@ -14,6 +14,8 @@ jobs:
   get-contacts:
     name: Get contacts and image info
     runs-on: ubuntu-22.04
+    permissions:
+      actions: write  # for `enforce-actor-permitted`
     outputs:
       mattermost-channels: ${{ steps.get-contacts.outputs.mattermost-channels }}
       oci-img-name: ${{ steps.get-image-name.outputs.img-name }}
@@ -34,12 +36,16 @@ jobs:
           done
 
       - name: Validate access to triggered image
+        id: validate-actor
         uses: ./.github/actions/validate-actor
         if: ${{ github.repository == 'canonical/oci-factory' }}
         with:
           admin-only: true
           image-path: "oci/${{ steps.get-image-name.outputs.img-name }}"
           github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+      - uses: ./.github/actions/enforce-actor-permitted
+        with:
+          permitted: ${{ steps.validate-actor.outputs.permitted }}
 
       - name: Get contacts for ${{ steps.get-image-name.outputs.img-name }}
         id: get-contacts

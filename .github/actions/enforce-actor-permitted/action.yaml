@@ -1,0 +1,24 @@
+name: Enforce actor permission
+description: |
+  Cancel the current workflow run when `validate-actor` reports the actor as
+  not permitted. Requires the caller job to declare `permissions: actions: write`.
+
+inputs:
+  permitted:
+    description: '`permitted` output from `validate-actor`.'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - if: inputs.permitted == 'false'
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        echo "::error::Workflow not triggered by a permitted user. Cancelling."
+        gh run cancel ${{ github.run_id }}
+        # `gh run cancel` is async; sleep so subsequent steps do not run
+        # while the cancellation propagates.
+        sleep 60
+        exit 1

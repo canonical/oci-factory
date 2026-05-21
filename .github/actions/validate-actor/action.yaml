@@ -4,7 +4,9 @@ description: 'Check if the workflow is triggered by an admin user'
 # This callable workflow checks if the workflow is triggered by
 # a code owner or an image maintainer by testing the github.actor
 # variable against the CODEOWNERS file and the contacts.yaml file
-# under oci/* path
+# under oci/* path. The result is exposed via the `permitted` output;
+# callers are expected to gate downstream steps on it (typically via
+# `enforce-actor-permitted`).
 
 inputs:
   admin-only:
@@ -18,22 +20,24 @@ inputs:
     description: 'The GITHUB_TOKEN for the GitHub CLI'
     required: true
 
+outputs:
+  permitted:
+    description: "'true' when the actor is permitted; 'false' otherwise."
+    value: ${{ steps.check.outputs.permitted }}
+
 runs:
-  using: "composite" 
+  using: "composite"
   steps:
     - name: Check if the workflow is triggered by an admin user
-      id: check-if-permitted
+      id: check
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
-      run: ./.github/actions/validate-actor/validate-actor.sh ${{ github.actor }} ${{ inputs.admin-only }} ${{ github.workspace }}  ${{ inputs.image-path }}
-
-    - name: Cancel the remaining workflow if the actor is not permitted
-      if: ${{ !cancelled() && steps.check-if-permitted.outcome == 'failure' }}
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
       run: |
-        source src/shared/logs.sh
-        log_error "The workflow is not triggered by a permitted user. Cancelling the workflow."
-        gh run cancel ${{ github.run_id }}
+        if ./.github/actions/validate-actor/validate-actor.sh \
+            "${{ github.actor }}" "${{ inputs.admin-only }}" \
+            "${{ github.workspace }}" "${{ inputs.image-path }}"; then
+          echo "permitted=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "permitted=false" >> "$GITHUB_OUTPUT"
+        fi

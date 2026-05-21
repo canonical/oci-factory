@@ -31,21 +31,27 @@ jobs:
   validate-push-release-request:
     runs-on: ubuntu-22.04
     name: Validate push release request
+    permissions:
+      actions: write  # for `enforce-actor-permitted`
     outputs:
       oci-image-name: ${{ steps.get-image-name.outputs.img-name }}
     steps:
       - name: ${{ inputs.external_ref_id }}  # (2)
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
-        
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Validate access to triggered image
+        id: validate-actor
         uses: ./.github/actions/validate-actor
         if: ${{ github.repository == 'canonical/oci-factory' }}
         with:
           admin-only: true
           image-path: "oci/${{ inputs.oci-image-name }}"
           github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+      - uses: ./.github/actions/enforce-actor-permitted
+        with:
+          permitted: ${{ steps.validate-actor.outputs.permitted }}
 
       - name: Infer number of image triggers
         uses: tj-actions/changed-files@22103cc46bda19c2b464ffe86db46df6922fd323
@@ -192,6 +198,8 @@ jobs:
   update-documentation:
     name: Update documentation
     needs: [do-releases]
+    permissions:
+      actions: write  # passthrough for `enforce-actor-permitted` in `Documentation.yaml`
     uses: ./.github/workflows/Documentation.yaml
     with:
       oci-image-name: "${{ inputs.oci-image-name }}"

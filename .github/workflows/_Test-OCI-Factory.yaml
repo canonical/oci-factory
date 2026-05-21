@@ -28,13 +28,19 @@ jobs:
   access-check:
     name: Validate access to mock-rock
     runs-on: ubuntu-latest
+    permissions:
+      actions: write  # for `enforce-actor-permitted`
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      - uses: ./.github/actions/validate-actor
+      - id: validate-actor
+        uses: ./.github/actions/validate-actor
         with:
           admin-only: true
           image-path: "oci/mock-rock"
           github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+      - uses: ./.github/actions/enforce-actor-permitted
+        with:
+          permitted: ${{ steps.validate-actor.outputs.permitted }}
 
   pytest:
     # Trigger python unit tests across the repository
@@ -142,3 +148,4 @@ jobs:
     permissions:
       packages: write
       contents: write
+      actions: write  # passthrough for `enforce-actor-permitted` in `Image.yaml`
