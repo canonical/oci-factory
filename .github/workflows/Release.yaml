@@ -194,6 +194,8 @@ jobs:
   update-documentation:
     name: Update documentation
     needs: [do-releases]
+    permissions:
+      actions: write
     uses: ./.github/workflows/Documentation.yaml
     with:
       oci-image-name: "${{ inputs.oci-image-name }}"

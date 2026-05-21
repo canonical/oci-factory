@@ -144,3 +144,4 @@ jobs:
     permissions:
       packages: write
       actions: write
+      contents: write

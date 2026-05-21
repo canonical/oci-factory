@@ -563,6 +563,9 @@ jobs:
   release:
     name: Release
     needs: [prepare-build, prepare-releases]
+    permissions:
+      actions: write
+      contents: write
     uses: ./.github/workflows/Release.yaml
     with:
       oci-image-name: "${{ needs.prepare-build.outputs.oci-img-name }}"
