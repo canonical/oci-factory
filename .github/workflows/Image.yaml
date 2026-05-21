@@ -46,12 +46,14 @@ env:
   ROCK_REPO_DIR: rock-repo
 
 jobs:
-  access-check:
+  prepare-build:
     runs-on: ubuntu-22.04
-    name: Validate access to triggered image
+    name: Prepare build
     permissions:
       actions: write  # for `enforce-actor-permitted`
     outputs:
+      build-matrix: ${{ steps.prepare-matrix.outputs.build-matrix }}
+      release-to: ${{ steps.prepare-matrix.outputs.release-to }}
       oci-img-path: ${{ steps.validate-image.outputs.img-path }}
       oci-img-name: ${{ steps.validate-image.outputs.img-name }}
     steps:
@@ -100,7 +102,8 @@ jobs:
           echo "img-name=$(basename ${img_path})" >> "$GITHUB_OUTPUT"
           echo "img-path=${img_path}" >> "$GITHUB_OUTPUT"
 
-      - id: validate-actor
+      - name: Validate access to triggered image
+        id: validate-actor
         uses: ./.github/actions/validate-actor
         if: ${{ github.repository == 'canonical/oci-factory' && !github.event.pull_request.head.repo.fork }}
         with:
@@ -111,21 +114,9 @@ jobs:
         with:
           permitted: ${{ steps.validate-actor.outputs.permitted }}
 
-  prepare-build:
-    runs-on: ubuntu-22.04
-    name: Prepare build
-    needs: [access-check]
-    outputs:
-      build-matrix: ${{ steps.prepare-matrix.outputs.build-matrix }}
-      release-to: ${{ steps.prepare-matrix.outputs.release-to }}
-      oci-img-path: ${{ needs.access-check.outputs.oci-img-path }}
-      oci-img-name: ${{ needs.access-check.outputs.oci-img-name }}
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-
       - name: Use custom image trigger
         if: ${{ inputs.b64-image-trigger != '' }}
-        run: echo ${{ inputs.b64-image-trigger }} | base64 -d > ${{ needs.access-check.outputs.oci-img-path }}/image.yaml
+        run: echo ${{ inputs.b64-image-trigger }} | base64 -d > ${{ steps.validate-image.outputs.img-path }}/image.yaml
 
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
@@ -141,7 +132,7 @@ jobs:
           mkdir ${{ env.DATA_DIR }}
 
           python3 -m src.image.prepare_single_image_build_matrix \
-            --oci-path ${{ needs.access-check.outputs.oci-img-path }} \
+            --oci-path ${{ steps.validate-image.outputs.img-path }} \
             --revision-data-dir ${{ env.DATA_DIR }} \
             --warn-image-eol-exceeds-base-eol
 

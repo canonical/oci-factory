@@ -29,28 +29,11 @@ on:
       - "oci/*/documentation.y*ml"
 
 jobs:
-  access-check:
-    runs-on: ubuntu-22.04
-    name: Validate access to triggered image
-    permissions:
-      actions: write  # for `enforce-actor-permitted`
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      - id: validate-actor
-        uses: ./.github/actions/validate-actor
-        if: ${{ github.repository == 'canonical/oci-factory' && !github.event.pull_request.head.repo.fork }}
-        with:
-          admin-only: true
-          image-path: "oci/${{ inputs.oci-image-name }}"
-          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
-      - uses: ./.github/actions/enforce-actor-permitted
-        with:
-          permitted: ${{ steps.validate-actor.outputs.permitted }}
-
   validate-documentation-request:
     runs-on: ubuntu-22.04
     name: Validate documentation request
-    needs: [access-check]
+    permissions:
+      actions: write  # for `enforce-actor-permitted`
     outputs:
       oci-img-path: ${{ steps.validate-image.outputs.img-path }}
       oci-img-name: ${{ steps.validate-image.outputs.img-name }}
@@ -60,6 +43,18 @@ jobs:
         run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Validate access to triggered image
+        id: validate-actor
+        uses: ./.github/actions/validate-actor
+        if: ${{ github.repository == 'canonical/oci-factory' && !github.event.pull_request.head.repo.fork }}
+        with:
+          admin-only: true
+          image-path: "oci/${{ inputs.oci-image-name }}"
+          github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+      - uses: ./.github/actions/enforce-actor-permitted
+        with:
+          permitted: ${{ steps.validate-actor.outputs.permitted }}
 
       - name: Infer images to document
         uses: tj-actions/changed-files@22103cc46bda19c2b464ffe86db46df6922fd323
