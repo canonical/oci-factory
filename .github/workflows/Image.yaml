@@ -289,6 +289,9 @@ jobs:
       UMOCI_BINARY: "umoci.amd64"
     outputs:
       artefacts-hashes: ${{ steps.artefacts-hashes.outputs.hashes }}
+    
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
