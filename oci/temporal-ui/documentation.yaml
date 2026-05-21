@@ -18,8 +18,7 @@ docker:
   parameters: >-
     -p 8081:8081
   run_cmd: >-
-    -d --name temporal-ui-container -v <path>:/home/ui-server/config -e TEMPORAL_ROOT=/home/ui-server -e TEMPORAL_ENVIRONMENT=production ubuntu/temporal-ui:2.39.0-24.04_edge
-  run_conclusion: |
+    -d -v <path>:/home/ui-server/config -e TEMPORAL_ROOT=/home/ui-server -e TEMPORAL_ENVIRONMENT=production
     To obtain a runnable configuration, clone https://github.com/temporalio/ui.
     
     The temporal UI service is started by Pebble and serves the UI on port 8081.
