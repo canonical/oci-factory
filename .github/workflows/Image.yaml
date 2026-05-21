@@ -49,6 +49,8 @@ jobs:
   prepare-build:
     runs-on: ubuntu-22.04
     name: Prepare build
+    permissions:
+      actions: write
     outputs:
       build-matrix: ${{ steps.prepare-matrix.outputs.build-matrix }}
       release-to: ${{ steps.prepare-matrix.outputs.release-to }}
