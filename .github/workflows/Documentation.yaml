@@ -32,8 +32,6 @@ jobs:
   validate-documentation-request:
     runs-on: ubuntu-22.04
     name: Validate documentation request
-    permissions:
-      actions: write
     outputs:
       oci-img-path: ${{ steps.validate-image.outputs.img-path }}
       oci-img-name: ${{ steps.validate-image.outputs.img-name }}

@@ -45,8 +45,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.prepare-test-matrix.outputs.released-revisions-matrix) }}
-    permissions:
-      actions: write
     uses: ./.github/workflows/Vulnerability-Scan.yaml
     with:
       oci-image-name: "${{ matrix.source-image }}"

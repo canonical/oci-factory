@@ -14,8 +14,6 @@ jobs:
   get-contacts:
     name: Get contacts and image info
     runs-on: ubuntu-22.04
-    permissions:
-      actions: write
     outputs:
       mattermost-channels: ${{ steps.get-contacts.outputs.mattermost-channels }}
       oci-img-name: ${{ steps.get-image-name.outputs.img-name }}

@@ -28,8 +28,6 @@ jobs:
   access-check:
     name: Validate access to mock-rock
     runs-on: ubuntu-latest
-    permissions:
-      actions: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - uses: ./.github/actions/validate-actor
@@ -143,5 +141,4 @@ jobs:
     secrets: inherit
     permissions:
       packages: write
-      actions: write
       contents: write
