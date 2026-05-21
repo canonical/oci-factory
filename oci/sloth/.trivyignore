@@ -1,0 +1,8 @@
+# Upstream CVEs
+
+## Upstream not affected
+# github.com/prometheus/prometheus
+CVE-2026-42151
+CVE-2026-42154
+# go.opentelemetry.io/otel
+CVE-2026-29181
