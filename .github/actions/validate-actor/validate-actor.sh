@@ -17,7 +17,7 @@ if [[ ${admin_only} == true ]]; then
     log_debug "Expanding team mentions in the CODEOWNERS file"
     codeowners_file=$(mktemp)
     cp ${workspace}/CODEOWNERS ${codeowners_file}
-    echo -e "\n*\t@${ROCKS_TEAM}" >> ${codeowners_file}
+    # echo -e "\n*\t@${ROCKS_TEAM}" >> ${codeowners_file}
     teams=$(grep -oE '@[[:alnum:]_.-]+\/[[:alnum:]_.-]+' ${codeowners_file} || true | sort | uniq)
 
     for team in ${teams}; do
