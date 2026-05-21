@@ -11,17 +11,15 @@ env:
   NAME: ${{ github.event_name == 'release' && github.event.release.name || github.event.registry_package.name }}
 
 jobs:
-  get-contacts:
-    name: Get contacts and image info
+  access-check:
+    name: Validate access to triggered image
     runs-on: ubuntu-22.04
     permissions:
       actions: write  # for `enforce-actor-permitted`
     outputs:
-      mattermost-channels: ${{ steps.get-contacts.outputs.mattermost-channels }}
-      oci-img-name: ${{ steps.get-image-name.outputs.img-name }}
+      img-name: ${{ steps.get-image-name.outputs.img-name }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-
       - name: Get image name
         id: get-image-name
         run: |
@@ -34,9 +32,7 @@ jobs:
               echo "img-name=${img}" >> "$GITHUB_OUTPUT"
             fi
           done
-
-      - name: Validate access to triggered image
-        id: validate-actor
+      - id: validate-actor
         uses: ./.github/actions/validate-actor
         if: ${{ github.repository == 'canonical/oci-factory' }}
         with:
@@ -47,9 +43,18 @@ jobs:
         with:
           permitted: ${{ steps.validate-actor.outputs.permitted }}
 
-      - name: Get contacts for ${{ steps.get-image-name.outputs.img-name }}
+  get-contacts:
+    name: Get contacts and image info
+    runs-on: ubuntu-22.04
+    needs: [access-check]
+    outputs:
+      mattermost-channels: ${{ steps.get-contacts.outputs.mattermost-channels }}
+      oci-img-name: ${{ needs.access-check.outputs.img-name }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: Get contacts for ${{ needs.access-check.outputs.img-name }}
         id: get-contacts
-        working-directory: oci/${{ steps.get-image-name.outputs.img-name }}
+        working-directory: oci/${{ needs.access-check.outputs.img-name }}
         run: |
           mm_channels=$(yq -r '.notify | ."mattermost-channels" | join(",")' < contacts.y*ml)
           echo "mattermost-channels=${mm_channels}" >> "$GITHUB_OUTPUT"

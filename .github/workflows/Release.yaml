@@ -28,21 +28,14 @@ on:
         type: string
 
 jobs:
-  validate-push-release-request:
+  access-check:
     runs-on: ubuntu-22.04
-    name: Validate push release request
+    name: Validate access to triggered image
     permissions:
       actions: write  # for `enforce-actor-permitted`
-    outputs:
-      oci-image-name: ${{ steps.get-image-name.outputs.img-name }}
     steps:
-      - name: ${{ inputs.external_ref_id }}  # (2)
-        run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
-
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-
-      - name: Validate access to triggered image
-        id: validate-actor
+      - id: validate-actor
         uses: ./.github/actions/validate-actor
         if: ${{ github.repository == 'canonical/oci-factory' }}
         with:
@@ -52,6 +45,18 @@ jobs:
       - uses: ./.github/actions/enforce-actor-permitted
         with:
           permitted: ${{ steps.validate-actor.outputs.permitted }}
+
+  validate-push-release-request:
+    runs-on: ubuntu-22.04
+    name: Validate push release request
+    needs: [access-check]
+    outputs:
+      oci-image-name: ${{ steps.get-image-name.outputs.img-name }}
+    steps:
+      - name: ${{ inputs.external_ref_id }}  # (2)
+        run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Infer number of image triggers
         uses: tj-actions/changed-files@22103cc46bda19c2b464ffe86db46df6922fd323
