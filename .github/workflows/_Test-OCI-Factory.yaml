@@ -143,3 +143,4 @@ jobs:
     secrets: inherit
     permissions:
       packages: write
+      actions: write
