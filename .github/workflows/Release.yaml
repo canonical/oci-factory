@@ -246,12 +246,17 @@ jobs:
           if [[ "$RUNNER_DEBUG" == "1" ]]; then
             set -x
           fi
-          # Create annotated tag object
+          # Create annotated tag object. Set tagger explicitly to match the
+          # prior rickstaa/action-create-tag behaviour, which used
+          # user.name=$GITHUB_ACTOR and user.email=$GITHUB_ACTOR@users.noreply.github.com.
           tag_sha=$(gh api "repos/${REPO}/git/tags" \
             -f tag="${TAG}" \
             -f message="${MSG}" \
             -f object="${SHA}" \
             -f type=commit \
+            -f "tagger[name]=${GITHUB_ACTOR}" \
+            -f "tagger[email]=${GITHUB_ACTOR}@users.noreply.github.com" \
+            -f "tagger[date]=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --jq .sha)
           # Create the tag ref (previous step deleted any existing tag via --cleanup-tag)
           gh api "repos/${REPO}/git/refs" \
