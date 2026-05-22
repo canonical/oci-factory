@@ -247,8 +247,7 @@ jobs:
           # NOTE: using the git CLI rather than `gh api git/{tags,refs}`.
           # REST-API-created tag refs fire push-event triggers on workflows
           # like Image.yaml; runner-side `git push` of the same ref does not.
-          # Tagger comes from git config at tag-creation time, matching the
-          # prior rickstaa/action-create-tag identity.
+          # Tagger comes from git config at tag-creation time.
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           # Passing TARGET_REF (itself an annotated tag) without peeling
