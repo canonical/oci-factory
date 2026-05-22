@@ -139,3 +139,6 @@ jobs:
       oci-image-name: "mock-rock"
       upload: true
     secrets: inherit
+    permissions:
+      packages: write
+      contents: write
