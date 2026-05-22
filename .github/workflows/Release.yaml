@@ -239,20 +239,21 @@ jobs:
           GH_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
           TAG: ${{ matrix.release-name }}
           MSG: "release(${{ matrix.name }}): Release image revision ${{ matrix.revision }} to ${{ matrix.channel }}"
-          SHA: ${{ matrix.canonical-tag }}
+          TARGET_REF: ${{ matrix.canonical-tag }}
           REPO: ${{ github.repository }}
         run: |
           set -e
           if [[ "$RUNNER_DEBUG" == "1" ]]; then
             set -x
           fi
+          commit_sha=$(git rev-parse "${TARGET_REF}^{commit}")
           # Create annotated tag object. Set tagger explicitly to match the
           # prior rickstaa/action-create-tag behaviour, which used
           # user.name=$GITHUB_ACTOR and user.email=$GITHUB_ACTOR@users.noreply.github.com.
           tag_sha=$(gh api "repos/${REPO}/git/tags" \
             -f tag="${TAG}" \
             -f message="${MSG}" \
-            -f object="${SHA}" \
+            -f object="${commit_sha}" \
             -f type=commit \
             -f "tagger[name]=${GITHUB_ACTOR}" \
             -f "tagger[email]=${GITHUB_ACTOR}@users.noreply.github.com" \
