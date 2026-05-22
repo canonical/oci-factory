@@ -1,14 +1,14 @@
 version: 2
 upload:
   - source: canonical/opentelemetry-collector-rock
-    commit: 91962eb29e6bcd4079917a622103507a0d65b223
-    directory: 0.150.0
+    commit: c834de0ee84f876a026631d0da4139fb51db6073
+    directory: 0.152.0
     release:
       0-24.04:
-        end-of-life: '2026-07-27T00:00:00Z'
+        end-of-life: '2026-08-21T00:00:00Z'
         risks:
           - stable
-      0.150-24.04:
-        end-of-life: '2026-07-27T00:00:00Z'
+      0.152-24.04:
+        end-of-life: '2026-08-21T00:00:00Z'
         risks:
           - stable
