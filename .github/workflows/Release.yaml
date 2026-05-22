@@ -244,28 +244,18 @@ jobs:
           if [[ "$RUNNER_DEBUG" == "1" ]]; then
             set -x
           fi
-          # NOTE: the tag is created and pushed via the git CLI rather than
-          # `gh api repos/.../git/{tags,refs}`. Empirically, tag refs created
-          # via the REST API fire push-event triggers on workflows like
-          # Image.yaml (causing spurious failing runs), while runner-side
-          # `git push` of the same ref does not. Using git here preserves
-          # the prior rickstaa/action-create-tag behaviour.
-          # Match the prior tagger identity set by rickstaa/action-create-tag:
-          # user.name=$GITHUB_ACTOR, user.email=$GITHUB_ACTOR@users.noreply.github.com.
-          # The tagger of the annotated tag object is taken from git config at
-          # `git tag -a` time, independent of which token is used for the push.
+          # NOTE: using the git CLI rather than `gh api git/{tags,refs}`.
+          # REST-API-created tag refs fire push-event triggers on workflows
+          # like Image.yaml; runner-side `git push` of the same ref does not.
+          # Tagger comes from git config at tag-creation time, matching the
+          # prior rickstaa/action-create-tag identity.
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          # -f to force-update an existing tag (preserves force_push_tag: true),
-          # -a for annotated, -m for the tag message.
-          # TARGET_REF is the canonical-tag (an annotated tag itself). Passing
-          # it without peeling preserves the prior tag-of-tag chain, so the
-          # new release tag retains a back-reference to the underlying
-          # upload/canonical tag (which records the revision number).
+          # Passing TARGET_REF (itself an annotated tag) without peeling
+          # preserves the prior tag-of-tag chain back to the upload tag.
           git tag -fa "${TAG}" -m "${MSG}" "${TARGET_REF}"
-          # Push uses the GITHUB_TOKEN-based auth header that actions/checkout
-          # already wired up on `origin`; the job grants `contents: write`,
-          # which is enough to push (and force-update) a tag ref.
+          # Push uses the GITHUB_TOKEN auth header wired up by actions/checkout;
+          # the job grants `contents: write`, enough for tag (force-)pushes.
           git push --force origin "refs/tags/${TAG}"
 
       - name: Create GitHub release
