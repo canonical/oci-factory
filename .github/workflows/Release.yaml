@@ -259,10 +259,17 @@ jobs:
             -f "tagger[email]=${GITHUB_ACTOR}@users.noreply.github.com" \
             -f "tagger[date]=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --jq .sha)
-          # Create the tag ref (previous step deleted any existing tag via --cleanup-tag)
-          gh api "repos/${REPO}/git/refs" \
-            -f ref="refs/tags/${TAG}" \
-            -f sha="${tag_sha}"
+          # Preserve the prior force-push-tag behaviour: update the ref when
+          # it already exists, otherwise create it.
+          if gh api "repos/${REPO}/git/ref/tags/${TAG}" >/dev/null 2>&1; then
+            gh api --method PATCH "repos/${REPO}/git/refs/tags/${TAG}" \
+              -f sha="${tag_sha}" \
+              -F force=true
+          else
+            gh api "repos/${REPO}/git/refs" \
+              -f ref="refs/tags/${TAG}" \
+              -f sha="${tag_sha}"
+          fi
 
       - name: Create GitHub release
         env:
