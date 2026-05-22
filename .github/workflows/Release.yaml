@@ -212,10 +212,9 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ matrix.canonical-tag }}
-          # Drop checkout's auth state after the clone so it doesn't merge
-          # with the auth we install for the `git push` below (which would
-          # send two Authorization headers and trigger HTTP 400).
-          persist-credentials: false
+          # Keep the GITHUB_TOKEN-based auth header that checkout installs on
+          # `origin` to push the new release tag (see below)
+          persist-credentials: true
 
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
@@ -240,8 +239,6 @@ jobs:
           
       - name: Create Git tag
         env:
-          GH_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
-          REPO: ${{ github.repository }}
           TAG: ${{ matrix.release-name }}
           MSG: "release(${{ matrix.name }}): Release image revision ${{ matrix.revision }} to ${{ matrix.channel }}"
           TARGET_REF: ${{ matrix.canonical-tag }}
@@ -251,12 +248,8 @@ jobs:
             set -x
           fi
 
-          # NOTE: using the git CLI rather than `gh api git/{tags,refs}` since
-          # creating refs via the REST API fires push-event triggers on
-          # workflows like Image.yaml; runner-side `git push` of the same ref
-          # does not.
-
-          # Tagger comes from git config at tag-creation time.
+          # The tag's tagger field comes from git config below, so the tag
+          # object still records ROCKsBot regardless of the push token.
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
 
@@ -264,12 +257,16 @@ jobs:
           # preserves the prior tag-of-tag chain back to the upload tag.
           git tag -fa "${TAG}" -m "${MSG}" "${TARGET_REF}"
 
-          # Push with ROCKSBOT_TOKEN via URL-embedded basic auth. The
-          # checkout step is configured with persist-credentials: false,
-          # so no inherited Authorization header would collide here.
-          git push --force \
-            "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" \
-            "refs/tags/${TAG}"
+          # NOTE: the tag push below relies on the GITHUB_TOKEN-based auth
+          # header that actions/checkout (persist-credentials: true) wires up
+          # on `origin`. GITHUB_TOKEN-driven pushes are treated specially:
+          # they do NOT trigger downstream workflow runs, so every release
+          # tag we push will not retrigger Image.yaml on the push event.
+          # See: https://docs.github.com/en/actions/concepts/security/github_token
+          # Authenticating with a PAT (e.g. ROCKSBOT_TOKEN) or a GitHub App
+          # installation token would re-enable retriggering -- don't do that.
+
+          git push --force origin "refs/tags/${TAG}"
 
       - name: Create GitHub release
         env:
