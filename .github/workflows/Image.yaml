@@ -3,6 +3,13 @@ run-name: "Image - ${{ inputs.oci-image-name || github.triggering_actor }} - ${{
 
 on:
   push:
+    # Tag pushes are not a valid trigger for this workflow -- it expects an
+    # oci-image-name input (workflow_dispatch/workflow_call) which tag pushes
+    # cannot supply, so prepare-build would always fail. The Release workflow
+    # creates release tags via the REST API / git push as part of normal
+    # operation; without this filter those pushes spuriously retrigger Image.
+    tags-ignore:
+      - '*'
     paths:
       - "oci/*/image.y*ml"
       - "!oci/mock*"
