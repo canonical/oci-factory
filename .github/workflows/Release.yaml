@@ -242,10 +242,7 @@ jobs:
           TARGET_REF: ${{ matrix.canonical-tag }}
           REPO: ${{ github.repository }}
         run: |
-          set -e
-          if [[ "$RUNNER_DEBUG" == "1" ]]; then
-            set -x
-          fi
+          set -ex
           commit_sha=$(git rev-parse "${TARGET_REF}^{commit}")
           # Create annotated tag object. Set tagger explicitly to match the
           # prior rickstaa/action-create-tag behaviour, which used
@@ -276,10 +273,7 @@ jobs:
           GH_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
           TAG: ${{ matrix.release-name }}
         run: |
-          set -e
-          if [[ "$RUNNER_DEBUG" == "1" ]]; then
-            set -x
-          fi
+          set -ex
           # Match softprops' default `fail_on_unmatched_files: false`:
           # unmatched glob -> empty file list, release still created.
           shopt -s nullglob
