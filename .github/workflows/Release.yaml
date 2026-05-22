@@ -245,31 +245,34 @@ jobs:
           if [[ "$RUNNER_DEBUG" == "1" ]]; then
             set -x
           fi
-          # NOTE: using the git CLI rather than `gh api git/{tags,refs}`.
-          # A git-push of a tag pointing at an existing commit produces a
-          # webhook event with an empty `commits` list, so downstream
-          # workflows that filter `on.push` by `paths` (e.g. Image.yaml)
-          # don't retrigger. REST-API ref creation, by contrast, produces
-          # an event that does match those filters.
+
+          # NOTE: using the git CLI rather than `gh api git/{tags,refs}` since creasting refs
+          # with `gh` triggers webhook events which can re-trigger workflows. `git` actions do not.
+
           # Tagger comes from git config at tag-creation time.
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+
           # Passing TARGET_REF (itself an annotated tag) without peeling
           # preserves the prior tag-of-tag chain back to the upload tag.
           git tag -fa "${TAG}" -m "${MSG}" "${TARGET_REF}"
-          # Push with ROCKSBOT_TOKEN. actions/checkout installed a
-          # GITHUB_TOKEN-based extraheader on `origin`; replace it so the
-          # push is authenticated as ROCKsBot. `--replace-all` is needed
-          # because `http.<url>.extraheader` is a multi-valued key, so an
-          # inline `git -c key=val` would append a second header rather
-          # than override.
+
+          # `actions/checkout` installs a GITHUB_TOKEN-based extraheader
+          # on `origin`; swap it for one carrying our token for the push,
+          # then restore the original so the rest of the job sees the
+          # same git config it started with.
+          prev_extraheader=$(git config --local --get "http.https://github.com/.extraheader" || true)
           git config --local --replace-all \
             "http.https://github.com/.extraheader" \
             "AUTHORIZATION: bearer ${GH_TOKEN}"
           git push --force origin "refs/tags/${TAG}"
-          # Drop the ROCKSBOT_TOKEN header so it doesn't sit in .git/config
-          # for the rest of the job.
-          git config --local --unset-all "http.https://github.com/.extraheader"
+          if [ -n "${prev_extraheader}" ]; then
+            git config --local --replace-all \
+              "http.https://github.com/.extraheader" \
+              "${prev_extraheader}"
+          else
+            git config --local --unset-all "http.https://github.com/.extraheader"
+          fi
 
       - name: Create GitHub release
         env:
@@ -280,9 +283,10 @@ jobs:
           if [[ "$RUNNER_DEBUG" == "1" ]]; then
             set -x
           fi
-          # Match softprops' default `fail_on_unmatched_files: false`:
+
           # unmatched glob -> empty file list, release still created.
           shopt -s nullglob
+
           files=(sbom/*.sbom_preview.spdx.json)
           gh release create "${TAG}" \
             --title "${TAG}" \
