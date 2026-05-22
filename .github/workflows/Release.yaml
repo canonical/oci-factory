@@ -257,22 +257,14 @@ jobs:
           # preserves the prior tag-of-tag chain back to the upload tag.
           git tag -fa "${TAG}" -m "${MSG}" "${TARGET_REF}"
 
-          # `actions/checkout` installs a GITHUB_TOKEN-based extraheader
-          # on `origin`; swap it for one carrying our token for the push,
-          # then restore the original so the rest of the job sees the
-          # same git config it started with.
-          prev_extraheader=$(git config --local --get "http.https://github.com/.extraheader" || true)
-          git config --local --replace-all \
-            "http.https://github.com/.extraheader" \
-            "AUTHORIZATION: bearer ${GH_TOKEN}"
+          # Clear every inherited http.*.extraheader (actions/checkout's
+          # exact key varies by version) and install ours for the push,
+          # else GitHub rejects with HTTP 400 on duplicate Authorization.
+          git config --local --name-only --get-regexp '^http\..*\.extraheader$' \
+            | xargs -r -n1 git config --local --unset-all
+          git config --local --add "http.https://github.com/.extraheader" "AUTHORIZATION: bearer ${GH_TOKEN}"
           git push --force origin "refs/tags/${TAG}"
-          if [ -n "${prev_extraheader}" ]; then
-            git config --local --replace-all \
-              "http.https://github.com/.extraheader" \
-              "${prev_extraheader}"
-          else
-            git config --local --unset-all "http.https://github.com/.extraheader"
-          fi
+          git config --local --unset-all "http.https://github.com/.extraheader"
 
       - name: Create GitHub release
         env:
