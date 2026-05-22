@@ -257,14 +257,22 @@ jobs:
           # preserves the prior tag-of-tag chain back to the upload tag.
           git tag -fa "${TAG}" -m "${MSG}" "${TARGET_REF}"
 
-          # Clear every inherited http.*.extraheader (actions/checkout's
-          # exact key varies by version) and install ours for the push,
-          # else GitHub rejects with HTTP 400 on duplicate Authorization.
-          git config --local --name-only --get-regexp '^http\..*\.extraheader$' \
-            | xargs -r -n1 git config --local --unset-all
+          # Stash, clear, swap-in ours, push, drop ours, restore. Sweeping
+          # is required because actions/checkout's exact extraheader key
+          # varies by version; replacing a single fixed key can leave the
+          # inherited header in place and GitHub then rejects the push
+          # with HTTP 400 on duplicate Authorization.
+          declare -A _prev_hdrs=()
+          for _k in $(git config --local --name-only --get-regexp '^http\..*\.extraheader$' || true); do
+            _prev_hdrs["$_k"]=$(git config --local --get "$_k")
+            git config --local --unset-all "$_k"
+          done
           git config --local --add "http.https://github.com/.extraheader" "AUTHORIZATION: bearer ${GH_TOKEN}"
           git push --force origin "refs/tags/${TAG}"
           git config --local --unset-all "http.https://github.com/.extraheader"
+          for _k in "${!_prev_hdrs[@]}"; do
+            git config --local --add "$_k" "${_prev_hdrs[$_k]}"
+          done
 
       - name: Create GitHub release
         env:
