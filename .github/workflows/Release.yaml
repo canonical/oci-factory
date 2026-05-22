@@ -240,7 +240,10 @@ jobs:
           MSG: "release(${{ matrix.name }}): Release image revision ${{ matrix.revision }} to ${{ matrix.channel }}"
           TARGET_REF: ${{ matrix.canonical-tag }}
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
           # NOTE: the tag is created and pushed via the git CLI rather than
           # `gh api repos/.../git/{tags,refs}`. Empirically, tag refs created
           # via the REST API fire push-event triggers on workflows like
@@ -270,7 +273,10 @@ jobs:
           GH_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
           TAG: ${{ matrix.release-name }}
         run: |
-          set -ex
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
           # Match softprops' default `fail_on_unmatched_files: false`:
           # unmatched glob -> empty file list, release still created.
           shopt -s nullglob
