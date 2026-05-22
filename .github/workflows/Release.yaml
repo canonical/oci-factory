@@ -267,6 +267,9 @@ jobs:
             "http.https://github.com/.extraheader" \
             "AUTHORIZATION: bearer ${GH_TOKEN}"
           git push --force origin "refs/tags/${TAG}"
+          # Drop the ROCKSBOT_TOKEN header so it doesn't sit in .git/config
+          # for the rest of the job.
+          git config --local --unset-all "http.https://github.com/.extraheader"
 
       - name: Create GitHub release
         env:
