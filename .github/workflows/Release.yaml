@@ -247,7 +247,6 @@ jobs:
           # Image.yaml (causing spurious failing runs), while runner-side
           # `git push` of the same ref does not. Using git here preserves
           # the prior rickstaa/action-create-tag behaviour.
-          commit_sha=$(git rev-parse "${TARGET_REF}^{commit}")
           # Match the prior tagger identity set by rickstaa/action-create-tag:
           # user.name=$GITHUB_ACTOR, user.email=$GITHUB_ACTOR@users.noreply.github.com.
           # The tagger of the annotated tag object is taken from git config at
@@ -256,7 +255,11 @@ jobs:
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           # -f to force-update an existing tag (preserves force_push_tag: true),
           # -a for annotated, -m for the tag message.
-          git tag -fa "${TAG}" -m "${MSG}" "${commit_sha}"
+          # TARGET_REF is the canonical-tag (an annotated tag itself). Passing
+          # it without peeling preserves the prior tag-of-tag chain, so the
+          # new release tag retains a back-reference to the underlying
+          # upload/canonical tag (which records the revision number).
+          git tag -fa "${TAG}" -m "${MSG}" "${TARGET_REF}"
           # Push uses the GITHUB_TOKEN-based auth header that actions/checkout
           # already wired up on `origin`; the job grants `contents: write`,
           # which is enough to push (and force-update) a tag ref.
