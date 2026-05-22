@@ -235,17 +235,43 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Create Git tag
-        uses: rickstaa/action-create-tag@a1c7777fcb2fee4f19b0f283ba888afa11678b72
-        with:
-          tag: "${{ matrix.release-name }}"
-          message: "release(${{ matrix.name }}): Release image revision ${{ matrix.revision }} to ${{ matrix.channel }}"
-          github_token: ${{ secrets.ROCKSBOT_TOKEN }}
-          commit_sha: ${{ matrix.canonical-tag }}
-          force_push_tag: true
+        env:
+          GH_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
+          TAG: ${{ matrix.release-name }}
+          MSG: "release(${{ matrix.name }}): Release image revision ${{ matrix.revision }} to ${{ matrix.channel }}"
+          SHA: ${{ matrix.canonical-tag }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
+          # Create annotated tag object
+          tag_sha=$(gh api "repos/${REPO}/git/tags" \
+            -f tag="${TAG}" \
+            -f message="${MSG}" \
+            -f object="${SHA}" \
+            -f type=commit \
+            --jq .sha)
+          # Create the tag ref (previous step deleted any existing tag via --cleanup-tag)
+          gh api "repos/${REPO}/git/refs" \
+            -f ref="refs/tags/${TAG}" \
+            -f sha="${tag_sha}"
 
-      - uses: "softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda"  # v3.0.0
-        with:
-          name: "${{ matrix.release-name }}"
-          tag_name: "${{ matrix.release-name }}"
-          token: "${{ secrets.ROCKSBOT_TOKEN }}"
-          files: "sbom/*.sbom_preview.spdx.json"
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
+          TAG: ${{ matrix.release-name }}
+        run: |
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
+          # Match softprops' default `fail_on_unmatched_files: false`:
+          # unmatched glob -> empty file list, release still created.
+          shopt -s nullglob
+          files=(sbom/*.sbom_preview.spdx.json)
+          gh release create "${TAG}" \
+            --title "${TAG}" \
+            --notes "" \
+            "${files[@]}"
