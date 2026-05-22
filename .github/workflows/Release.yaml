@@ -236,6 +236,7 @@ jobs:
           
       - name: Create Git tag
         env:
+          GH_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
           TAG: ${{ matrix.release-name }}
           MSG: "release(${{ matrix.name }}): Release image revision ${{ matrix.revision }} to ${{ matrix.channel }}"
           TARGET_REF: ${{ matrix.canonical-tag }}
@@ -245,16 +246,26 @@ jobs:
             set -x
           fi
           # NOTE: using the git CLI rather than `gh api git/{tags,refs}`.
-          # REST-API-created tag refs fire push-event triggers on workflows
-          # like Image.yaml; runner-side `git push` of the same ref does not.
+          # A git-push of a tag pointing at an existing commit produces a
+          # webhook event with an empty `commits` list, so downstream
+          # workflows that filter `on.push` by `paths` (e.g. Image.yaml)
+          # don't retrigger. REST-API ref creation, by contrast, produces
+          # an event that does match those filters.
           # Tagger comes from git config at tag-creation time.
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           # Passing TARGET_REF (itself an annotated tag) without peeling
           # preserves the prior tag-of-tag chain back to the upload tag.
           git tag -fa "${TAG}" -m "${MSG}" "${TARGET_REF}"
-          # Push uses the GITHUB_TOKEN auth header wired up by actions/checkout;
-          # the job grants `contents: write`, enough for tag (force-)pushes.
+          # Push with ROCKSBOT_TOKEN. actions/checkout installed a
+          # GITHUB_TOKEN-based extraheader on `origin`; replace it so the
+          # push is authenticated as ROCKsBot. `--replace-all` is needed
+          # because `http.<url>.extraheader` is a multi-valued key, so an
+          # inline `git -c key=val` would append a second header rather
+          # than override.
+          git config --local --replace-all \
+            "http.https://github.com/.extraheader" \
+            "AUTHORIZATION: bearer ${GH_TOKEN}"
           git push --force origin "refs/tags/${TAG}"
 
       - name: Create GitHub release
