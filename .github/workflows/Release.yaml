@@ -236,37 +236,31 @@ jobs:
           
       - name: Create Git tag
         env:
-          GH_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
           TAG: ${{ matrix.release-name }}
           MSG: "release(${{ matrix.name }}): Release image revision ${{ matrix.revision }} to ${{ matrix.channel }}"
           TARGET_REF: ${{ matrix.canonical-tag }}
-          REPO: ${{ github.repository }}
         run: |
           set -ex
+          # NOTE: the tag is created and pushed via the git CLI rather than
+          # `gh api repos/.../git/{tags,refs}`. Empirically, tag refs created
+          # via the REST API fire push-event triggers on workflows like
+          # Image.yaml (causing spurious failing runs), while runner-side
+          # `git push` of the same ref does not. Using git here preserves
+          # the prior rickstaa/action-create-tag behaviour.
           commit_sha=$(git rev-parse "${TARGET_REF}^{commit}")
-          # Create annotated tag object. Set tagger explicitly to match the
-          # prior rickstaa/action-create-tag behaviour, which used
-          # user.name=$GITHUB_ACTOR and user.email=$GITHUB_ACTOR@users.noreply.github.com.
-          tag_sha=$(gh api "repos/${REPO}/git/tags" \
-            -f tag="${TAG}" \
-            -f message="${MSG}" \
-            -f object="${commit_sha}" \
-            -f type=commit \
-            -f "tagger[name]=${GITHUB_ACTOR}" \
-            -f "tagger[email]=${GITHUB_ACTOR}@users.noreply.github.com" \
-            -f "tagger[date]=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            --jq .sha)
-          # Preserve the prior force-push-tag behaviour: update the ref when
-          # it already exists, otherwise create it.
-          if gh api "repos/${REPO}/git/ref/tags/${TAG}" >/dev/null 2>&1; then
-            gh api --method PATCH "repos/${REPO}/git/refs/tags/${TAG}" \
-              -f sha="${tag_sha}" \
-              -F force=true
-          else
-            gh api "repos/${REPO}/git/refs" \
-              -f ref="refs/tags/${TAG}" \
-              -f sha="${tag_sha}"
-          fi
+          # Match the prior tagger identity set by rickstaa/action-create-tag:
+          # user.name=$GITHUB_ACTOR, user.email=$GITHUB_ACTOR@users.noreply.github.com.
+          # The tagger of the annotated tag object is taken from git config at
+          # `git tag -a` time, independent of which token is used for the push.
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          # -f to force-update an existing tag (preserves force_push_tag: true),
+          # -a for annotated, -m for the tag message.
+          git tag -fa "${TAG}" -m "${MSG}" "${commit_sha}"
+          # Push uses the GITHUB_TOKEN-based auth header that actions/checkout
+          # already wired up on `origin`; the job grants `contents: write`,
+          # which is enough to push (and force-update) a tag ref.
+          git push --force origin "refs/tags/${TAG}"
 
       - name: Create GitHub release
         env:
