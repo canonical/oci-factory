@@ -29,10 +29,7 @@ upload:
     release:
       25-26.04:
         end-of-life: "2031-05-29T00:00:00Z"
+        # Use only edge risk until stable rockcraft supports
+        # ubuntu@26.04 base
         risks:
-# Use only edge risk, as ubuntu@26.04 is not yet supported by
-# the stable rockcraft
-#          - stable
-#          - candidate
-#          - beta
           - edge
