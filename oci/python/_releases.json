@@ -17,31 +17,31 @@
     "3.12-24.04": {
         "end-of-life": "2029-05-31T00:00:00Z",
         "edge": {
-            "target": "277"
+            "target": "285"
         },
         "stable": {
-            "target": "277"
+            "target": "285"
         },
         "candidate": {
-            "target": "277"
+            "target": "285"
         },
         "beta": {
-            "target": "277"
+            "target": "285"
         }
     },
     "3.10-22.04": {
         "end-of-life": "2027-06-01T00:00:00Z",
         "stable": {
-            "target": "280"
+            "target": "287"
         },
         "candidate": {
-            "target": "280"
+            "target": "287"
         },
         "beta": {
-            "target": "280"
+            "target": "287"
         },
         "edge": {
-            "target": "280"
+            "target": "287"
         }
     },
     "3.13-25.04": {
@@ -62,16 +62,16 @@
     "3.13-25.10": {
         "end-of-life": "2026-07-09T00:00:00Z",
         "stable": {
-            "target": "278"
+            "target": "286"
         },
         "candidate": {
-            "target": "278"
+            "target": "286"
         },
         "beta": {
-            "target": "278"
+            "target": "286"
         },
         "edge": {
-            "target": "278"
+            "target": "286"
         }
     },
     "3.14-26.04": {
