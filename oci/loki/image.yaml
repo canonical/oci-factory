@@ -19,3 +19,7 @@ upload:
       - CVE-2026-33186  # Needs evaluation. https://ubuntu.com/security/CVE-2026-33186
       - CVE-2026-34040  # Needs evaluation. https://ubuntu.com/security/CVE-2026-34040
       - CVE-2026-24051  # Not affected. https://ubuntu.com/security/CVE-2026-24051
+      - CVE-2026-41602 # Needs evaluation. https://ubuntu.com/security/CVE-2026-41602
+      - CVE-2026-42151 # Needs evaluation. https://ubuntu.com/security/CVE-2026-42151
+      - CVE-2026-42154 # Needs evaluation. https://ubuntu.com/security/CVE-2026-42154
+      
