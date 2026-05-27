@@ -64,6 +64,7 @@ on:
       pro-token:
         description: "The Ubuntu Pro token. Required for building Ubuntu Pro based rocks."
 
+
 env:
   ROCK_REPO_DIR: rock-repo  # path where the image repo is cloned into
   ROCK_CI_FOLDER: ci-rocks  # path of uploaded/downloaded artifacts
@@ -96,15 +97,16 @@ jobs:
         id: check-pro-build
         env:
           UBUNTU_PRO_TOKEN: ${{ secrets.pro-token }}
+          INPUTS_PRO_SERVICES: ${{ inputs.pro-services }}
         run: |
-          if [[ -n "${{ inputs.pro-services }}" ]]; then
+          if [[ -n "${INPUTS_PRO_SERVICES}" ]]; then
             if [[ -z "${UBUNTU_PRO_TOKEN:-}" ]]; then
               echo "Error: 'pro-token' must be provided in order to use 'pro-services'."
               exit 1
             fi
-            echo "pro-build=true" >> $GITHUB_OUTPUT
+            echo "pro-build=true" >> "$GITHUB_OUTPUT"
           else
-            echo "pro-build=false" >> $GITHUB_OUTPUT
+            echo "pro-build=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Cloning OCI Factory
@@ -115,6 +117,7 @@ jobs:
           # or to the default branch of the oci-factory repo if the workflow is called from another repo.
           repository: canonical/oci-factory
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Cloning Target Repo
         uses: ./.github/actions/checkout
@@ -140,9 +143,12 @@ jobs:
         id: configure
         run: |
           python3 -m src.build_rock.configure.generate_build_matrix \
-            --rockfile-directory "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}" \
+            --rockfile-directory "${{ env.ROCK_REPO_DIR }}/${INPUTS_ROCKFILE_DIRECTORY}" \
             --lpci-fallback "${{ toJSON(inputs.lpci-fallback) }}" \
-            --config ${{ toJSON(inputs.arch-map || env.DEFAULT_ARCH_MAP) }} # important: do not use quotes here
+            --config $INPUTS_ARCH_MAP # important: do not use quotes here
+        env:
+          INPUTS_ROCKFILE_DIRECTORY: ${{ inputs.rockfile-directory }}
+          INPUTS_ARCH_MAP: ${{ toJSON(inputs.arch-map || env.DEFAULT_ARCH_MAP) }}
 
   runner-build:
     # runner-build builds rocks per target architecture using pre configured runner images.
@@ -160,6 +166,7 @@ jobs:
         with:
           repository: canonical/oci-factory
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Cloning Target Repo
         uses: ./.github/actions/checkout
@@ -182,7 +189,7 @@ jobs:
 
       - name: Building Target
         id: rockcraft
-        uses: canonical/craft-actions/rockcraft-pack@main
+        uses: canonical/craft-actions/rockcraft-pack@210d55fa6cb7a1ab39e3194315d6a03249af3d34  # main (20260526)
         with:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
           test: "${{ inputs.rockcraft-test }}"
@@ -197,8 +204,8 @@ jobs:
       - name: Collecting Artifacts
         id: collect-artifacts
         run: |
-          mkdir -p ${{ env.ROCK_CI_FOLDER }} && cp ${{ steps.rockcraft.outputs.rock }} "$_"
-          echo "filename=$(basename ${{ steps.rockcraft.outputs.rock }})" >> $GITHUB_OUTPUT
+          mkdir -p "${{ env.ROCK_CI_FOLDER }}" && cp "${{ steps.rockcraft.outputs.rock }}" "$_"
+          echo "filename=$(basename "${{ steps.rockcraft.outputs.rock }}")" >> "$GITHUB_OUTPUT"
 
       - name: Encrypting Single Arch Rock Artifacts
         if: ${{ needs.configure-build.outputs.pro-build == 'true' }}
@@ -236,6 +243,7 @@ jobs:
         with:
           repository: canonical/oci-factory
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Cloning Target Repo
         uses: ./.github/actions/checkout
@@ -270,8 +278,12 @@ jobs:
       - name: Collecting Artifacts
         id: collect-artifacts
         run: |
-          mkdir -p ${{ env.ROCK_CI_FOLDER }} && cp ${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}/*.rock "$_"
-          echo "filename=${{ matrix.rock-name }}_${{ matrix.architecture }}" >> $GITHUB_OUTPUT
+          mkdir -p "${{ env.ROCK_CI_FOLDER }}" && cp "${{ env.ROCK_REPO_DIR }}/${INPUTS_ROCKFILE_DIRECTORY}"/*.rock "$_"
+          echo "filename=${MATRIX_ROCK_NAME}_${MATRIX_ARCHITECTURE}" >> "$GITHUB_OUTPUT"
+        env:
+          INPUTS_ROCKFILE_DIRECTORY: ${{ inputs.rockfile-directory }}
+          MATRIX_ROCK_NAME: ${{ matrix.rock-name }}
+          MATRIX_ARCHITECTURE: ${{ matrix.architecture }}
 
       - name: Uploading Artifacts
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
@@ -295,6 +307,7 @@ jobs:
         with:
           repository: canonical/oci-factory
           fetch-depth: 1
+          persist-credentials: false
 
       - run: src/build_rock/assemble_rock/requirements.sh
       - name: Downloading Single Arch rocks
@@ -322,17 +335,22 @@ jobs:
       - name: Assembling Multi Arch rock
         run: |
           src/build_rock/assemble_rock/assemble.sh \
-            -n "${{ inputs.oci-archive-name }}" \
+            -n "${INPUTS_OCI_ARCHIVE_NAME}" \
             -d "${{ env.ROCK_CI_FOLDER }}"
+        env:
+          INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
       
       - name: Get artifact name
         id: final-artifact
         run: |
-          name="${{ inputs.oci-archive-name }}"
-          if [[ ${{ needs.configure-build.outputs.pro-build }} == 'true' ]]; then
+          name="${INPUTS_OCI_ARCHIVE_NAME}"
+          if [[ ${NEEDS_CONFIGURE_BUILD_OUTPUTS_PRO_BUILD} == 'true' ]]; then
             name="${name}.gpg"
           fi
-          echo "name=$name" >> $GITHUB_OUTPUT
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+        env:
+          INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
+          NEEDS_CONFIGURE_BUILD_OUTPUTS_PRO_BUILD: ${{ needs.configure-build.outputs.pro-build }}
 
       - name: Encrypting Multi Arch Rock Artifact
         if: ${{ needs.configure-build.outputs.pro-build == 'true' }}

@@ -94,6 +94,7 @@ jobs:
           # or to the default branch of the oci-factory repo if the workflow is called from another repo.
           repository: canonical/oci-factory
           fetch-depth: 1
+          persist-credentials: false
 
       # download and unpack the image under test, then store it under a common cache key. 
       # This unpacked image is used in test-oci-compliance, test-black-box and test-malware jobs
@@ -117,15 +118,19 @@ jobs:
       - name: Unpack Rock
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-            -v $PWD:/workdir -w /workdir \
-            ${{ env.SKOPEO_IMAGE }} \
-            copy oci-archive:${{ inputs.oci-archive-name }} \
-            oci:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}
+            -v "$PWD:/workdir" -w /workdir \
+            "${{ env.SKOPEO_IMAGE }}" \
+            copy "oci-archive:${INPUTS_OCI_ARCHIVE_NAME}" \
+            "oci:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}"
+        env:
+          INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
 
       - name: Set Cache Key
         id: set-cache
         run: |
-          echo "key=${{ github.run_id }}-${{ inputs.oci-archive-name }}"  >> $GITHUB_OUTPUT
+          echo "key=${{ github.run_id }}-${INPUTS_OCI_ARCHIVE_NAME}"  >> "$GITHUB_OUTPUT"
+        env:
+          INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
 
       - name: Cache Rock
         uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7
@@ -144,6 +149,7 @@ jobs:
         with:
           repository: canonical/oci-factory
           fetch-depth: 1
+          persist-credentials: false
 
       - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
@@ -159,10 +165,10 @@ jobs:
       - name: Run Umoci tests
         run: |
           sudo umoci unpack --keep-dirlinks \
-            --image ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
+            --image "${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}" \
             bundle
 
-          umoci list --layout ${{ env.TEST_IMAGE_NAME }} | grep -w -c ${{ env.TEST_IMAGE_TAG }}
+          umoci list --layout "${{ env.TEST_IMAGE_NAME }}" | grep -w -c "${{ env.TEST_IMAGE_TAG }}"
 
   test-black-box:
     strategy:
@@ -181,14 +187,14 @@ jobs:
       - name: Copy image to Docker daemon
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-            -v $PWD:/workdir -w /workdir \
-            ${{ env.SKOPEO_IMAGE }} \
-            copy oci:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
-            docker-daemon:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}
+            -v "$PWD:/workdir" -w /workdir \
+            "${{ env.SKOPEO_IMAGE }}" \
+            copy "oci:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}" \
+            "docker-daemon:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}"
 
       - name: Create container
         run: |
-          docker create ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}
+          docker create "${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}"
 
       - name: Test rock
         run: |
@@ -196,7 +202,7 @@ jobs:
           if [[ "$RUNNER_DEBUG" == "1" ]]; then
             set -x
           fi
-          docker run --rm --entrypoint pebble ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
+          docker run --rm --entrypoint pebble "${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}" \
             help | grep Pebble
 
   test-efficiency:
@@ -213,6 +219,7 @@ jobs:
         with:
           repository: canonical/oci-factory
           fetch-depth: 1
+          persist-credentials: false
 
       - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
@@ -222,10 +229,10 @@ jobs:
       - name: Copy image to Docker daemon
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-            -v $PWD:/workdir -w /workdir \
-            ${{ env.SKOPEO_IMAGE }} \
-            copy oci:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
-            docker-daemon:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}
+            -v "$PWD:/workdir" -w /workdir \
+            "${{ env.SKOPEO_IMAGE }}" \
+            copy "oci:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}" \
+            "docker-daemon:${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}"
 
       # The existing Dive GH actions are outdated:
       # https://github.com/MartinHeinz/dive-action/issues/1
@@ -234,9 +241,9 @@ jobs:
         run: |
           docker run -e CI=true --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            -v $PWD/src/tests/.dive-ci.yaml:/.dive-ci.yaml \
-            ${{ env.DIVE_IMAGE }} \
-            ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
+            -v "$PWD/src/tests/.dive-ci.yaml:/.dive-ci.yaml" \
+            "${{ env.DIVE_IMAGE }}" \
+            "${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}" \
             --ci-config /.dive-ci.yaml \
             --highestUserWastedPercent disabled
 
@@ -245,9 +252,9 @@ jobs:
         run: |
           docker run -e CI=true --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            -v $PWD/src/tests/.dive-ci.yaml:/.dive-ci.yaml \
-            ${{ env.DIVE_IMAGE }} \
-            ${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }} \
+            -v "$PWD/src/tests/.dive-ci.yaml:/.dive-ci.yaml" \
+            "${{ env.DIVE_IMAGE }}" \
+            "${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}" \
             --ci-config /.dive-ci.yaml \
             --lowestEfficiency disabled
 
@@ -262,22 +269,27 @@ jobs:
     steps:
       - name: Check mutual exclusivity of ignored vulnerabilities and trivyignore path
         run: |
-          if [[ "${{ inputs.ignored-vulnerabilities }}" != "" && "${{ inputs.trivyignore-path }}" != "" ]]; then
+          if [[ "${INPUTS_IGNORED_VULNERABILITIES}" != "" && "${INPUTS_TRIVYIGNORE_PATH}" != "" ]]; then
             echo "Error: 'ignored-vulnerabilities' and 'trivyignore-path' inputs are mutually exclusive."
             exit 1
           fi
+        env:
+          INPUTS_IGNORED_VULNERABILITIES: ${{ inputs.ignored-vulnerabilities }}
+          INPUTS_TRIVYIGNORE_PATH: ${{ inputs.trivyignore-path }}
 
       - name: Cloning OCI Factory
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           repository: canonical/oci-factory
           fetch-depth: 1
+          persist-credentials: false
       
       - name: Checkout Rock Repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         if: github.repository != 'canonical/oci-factory' && inputs.trivyignore-path != ''
         with:
           path: ${{ env.ROCK_REPO_DIR }}
+          persist-credentials: false
 
       - name: Download Rock
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
@@ -308,29 +320,32 @@ jobs:
 
           docker_image="${{ env.TEST_IMAGE_NAME }}:${{ env.TEST_IMAGE_TAG }}"
           echo "docker-image=$docker_image" >> "$GITHUB_OUTPUT"
-          source=oci-archive:${{ env.TEST_IMAGE_NAME }} 
 
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-            -v $PWD:/workdir -w /workdir \
-            ${{ env.SKOPEO_IMAGE }} \
-            copy oci-archive:${{ inputs.oci-archive-name }} \
-            docker-daemon:$docker_image
+            -v "$PWD:/workdir" -w /workdir \
+            "${{ env.SKOPEO_IMAGE }}" \
+            copy "oci-archive:${INPUTS_OCI_ARCHIVE_NAME}" \
+            "docker-daemon:$docker_image"
 
           # Append the ROCK_REPO_DIR path prefix to the trivyignore path
           # if the repo is not canonical/oci-factory
-          trivyignore_path="${{ inputs.trivyignore-path }}"
+          trivyignore_path="${INPUTS_TRIVYIGNORE_PATH}"
           if [[ "${{ github.repository }}" != "canonical/oci-factory" ]]; then
             trivyignore_path="${{ env.ROCK_REPO_DIR }}/${trivyignore_path}"
           fi
 
           if [[ ! -s "${trivyignore_path}" ]]; then
             trivyignore_path=.trivyignore
-            echo "${{ inputs.ignored-vulnerabilities }}" | tr ' ' '\n' > "$trivyignore_path"
+            echo "${INPUTS_IGNORED_VULNERABILITIES}" | tr ' ' '\n' > "$trivyignore_path"
           fi
 
           echo "trivyignore-path=$trivyignore_path" >> "$GITHUB_OUTPUT"
 
-          echo "report-name=${{ inputs.oci-archive-name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}" >> "$GITHUB_OUTPUT"
+          echo "report-name=${INPUTS_OCI_ARCHIVE_NAME}${{ env.VULNERABILITY_REPORT_SUFFIX }}" >> "$GITHUB_OUTPUT"
+        env:
+          INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
+          INPUTS_TRIVYIGNORE_PATH: ${{ inputs.trivyignore-path }}
+          INPUTS_IGNORED_VULNERABILITIES: ${{ inputs.ignored-vulnerabilities }}
 
       - name: Scan for vulnerabilities
         # TODO: bump trivy-action version once a newer version is released that uses v5 or later tags for actions/cache.
@@ -373,18 +388,22 @@ jobs:
             | .[]
             | {Target: $target, LastModifiedDate: .LastModifiedDate, VulnerabilityID: .VulnerabilityID,
               PkgName: .PkgName, Severity: .Severity}
-                  ]' < ${{ steps.configure-trivy.outputs.report-name }})"
+                  ]' < "${STEPS_CONFIGURE_TRIVY_OUTPUTS_REPORT_NAME}")"
 
           num_vulns=$(echo "$vulnerabilities" | jq -r 'length')
           
           if [[ $num_vulns -gt 0 ]]; then
-            echo "# Vulnerabilities found for ${{ inputs.oci-archive-name }}" >> $GITHUB_STEP_SUMMARY
-            title="Vulnerabilities found for ${{ inputs.oci-archive-name }}"
-            echo "## $title" >> $GITHUB_STEP_SUMMARY
-            echo "| ID | Target | Severity | Package |" >> $GITHUB_STEP_SUMMARY
-            echo "| -- | ----- | -------- | ------- |" >> $GITHUB_STEP_SUMMARY
-            echo "$vulnerabilities" | jq -r '.[] | "| \(.VulnerabilityID) | /\(.Target) | \(.Severity) | \(.PkgName) |"' >> $GITHUB_STEP_SUMMARY
+            title="Vulnerabilities found for ${INPUTS_OCI_ARCHIVE_NAME}"
+            {
+              echo "## $title"
+              echo "| ID | Target | Severity | Package |"
+              echo "| -- | ----- | -------- | ------- |"
+              echo "$vulnerabilities" | jq -r '.[] | "| \(.VulnerabilityID) | /\(.Target) | \(.Severity) | \(.PkgName) |"'
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
+        env:
+          STEPS_CONFIGURE_TRIVY_OUTPUTS_REPORT_NAME: ${{ steps.configure-trivy.outputs.report-name }}
+          INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
           
       - name: Identify unncessary trivyignore entries
         if: ${{ !cancelled() }}
@@ -404,6 +423,7 @@ jobs:
         with:
           repository: canonical/oci-factory
           fetch-depth: 1
+          persist-credentials: false
 
       - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
