@@ -111,10 +111,10 @@ jobs:
         run: |
           pip install -r src/docs/requirements.txt
 
-          python3 -c '
+          python3 -c "
           import src.docs.generate_oci_doc_yaml as OCIDoc
-          OCIDoc.OCIDocumentationData.read_documentation_yaml("${MATRIX_FILENAME}")
-          '
+          OCIDoc.OCIDocumentationData.read_documentation_yaml('${MATRIX_FILENAME}')
+          "
         env:
           MATRIX_FILENAME: ${{ matrix.filename }}
 

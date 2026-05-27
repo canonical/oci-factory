@@ -136,7 +136,7 @@ jobs:
           mkdir ${{ env.DATA_DIR }}
 
           python3 -m src.image.prepare_single_image_build_matrix \
-            --oci-path ${STEPS_VALIDATE_IMAGE_OUTPUTS_IMG_PATH} \
+            --oci-path "${STEPS_VALIDATE_IMAGE_OUTPUTS_IMG_PATH}" \
             --revision-data-dir ${{ env.DATA_DIR }} \
             --warn-image-eol-exceeds-base-eol
 
@@ -249,7 +249,7 @@ jobs:
         id: swift-lock
         run: |
           ./src/uploads/swift_lockfile_lock.sh \
-            ${NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_NAME}
+            "${NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_NAME}"
         env:
           NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_NAME: ${{ needs.prepare-build.outputs.oci-img-name }}
 
@@ -269,9 +269,9 @@ jobs:
           mkdir ${{ env.DATA_DIR }}
 
           python3 -m src.image.prepare_single_image_build_matrix \
-            --oci-path ${NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_PATH} \
+            --oci-path "${NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_PATH}" \
             --revision-data-dir ${{ env.DATA_DIR }} \
-            --next-revision ${STEPS_GET_NEXT_REVISION_OUTPUTS_REVISION} \
+            --next-revision "${STEPS_GET_NEXT_REVISION_OUTPUTS_REVISION}" \
             --infer-image-track
 
           echo "revision-data-cache-key=${{ github.run_id }}-${{ env.DATA_DIR }}-$(date +%s)" >> "$GITHUB_OUTPUT"
@@ -293,7 +293,7 @@ jobs:
         if: ${{ always() && steps.swift-lock.outcome != 'failure' }}
         run: |
           ./src/uploads/swift_lockfile_unlock.sh \
-            ${NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_NAME}
+            "${NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_NAME}"
         env:
           NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_NAME: ${{ needs.prepare-build.outputs.oci-img-name }}
 
@@ -352,7 +352,7 @@ jobs:
           # Rename the OCI archive tarball
           canonical_tag="${MATRIX_TRACK}_${MATRIX_REVISION}"
           name="${MATRIX_NAME}_${canonical_tag}"
-          mv ${OCI_ARCHIVE_NAME} $name
+          mv "${OCI_ARCHIVE_NAME}" "$name"
 
           echo "name=${name}" >> "$GITHUB_OUTPUT"
           echo "canonical-tag=${canonical_tag}" >> "$GITHUB_OUTPUT"
@@ -385,7 +385,7 @@ jobs:
             | jq -nRcr '[inputs] | join(",")')
 
           log_info "Detected architectures: ${arches}"
-          echo "arches='${arches}'" >> "$GITHUB_OUTPUT"
+          echo "arches=${arches}" >> "$GITHUB_OUTPUT"
         env:
           STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME: ${{ steps.rename-oci-archive.outputs.name }}
 
@@ -523,12 +523,12 @@ jobs:
             '. + {base: $base, digest: $digest, "ignored-vulnerabilities": $ignored_vulnerabilities}' \
             <<< '${{ toJSON(matrix) }}' > build_metadata.json
           ./src/uploads/upload_to_swift.sh \
-            ${MATRIX_NAME} \
-            ${MATRIX_TRACK} \
-            ${MATRIX_REVISION} \
+            "${MATRIX_NAME}" \
+            "${MATRIX_TRACK}" \
+            "${MATRIX_REVISION}" \
             build_metadata.json \
-            ${STEPS_GENERATE_SBOMS_OUTPUTS_SBOMS} \
-            ${OCI_ARCHIVE_NAME}${{ env.VULNERABILITY_REPORT_SUFFIX }}
+            "${STEPS_GENERATE_SBOMS_OUTPUTS_SBOMS}" \
+            "${OCI_ARCHIVE_NAME}${{ env.VULNERABILITY_REPORT_SUFFIX }}"
 
       - name: Create Git tag
         uses: rickstaa/action-create-tag@a1c7777fcb2fee4f19b0f283ba888afa11678b72
