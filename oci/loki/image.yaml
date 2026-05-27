@@ -4,12 +4,8 @@ upload:
     commit: 6f440844327437c615772e0e09186b421d60f5f7
     directory: 3.7.1
     release:
-      3-26.04:
-        end-of-life: '2026-08-26T00:00:00Z'
-        risks:
-          - stable
-      3.7-26.04:
-        end-of-life: '2026-08-26T00:00:00Z'
+      3.7.1-26.04:
+        end-of-life: '2026-05-28T00:00:00Z'
         risks:
           - stable
     ignored-vulnerabilities:
@@ -19,7 +15,7 @@ upload:
       - CVE-2026-33186  # Needs evaluation. https://ubuntu.com/security/CVE-2026-33186
       - CVE-2026-34040  # Needs evaluation. https://ubuntu.com/security/CVE-2026-34040
       - CVE-2026-24051  # Not affected. https://ubuntu.com/security/CVE-2026-24051
-      - CVE-2026-41602 # Needs evaluation. https://ubuntu.com/security/CVE-2026-41602
-      - CVE-2026-42151 # Needs evaluation. https://ubuntu.com/security/CVE-2026-42151
-      - CVE-2026-42154 # Needs evaluation. https://ubuntu.com/security/CVE-2026-42154
+      - CVE-2026-41602  # Needs evaluation. https://ubuntu.com/security/CVE-2026-41602
+      - CVE-2026-42151  # Needs evaluation. https://ubuntu.com/security/CVE-2026-42151
+      - CVE-2026-42154  # Needs evaluation. https://ubuntu.com/security/CVE-2026-42154
       
