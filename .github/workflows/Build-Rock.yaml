@@ -145,10 +145,9 @@ jobs:
           python3 -m src.build_rock.configure.generate_build_matrix \
             --rockfile-directory "${{ env.ROCK_REPO_DIR }}/${INPUTS_ROCKFILE_DIRECTORY}" \
             --lpci-fallback "${{ toJSON(inputs.lpci-fallback) }}" \
-            --config $INPUTS_ARCH_MAP # important: do not use quotes here
+            --config ${{ toJSON(inputs.arch-map || env.DEFAULT_ARCH_MAP) }} # important: do not use quotes here
         env:
           INPUTS_ROCKFILE_DIRECTORY: ${{ inputs.rockfile-directory }}
-          INPUTS_ARCH_MAP: ${{ toJSON(inputs.arch-map || env.DEFAULT_ARCH_MAP) }}
 
   runner-build:
     # runner-build builds rocks per target architecture using pre configured runner images.
