@@ -1,7 +1,7 @@
 version: 1
 upload:
   - source: canonical/php-rock
-    commit: c88fad02db7c16f2a44311dd37c6905466ca0545
+    commit: ab396cf8e42b3bb22487851999c3bfc8fd17dac6
     directory: php/8.3-24.04
     release:
       8.3-24.04:
@@ -12,13 +12,18 @@ upload:
           - candidate
           - stable
   - source: canonical/php-rock
-    commit: c88fad02db7c16f2a44311dd37c6905466ca0545
-    directory: php/8.4-25.04
+    commit: ab396cf8e42b3bb22487851999c3bfc8fd17dac6
+    directory: php/8.4-25.10
     release:
-      8.4-25.04:
-        end-of-life: "2026-01-15T00:00:00Z"
+      8.4-25.10:
+        end-of-life: "2026-07-09T00:00:00Z"
         risks:
           - edge
-          - beta
-          - candidate
-          - stable
+  - source: canonical/php-rock
+    commit: ab396cf8e42b3bb22487851999c3bfc8fd17dac6
+    directory: php/8.5-26.04
+    release:
+      8.5-26.04:
+        end-of-life: "2026-05-20T00:00:00Z"
+        risks:
+          - edge
