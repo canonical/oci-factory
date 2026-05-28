@@ -24,12 +24,13 @@ upload:
           - beta
           - edge
   - source: canonical/jdk-rock
-    commit: 29c8c0d605617acc318d4f253b37b486739a9f90
+    commit: d8577dc136c240b00d3933b96a4887e1d7b8d5e3
     directory: jdk/25-26.04
     release:
       25-26.04:
         end-of-life: "2031-05-29T00:00:00Z"
-        # Use only edge risk until stable rockcraft supports
-        # ubuntu@26.04 base
         risks:
+          - stable
+          - candidate
+          - beta
           - edge
