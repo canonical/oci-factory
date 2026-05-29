@@ -3,5 +3,5 @@ notify:
     - platform-engineering@groups.canonical.com
   mattermost-channels:
     - ud8qc65sdjnzf8ahrir6ers9dy
-  maintainers:
+maintainers:
   - swetha1654
