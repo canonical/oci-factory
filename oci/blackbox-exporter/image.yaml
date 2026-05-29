@@ -14,4 +14,4 @@ upload:
           - stable
     ignored-vulnerabilities:
       # Unaffected, vulnerable code paths are not used
-      - CVE-2026-33186	# /usr/bin/blackbox_exporter	CRITICAL	google.golang.org/grpc
+      - CVE-2026-33186 # /usr/bin/blackbox_exporter CRITICAL google.golang.org/grpc
