@@ -1,7 +1,7 @@
 version: 2
 upload:
   - source: canonical/blackbox-exporter-rock
-    commit: 440faf851e13671071b4ba1f47b84a516ee9a700
+    commit: e7a40cef58eec3795f7cd54be7b6b23c12eda92b
     directory: 0.28.0
     release:
       0-26.04:
@@ -12,3 +12,6 @@ upload:
         end-of-life: '2026-08-11T00:00:00Z'
         risks:
           - stable
+    ignored-vulnerabilities:
+      # Unaffected, vulnerable code paths are not used
+      - CVE-2026-33186	# /usr/bin/blackbox_exporter	CRITICAL	google.golang.org/grpc
