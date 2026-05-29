@@ -3,7 +3,7 @@ version: 2
 upload:
   - source: canonical/golang-rock
     directory: go-rock/1.22-24.04
-    commit: 8df1631ffae0eb023fca60379756311d7fd4b952
+    commit: ca8bbe2663fb6c4e911751a90778f71bb3972368
     release:
       1.22-24.04:
         end-of-life: "2029-05-31T00:00:00Z"
@@ -37,7 +37,7 @@ upload:
 
   - source: canonical/golang-rock
     directory: go-rock/1.25-26.04
-    commit: 473696fb3f05fcc07f66670f603387370d9692a1
+    commit: ca8bbe2663fb6c4e911751a90778f71bb3972368
     release:
       1.25-26.04:
         end-of-life: "2026-05-30T00:00:00Z"
