@@ -12,3 +12,13 @@ upload:
         end-of-life: '2026-08-11T00:00:00Z'
         risks:
           - stable
+    ignored-vulnerabilities:
+      # Fix to be made upstream
+      - CVE-2026-34040  #	/parca	HIGH	github.com/docker/docker
+      - CVE-2026-34986  #	/parca	HIGH	github.com/go-jose/go-jose/v4
+      # Unaffected, vulnerable code paths are not used
+      - CVE-2026-41602  #	/parca	HIGH	github.com/apache/thrift
+      - CVE-2026-42151  #	/parca	HIGH	github.com/prometheus/prometheus
+      - CVE-2026-42154  #	/parca	HIGH	github.com/prometheus/prometheus
+      - CVE-2026-29181  #	/parca	HIGH	go.opentelemetry.io/otel
+      - CVE-2026-39883  #	/parca	HIGH	go.opentelemetry.io/otel/sdk
