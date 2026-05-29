@@ -5,9 +5,9 @@ upload:
     directory: 2.11.46
     release:
       2.11-26.04:
-        end-of-life: "2027-05-28T00:00:00Z"
+        end-of-life: "2026-08-29T00:00:00Z"
         risks:
-          - stable
+          - edge
   - source: canonical/traefik-rock
     commit: ea0e9420276193c05513d24efbc9a8eb39575b5e
     directory: 2.11.0
