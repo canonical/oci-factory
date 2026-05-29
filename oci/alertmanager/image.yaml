@@ -9,22 +9,22 @@ upload:
         risks:
           - stable
     ignored-vulnerabilities:
-      - CVE-2026-24051  #	/usr/bin/alertmanager	HIGH	go.opentelemetry.io/otel/sdk # To be fixed upstream
-      - CVE-2026-39883  #	/usr/bin/alertmanager	HIGH	go.opentelemetry.io/otel/sdk # Unaffected, vulnerable code paths not utilized
-      - CVE-2026-33186  #	/usr/bin/alertmanager	CRITICAL	google.golang.org/grpc # Unaffected, vulnerable code paths not utilized
-      - CVE-2026-29181  # 	/usr/bin/alertmanager	HIGH	go.opentelemetry.io/otel # Unaffected, vulnerable code paths not utilized
-      - CVE-2026-25679 	# /usr/bin/alertmanager	HIGH	stdlib # Go vulnerabilities 
-      - CVE-2026-32280 	# /usr/bin/alertmanager	HIGH	stdlib # Go vulnerabilities 
-      - CVE-2026-32281 	# /usr/bin/alertmanager	HIGH	stdlib # Go vulnerabilities 
-      - CVE-2026-32283 	# /usr/bin/alertmanager	HIGH	stdlib # Go vulnerabilities 
-      - CVE-2026-33811 	# /usr/bin/alertmanager	HIGH	stdlib # Go vulnerabilities 
-      - CVE-2026-33814 	# /usr/bin/alertmanager	HIGH	stdlib # Go vulnerabilities 
-      - CVE-2026-39820 	# /usr/bin/alertmanager	HIGH	stdlib # Go vulnerabilities 
-      - CVE-2026-39823 	# /usr/bin/alertmanager	HIGH	stdlib # Go vulnerabilities 
-      - CVE-2026-39825 	# /usr/bin/alertmanager	HIGH	stdlib # Go vulnerabilities 
-      - CVE-2026-39826 	# /usr/bin/alertmanager	HIGH	stdlib # Go vulnerabilities 
-      - CVE-2026-39836 	# /usr/bin/alertmanager	HIGH	stdlib # Go vulnerabilities 
-      - CVE-2026-42499 	# /usr/bin/alertmanager	HIGH	stdlib # Go vulnerabilities 
+      - CVE-2026-24051  #	/usr/bin/alertmanager	HIGH go.opentelemetry.io/otel/sdk # To be fixed upstream
+      - CVE-2026-39883  #	/usr/bin/alertmanager	HIGH go.opentelemetry.io/otel/sdk # Unaffected, vulnerable code paths not utilized
+      - CVE-2026-33186  #	/usr/bin/alertmanager	CRITICAL google.golang.org/grpc # Unaffected, vulnerable code paths not utilized
+      - CVE-2026-29181  # /usr/bin/alertmanager	HIGH go.opentelemetry.io/otel # Unaffected, vulnerable code paths not utilized
+      - CVE-2026-25679 	# /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
+      - CVE-2026-32280 	# /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
+      - CVE-2026-32281 	# /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
+      - CVE-2026-32283 	# /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
+      - CVE-2026-33811 	# /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
+      - CVE-2026-33814 	# /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
+      - CVE-2026-39820 	# /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
+      - CVE-2026-39823 	# /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
+      - CVE-2026-39825 	# /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
+      - CVE-2026-39826 	# /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
+      - CVE-2026-39836 	# /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
+      - CVE-2026-42499 	# /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
       - CVE-2026-29181 	# /usr/bin/amtool	HIGH	go.opentelemetry.io/otel
   - source: canonical/alertmanager-rock
     commit: 80af5bc3b4ff500ac7474dd90cdb004a0afebf29
@@ -39,4 +39,4 @@ upload:
         risks:
           - stable
     ignored-vulnerabilities:
-      - CVE-2026-39883	# /usr/bin/alertmanager	HIGH	go.opentelemetry.io/otel/sdk # Unaffected, vulnerable code paths not utilized
+      - CVE-2026-39883	# /usr/bin/alertmanager HIGH go.opentelemetry.io/otel/sdk # Unaffected, vulnerable code paths not utilized
