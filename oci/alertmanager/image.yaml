@@ -5,7 +5,7 @@ upload:
     directory: 0.31.1
     release:
       0.31-26.04:
-        end-of-life: '2026-08-11T00:00:00Z'
+        end-of-life: '2031-05-01T00:00:00Z'
         risks:
           - stable
   - source: canonical/alertmanager-rock
