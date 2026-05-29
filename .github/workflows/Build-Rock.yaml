@@ -187,7 +187,6 @@ jobs:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
           test: "${{ inputs.rockcraft-test }}"
           pro: "${{ inputs.pro-services }}"
-          rockcraft-channel: 'latest/candidate'
           verbosity: debug
       
       - name: Detaching Pro Token
