@@ -289,6 +289,11 @@ jobs:
       UMOCI_BINARY: "umoci.amd64"
     outputs:
       artefacts-hashes: ${{ steps.artefacts-hashes.outputs.hashes }}
+    
+    permissions:
+      packages: write
+      # Used by step "Create Git tag"
+      contents: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
@@ -558,6 +563,8 @@ jobs:
   release:
     name: Release
     needs: [prepare-build, prepare-releases]
+    permissions:
+      contents: write
     uses: ./.github/workflows/Release.yaml
     with:
       oci-image-name: "${{ needs.prepare-build.outputs.oci-img-name }}"
