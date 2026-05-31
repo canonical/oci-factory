@@ -41,7 +41,4 @@ upload:
       25-26.04:
         end-of-life: "2031-05-29T00:00:00Z"
         risks:
-          - stable
-          - candidate
-          - beta
           - edge
