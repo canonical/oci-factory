@@ -20,6 +20,10 @@ upload:
       - CVE-2026-42151  # github.com/prometheus/prometheus
       - CVE-2026-42154  # github.com/prometheus/prometheus
       - CVE-2026-29181  # go.opentelemetry.io/otel
+      - CVE-2026-34986  # github.com/go-jose/go-jose/v4
+      - CVE-2026-34040  # github.com/moby/moby
+      - CVE-2026-24051  # go.opentelemetry.io/otel/sdk
+      - CVE-2026-39883  # go.opentelemetry.io/otel/sdk
       # Go vulnerabilities fixed by rebuilds
       - CVE-2026-32280  # stdlib
       - CVE-2026-32281  # stdlib
