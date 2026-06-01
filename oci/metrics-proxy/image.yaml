@@ -1,18 +1,14 @@
-version: 1
+version: 2
 upload:
   - source: canonical/metrics-proxy-rock
-    commit: 78ab3165104b87d648d077a1c3f80c308a10b6af
+    commit: 73212b81aedafa785d176473a6408eb2ce3d02e0
     directory: 0.1.1
     release:
-      0-24.04:
-        end-of-life: '2025-03-14T00:00:00Z'
+      0-26.04:
+        end-of-life: '2026-08-31T00:00:00Z'
         risks:
           - stable
-      0.1-24.04:
-        end-of-life: '2025-03-14T00:00:00Z'
-        risks:
-          - stable
-      0.1.1-24.04:
-        end-of-life: '2025-03-14T00:00:00Z'
+      0.1-26.04:
+        end-of-life: '2026-08-31T00:00:00Z'
         risks:
           - stable
