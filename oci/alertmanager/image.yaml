@@ -39,4 +39,4 @@ upload:
         risks:
           - stable
     ignored-vulnerabilities:
-      - CVE-2026-39883 # /usr/bin/alertmanager HIGH go.opentelemetry.io/otel/sdk # Unaffected, vulnerable code paths not utilized
+      - CVE-2026-39883  # /usr/bin/alertmanager HIGH go.opentelemetry.io/otel/sdk # Unaffected, vulnerable code paths not utilized
