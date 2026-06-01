@@ -9,9 +9,9 @@ upload:
         risks:
           - stable
       0.28-26.04:
-        end-of-life: '2026-08-11T00:00:00Z'
+        end-of-life: '2031-05-01T00:00:00Z'
         risks:
           - stable
     ignored-vulnerabilities:
       # Unaffected, vulnerable code paths are not used
-      - CVE-2026-33186 # /usr/bin/blackbox_exporter CRITICAL google.golang.org/grpc
+      - CVE-2026-33186
