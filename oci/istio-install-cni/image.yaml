@@ -8,3 +8,8 @@ upload:
         end-of-life: '2026-08-31T00:00:00Z'
         risks:
           - stable
+    ignored-vulnerabilities:
+      - CVE-2026-35469  # github.com/moby/spdystream
+      - CVE-2026-29181  # go.opentelemetry.io/otel
+      - CVE-2026-39883  # go.opentelemetry.io/otel/sdk
+      - CVE-2026-34986  # github.com/go-jose/go-jose/v4
