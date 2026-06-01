@@ -39,3 +39,5 @@ upload:
       - CVE-2026-39826
       - CVE-2026-39836
       - CVE-2026-42499
+      # Go vulnerabilities
+      - CVE-2025-68121
