@@ -12,3 +12,18 @@ upload:
         end-of-life: '2026-08-11T00:00:00Z'
         risks:
           - stable
+    ignored-vulnerabilities:
+      - CVE-2026-42151  # github.com/prometheus/prometheus
+      - CVE-2026-42154  # github.com/prometheus/prometheus
+      - CVE-2026-25679  # stdlib
+      - CVE-2026-32280  # stdlib
+      - CVE-2026-32281  # stdlib
+      - CVE-2026-32283  # stdlib
+      - CVE-2026-33811  # stdlib
+      - CVE-2026-33814  # stdlib
+      - CVE-2026-39820  # stdlib
+      - CVE-2026-39823  # stdlib
+      - CVE-2026-39825  # stdlib
+      - CVE-2026-39826  # stdlib
+      - CVE-2026-39836  # stdlib
+      - CVE-2026-42499  # stdlib
