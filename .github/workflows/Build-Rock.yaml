@@ -185,13 +185,9 @@ jobs:
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
-          # TODO Change back to the following line once the pro feature is merged to stable
-          # test: "${{ inputs.rockcraft-test }}"
-          test: "${{ needs.configure-build.outputs.pro-build == 'true' && 'false' || inputs.rockcraft-test }}"
+          test: "${{ inputs.rockcraft-test }}"
           pro: "${{ inputs.pro-services }}"
           verbosity: debug
-          # TODO remove once the pro feature is merged to stable
-          rockcraft-channel: ${{ needs.configure-build.outputs.pro-build == 'true' && 'edge/pro-sources' || '' }}
       
       - name: Detaching Pro Token
         if: always() && steps.attach_pro.outcome == 'success'

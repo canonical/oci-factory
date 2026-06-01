@@ -1,6 +1,14 @@
 version: 1
 upload:
   - source: canonical/traefik-rock
+    commit: 664009f477a88b67a16a689e074f49f1d5d1eda1
+    directory: 2.11.46
+    release:
+      2.11-26.04:
+        end-of-life: "2026-08-29T00:00:00Z"
+        risks:
+          - edge
+  - source: canonical/traefik-rock
     commit: ea0e9420276193c05513d24efbc9a8eb39575b5e
     directory: 2.11.0
     release:
