@@ -13,6 +13,6 @@ upload:
         risks:
           - stable
     ignored-vulnerabilities:
-      - CVE-2026-41602  # github.com/apache/thrift
-      - CVE-2026-42151  # github.com/prometheus/prometheus
-      - CVE-2026-42154  # github.com/prometheus/prometheus
+      - CVE-2026-41602  # github.com/apache/thrift | CVSS 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation | https://ubuntu.com/security/CVE-2026-41602
+      - CVE-2026-42151  # github.com/prometheus/prometheus | CVSS 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation | https://ubuntu.com/security/CVE-2026-42151
+      - CVE-2026-42154  # github.com/prometheus/prometheus | CVSS 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation | https://ubuntu.com/security/CVE-2026-42154
