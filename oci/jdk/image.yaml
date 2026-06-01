@@ -23,3 +23,11 @@ upload:
           - candidate
           - beta
           - edge
+  - source: canonical/jdk-rock
+    commit: d8577dc136c240b00d3933b96a4887e1d7b8d5e3
+    directory: jdk/25-26.04
+    release:
+      25-26.04:
+        end-of-life: "2031-05-29T00:00:00Z"
+        risks:
+          - edge
