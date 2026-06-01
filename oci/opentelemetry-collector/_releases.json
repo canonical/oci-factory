@@ -1,8 +1,8 @@
 {
     "0-24.04": {
-        "end-of-life": "2026-08-27T00:00:00Z",
+        "end-of-life": "2026-08-31T00:00:00Z",
         "stable": {
-            "target": "66"
+            "target": "67"
         },
         "candidate": {
             "target": "0-24.04_stable"
@@ -429,9 +429,9 @@
         }
     },
     "0.152-24.04": {
-        "end-of-life": "2026-08-27T00:00:00Z",
+        "end-of-life": "2026-08-31T00:00:00Z",
         "stable": {
-            "target": "66"
+            "target": "67"
         },
         "candidate": {
             "target": "0.152-24.04_stable"
