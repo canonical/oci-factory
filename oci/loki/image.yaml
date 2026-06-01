@@ -12,3 +12,7 @@ upload:
         end-of-life: '2031-05-01T00:00:00Z'
         risks:
           - stable
+    ignored-vulnerabilities:
+      - CVE-2026-41602  # github.com/apache/thrift
+      - CVE-2026-42151  # github.com/prometheus/prometheus
+      - CVE-2026-42154  # github.com/prometheus/prometheus
