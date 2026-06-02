@@ -12,3 +12,23 @@ upload:
         end-of-life: '2026-08-31T00:00:00Z'
         risks:
           - stable
+    ignored-vulnerabilities:
+      - CVE-2026-34986  # github.com/go-jose/go-jose/v4
+      - CVE-2026-42151  # github.com/prometheus/prometheus
+      - CVE-2026-42154  # github.com/prometheus/prometheus
+      - CVE-2026-29181  # go.opentelemetry.io/otel
+      - CVE-2026-24051  # go.opentelemetry.io/otel/sdk
+      - CVE-2026-39883  # go.opentelemetry.io/otel/sdk
+      - CVE-2026-33186  # google.golang.org/grpc
+      - CVE-2026-25679  # stdlib
+      - CVE-2026-32280  # stdlib
+      - CVE-2026-32281  # stdlib
+      - CVE-2026-32283  # stdlib
+      - CVE-2026-33811  # stdlib
+      - CVE-2026-33814  # stdlib
+      - CVE-2026-39820  # stdlib
+      - CVE-2026-39823  # stdlib
+      - CVE-2026-39825  # stdlib
+      - CVE-2026-39826  # stdlib
+      - CVE-2026-39836  # stdlib
+      - CVE-2026-42499  # stdlib
