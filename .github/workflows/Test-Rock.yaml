@@ -47,6 +47,17 @@ on:
         required: false
         default: ""
 
+      ## SARIF Report
+      generate-sarif:
+        description: >-
+          Generate a SARIF vulnerability report and upload it as a workflow artifact.
+          Intended for callers that will subsequently upload the report to GitHub
+          Code Scanning (e.g. Vulnerability-Scan.yaml). Defaults to false to avoid
+          unintended side-effects when Test-Rock is called from other contexts
+          (PRs, external repos, etc.).
+        type: boolean
+        default: false
+
       ## Malware Test
       test-malware:
         description: "Enable malware test."
@@ -333,8 +344,7 @@ jobs:
           echo "report-name=${{ inputs.oci-archive-name }}${{ env.VULNERABILITY_REPORT_SUFFIX }}" >> "$GITHUB_OUTPUT"
 
       - name: Scan for vulnerabilities
-        # TODO: bump trivy-action version once a newer version is released that uses v5 or later tags for actions/cache.
-        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
           # NOTE: we're allowing images with vulnerabilities to be published
           ignore-unfixed: true
@@ -386,6 +396,31 @@ jobs:
             echo "$vulnerabilities" | jq -r '.[] | "| \(.VulnerabilityID) | /\(.Target) | \(.Severity) | \(.PkgName) |"' >> $GITHUB_STEP_SUMMARY
           fi
           
+      - name: Generate SARIF vulnerability report
+        # Runs a second, non-blocking Trivy scan in SARIF format so that the
+        # caller can upload the result to GitHub Code Scanning. This reuses the
+        # Docker image already loaded by "Configure Trivy", so no extra
+        # download/skopeo step is required.
+        if: ${{ !cancelled() && inputs.generate-sarif }}
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          ignore-unfixed: true
+          trivyignores: ${{ steps.configure-trivy.outputs.trivyignore-path }}
+          format: "sarif"
+          severity: "HIGH,CRITICAL"
+          exit-code: "0"
+          skip-files: "/bin/pebble,/usr/bin/pebble"
+          output: "${{ inputs.oci-archive-name }}.sarif"
+          image-ref: "${{ steps.configure-trivy.outputs.docker-image }}"
+
+      - name: Upload SARIF artifact
+        if: ${{ !cancelled() && inputs.generate-sarif }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        with:
+          name: "${{ inputs.oci-archive-name }}.sarif"
+          path: "${{ inputs.oci-archive-name }}.sarif"
+          retention-days: 1
+
       - name: Identify unncessary trivyignore entries
         if: ${{ !cancelled() }}
         uses: ./.github/actions/check-trivyignore
