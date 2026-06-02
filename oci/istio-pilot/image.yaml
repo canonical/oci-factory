@@ -12,3 +12,7 @@ upload:
         end-of-life: '2026-08-31T00:00:00Z'
         risks:
           - stable
+    ignored-vulnerabilities:
+      - CVE-2026-35469  # github.com/moby/spdystream
+      - CVE-2026-42151  # github.com/prometheus/prometheus
+      - CVE-2026-42154  # github.com/prometheus/prometheus
