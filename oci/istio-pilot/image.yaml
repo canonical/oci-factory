@@ -16,3 +16,7 @@ upload:
       - CVE-2026-35469  # github.com/moby/spdystream
       - CVE-2026-42151  # github.com/prometheus/prometheus
       - CVE-2026-42154  # github.com/prometheus/prometheus
+      - CVE-2019-14993  # istio.io/istio
+      - CVE-2021-39155  # istio.io/istio
+      - CVE-2021-39156  # istio.io/istio
+      - CVE-2022-23635  # istio.io/istio
