@@ -12,3 +12,8 @@ upload:
         end-of-life: '2026-08-31T00:00:00Z'
         risks:
           - stable
+    ignored-vulnerabilities:
+      - CVE-2026-24051  # go.opentelemetry.io/otel/sdk
+      - CVE-2024-45337  # golang.org/x/crypto
+      - CVE-2025-22869  # golang.org/x/crypto
+      - CVE-2026-33186  # google.golang.org/grpc
