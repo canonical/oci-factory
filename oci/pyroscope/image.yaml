@@ -13,22 +13,22 @@ upload:
         risks:
           - stable
     ignored-vulnerabilities:
-      - CVE-2026-34986  # github.com/go-jose/go-jose/v4
-      - CVE-2026-42151  # github.com/prometheus/prometheus
-      - CVE-2026-42154  # github.com/prometheus/prometheus
-      - CVE-2026-29181  # go.opentelemetry.io/otel
-      - CVE-2026-24051  # go.opentelemetry.io/otel/sdk
-      - CVE-2026-39883  # go.opentelemetry.io/otel/sdk
-      - CVE-2026-33186  # google.golang.org/grpc
-      - CVE-2026-25679  # stdlib
-      - CVE-2026-32280  # stdlib
-      - CVE-2026-32281  # stdlib
-      - CVE-2026-32283  # stdlib
-      - CVE-2026-33811  # stdlib
-      - CVE-2026-33814  # stdlib
-      - CVE-2026-39820  # stdlib
-      - CVE-2026-39823  # stdlib
-      - CVE-2026-39825  # stdlib
-      - CVE-2026-39826  # stdlib
-      - CVE-2026-39836  # stdlib
-      - CVE-2026-42499  # stdlib
+      - CVE-2026-34986  # go-jose: JWE panic with empty encrypted_key in key wrapping algorithms | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
+      - CVE-2026-42151  # prometheus: Azure AD OAuth client secret exposed via /-/config endpoint | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
+      - CVE-2026-42154  # prometheus: remote read endpoint heap allocation DoS via unauthenticated snappy request | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
+      - CVE-2026-29181  # opentelemetry/otel: multi-value baggage header CPU/allocation amplification DoS | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
+      - CVE-2026-24051  # opentelemetry/otel/sdk: PATH hijacking ioreg on macOS | CVSS: 7.0 (High) | Ubuntu priority: Negligible | Status (26.04 resolute): Not affected
+      - CVE-2026-39883  # opentelemetry/otel/sdk: PATH hijacking kenv on BSD/Solaris | CVSS: Unknown | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
+      - CVE-2026-33186  # grpc: authorization bypass via malformed HTTP/2 :path pseudo-header | CVSS: 9.1 (Critical) | Ubuntu priority: High | Status (26.04 resolute): Needs evaluation
+      - CVE-2026-25679  # stdlib: url.Parse accepts invalid URLs with malformed host/authority | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
+      - CVE-2026-32280  # stdlib: crypto/x509 chain building DoS with large number of intermediate certificates | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
+      - CVE-2026-32281  # stdlib: crypto/x509 policy validation DoS with many policy mappings | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
+      - CVE-2026-32283  # stdlib: TLS 1.3 connection deadlock with multiple post-handshake key update messages | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
+      - CVE-2026-33811  # stdlib: LookupCNAME double-free crash with very long CNAME response via cgo DNS resolver | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
+      - CVE-2026-33814  # stdlib: HTTP/2 infinite CONTINUATION loop with SETTINGS_MAX_FRAME_SIZE=0 | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Vulnerable
+      - CVE-2026-39820  # stdlib: net/mail ParseAddress/ParseAddressList/ParseDate CPU and memory exhaustion DoS | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
+      - CVE-2026-39823  # stdlib: html/template XSS via meta tag content attribute with whitespace around '=' | CVSS: 6.1 (Medium) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
+      - CVE-2026-39825  # stdlib: ReverseProxy forwards query parameters hidden from Rewrite functions | CVSS: 5.3 (Medium) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
+      - CVE-2026-39826  # stdlib: html/template incorrect escaping with empty or whitespace type attribute in script tag | CVSS: 6.1 (Medium) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
+      - CVE-2026-39836  # stdlib: net Dial/LookupPort panic on Windows with NUL input | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
+      - CVE-2026-42499  # stdlib: net/mail consumePhrase DoS with pathological RFC 5322 email address inputs | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
