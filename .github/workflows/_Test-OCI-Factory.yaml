@@ -120,15 +120,15 @@ jobs:
   #     test-oci-compliance: true
   #     test-vulnerabilities: true
 
-  # # Test workflow used in continuous testing
-  # test-vulnerability-scan:
-  #   name: Test vulnerability scan workflow
-  #   needs: [access-check]
-  #   uses: ./.github/workflows/Vulnerability-Scan.yaml
-  #   with:
-  #     oci-image-name: "ghcr.io/canonical/oci-factory/mock-rock:1.1-22.04_844"
-  #     oci-image-path: "oci/mock-rock"
-  #   secrets: inherit
+  # Test workflow used in continuous testing
+  test-vulnerability-scan:
+    name: Test vulnerability scan workflow
+    needs: [access-check]
+    uses: ./.github/workflows/Vulnerability-Scan.yaml
+    with:
+      oci-image-name: "ghcr.io/canonical/oci-factory/mock-rock:1.1-22.04_844"
+      oci-image-path: "oci/mock-rock"
+    secrets: inherit
 
   # Test full image workflow
   test-workflows:
