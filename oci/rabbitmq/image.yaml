@@ -2,7 +2,7 @@ version: 2
 upload:
   - source: canonical/rabbitmq-rock
     commit: ec025af56031c5e60234af955338e71b144abd76
-    directory: 4.0-24.04
+    directory: 4.0-26.04
     release:
       4.0-26.04:
         end-of-life: '2031-05-29T00:00:00Z'
