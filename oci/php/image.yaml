@@ -24,6 +24,6 @@ upload:
     directory: php/8.5-26.04
     release:
       8.5-26.04:
-        end-of-life: "2026-05-20T00:00:00Z"
+        end-of-life: "2031-05-29T00:00:00Z"
         risks:
           - edge
