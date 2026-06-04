@@ -2,13 +2,36 @@ version: 2
 upload:
   - source: canonical/opentelemetry-collector-rock
     commit: 29a84c6ac98a5807951fb4822add38d342e3a685
-    directory: 0.152.1
+    directory: 0.130.1
     release:
-      0-26.04:
-        end-of-life: '2026-08-31T00:00:00Z'
+      0.130-26.04:
+        end-of-life: '2031-05-01T00:00:00Z'
         risks:
           - stable
-      0.152-26.04:
-        end-of-life: '2026-08-31T00:00:00Z'
-        risks:
-          - stable
+    ignored-vulnerabilities:
+      - CVE-2026-32287  # github.com/antchfx/xpath
+      - CVE-2026-41602  # github.com/apache/thrift
+      - CVE-2026-32285  # github.com/buger/jsonparser
+      - CVE-2026-34040  # github.com/docker/docker
+      - CVE-2025-68156  # github.com/expr-lang/expr
+      - CVE-2026-42151  # github.com/prometheus/prometheus
+      - CVE-2026-42154  # github.com/prometheus/prometheus
+      - CVE-2026-29181  # go.opentelemetry.io/otel
+      - CVE-2026-24051  # go.opentelemetry.io/otel/sdk
+      - CVE-2026-39883  # go.opentelemetry.io/otel/sdk
+      - CVE-2026-33186  # google.golang.org/grpc
+      - CVE-2025-61726  # stdlib
+      - CVE-2026-25679  # stdlib
+      - CVE-2026-32280  # stdlib
+      - CVE-2026-32281  # stdlib
+      - CVE-2026-32283  # stdlib
+      - CVE-2026-33811  # stdlib
+      - CVE-2026-33814  # stdlib
+      - CVE-2026-39820  # stdlib
+      - CVE-2026-39823  # stdlib
+      - CVE-2026-39825  # stdlib
+      - CVE-2026-39826  # stdlib
+      - CVE-2026-39836  # stdlib
+      - CVE-2026-42499  # stdlib
+      - CVE-2025-68121  # stdlib
+      - CVE-2025-61729  # stdlib
