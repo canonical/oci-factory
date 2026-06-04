@@ -1,20 +1,10 @@
 version: 2
 upload:
   - source: canonical/nginx-rock
-    commit: d497d62fa69bbefa5c05bd703a1ec82c9645e14d
-    directory: '1.28'
+    commit: ff4ec5487606c13f75cbd77c2852dca6f1b4a733
+    directory: 1.27.5
     release:
-      1-26.04:
-        end-of-life: '2026-08-11T00:00:00Z'
+      1.27-26.04:
+        end-of-life: '2026-09-03T00:00:00Z'
         risks:
-          # These issues prevent Nginx from moving further along the risk levels:
-          # * https://github.com/canonical/nginx-rock/issues/33
-          # * https://github.com/canonical/pebble/issues/801
-          - edge
-      1.28-26.04:
-        end-of-life: '2026-08-11T00:00:00Z'
-        risks:
-          # These issues prevent Nginx from moving further along the risk levels:
-          # * https://github.com/canonical/nginx-rock/issues/33
-          # * https://github.com/canonical/pebble/issues/801
-          - edge
+          - stable
