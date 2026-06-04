@@ -2,13 +2,13 @@ version: 2
 upload:
   - source: canonical/istio-pilot-rock
     commit: eb7b2c8ac865d1a169adb87cb0636b00f4575d7e
-    directory: 1.30.0
+    directory: 1.29.0
     release:
       1-26.04:
         end-of-life: '2026-08-31T00:00:00Z'
         risks:
           - stable
-      1.30-26.04:
+      1.29-26.04:
         end-of-life: '2026-08-31T00:00:00Z'
         risks:
           - stable
