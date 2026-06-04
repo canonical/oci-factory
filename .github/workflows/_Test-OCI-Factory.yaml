@@ -17,8 +17,6 @@ on:
       - "tests/**"
       - "!tools/workflow-engine/**"
       - "!tools/cli-client/**"
-    branches:
-      - '*'
 
 env:
   # local path to clone the oci-factory to
