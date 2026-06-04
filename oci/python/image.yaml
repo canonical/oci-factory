@@ -2,7 +2,7 @@ version: 1
 
 upload:
   - source: canonical/python-rock
-    commit: 4aac7806bd31ef9eb4f0e778a1257eff2aee57ae
+    commit: 93fcce87854bb7e33edf720ee0ec74b2ab30de27
     directory: python/3.8-20.04/
     release:
       3.8-20.04:
@@ -13,7 +13,7 @@ upload:
           - beta
           - edge
   - source: canonical/python-rock
-    commit: 4aac7806bd31ef9eb4f0e778a1257eff2aee57ae
+    commit: 93fcce87854bb7e33edf720ee0ec74b2ab30de27
     directory: python/3.10-22.04/
     release:
       3.10-22.04:
@@ -24,7 +24,7 @@ upload:
           - beta
           - edge
   - source: canonical/python-rock
-    commit: 4aac7806bd31ef9eb4f0e778a1257eff2aee57ae
+    commit: 93fcce87854bb7e33edf720ee0ec74b2ab30de27
     directory: python/3.12-24.04/
     release:
       3.12-24.04:
@@ -35,7 +35,7 @@ upload:
           - beta
           - edge
   - source: canonical/python-rock
-    commit: 4aac7806bd31ef9eb4f0e778a1257eff2aee57ae
+    commit: 93fcce87854bb7e33edf720ee0ec74b2ab30de27
     directory: python/3.13-25.10/
     release:
       3.13-25.10:
@@ -46,7 +46,7 @@ upload:
           - beta
           - edge
   - source: canonical/python-rock
-    commit: 4aac7806bd31ef9eb4f0e778a1257eff2aee57ae
+    commit: 93fcce87854bb7e33edf720ee0ec74b2ab30de27
     directory: python/3.14-26.04/
     release:
       3.14-26.04:
