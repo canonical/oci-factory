@@ -3,6 +3,10 @@ run-name: "Image - ${{ inputs.oci-image-name || github.triggering_actor }} - ${{
 
 on:
   push:
+    branches:
+      - main
+    tags-ignore:
+      - '*'
     paths:
       - "oci/*/image.y*ml"
       - "!oci/mock*"
