@@ -1,7 +1,7 @@
 version: 2
 upload:
   - source: canonical/bind9-rock
-    commit: 0f126d536cdba4cd8340d6ece37b3242b5005212
+    commit: 32a896df719f3e185cf3ea1477442147f4066a1e
     directory: bind9/9.20-26.04
     release:
       9.20-26.04:
