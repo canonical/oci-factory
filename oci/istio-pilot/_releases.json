@@ -49,5 +49,35 @@
     },
     "1.29.0-24.04": {
         "end-of-life": "2026-04-14T00:00:00Z"
+    },
+    "1-26.04": {
+        "end-of-life": "2026-08-31T00:00:00Z",
+        "stable": {
+            "target": "13"
+        },
+        "candidate": {
+            "target": "1-26.04_stable"
+        },
+        "beta": {
+            "target": "1-26.04_candidate"
+        },
+        "edge": {
+            "target": "1-26.04_beta"
+        }
+    },
+    "1.30-26.04": {
+        "end-of-life": "2026-08-31T00:00:00Z",
+        "stable": {
+            "target": "13"
+        },
+        "candidate": {
+            "target": "1.30-26.04_stable"
+        },
+        "beta": {
+            "target": "1.30-26.04_candidate"
+        },
+        "edge": {
+            "target": "1.30-26.04_beta"
+        }
     }
 }
