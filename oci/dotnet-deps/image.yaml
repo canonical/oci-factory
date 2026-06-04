@@ -1,7 +1,7 @@
 version: 1
 upload:
   - source: canonical/dotnet-deps-rock
-    commit: 692f8e553712d1250933e9c5019229573ba54309
+    commit: af2b7bd804344a7b4e9edd8fbe585b2e5525a960
     directory: dotnet-deps-rock/10.0-26.04
     release:
       10.0-26.04:
