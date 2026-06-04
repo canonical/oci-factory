@@ -472,5 +472,20 @@
         "edge": {
             "target": "0.152-26.04_beta"
         }
+    },
+    "0.130-26.04": {
+        "end-of-life": "2031-05-01T00:00:00Z",
+        "stable": {
+            "target": "69"
+        },
+        "candidate": {
+            "target": "0.130-26.04_stable"
+        },
+        "beta": {
+            "target": "0.130-26.04_candidate"
+        },
+        "edge": {
+            "target": "0.130-26.04_beta"
+        }
     }
 }
