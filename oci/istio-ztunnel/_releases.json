@@ -85,5 +85,20 @@
     },
     "1.29.0-24.04": {
         "end-of-life": "2026-04-07T00:00:00Z"
+    },
+    "1.29-26.04": {
+        "end-of-life": "2026-08-31T00:00:00Z",
+        "stable": {
+            "target": "99"
+        },
+        "candidate": {
+            "target": "1.29-26.04_stable"
+        },
+        "beta": {
+            "target": "1.29-26.04_candidate"
+        },
+        "edge": {
+            "target": "1.29-26.04_beta"
+        }
     }
 }
