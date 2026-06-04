@@ -256,7 +256,7 @@ jobs:
         with:
           tag: "${{ matrix.release-name }}"
           message: "release(${{ matrix.name }}): Release image revision ${{ matrix.revision }} to ${{ matrix.channel }}"
-          github_token: ${{ secrets.ROCKSBOT_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           commit_sha: ${{ matrix.canonical-tag }}
           force_push_tag: true
 
@@ -264,5 +264,5 @@ jobs:
         with:
           name: "${{ matrix.release-name }}"
           tag_name: "${{ matrix.release-name }}"
-          token: "${{ secrets.ROCKSBOT_TOKEN }}"
+          token: "${{ secrets.GITHUB_TOKEN }}"
           files: "sbom/*.sbom_preview.spdx.json"

@@ -540,7 +540,7 @@ jobs:
           tag: "${{ steps.rename-oci-archive.outputs.name }}"
           message: "upload(${{ matrix.name }}): Build and upload new image revision ${{ matrix.revision }}"
           force_push_tag: true
-          github_token: ${{ secrets.ROCKSBOT_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   # We need this job because we want to make the releases all in one go,
   # so that we know which revisions to release, and so that we can update
