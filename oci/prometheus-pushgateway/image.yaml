@@ -27,4 +27,3 @@ upload:
       - CVE-2026-39826  # stdlib: html/template incorrect escaping with empty or whitespace type attribute in script tag | CVSS: 6.1 (Medium) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
       - CVE-2026-39836  # stdlib: net Dial/LookupPort panic on Windows with NUL input | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
       - CVE-2026-42499  # stdlib: net/mail consumePhrase DoS with pathological RFC 5322 email address inputs | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
-
