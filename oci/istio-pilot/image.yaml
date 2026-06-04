@@ -20,3 +20,9 @@ upload:
       - CVE-2021-39155  # istio.io/istio
       - CVE-2021-39156  # istio.io/istio
       - CVE-2022-23635  # istio.io/istio
+      - CVE-2025-15558
+      - CVE-2026-34986
+      - CVE-2026-29181
+      - CVE-2026-24051
+      - CVE-2026-39883
+      - CVE-2026-33186
