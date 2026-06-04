@@ -33,3 +33,5 @@ upload:
       - CVE-2026-39826  # stdlib
       - CVE-2026-39836  # stdlib
       - CVE-2026-42499  # stdlib
+      - CVE-2025-68121  # stdlib
+      - CVE-2025-61729	# stdlib
