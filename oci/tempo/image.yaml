@@ -1,10 +1,24 @@
 version: 2
 upload:
   - source: canonical/tempo-rock
-    commit: ee9a4f344fac5b3a7760f55e6998652e45efdfc8
-    directory: 2.9.2
+    commit: bd647de6261dfb918fcd47700db300ecad2e8c14
+    directory: 2.10.3
     release:
-      2.9-24.04:
-        end-of-life: '2026-08-03T00:00:00Z'
+      2-26.04:
+        end-of-life: '2026-08-11T00:00:00Z'
         risks:
           - stable
+      2.10-26.04:
+        end-of-life: '2026-08-11T00:00:00Z'
+        risks:
+          - stable
+    ignored-vulnerabilities:
+      - CVE-2026-32287  # github.com/antchfx/xpath
+      - CVE-2026-41602  # github.com/apache/thrift
+      - CVE-2026-32285  # github.com/buger/jsonparser
+      - CVE-2026-34986  # github.com/go-jose/go-jose/v4
+      - CVE-2026-42151  # github.com/prometheus/prometheus
+      - CVE-2026-42154  # github.com/prometheus/prometheus
+      - CVE-2026-29181  # go.opentelemetry.io/otel
+      - CVE-2026-39883  # go.opentelemetry.io/otel/sdk
+      - CVE-2026-33186  # google.golang.org/grpc
