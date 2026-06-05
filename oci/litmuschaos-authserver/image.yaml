@@ -4,11 +4,11 @@ upload:
     commit: 6b028e8991a7178aab912bf00b980a53feeca5fe
     directory: litmuschaos-authserver/3.29.0
     release:
-      3-24.04:
+      3-26.04:
         end-of-life: '2026-09-01T00:00:00Z'
         risks:
           - edge
-      3.29-24.04:
+      3.29-26.04:
         end-of-life: '2026-09-01T00:00:00Z'
         risks:
           - edge
