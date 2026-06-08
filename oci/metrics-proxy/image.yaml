@@ -7,7 +7,7 @@ upload:
       0-26.04:
         end-of-life: '2026-08-31T00:00:00Z'
         risks:
-          - stable
+          - edge
       0.1-26.04:
         end-of-life: '2026-08-31T00:00:00Z'
         risks:
@@ -29,3 +29,4 @@ upload:
       - CVE-2026-39826  # stdlib
       - CVE-2026-39836  # stdlib
       - CVE-2026-42499  # stdlib
+      - CVE-2026-42504  # stdlib
