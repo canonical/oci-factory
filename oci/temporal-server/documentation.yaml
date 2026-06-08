@@ -30,7 +30,7 @@ docker:
   run_conclusion: |
     Temporal server starts and listens on its configured ports.
 
-    To obtain a runnable configuration, clone https://github.com/temporalio/temporal.
+    To obtain a runnable configuration, refer to the [official repository](https://github.com/temporalio/temporal).
 
 config:
   TEMPORAL_ROOT:
