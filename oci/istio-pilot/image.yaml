@@ -1,14 +1,22 @@
 version: 2
 upload:
   - source: canonical/istio-pilot-rock
-    commit: c6606e6f2adc36c064444492a988b37b95bd6c26
-    directory: 1.29.0
+    commit: eb7b2c8ac865d1a169adb87cb0636b00f4575d7e
+    directory: 1.30.0
     release:
-      1-24.04:
-        end-of-life: '2026-07-17T00:00:00Z'
+      1-26.04:
+        end-of-life: '2026-08-31T00:00:00Z'
         risks:
           - stable
-      1.29-24.04:
-        end-of-life: '2026-07-17T00:00:00Z'
+      1.30-26.04:
+        end-of-life: '2026-08-31T00:00:00Z'
         risks:
           - stable
+    ignored-vulnerabilities:
+      - CVE-2026-35469  # github.com/moby/spdystream
+      - CVE-2026-42151  # github.com/prometheus/prometheus
+      - CVE-2026-42154  # github.com/prometheus/prometheus
+      - CVE-2019-14993  # istio.io/istio
+      - CVE-2021-39155  # istio.io/istio
+      - CVE-2021-39156  # istio.io/istio
+      - CVE-2022-23635  # istio.io/istio

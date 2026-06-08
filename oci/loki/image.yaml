@@ -1,21 +1,18 @@
 version: 2
 upload:
   - source: canonical/loki-rock
-    commit: 6f440844327437c615772e0e09186b421d60f5f7
-    directory: 3.7.1
+    commit: 0a65a152ac2483d6bfd1024a2d6b1f4253d61a1a
+    directory: 3.7.2
     release:
-      3.7.1-26.04:
-        end-of-life: '2026-05-28T00:00:00Z'
+      3-26.04:
+        end-of-life: '2026-08-11T00:00:00Z'
+        risks:
+          - stable
+      3.7-26.04:
+        end-of-life: '2031-05-01T00:00:00Z'
         risks:
           - stable
     ignored-vulnerabilities:
-      - CVE-2026-32285  # Needs evaluation. https://ubuntu.com/security/CVE-2026-32285
-      - CVE-2026-34986  # Needs evaluation. https://ubuntu.com/security/CVE-2026-34986
-      - CVE-2026-39883  # Needs evaluation. https://ubuntu.com/security/CVE-2026-39883
-      - CVE-2026-33186  # Needs evaluation. https://ubuntu.com/security/CVE-2026-33186
-      - CVE-2026-34040  # Needs evaluation. https://ubuntu.com/security/CVE-2026-34040
-      - CVE-2026-24051  # Not affected. https://ubuntu.com/security/CVE-2026-24051
-      - CVE-2026-41602  # Needs evaluation. https://ubuntu.com/security/CVE-2026-41602
-      - CVE-2026-42151  # Needs evaluation. https://ubuntu.com/security/CVE-2026-42151
-      - CVE-2026-42154  # Needs evaluation. https://ubuntu.com/security/CVE-2026-42154
-      
+      - CVE-2026-41602  # github.com/apache/thrift | CVSS 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation | https://ubuntu.com/security/CVE-2026-41602
+      - CVE-2026-42151  # github.com/prometheus/prometheus | CVSS 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation | https://ubuntu.com/security/CVE-2026-42151
+      - CVE-2026-42154  # github.com/prometheus/prometheus | CVSS 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation | https://ubuntu.com/security/CVE-2026-42154
