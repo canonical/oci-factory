@@ -32,3 +32,6 @@ upload:
       - CVE-2026-39836  # stdlib
       - CVE-2026-42499  # stdlib
       - CVE-2026-42504  # stdlib
+      - CVE-2024-45337  # golang.org/x/crypto
+      - CVE-2025-22869  # golang.org/x/crypto
+      - CVE-2025-22868  # golang.org/x/oauth2
