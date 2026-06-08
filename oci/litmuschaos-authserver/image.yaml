@@ -1,18 +1,28 @@
-version: 1
+version: 2
 upload:
-  - source: canonical/litmuschaos-authserver-rock
-    commit: e5e17d14fb58bc8526972fd63b6536bc92e29cae
-    directory: 3.26.0
+  - source: canonical/litmus-rocks
+    commit: 6b028e8991a7178aab912bf00b980a53feeca5fe
+    directory: litmuschaos-authserver/3.29.0
     release:
-      3-24.04:
-        end-of-life: '2026-05-22T00:00:00Z'
+      3-26.04:
+        end-of-life: '2026-09-01T00:00:00Z'
         risks:
           - edge
-      3.26-24.04:
-        end-of-life: '2026-05-22T00:00:00Z'
+      3.29-26.04:
+        end-of-life: '2026-09-01T00:00:00Z'
         risks:
           - edge
-      3.26.0-24.04:
-        end-of-life: '2026-02-19T00:00:00Z'
-        risks:
-          - edge
+    ignored-vulnerabilities:
+      - CVE-2026-25679  # stdlib
+      - CVE-2026-32280  # stdlib
+      - CVE-2026-32281  # stdlib
+      - CVE-2026-32283  # stdlib
+      - CVE-2026-33811  # stdlib
+      - CVE-2026-33814  # stdlib
+      - CVE-2026-39820  # stdlib
+      - CVE-2026-39823  # stdlib
+      - CVE-2026-39825  # stdlib
+      - CVE-2026-39826  # stdlib
+      - CVE-2026-39836  # stdlib
+      - CVE-2026-42499  # stdlib
+      - CVE-2026-42504  # stdlib
