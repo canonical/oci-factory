@@ -17,12 +17,15 @@ source-code: https://github.com/canonical/temporal-rocks
 docker:
   parameters: >-
     -p 8081:8081
+    -v <path>:/home/ui-server/config
+    -e TEMPORAL_ROOT=/home/ui-server
+    -e TEMPORAL_ENVIRONMENT=production
   run_cmd: >-
-    -d -v <path>:/home/ui-server/config -e TEMPORAL_ROOT=/home/ui-server -e TEMPORAL_ENVIRONMENT=production
+    -d
   run_conclusion: |
     The Temporal UI is started by Pebble and serves the UI on port 8081.
     
-    To obtain a runnable configuration, clone https://github.com/temporalio/ui.
+    To obtain a runnable configuration, refer to the [official repository](https://github.com/temporalio/ui).
     
     
 
