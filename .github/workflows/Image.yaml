@@ -3,6 +3,10 @@ run-name: "Image - ${{ inputs.oci-image-name || github.triggering_actor }} - ${{
 
 on:
   push:
+    branches:
+      - main
+    tags-ignore:
+      - '*'
     paths:
       - "oci/*/image.y*ml"
       - "!oci/mock*"
@@ -37,7 +41,6 @@ on:
         required: true
       upload:
         description: "Upload image to GHCR"
-        required: true
         type: boolean
         default: false
 
@@ -57,9 +60,13 @@ jobs:
     steps:
       - name: ${{ inputs.external_ref_id }}  # (2)
         if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
+        run: echo 'Started by ${INPUTS_EXTERNAL_REF_ID}' >> "$GITHUB_STEP_SUMMARY"
+        env:
+          INPUTS_EXTERNAL_REF_ID: ${{ inputs.external_ref_id }}
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
 
       - name: Infer number of image triggers
         uses: tj-actions/changed-files@22103cc46bda19c2b464ffe86db46df6922fd323
@@ -83,11 +90,11 @@ jobs:
 
           # check if this is coming from a workflow dispatch/call
           # as checking github.event_name isn't reliable here
-          if [ "${{ inputs.oci-image-name }}" != "" ]
+          if [ "${INPUTS_OCI_IMAGE_NAME}" != "" ]
           then
-            img_path="oci/${{ inputs.oci-image-name }}"
+            img_path="oci/${INPUTS_OCI_IMAGE_NAME}"
           else
-            img_path="${{ steps.changed-files.outputs.all_changed_files }}"
+            img_path="${STEPS_CHANGED_FILES_OUTPUTS_ALL_CHANGED_FILES}"
             occurrences="${img_path//[^,]}"
             if [ ${#occurrences} -ne 0 ]
             then
@@ -99,6 +106,9 @@ jobs:
 
           echo "img-name=$(basename ${img_path})" >> "$GITHUB_OUTPUT"
           echo "img-path=${img_path}" >> "$GITHUB_OUTPUT"
+        env:
+          INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
+          STEPS_CHANGED_FILES_OUTPUTS_ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
 
       - name: Validate access to triggered image
         uses: ./.github/actions/validate-actor
@@ -110,7 +120,10 @@ jobs:
 
       - name: Use custom image trigger
         if: ${{ inputs.b64-image-trigger != '' }}
-        run: echo ${{ inputs.b64-image-trigger }} | base64 -d > ${{ steps.validate-image.outputs.img-path }}/image.yaml
+        run: echo ${INPUTS_B64_IMAGE_TRIGGER} | base64 -d > ${STEPS_VALIDATE_IMAGE_OUTPUTS_IMG_PATH}/image.yaml
+        env:
+          INPUTS_B64_IMAGE_TRIGGER: ${{ inputs.b64-image-trigger }}
+          STEPS_VALIDATE_IMAGE_OUTPUTS_IMG_PATH: ${{ steps.validate-image.outputs.img-path }}
 
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
@@ -122,11 +135,12 @@ jobs:
         id: prepare-matrix
         env:
           DATA_DIR: "revision-data"
+          STEPS_VALIDATE_IMAGE_OUTPUTS_IMG_PATH: ${{ steps.validate-image.outputs.img-path }}
         run: |
           mkdir ${{ env.DATA_DIR }}
 
           python3 -m src.image.prepare_single_image_build_matrix \
-            --oci-path ${{ steps.validate-image.outputs.img-path }} \
+            --oci-path "${STEPS_VALIDATE_IMAGE_OUTPUTS_IMG_PATH}" \
             --revision-data-dir ${{ env.DATA_DIR }} \
             --warn-image-eol-exceeds-base-eol
 
@@ -143,6 +157,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Clone GitHub image repository
         uses: ./.github/actions/checkout
@@ -158,13 +173,16 @@ jobs:
       - name: Validate image naming and base
         run: |
           source src/shared/logs.sh
-          rock_name=`cat "${{ env.ROCK_REPO_DIR }}/${{ matrix.directory }}"/rockcraft.y*ml | yq -r .name`
-          folder_name="${{ env.ROCK_REPO_DIR }}/${{ matrix.path }}"
+          rock_name=$(cat "${{ env.ROCK_REPO_DIR }}/${MATRIX_DIRECTORY}"/rockcraft.y*ml | yq -r .name)
+          folder_name="${{ env.ROCK_REPO_DIR }}/${MATRIX_PATH}"
           if [[ "${folder_name}" != *"${rock_name}"* ]]
           then
             log_error "the OCI folder name '${folder_name}', must contain the rock's name '${rock_name}'."
             exit 1
           fi
+        env:
+          MATRIX_DIRECTORY: ${{ matrix.directory }}
+          MATRIX_PATH: ${{ matrix.path }}
 
   build-rock:
     needs: [prepare-build, validate-matrix]
@@ -213,10 +231,15 @@ jobs:
       revision-data-cache-key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
 
       - name: Use custom image trigger
         if: ${{ inputs.b64-image-trigger != '' }}
-        run: echo ${{ inputs.b64-image-trigger }} | base64 -d > ${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml
+        run: echo ${INPUTS_B64_IMAGE_TRIGGER} | base64 -d > ${NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_PATH}/image.yaml
+        env:
+          INPUTS_B64_IMAGE_TRIGGER: ${{ inputs.b64-image-trigger }}
+          NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_PATH: ${{ needs.prepare-build.outputs.oci-img-path }}
 
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
@@ -230,7 +253,9 @@ jobs:
         id: swift-lock
         run: |
           ./src/uploads/swift_lockfile_lock.sh \
-            ${{ needs.prepare-build.outputs.oci-img-name }}
+            "${NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_NAME}"
+        env:
+          NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_NAME: ${{ needs.prepare-build.outputs.oci-img-name }}
 
       # Here starts the critical section, have to be executed in sequence outside of matrix.
       - name: Get next revision number
@@ -248,12 +273,15 @@ jobs:
           mkdir ${{ env.DATA_DIR }}
 
           python3 -m src.image.prepare_single_image_build_matrix \
-            --oci-path ${{ needs.prepare-build.outputs.oci-img-path }} \
+            --oci-path "${NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_PATH}" \
             --revision-data-dir ${{ env.DATA_DIR }} \
-            --next-revision ${{ steps.get-next-revision.outputs.revision }} \
+            --next-revision "${STEPS_GET_NEXT_REVISION_OUTPUTS_REVISION}" \
             --infer-image-track
 
           echo "revision-data-cache-key=${{ github.run_id }}-${{ env.DATA_DIR }}-$(date +%s)" >> "$GITHUB_OUTPUT"
+        env:
+          NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_PATH: ${{ needs.prepare-build.outputs.oci-img-path }}
+          STEPS_GET_NEXT_REVISION_OUTPUTS_REVISION: ${{ steps.get-next-revision.outputs.revision }}
 
       - name: Preempt Swift slot
         run: |
@@ -269,7 +297,9 @@ jobs:
         if: ${{ always() && steps.swift-lock.outcome != 'failure' }}
         run: |
           ./src/uploads/swift_lockfile_unlock.sh \
-            ${{ needs.prepare-build.outputs.oci-img-name }}
+            "${NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_NAME}"
+        env:
+          NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_NAME: ${{ needs.prepare-build.outputs.oci-img-name }}
 
       - uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
@@ -296,6 +326,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
@@ -322,12 +354,16 @@ jobs:
         id: rename-oci-archive
         run: |
           # Rename the OCI archive tarball
-          canonical_tag="${{ matrix.track }}_${{ matrix.revision }}"
-          name="${{ matrix.name }}_${canonical_tag}"
-          mv ${{ env.OCI_ARCHIVE_NAME }} $name
+          canonical_tag="${MATRIX_TRACK}_${MATRIX_REVISION}"
+          name="${MATRIX_NAME}_${canonical_tag}"
+          mv "${OCI_ARCHIVE_NAME}" "$name"
 
           echo "name=${name}" >> "$GITHUB_OUTPUT"
           echo "canonical-tag=${canonical_tag}" >> "$GITHUB_OUTPUT"
+        env:
+          MATRIX_TRACK: ${{ matrix.track }}
+          MATRIX_REVISION: ${{ matrix.revision }}
+          MATRIX_NAME: ${{ matrix.name }}
 
       - uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
@@ -348,12 +384,14 @@ jobs:
           fi
           source src/shared/logs.sh
           arches=$(skopeo inspect --raw \
-            oci-archive:${{ steps.rename-oci-archive.outputs.name }} \
+            oci-archive:${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME} \
             | jq -r 'if has("manifests") then .manifests[].platform.architecture else "${{ runner.arch }}" end' \
             | jq -nRcr '[inputs] | join(",")')
 
           log_info "Detected architectures: ${arches}"
-          echo "arches='${arches}'" >> "$GITHUB_OUTPUT"
+          echo "arches=${arches}" >> "$GITHUB_OUTPUT"
+        env:
+          STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME: ${{ steps.rename-oci-archive.outputs.name }}
 
       - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c
         with:
@@ -377,9 +415,9 @@ jobs:
             set -x
           fi
           source src/shared/logs.sh
-          log_info "Generating SBOMs for ${{ steps.get-arches.outputs.arches }}"
+          log_info "Generating SBOMs for ${STEPS_GET_ARCHES_OUTPUTS_ARCHES}"
 
-          IFS=',' read -ra arch_list <<< ${{ steps.get-arches.outputs.arches }}
+          IFS=',' read -ra arch_list <<< "${STEPS_GET_ARCHES_OUTPUTS_ARCHES}"
           for arch in "${arch_list[@]}"; do
             if [[ "${arch}" == "unknown" ]]; then
               continue
@@ -387,30 +425,34 @@ jobs:
 
             log_info "Generate SBOM for ${arch}"
 
-            skopeo --override-arch $arch copy \
-              oci-archive:${{ steps.rename-oci-archive.outputs.name }} \
-              oci:${{ steps.rename-oci-archive.outputs.name }}.${arch}:${{ steps.rename-oci-archive.outputs.canonical-tag }} \
+            skopeo --override-arch "${arch}" copy \
+              "oci-archive:${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME}" \
+              "oci:${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME}.${arch}:${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_CANONICAL_TAG}" \
 
-            syft oci-dir:${{ steps.rename-oci-archive.outputs.name }}.${arch} \
+            syft "oci-dir:${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME}.${arch}" \
               -o spdx-json \
-              --file ${{ steps.rename-oci-archive.outputs.name }}.${arch}.sbom_preview.spdx.json
+              --file "${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME}.${arch}.sbom_preview.spdx.json"
 
             umoci unpack \
               --keep-dirlinks --rootless \
-              --image ${{ steps.rename-oci-archive.outputs.name }}.${arch}:${{ steps.rename-oci-archive.outputs.canonical-tag }} \
-              ${{ steps.rename-oci-archive.outputs.name }}.${arch}-bundle
+              --image "${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME}.${arch}:${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_CANONICAL_TAG}" \
+              "${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME}.${arch}-bundle"
 
-            if [[ -f  "${{ steps.rename-oci-archive.outputs.name }}.${arch}-bundle/rootfs/var/lib/chisel/manifest.wall" ]]; then
-              ssbom ${{ steps.rename-oci-archive.outputs.name }}.${arch}-bundle/rootfs \
-                    ${{ steps.rename-oci-archive.outputs.name }}.${arch}.chiselled.sbom_preview.spdx.json
+            if [[ -f  "${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME}.${arch}-bundle/rootfs/var/lib/chisel/manifest.wall" ]]; then
+              ssbom "${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME}.${arch}-bundle/rootfs" \
+                    "${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME}.${arch}.chiselled.sbom_preview.spdx.json"
             fi
 
           done
 
-          all_sboms_zip="${{ steps.rename-oci-archive.outputs.name }}.sbom_preview.spdx.zip"
-          zip "${all_sboms_zip}" ${{ steps.rename-oci-archive.outputs.name }}.*.sbom_preview.spdx.json
+          all_sboms_zip="${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME}.sbom_preview.spdx.zip"
+          zip "${all_sboms_zip}" "${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME}".*.sbom_preview.spdx.json
 
           echo "sboms=${all_sboms_zip}" >> "$GITHUB_OUTPUT"
+        env:
+          STEPS_GET_ARCHES_OUTPUTS_ARCHES: ${{ steps.get-arches.outputs.arches }}
+          STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME: ${{ steps.rename-oci-archive.outputs.name }}
+          STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_CANONICAL_TAG: ${{ steps.rename-oci-archive.outputs.canonical-tag }}
 
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
@@ -428,7 +470,7 @@ jobs:
           if [[ "$RUNNER_DEBUG" == "1" ]]; then
             set -x
           fi
-          echo "hashes=$(sha256sum ${{ env.VULN_REPORT }} ${{ env.OCI_IMAGE_ARCHIVE }} ${{ env.SBOMS }} | base64 -w0)"
+          echo "hashes=$(sha256sum ${VULN_REPORT} ${OCI_IMAGE_ARCHIVE} ${SBOMS} | base64 -w0)"
 
       - name: Login to GHCR
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121
@@ -471,19 +513,26 @@ jobs:
           OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
           IMAGE_NAME: ${{ matrix.name }}
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
+          MATRIX_BASE: ${{ matrix.base }}
+          STEPS_UPLOAD_IMAGE_OUTPUTS_DIGEST: ${{ steps.upload-image.outputs.digest }}
+          MATRIX_IGNORED_VULNERABILITIES: ${{ matrix.ignored-vulnerabilities }}
+          MATRIX_NAME: ${{ matrix.name }}
+          MATRIX_TRACK: ${{ matrix.track }}
+          MATRIX_REVISION: ${{ matrix.revision }}
+          STEPS_GENERATE_SBOMS_OUTPUTS_SBOMS: ${{ steps.generate-sboms.outputs.sboms }}
         run: |
-          jq --arg base "${{ matrix.base }}" \
-            --arg digest "${{ steps.upload-image.outputs.digest }}" \
-            --arg ignored_vulnerabilities "${{ matrix.ignored-vulnerabilities }}" \
+          jq --arg base "${MATRIX_BASE}" \
+            --arg digest "${STEPS_UPLOAD_IMAGE_OUTPUTS_DIGEST}" \
+            --arg ignored_vulnerabilities "${MATRIX_IGNORED_VULNERABILITIES}" \
             '. + {base: $base, digest: $digest, "ignored-vulnerabilities": $ignored_vulnerabilities}' \
             <<< '${{ toJSON(matrix) }}' > build_metadata.json
           ./src/uploads/upload_to_swift.sh \
-            ${{ matrix.name }} \
-            ${{ matrix.track }} \
-            ${{ matrix.revision }} \
+            "${MATRIX_NAME}" \
+            "${MATRIX_TRACK}" \
+            "${MATRIX_REVISION}" \
             build_metadata.json \
-            ${{ steps.generate-sboms.outputs.sboms }} \
-            ${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
+            "${STEPS_GENERATE_SBOMS_OUTPUTS_SBOMS}" \
+            "${OCI_ARCHIVE_NAME}${{ env.VULNERABILITY_REPORT_SUFFIX }}"
 
       - name: Create Git tag
         uses: rickstaa/action-create-tag@a1c7777fcb2fee4f19b0f283ba888afa11678b72
@@ -491,7 +540,7 @@ jobs:
           tag: "${{ steps.rename-oci-archive.outputs.name }}"
           message: "upload(${{ matrix.name }}): Build and upload new image revision ${{ matrix.revision }}"
           force_push_tag: true
-          github_token: ${{ secrets.ROCKSBOT_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   # We need this job because we want to make the releases all in one go,
   # so that we know which revisions to release, and so that we can update
@@ -517,7 +566,10 @@ jobs:
 
       - name: Use custom image trigger
         if: ${{ inputs.b64-image-trigger != '' }}
-        run: echo ${{ inputs.b64-image-trigger }} | base64 -d > ${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml
+        run: echo ${INPUTS_B64_IMAGE_TRIGGER} | base64 -d > ${NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_PATH}/image.yaml
+        env:
+          INPUTS_B64_IMAGE_TRIGGER: ${{ inputs.b64-image-trigger }}
+          NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_PATH: ${{ needs.prepare-build.outputs.oci-img-path }}
 
       - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
@@ -531,16 +583,18 @@ jobs:
         id: merge-release-requests
         env:
           PYTHONUNBUFFERED: 1
+          NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_PATH: ${{ needs.prepare-build.outputs.oci-img-path }}
         run: |
           set -e
           if [[ "$RUNNER_DEBUG" == "1" ]]; then
             set -x
           fi
           source src/shared/logs.sh
-          for revision_file in `ls ${{ env.REVISION_DATA_DIR }}`
+          for revision_file in "${{ env.REVISION_DATA_DIR }}"/*
           do
+            revision_file="$(basename "${revision_file}")"
             ret=0
-            release=$(jq -er .release < ${{ env.REVISION_DATA_DIR }}/$revision_file) || ret=1
+            jq -er .release < "${{ env.REVISION_DATA_DIR }}/${revision_file}" > /dev/null || ret=1
 
             if [ $ret -eq 1 ]
             then
@@ -551,7 +605,7 @@ jobs:
             log_info "Merge revision $revision_file with requested releases"
 
             python3 -m src.image.merge_release_info \
-              --image-trigger "${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml" \
+              --image-trigger "${NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_PATH}/image.yaml" \
               --revision-data-file "${{ env.REVISION_DATA_DIR }}/${revision_file}"
           done
 
@@ -648,6 +702,8 @@ jobs:
     if: ${{ always() && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) && github.event_name != 'pull_request' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
@@ -677,8 +733,9 @@ jobs:
           SUMMARY: ${{ steps.get-summary.outputs.summary }}
           FOOTER: "Triggered by ${{ github.triggering_actor }}. Ref: ${{ github.ref }}. Attempts: ${{ github.run_attempt }}"
           TITLE: "${{ needs.prepare-build.outputs.oci-img-name }}: failed to build->upload->release"
+          STEPS_GET_CONTACTS_OUTPUTS_MATTERMOST_CHANNELS: ${{ steps.get-contacts.outputs.mattermost-channels }}
         run: |
-          for channel in $(echo ${{ steps.get-contacts.outputs.mattermost-channels }} | tr ',' ' ')
+          for channel in $(echo ${STEPS_GET_CONTACTS_OUTPUTS_MATTERMOST_CHANNELS} | tr ',' ' ')
           do
             MM_CHANNEL_ID="${channel}" python3 -m src.notifications.mattermost_notifier send
           done

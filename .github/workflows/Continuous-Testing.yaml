@@ -13,6 +13,8 @@ jobs:
       last-scan: ${{ steps.last-scan.outputs.date }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: "3.10"
@@ -25,7 +27,7 @@ jobs:
 
       - name: Prepare test matrix
         id: prepare-test-matrix
-        run: python3 -m src.tests.get_released_revisions --oci-images-path $PWD/oci
+        run: python3 -m src.tests.get_released_revisions --oci-images-path "$PWD/oci"
 
       - name: Infer date of last scan
         id: last-scan
