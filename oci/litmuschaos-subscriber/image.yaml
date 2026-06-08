@@ -12,3 +12,6 @@ upload:
         end-of-life: '2026-09-01T00:00:00Z'
         risks:
           - edge
+    ignored-vulnerabilities:
+      - CVE-2026-42294  # github.com/argoproj/argo-workflows/v3
+      - CVE-2026-42296  # github.com/argoproj/argo-workflows/v3
