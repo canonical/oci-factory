@@ -7,11 +7,11 @@ upload:
       12-26.04:
         end-of-life: '2026-08-11T00:00:00Z'
         risks:
-          - stable
+          - edge
       12.4-26.04:
         end-of-life: '2031-05-01T00:00:00Z'
         risks:
-          - stable
+          - edge
     ignored-vulnerabilities:
       - CVE-2026-41602  # github.com/apache/thrift
       - CVE-2026-21728  # github.com/grafana/tempo
@@ -36,3 +36,4 @@ upload:
       - CVE-2026-39826  # stdlib
       - CVE-2026-39836  # stdlib
       - CVE-2026-42499  # stdlib
+      - CVE-2026-42504  # stdlib
