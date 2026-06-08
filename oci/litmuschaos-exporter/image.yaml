@@ -1,18 +1,37 @@
-version: 1
+version: 2
 upload:
   - source: canonical/litmus-rocks
-    commit: 2d1b7a733557d093c04ffac6853f38f04d45fc0d
-    directory: litmuschaos-exporter/3.26.0
+    commit: 6b028e8991a7178aab912bf00b980a53feeca5fe
+    directory: litmuschaos-exporter/3.29.0
     release:
-      3-24.04:
-        end-of-life: '2026-07-10T00:00:00Z'
+      3-26.04:
+        end-of-life: '2026-09-01T00:00:00Z'
         risks:
           - edge
-      3.26-24.04:
-        end-of-life: '2026-07-10T00:00:00Z'
+      3.29-26.04:
+        end-of-life: '2026-09-01T00:00:00Z'
         risks:
           - edge
-      3.26.0-24.04:
-        end-of-life: '2026-04-11T00:00:00Z'
-        risks:
-          - edge
+    ignored-vulnerabilities:
+      - CVE-2024-24790  # stdlib
+      - CVE-2025-68121  # stdlib
+      - CVE-2023-45288  # stdlib
+      - CVE-2024-34156  # stdlib
+      - CVE-2025-61726  # stdlib
+      - CVE-2025-61729  # stdlib
+      - CVE-2026-25679  # stdlib
+      - CVE-2026-32280  # stdlib
+      - CVE-2026-32281  # stdlib
+      - CVE-2026-32283  # stdlib
+      - CVE-2026-33811  # stdlib
+      - CVE-2026-33814  # stdlib
+      - CVE-2026-39820  # stdlib
+      - CVE-2026-39823  # stdlib
+      - CVE-2026-39825  # stdlib
+      - CVE-2026-39826  # stdlib
+      - CVE-2026-39836  # stdlib
+      - CVE-2026-42499  # stdlib
+      - CVE-2026-42504  # stdlib
+      - CVE-2024-45337  # golang.org/x/crypto
+      - CVE-2025-22869  # golang.org/x/crypto
+      - CVE-2025-22868  # golang.org/x/oauth2
