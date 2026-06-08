@@ -2,7 +2,7 @@ version: 1
 upload:
   # 24.04 LTS 
   - source: canonical/rust-rock
-    commit: 81552f9d7113cd20e972a0c1d860b13113a918d8
+    commit: 693e2714a8d312d3410f117bdb6edf4f2acbc14b
     directory: rust/1.75-24.04
     release:
       1.75-24.04:
@@ -13,7 +13,7 @@ upload:
           - beta
           - edge
   - source: canonical/rust-rock
-    commit: 72f4e3f1b08213a41881a3865b62f74af21b2cb1
+    commit: 693e2714a8d312d3410f117bdb6edf4f2acbc14b
     directory: rust/1.85-24.04
     release:
       1.85-24.04:
@@ -23,7 +23,7 @@ upload:
 
   # 25.10
   - source: canonical/rust-rock
-    commit: 72f4e3f1b08213a41881a3865b62f74af21b2cb1
+    commit: 693e2714a8d312d3410f117bdb6edf4f2acbc14b
     directory: rust/1.85-25.10
     release:
       1.85-25.10:
@@ -31,7 +31,7 @@ upload:
         risks:
           - edge
   - source: canonical/rust-rock
-    commit: 72f4e3f1b08213a41881a3865b62f74af21b2cb1
+    commit: 693e2714a8d312d3410f117bdb6edf4f2acbc14b
     directory: rust/1.88-25.10
     release:
       1.88-25.10:
@@ -41,7 +41,7 @@ upload:
 
   # 26.04 LTS
   - source: canonical/rust-rock
-    commit: 72f4e3f1b08213a41881a3865b62f74af21b2cb1
+    commit: 693e2714a8d312d3410f117bdb6edf4f2acbc14b
     directory: rust/1.93-26.04
     release:
       1.93-26.04:
