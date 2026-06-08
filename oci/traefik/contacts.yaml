@@ -2,6 +2,6 @@ notify:
   emails:
     - platform-engineering@groups.canonical.com
   mattermost-channels:
-    - ud8qc65sdjnzf8ahrir6ers9dy
+    - pphoirkuo3na9bbjjnswrni7nh
 maintainers:
   - swetha1654
