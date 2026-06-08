@@ -1,18 +1,14 @@
 version: 2
 upload:
-  - source: canonical/litmuschaos-frontend-rock
-    commit: cab6fe36faf08b0aff0ef553fb1cbf7ef0d26657
-    directory: 3.28.0
+  - source: canonical/litmus-rocks
+    commit: 6b028e8991a7178aab912bf00b980a53feeca5fe
+    directory: litmuschaos-frontend/3.29.0
     release:
-      3-24.04:
-        end-of-life: '2026-07-17T00:00:00Z'
+      3-26.04:
+        end-of-life: '2026-09-01T00:00:00Z'
         risks:
           - edge
-      3.28-24.04:
-        end-of-life: '2026-07-17T00:00:00Z'
-        risks:
-          - edge
-      3.28.0-24.04:
-        end-of-life: '2026-04-16T00:00:00Z'
+      3.29-26.04:
+        end-of-life: '2026-09-01T00:00:00Z'
         risks:
           - edge
