@@ -7,11 +7,11 @@ upload:
       4-26.04:
         end-of-life: '2026-09-07T00:00:00Z'
         risks:
-          - stable
+          - edge
       4.7-26.04:
         end-of-life: '2026-09-07T00:00:00Z'
         risks:
-          - stable
+          - edge
     ignored-vulnerabilities:
       - CVE-2025-61726  # stdlib
       - CVE-2025-61729  # stdlib
