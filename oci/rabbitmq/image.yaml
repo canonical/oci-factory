@@ -8,9 +8,9 @@ upload:
         end-of-life: '2031-05-27T00:00:00Z'
         risks:
           - edge
-          # - beta
-          # - candidate
-          # - stable
+          - beta
+          - candidate
+          - stable
   - source: canonical/rabbitmq-rock
     commit: ec025af56031c5e60234af955338e71b144abd76
     directory: 3.12-24.04
