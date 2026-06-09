@@ -7,8 +7,8 @@ upload:
       1-26.04:
         end-of-life: '2026-09-08T00:00:00Z'
         risks:
-          - stable
+          - edge
       1.28-26.04:
         end-of-life: '2026-09-08T00:00:00Z'
         risks:
-          - stable
+          - edge
