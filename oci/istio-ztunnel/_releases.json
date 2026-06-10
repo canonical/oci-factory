@@ -89,16 +89,16 @@
     "1.29-26.04": {
         "end-of-life": "2026-08-31T00:00:00Z",
         "stable": {
-            "target": "105"
+            "target": "106"
         },
         "candidate": {
-            "target": "105"
+            "target": "106"
         },
         "beta": {
-            "target": "105"
+            "target": "106"
         },
         "edge": {
-            "target": "105"
+            "target": "106"
         }
     }
 }
