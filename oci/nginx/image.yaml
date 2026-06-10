@@ -1,14 +1,14 @@
 version: 2
 upload:
   - source: canonical/nginx-rock
-    commit: 78e78a11453a34ef27837de5a7228bf115b32fb2
+    commit: 3197a1e8c045edc8c93d49a13246549292d045ed
     directory: '1.28'
     release:
       1-26.04:
-        end-of-life: '2026-09-08T00:00:00Z'
+        end-of-life: '2026-09-09T00:00:00Z'
         risks:
-          - edge
+          - stable
       1.28-26.04:
-        end-of-life: '2026-09-08T00:00:00Z'
+        end-of-life: '2026-09-09T00:00:00Z'
         risks:
-          - edge
+          - stable
