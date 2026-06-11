@@ -17,23 +17,65 @@ docker:
   parameters: >-
     --rm
   run_conclusion: |
-    jre starts and runs the Java command inside the container.
-    
-    Usage:
-    ```bash
-    java [options] <mainclass> [args...]
-    ...
+    The container logs will simply show the OpenJRE help message.
+    This is because the container expects a compiled Java application to be given.
+
+    Let's use the following Hello World application as an example:
+
+    ```java
+    // HelloWorld.java
+
+    class HelloWorld
+    {
+        public static void main(String args[])
+        {
+            System.out.println("Hello, World");
+        }
+    }
+    ```
+    You can build and package the above Hello World application with
+    chiselled Ubuntu 24.04 using the following example
+    Dockerfile.
+
+    ```docker
+    FROM ubuntu:24.04 AS builder
+    RUN apt-get update && apt-get install -y openjdk-8-jdk
+    WORKDIR /app
+    ADD HelloWorld.java .
+
+    RUN javac -source 8 -target 8 HelloWorld.java -d .
+
+    FROM ubuntu/jre:21-24.04_edge
+
+    COPY --from=builder /app/HelloWorld.class .
+
+    CMD [ "exec", "java", "-cp", "/", "HelloWorld" ]
     ```
 
   legacy:
-    run_cmd: exec java
     parameters: >-
       --rm
     run_conclusion: |
       The Ubuntu 22.04 JRE images are Dockerfile-based images. 
       
-      Usage:
-      ```bash
+      You can build and package the above Hello World application with
+      chiselled Ubuntu 22.04 JRE 8 and 17 using the following example
+      Dockerfile.
+  
+      ```docker
+      FROM ubuntu:22.04 AS builder
+      RUN apt-get update && apt-get install -y openjdk-8-jdk
+      WORKDIR /app
+      ADD HelloWorld.java .
+  
+      RUN javac -source 8 -target 8 HelloWorld.java -d .
+  
+      FROM ubuntu/jre:8-22.04_edge
+  
+      WORKDIR /
+      COPY --from=builder /app/HelloWorld.class .
+  
+      CMD [ "HelloWorld" ]
       java [options] <mainclass> [args...]
       ...
       ```
