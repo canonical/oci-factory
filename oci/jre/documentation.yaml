@@ -19,10 +19,9 @@ docker:
   run_conclusion: |
     jre starts and runs the Java command inside the container.
     
-    You can access the `java` with the following command:
+    Usage:
     ```bash
-    $ docker run --rm ubuntu/jre:21_edge exec java
-    Usage: java [options] <mainclass> [args...]
+    java [options] <mainclass> [args...]
     ...
     ```
 
@@ -31,12 +30,11 @@ docker:
     parameters: >-
       --rm
     run_conclusion: |
-      Access the legacy Loki instance at http://localhost:<port-value-defined-as-parameter-e.g.-3100>.
-
-      The Ubuntu 22.04 JRE images are Dockerfile-based images. You can access the `java` with the following command:
+      The Ubuntu 22.04 JRE images are Dockerfile-based images. 
+      
+      Usage:
       ```bash
-      $ docker run --rm ubuntu/jre:21_edge exec java
-      Usage: java [options] <mainclass> [args...]
+      java [options] <mainclass> [args...]
       ...
       ```
 
