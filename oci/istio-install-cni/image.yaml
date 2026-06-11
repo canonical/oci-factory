@@ -1,21 +1,10 @@
 version: 2
 upload:
   - source: canonical/istio-install-cni-rock
-    commit: c65f9b1701ab12c963a594572c99dfbb299f256e
+    commit: 923058df848ebbe583c6717978087d28bf0d80df
     directory: 1.29.0
     release:
-      1.29-26.04:
-        end-of-life: '2026-08-31T00:00:00Z'
+      1.29-24.04:
+        end-of-life: '2026-09-10T00:00:00Z'
         risks:
           - stable
-    ignored-vulnerabilities:
-      - CVE-2026-35469  # github.com/moby/spdystream
-      - CVE-2026-29181  # go.opentelemetry.io/otel
-      - CVE-2026-39883  # go.opentelemetry.io/otel/sdk
-      - CVE-2026-34986  # github.com/go-jose/go-jose/v4
-      - CVE-2026-24051  # go.opentelemetry.io/otel/sdk
-      - CVE-2026-33186  # google.golang.org/grpc
-      - CVE-2019-14993  # istio.io/istio
-      - CVE-2021-39155  # istio.io/istio
-      - CVE-2021-39156  # istio.io/istio
-      - CVE-2022-23635  # istio.io/istio
