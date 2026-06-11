@@ -1,9 +1,10 @@
 version: 2
 application: jre
 description: |
-  OpenJDK is the official reference implementation of Java SE since
-  version 7. This image packs the Java Runtime Environment, coming
-  from the [OpenJDK project](https://www.openjdk.org/), a free and open
+  OpenJDK is the official reference implementation of Java Platform,
+  Standard Edition (Java SE), since version 7. This image packs the Java
+  Runtime Environment, coming from the
+  [OpenJDK project](https://www.openjdk.org/), a free and open
   source implementation of the Java Platform, Standard Edition (Java SE).
   
   Java is a registered trademark of Oracle and/or its affiliates.
@@ -17,6 +18,27 @@ docker:
     --rm
   run_conclusion: |
     jre starts and runs the Java command inside the container.
+    
+    You can access the `java` with the following command:
+    ```bash
+    $ docker run --rm ubuntu/jre:21_edge exec java
+    Usage: java [options] <mainclass> [args...]
+    ...
+    ```
+
+  legacy:
+    run_cmd: exec java
+    parameters: >-
+      --rm
+    run_conclusion: |
+      Access the legacy Loki instance at http://localhost:<port-value-defined-as-parameter-e.g.-3100>.
+
+      The Ubuntu 22.04 JRE images are Dockerfile-based images. You can access the `java` with the following command:
+      ```bash
+      $ docker run --rm ubuntu/jre:21_edge exec java
+      Usage: java [options] <mainclass> [args...]
+      ...
+      ```
 
 config:
   TZ:
