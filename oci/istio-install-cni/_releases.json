@@ -33,18 +33,18 @@
         "end-of-life": "2025-02-19T00:00:00Z"
     },
     "1.29-24.04": {
-        "end-of-life": "2026-06-30T00:00:00Z",
+        "end-of-life": "2026-09-10T00:00:00Z",
         "stable": {
-            "target": "5"
+            "target": "8"
         },
         "candidate": {
-            "target": "5"
+            "target": "1.29-24.04_stable"
         },
         "beta": {
-            "target": "5"
+            "target": "1.29-24.04_candidate"
         },
         "edge": {
-            "target": "5"
+            "target": "1.29-24.04_beta"
         }
     },
     "1.29.0-24.04": {
