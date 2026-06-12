@@ -37,3 +37,6 @@ upload:
       - CVE-2026-39836  # stdlib
       - CVE-2026-42499  # stdlib
       - CVE-2026-42504  # stdlib
+      # Upstream github/gitlab related
+      - github-pat
+      - gitlab-pat
