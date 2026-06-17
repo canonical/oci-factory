@@ -1,0 +1,44 @@
+version: 2
+application: authentik-server
+description: |
+  Authentik is an open-source Identity Provider focused on flexibility and versatility.
+  This rock bundles the Authentik server (Go), worker (Rust/Python) and all required
+  runtimes. Authentik supports SAML2, LDAP, OAuth2, and OpenID Connect protocols,
+  and can be used as a standalone identity provider or integrated into existing
+  infrastructure.
+website: https://goauthentik.io
+issues: https://github.com/canonical/authentik-server-rock/issues
+source-code: https://github.com/canonical/authentik-server-rock
+
+docker:
+  parameters: >-
+    -p 9000:9000
+    -p 9443:9443
+  run_conclusion: |
+    Access the Authentik Server at `http://localhost:9000` or `https://localhost:9443`.
+
+config:
+  AUTHENTIK_SECRET_KEY:
+    type: env
+    description: Secret key used for encryption and signing, e.g., `changeme`.
+  AUTHENTIK_REDIS__HOST:
+    type: env
+    description: Redis hostname for caching and queue management, e.g., `redis`.
+  AUTHENTIK_POSTGRESQL__HOST:
+    type: env
+    description: PostgreSQL hostname for the database, e.g., `postgresql`.
+  AUTHENTIK_POSTGRESQL__USER:
+    type: env
+    description: PostgreSQL user, e.g., `authentik`.
+  AUTHENTIK_POSTGRESQL__PASSWORD:
+    type: env
+    description: PostgreSQL password, e.g., `changeme`.
+  AUTHENTIK_POSTGRESQL__NAME:
+    type: env
+    description: PostgreSQL database name, e.g., `authentik`.
+  '`-p <port>:9000`':
+    type: port
+    description: Expose Authentik HTTP port 9000 on the host's `<port>`.
+  '`-p <port>:9443`':
+    type: port
+    description: Expose Authentik HTTPS port 9443 on the host's `<port>`.
