@@ -212,6 +212,9 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ matrix.canonical-tag }}
+          # Keep the GITHUB_TOKEN-based auth header that checkout installs on
+          # `origin` to push the new release tag (see below)
+          persist-credentials: true
 
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
@@ -235,17 +238,51 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Create Git tag
-        uses: rickstaa/action-create-tag@a1c7777fcb2fee4f19b0f283ba888afa11678b72
-        with:
-          tag: "${{ matrix.release-name }}"
-          message: "release(${{ matrix.name }}): Release image revision ${{ matrix.revision }} to ${{ matrix.channel }}"
-          github_token: ${{ secrets.ROCKSBOT_TOKEN }}
-          commit_sha: ${{ matrix.canonical-tag }}
-          force_push_tag: true
+        env:
+          TAG: ${{ matrix.release-name }}
+          MSG: "release(${{ matrix.name }}): Release image revision ${{ matrix.revision }} to ${{ matrix.channel }}"
+          TARGET_REF: ${{ matrix.canonical-tag }}
+        run: |
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
 
-      - uses: "softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda"  # v3.0.0
-        with:
-          name: "${{ matrix.release-name }}"
-          tag_name: "${{ matrix.release-name }}"
-          token: "${{ secrets.ROCKSBOT_TOKEN }}"
-          files: "sbom/*.sbom_preview.spdx.json"
+          # The tag's tagger field comes from git config below, so the tag
+          # object still records ROCKsBot regardless of the push token.
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+
+          # Passing TARGET_REF (itself an annotated tag) without peeling
+          # preserves the prior tag-of-tag chain back to the upload tag.
+          git tag -fa "${TAG}" -m "${MSG}" "${TARGET_REF}"
+
+          # NOTE: the tag push below relies on the GITHUB_TOKEN-based auth
+          # header that actions/checkout (persist-credentials: true) wires up
+          # on `origin`. GITHUB_TOKEN-driven pushes are treated specially:
+          # they do NOT trigger downstream workflow runs, so every release
+          # tag we push will not retrigger Image.yaml on the push event.
+          # See: https://docs.github.com/en/actions/concepts/security/github_token
+          # Authenticating with a PAT (e.g. ROCKSBOT_TOKEN) or a GitHub App
+          # installation token would re-enable retriggering -- don't do that.
+
+          git push --force origin "refs/tags/${TAG}"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
+          TAG: ${{ matrix.release-name }}
+        run: |
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
+
+          # unmatched glob -> empty file list, release still created.
+          shopt -s nullglob
+
+          files=(sbom/*.sbom_preview.spdx.json)
+          gh release create "${TAG}" \
+            --title "${TAG}" \
+            --notes "" \
+            "${files[@]}"
