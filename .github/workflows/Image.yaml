@@ -141,7 +141,7 @@ jobs:
 
           python3 -m src.image.prepare_single_image_build_matrix \
             --oci-path "${STEPS_VALIDATE_IMAGE_OUTPUTS_IMG_PATH}" \
-            --revision-data-dir ${{ env.DATA_DIR }} \
+            --revision-data-dir ${DATA_DIR} \
             --warn-image-eol-exceeds-base-eol
 
   validate-matrix:
@@ -270,15 +270,15 @@ jobs:
             set -x
           fi
 
-          mkdir ${{ env.DATA_DIR }}
+          mkdir ${DATA_DIR}
 
           python3 -m src.image.prepare_single_image_build_matrix \
             --oci-path "${NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_PATH}" \
-            --revision-data-dir ${{ env.DATA_DIR }} \
+            --revision-data-dir ${DATA_DIR} \
             --next-revision "${STEPS_GET_NEXT_REVISION_OUTPUTS_REVISION}" \
             --infer-image-track
 
-          echo "revision-data-cache-key=${{ github.run_id }}-${{ env.DATA_DIR }}-$(date +%s)" >> "$GITHUB_OUTPUT"
+          echo "revision-data-cache-key=${{ github.run_id }}-${DATA_DIR}-$(date +%s)" >> "$GITHUB_OUTPUT"
         env:
           NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_PATH: ${{ needs.prepare-build.outputs.oci-img-path }}
           STEPS_GET_NEXT_REVISION_OUTPUTS_REVISION: ${{ steps.get-next-revision.outputs.revision }}
@@ -590,11 +590,11 @@ jobs:
             set -x
           fi
           source src/shared/logs.sh
-          for revision_file in "${{ env.REVISION_DATA_DIR }}"/*
+          for revision_file in "${REVISION_DATA_DIR}"/*
           do
             revision_file="$(basename "${revision_file}")"
             ret=0
-            jq -er .release < "${{ env.REVISION_DATA_DIR }}/${revision_file}" > /dev/null || ret=1
+            jq -er .release < "${REVISION_DATA_DIR}/${revision_file}" > /dev/null || ret=1
 
             if [ $ret -eq 1 ]
             then
@@ -606,7 +606,7 @@ jobs:
 
             python3 -m src.image.merge_release_info \
               --image-trigger "${NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_PATH}/image.yaml" \
-              --revision-data-file "${{ env.REVISION_DATA_DIR }}/${revision_file}"
+              --revision-data-file "${REVISION_DATA_DIR}/${revision_file}"
           done
 
       - uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7

@@ -165,7 +165,7 @@ jobs:
             set -x
           fi
           source src/shared/logs.sh
-          log_info "Running in production?  ${{ env.IS_PROD == 'true' && 'YES' || 'NO' }}"
+          log_info "Running in production? $([[ "$IS_PROD" == "true" ]] && echo YES || echo NO)"
           
           python3 -m src.image.release \
             --image-trigger oci/${INPUTS_OCI_IMAGE_NAME}/image.yaml \

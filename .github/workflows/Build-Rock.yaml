@@ -188,7 +188,7 @@ jobs:
 
       - name: Building Target
         id: rockcraft
-        uses: canonical/craft-actions/rockcraft-pack@210d55fa6cb7a1ab39e3194315d6a03249af3d34  # main (20260526)
+        uses: canonical/craft-actions/rockcraft-pack@67304fab78ef627dc3f2e72c8a6ad51a493a6070  # main (20260605)
         with:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
           test: "${{ inputs.rockcraft-test }}"
@@ -277,7 +277,7 @@ jobs:
       - name: Collecting Artifacts
         id: collect-artifacts
         run: |
-          mkdir -p "${{ env.ROCK_CI_FOLDER }}" && cp "${{ env.ROCK_REPO_DIR }}/${INPUTS_ROCKFILE_DIRECTORY}"/*.rock "$_"
+          mkdir -p "${ROCK_CI_FOLDER}" && cp "${ROCK_REPO_DIR}/${INPUTS_ROCKFILE_DIRECTORY}"/*.rock "$_"
           echo "filename=${MATRIX_ROCK_NAME}_${MATRIX_ARCHITECTURE}" >> "$GITHUB_OUTPUT"
         env:
           INPUTS_ROCKFILE_DIRECTORY: ${{ inputs.rockfile-directory }}
@@ -335,7 +335,7 @@ jobs:
         run: |
           src/build_rock/assemble_rock/assemble.sh \
             -n "${INPUTS_OCI_ARCHIVE_NAME}" \
-            -d "${{ env.ROCK_CI_FOLDER }}"
+            -d "${ROCK_CI_FOLDER}"
         env:
           INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
       
