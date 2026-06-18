@@ -23,7 +23,7 @@ jobs:
         id: changed-files
         with:
           json: true
-          quotepath: false
+          escape_json: false
           files: |
             .github/base_digests/*
 
