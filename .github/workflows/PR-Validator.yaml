@@ -127,7 +127,6 @@ jobs:
       pull-requests: write
     env:
       IS_PROD: ${{ ! startsWith(needs.get-submitted-files.outputs.image-name, 'mock-') }}
-      COMMENT_TAG: "repo-not-exist"
     steps:
       - name: Validate registry has repo
         id: validate-registry-has-repo
@@ -146,15 +145,34 @@ jobs:
 
       - name: Comment PR if repo does not exist
         if: ${{ steps.validate-registry-has-repo.outputs.docker-repo-exists == 'false' }}
-        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b
-        with:
-          message: |
-            The Docker repository for this image does not exist yet. Merging of this repo is blocked.
-            _Run ID: **${{ github.run_id }}** ; Attempt: **${{ github.run_attempt }}**_
+        id: comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          SERVER_URL: ${{ github.server_url }}
+        run: |
+          comment_url=$(gh pr comment "${PR_NUMBER}" \
+            --repo "${REPO}" \
+            --body "The Docker repository for this image does not exist yet. Merging of this repo is blocked.
+          _Run ID: **${RUN_ID}** ; Attempt: **${RUN_ATTEMPT}**_
 
-            See [logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
-          reactions: eyes
-          comment_tag: ${{ env.COMMENT_TAG }}
+          See [logs](${SERVER_URL}/${REPO}/actions/runs/${RUN_ID}).")
+          echo "comment-id=$(basename "${comment_url}")" >> "$GITHUB_OUTPUT"
+
+      - name: Add reaction to comment
+        if: ${{ steps.validate-registry-has-repo.outputs.docker-repo-exists == 'false' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ steps.comment.outputs.comment-id }}
+        run: |
+          gh api \
+            --method POST \
+            repos/${REPO}/issues/comments/${COMMENT_ID}/reactions \
+            --field content=eyes
 
   update-pr:
     runs-on: ubuntu-22.04
@@ -164,16 +182,31 @@ jobs:
     permissions: 
       pull-requests: write 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          persist-credentials: false
-
       - name: Comment PR
-        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b
-        with:
-          message: |
-            One or more files in this PR are not valid! :grimacing:
-            _Run ID: **${{ github.run_id }}** ; Attempt: **${{ github.run_attempt }}**_
+        id: comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          SERVER_URL: ${{ github.server_url }}
+        run: |
+          comment_url=$(gh pr comment "${PR_NUMBER}" \
+            --repo "${REPO}" \
+            --body "One or more files in this PR are not valid! :grimacing:
+          _Run ID: **${RUN_ID}** ; Attempt: **${RUN_ATTEMPT}**_
 
-            See [logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
-          reactions: eyes
+          See [logs](${SERVER_URL}/${REPO}/actions/runs/${RUN_ID}).")
+          echo "comment-id=$(basename "${comment_url}")" >> "$GITHUB_OUTPUT"
+
+      - name: Add reaction to comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ steps.comment.outputs.comment-id }}
+        run: |
+          gh api \
+            --method POST \
+            repos/${REPO}/issues/comments/${COMMENT_ID}/reactions \
+            --field content=eyes
