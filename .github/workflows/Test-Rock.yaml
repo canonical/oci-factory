@@ -119,7 +119,7 @@ jobs:
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
             -v "$PWD:/workdir" -w /workdir \
-            "${SKOPEO_IMAGE }" \
+            "${SKOPEO_IMAGE}" \
             copy "oci-archive:${INPUTS_OCI_ARCHIVE_NAME}" \
             "oci:${TEST_IMAGE_NAME}:${TEST_IMAGE_TAG}"
         env:
