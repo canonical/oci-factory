@@ -160,7 +160,7 @@ jobs:
           _Run ID: **${RUN_ID}** ; Attempt: **${RUN_ATTEMPT}**_
 
           See [logs](${SERVER_URL}/${REPO}/actions/runs/${RUN_ID}).")
-          echo "comment-id=$(basename "${comment_url}")" >> "$GITHUB_OUTPUT"
+          echo "comment-id=${comment_url##*issuecomment-}" >> "$GITHUB_OUTPUT"
 
       - name: Add reaction to comment
         if: ${{ steps.validate-registry-has-repo.outputs.docker-repo-exists == 'false' }}
@@ -198,7 +198,7 @@ jobs:
           _Run ID: **${RUN_ID}** ; Attempt: **${RUN_ATTEMPT}**_
 
           See [logs](${SERVER_URL}/${REPO}/actions/runs/${RUN_ID}).")
-          echo "comment-id=$(basename "${comment_url}")" >> "$GITHUB_OUTPUT"
+          echo "comment-id=${comment_url##*issuecomment-}" >> "$GITHUB_OUTPUT"
 
       - name: Add reaction to comment
         env:
