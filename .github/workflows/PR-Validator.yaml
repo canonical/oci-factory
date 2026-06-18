@@ -51,7 +51,7 @@ jobs:
         run: |
           source src/shared/logs.sh
           log_info "Changed files are: ${STEPS_CHANGED_FILES_OUTPUTS_ALL_CHANGED_FILES}"
-          echo "matrix={\"filename\":${STEPS_CHANGED_FILES_OUTPUTS_ALL_CHANGED_FILES}}" >> "$GITHUB_OUTPUT"
+          echo "matrix={\"filename\":$(echo ${STEPS_CHANGED_FILES_OUTPUTS_ALL_CHANGED_FILES})}" >> "$GITHUB_OUTPUT"
         env:
           STEPS_CHANGED_FILES_OUTPUTS_ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
 
