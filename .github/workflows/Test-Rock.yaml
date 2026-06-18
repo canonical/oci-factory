@@ -165,7 +165,7 @@ jobs:
       - name: Run Umoci tests
         run: |
           sudo umoci unpack --keep-dirlinks \
-            --image "${TEST_IMAGE_NAME }:${TEST_IMAGE_TAG}" \
+            --image "${TEST_IMAGE_NAME}:${TEST_IMAGE_TAG}" \
            bundle
 
           umoci list --layout "${TEST_IMAGE_NAME}" | grep -w -c "${TEST_IMAGE_TAG}"
