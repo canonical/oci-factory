@@ -56,6 +56,9 @@ upload:
         end-of-life: "2026-05-30T00:00:00Z"
         risks:
           - edge
+          - beta
+          - candidate
+          - stable
     ignored-vulnerabilities:
       - CVE-2025-61726  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2025-61726
       - CVE-2025-61728  # Needs evaluation. CVSS: 6.5 (Medium), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2025-61728
