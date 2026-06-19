@@ -30,6 +30,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/validate-actor
         with:
           admin-only: true
@@ -45,6 +47,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
@@ -68,7 +71,7 @@ jobs:
       - name: Generate Summary
         if: ${{ !cancelled() }}
         run: |
-          python3 -m tools.junit_to_markdown --input-junit "${{ env.PYTEST_RESULT_PATH }}" >> $GITHUB_STEP_SUMMARY
+          python3 -m tools.junit_to_markdown --input-junit "${{ env.PYTEST_RESULT_PATH }}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload pytest Result
         if: ${{ !cancelled() }}
@@ -87,6 +90,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Install bats
         run: |
@@ -97,7 +101,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
         run: |
-          find ${{ github.workspace }} -name 'test-*.bats' | xargs bats
+          find "${{ github.workspace }}" -name 'test-*.bats' -print0 | xargs -0 bats
   
   # # Test use case of reuseable workflow 
   # build-rock:

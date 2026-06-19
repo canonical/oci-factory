@@ -13,6 +13,8 @@ jobs:
     name: Test
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
       - name: Set up Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c
         with:
@@ -27,6 +29,8 @@ jobs:
     name: Snap build
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
       - uses: snapcore/action-build@3bdaa03e1ba6bf59a65f84a751d943d549a54e79
         id: snapcraft
         with:

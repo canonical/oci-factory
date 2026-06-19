@@ -35,9 +35,13 @@ jobs:
       oci-image-name: ${{ steps.get-image-name.outputs.img-name }}
     steps:
       - name: ${{ inputs.external_ref_id }}  # (2)
-        run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
+        run: echo 'Started by ${INPUTS_EXTERNAL_REF_ID}' >> "$GITHUB_STEP_SUMMARY"
+        env:
+          INPUTS_EXTERNAL_REF_ID: ${{ inputs.external_ref_id }}
         
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
 
       - name: Validate access to triggered image
         uses: ./.github/actions/validate-actor
@@ -63,7 +67,7 @@ jobs:
             set -x
           fi
           source src/shared/logs.sh
-          img_dir="${{ steps.changed-files.outputs.all_changed_files }}"
+          img_dir="${STEPS_CHANGED_FILES_OUTPUTS_ALL_CHANGED_FILES}"
           occurrences="${img_dir//[^,]}"
           if [ ${#occurrences} -ne 0 ]
           then
@@ -71,6 +75,8 @@ jobs:
             exit 1
           fi
           echo "img-name=$(basename ${img_dir})" >> "$GITHUB_OUTPUT"
+        env:
+          STEPS_CHANGED_FILES_OUTPUTS_ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
 
   
   do-releases:
@@ -85,6 +91,8 @@ jobs:
       RELEASE_REPO_DIR: oci-factory-releases
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
 
       - name: Fetch _releases.json
         uses: ./.github/actions/fetch-releases-json
@@ -149,34 +157,41 @@ jobs:
           # ECR_LTS_NAMESPACE: ${{ env.IS_PROD == 'true' && 'lts' || secrets.ECR_LTS_NAMESPACE_DEV }}
 
           PYTHONUNBUFFERED: 1
+          INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
+          STEPS_GET_ALL_CANONICAL_TAGS_OUTPUTS_CANONICAL_TAGS_FILE: ${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}
         run: |
           set -e
           if [[ "$RUNNER_DEBUG" == "1" ]]; then
             set -x
           fi
           source src/shared/logs.sh
-          log_info "Running in production?  ${{ env.IS_PROD == 'true' && 'YES' || 'NO' }}"
+          log_info "Running in production? $([[ "$IS_PROD" == "true" ]] && echo YES || echo NO)"
           
           python3 -m src.image.release \
-            --image-trigger oci/${{ inputs.oci-image-name }}/image.yaml \
-            --image-name ${{ inputs.oci-image-name }} \
-            --all-releases oci/${{ inputs.oci-image-name }}/_releases.json \
-            --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
+            --image-trigger oci/${INPUTS_OCI_IMAGE_NAME}/image.yaml \
+            --image-name ${INPUTS_OCI_IMAGE_NAME} \
+            --all-releases oci/${INPUTS_OCI_IMAGE_NAME}/_releases.json \
+            --all-revision-tags "${STEPS_GET_ALL_CANONICAL_TAGS_OUTPUTS_CANONICAL_TAGS_FILE}" \
             --ghcr-repo "${{ github.repository_owner }}/oci-factory"
 
       - name: Update _releases.json
         run: |
           python3 -m src.image.release \
-            --image-trigger oci/${{ inputs.oci-image-name }}/image.yaml \
-            --image-name ${{ inputs.oci-image-name }} \
-            --all-releases oci/${{ inputs.oci-image-name }}/_releases.json \
-            --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
+            --image-trigger oci/${INPUTS_OCI_IMAGE_NAME}/image.yaml \
+            --image-name ${INPUTS_OCI_IMAGE_NAME} \
+            --all-releases oci/${INPUTS_OCI_IMAGE_NAME}/_releases.json \
+            --all-revision-tags "${STEPS_GET_ALL_CANONICAL_TAGS_OUTPUTS_CANONICAL_TAGS_FILE}" \
             --update-releases-json
+        env:
+          INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
+          STEPS_GET_ALL_CANONICAL_TAGS_OUTPUTS_CANONICAL_TAGS_FILE: ${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}
 
       - name: Overwrite _releases.json
         run: |
-          mkdir -p ${{ env.RELEASE_REPO_DIR }}/oci/${{ inputs.oci-image-name }}
-          cp oci/${{ inputs.oci-image-name }}/_releases.json ${{ env.RELEASE_REPO_DIR }}/oci/${{ inputs.oci-image-name }}/_releases.json
+          mkdir -p ${{ env.RELEASE_REPO_DIR }}/oci/${INPUTS_OCI_IMAGE_NAME}
+          cp oci/${INPUTS_OCI_IMAGE_NAME}/_releases.json ${{ env.RELEASE_REPO_DIR }}/oci/${INPUTS_OCI_IMAGE_NAME}/_releases.json
+        env:
+          INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
 
       # Commit with actor's GitHub noreply email to pass CLA and keep the privacy of the actor
       # Use force push, to bypass the branch protection rules
@@ -212,6 +227,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ matrix.canonical-tag }}
+          persist-credentials: false
 
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
@@ -224,22 +240,23 @@ jobs:
             set -x
           fi
           sbom_target_dir="$(pwd)/sbom"
-          find sbom -type f -name '*.spdx.zip' -exec unzip {} -d ${sbom_target_dir} \;
+          find sbom -type f -name '*.spdx.zip' -exec unzip {} -d "${sbom_target_dir}" \;
 
       # We force delete an existing tag because otherwise we won't get
       # an email notification and the GH release will have the date from when
       # it was created the first time (i.e. force-push won't update the date)
-      - run: gh release delete ${{ matrix.release-name }} --yes --cleanup-tag
+      - run: gh release delete ${MATRIX_RELEASE_NAME} --yes --cleanup-tag
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MATRIX_RELEASE_NAME: ${{ matrix.release-name }}
           
       - name: Create Git tag
         uses: rickstaa/action-create-tag@a1c7777fcb2fee4f19b0f283ba888afa11678b72
         with:
           tag: "${{ matrix.release-name }}"
           message: "release(${{ matrix.name }}): Release image revision ${{ matrix.revision }} to ${{ matrix.channel }}"
-          github_token: ${{ secrets.ROCKSBOT_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           commit_sha: ${{ matrix.canonical-tag }}
           force_push_tag: true
 
@@ -247,5 +264,5 @@ jobs:
         with:
           name: "${{ matrix.release-name }}"
           tag_name: "${{ matrix.release-name }}"
-          token: "${{ secrets.ROCKSBOT_TOKEN }}"
+          token: "${{ secrets.GITHUB_TOKEN }}"
           files: "sbom/*.sbom_preview.spdx.json"
