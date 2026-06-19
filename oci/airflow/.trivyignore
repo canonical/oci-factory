@@ -232,7 +232,7 @@ CVE-2025-57735
 #  (Apache Airflow): RCE by race condition in example_xcom dag, fixed in <3.2.0
 CVE-2025-54550
 
-#  (Apache Airflow): Unsafe Deserialization via Legacy Serialization Keys (__type/__var) Bypass in XCom API, fixed in <3.2.0 
+#  (Apache Airflow): Unsafe Deserialization via Legacy Serialization Keys (__type/__var) Bypass in XCom API, fixed in <3.2.0
 CVE-2026-33858
 
 #  (Apache Airflow): allows code execution through crafted XCom payloads, fixed in <3.2.0
@@ -246,3 +246,70 @@ GHSA-xqmj-j6mv-4862
 
 # (lxml): Default configuration of iterparse() and ETCompatXMLParser() allows XXE to local files
 CVE-2026-41066
+
+# (apache-airflow-providers-sftp): mitigated with upgrade of package to >= 5.8.1
+# future airflow version will use provider package 5.8.1
+CVE-2026-50203
+
+# (apache-airflow-providers-cncf-kubernetes): mitigated with upgrade of airflow >= 3.2.0
+CVE-2026-27173
+
+# (GitPython): mitigated with upgrade of gitpython >= 3.1.47
+# (next release from main resolves this, GitPython >= 3.1.47 in main's constraints.txt)
+CVE-2026-42215
+CVE-2026-42284
+CVE-2026-44243
+CVE-2026-44244
+GHSA-mv93-w799-cj2w
+
+# (Mako): mitigated with upgrade of Mako >= 1.3.12
+# (next release from main resolves this, Mako >= 1.3.12 in main's constraints.txt)
+CVE-2026-41205
+CVE-2026-44307
+
+# (cryptography): mitigated with upgrade of cryptography >= 48.0.1
+# (next release from main resolves this, cryptography >= 48.0.1 in main's constraints.txt)
+GHSA-537c-gmf6-5ccf
+
+# (litellm): mitigates with upgrade of litellm >= 1.83.7
+# (not a dependency of core, DAG author needs to specify version)
+CVE-2026-42208
+CVE-2026-49468
+CVE-2026-40217
+CVE-2026-42203
+CVE-2026-42271
+
+# (pyarrow): mitigated with upgrade of pyarrow >= 23.0.1 (pending resolution in Airflow)
+# related Airflow issue: https://github.com/apache/airflow/issues/15635
+CVE-2026-25087
+
+# (python-multipart): mitigate with upgrade of python-multipart >= 0.0.30
+# (next release from main resolves this, python-multipart >= 0.0.30 in main's constraints.txt)
+CVE-2026-42561
+CVE-2026-53539
+
+# (redshift-connector): mitigated with upgrade of amazon-redshift-python-driver >= 2.1.14
+# (fix already in next airflow provider version)
+CVE-2026-8838
+
+# (starlette): mitigated with upgrade of starlette >= 1.1.0
+# (next release from main resolves this, starlette >= 1.1.0 in main's constraints.txt)
+CVE-2026-48818
+CVE-2026-54283
+
+# (tornado): mitigated with upgrade of tornado >= 6.5.6
+# (next release from main resolves this, tornado >= 6.5.6 in main's constraints.txt)
+CVE-2026-49853
+CVE-2026-49855
+
+# (urllib3): mitigated with upgrade of urllib3 >= 2.0.0
+# (next release from main resolves this, urllib >= 2.7.0 in main's constraints.txt)
+CVE-2026-44431
+CVE-2026-44432
+
+# (PyJWT): mitigated with upgrade of PyJWT >= 2.13.0
+# (next release from main resolves this, PyJWT >= 2.13.0 in main's constraints.txt)
+CVE-2026-48526
+
+# (libssl3t64): will be resolved with rebuild from ubuntu@24.04 >= 3.0.13-0ubuntu3.11
+CVE-2026-45447
