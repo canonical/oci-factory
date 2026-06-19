@@ -77,3 +77,4 @@ upload:
       - CVE-2026-39826  # Needs evaluation. CVSS: 6.1 (Medium), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39826
       - CVE-2026-39836  # Not affected (Windows-only). CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39836
       - CVE-2026-42499  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-42499
+      - CVE-2026-42504  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-42504
