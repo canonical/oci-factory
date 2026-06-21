@@ -2,76 +2,76 @@
     "3.12-24.04": {
         "end-of-life": "2029-05-31T00:00:00Z",
         "edge": {
-            "target": "152"
+            "target": "155"
         },
         "beta": {
-            "target": "152"
+            "target": "155"
         },
         "candidate": {
-            "target": "152"
+            "target": "155"
         },
         "stable": {
-            "target": "152"
+            "target": "155"
         }
     },
     "3-22.04": {
         "end-of-life": "2027-06-01T00:00:00Z",
         "edge": {
-            "target": "153"
+            "target": "156"
         },
         "beta": {
-            "target": "153"
+            "target": "156"
         },
         "candidate": {
-            "target": "153"
+            "target": "156"
         },
         "stable": {
-            "target": "153"
+            "target": "156"
         }
     },
     "3-24.04": {
         "end-of-life": "2029-05-31T00:00:00Z",
         "edge": {
-            "target": "152"
+            "target": "155"
         },
         "beta": {
-            "target": "152"
+            "target": "155"
         },
         "candidate": {
-            "target": "152"
+            "target": "155"
         },
         "stable": {
-            "target": "152"
+            "target": "155"
         }
     },
     "3.9-22.04": {
         "end-of-life": "2027-06-01T00:00:00Z",
         "edge": {
-            "target": "153"
+            "target": "156"
         },
         "beta": {
-            "target": "153"
+            "target": "156"
         },
         "candidate": {
-            "target": "153"
+            "target": "156"
         },
         "stable": {
-            "target": "153"
+            "target": "156"
         }
     },
     "4.0-26.04": {
         "end-of-life": "2031-05-27T00:00:00Z",
         "edge": {
-            "target": "151"
+            "target": "154"
         },
         "beta": {
-            "target": "151"
+            "target": "154"
         },
         "candidate": {
-            "target": "151"
+            "target": "154"
         },
         "stable": {
-            "target": "151"
+            "target": "154"
         }
     }
 }
