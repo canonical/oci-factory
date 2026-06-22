@@ -1,19 +1,14 @@
 version: 2
 upload:
   - source: canonical/sloth-rock
-    commit: a13f350867824d1dc07535967be20ceac24c31ed
-    directory: 0.15.0
+    commit: c20e5c2f3b12626a3a176238bcc396eb3499b476
+    directory: 0.16.0
     release:
       0-26.04:
-        end-of-life: '2026-09-11T00:00:00Z'
+        end-of-life: '2026-09-21T00:00:00Z'
         risks:
           - edge
-      0.15-26.04:
-        end-of-life: '2026-09-11T00:00:00Z'
+      0.16-26.04:
+        end-of-life: '2026-09-21T00:00:00Z'
         risks:
           - edge
-    ignored-vulnerabilities:
-      # Upstream not affected
-      - CVE-2026-42151  # github.com/prometheus/prometheus
-      - CVE-2026-42154  # github.com/prometheus/prometheus
-      - CVE-2026-29181  # go.opentelemetry.io/otel
