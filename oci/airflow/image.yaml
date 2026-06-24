@@ -96,3 +96,8 @@ upload:
       - CVE-2026-44432 # urllib3 (pip); resolved in next airflow release (urllib3 >= 2.7.0)
       - CVE-2026-48526 # PyJWT (pip); resolved in next airflow release (PyJWT >= 2.13.0)
       - CVE-2026-45447 # libssl3t64 (deb); resolved with rebuild from ubuntu@24.04 >= 3.0.13-0ubuntu3.11
+      - CVE-2026-54512 # java based - does not affect Airflow
+      - CVE-2026-54513 # java based - does not affect Airflow
+      - CVE-2026-47101 # litellm (pip); resolved in next airflow release (litellm >= 1.83.14)
+      - CVE-2026-47102 # litellm (pip); resolved in next airflow release (litellm >= 1.83.14)
+      - GHSA-6v7p-g79w-8964 # msgpack (pip); resolved in next airflow release (msgpackmsgpack >= 1.2.1)
