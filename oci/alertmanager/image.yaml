@@ -1,42 +1,14 @@
 version: 2
 upload:
   - source: canonical/alertmanager-rock
-    commit: 80af5bc3b4ff500ac7474dd90cdb004a0afebf29
-    directory: 0.31.1
-    release:
-      0.31-26.04:
-        end-of-life: '2031-05-01T00:00:00Z'
-        risks:
-          - stable
-    ignored-vulnerabilities:
-      - CVE-2026-24051  # /usr/bin/alertmanager	HIGH go.opentelemetry.io/otel/sdk # To be fixed upstream
-      - CVE-2026-39883  # /usr/bin/alertmanager	HIGH go.opentelemetry.io/otel/sdk # Unaffected, vulnerable code paths not utilized
-      - CVE-2026-33186  # /usr/bin/alertmanager	CRITICAL google.golang.org/grpc # Unaffected, vulnerable code paths not utilized
-      - CVE-2026-29181  # /usr/bin/alertmanager	HIGH go.opentelemetry.io/otel # Unaffected, vulnerable code paths not utilized
-      - CVE-2026-25679  # /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
-      - CVE-2026-32280  # /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
-      - CVE-2026-32281  # /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
-      - CVE-2026-32283  # /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
-      - CVE-2026-33811  # /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
-      - CVE-2026-33814  # /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
-      - CVE-2026-39820  # /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
-      - CVE-2026-39823  # /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
-      - CVE-2026-39825  # /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
-      - CVE-2026-39826  # /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
-      - CVE-2026-39836  # /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
-      - CVE-2026-42499  # /usr/bin/alertmanager	HIGH stdlib # Go vulnerabilities 
-      - CVE-2026-29181  # /usr/bin/amtool	HIGH	go.opentelemetry.io/otel
-  - source: canonical/alertmanager-rock
-    commit: 80af5bc3b4ff500ac7474dd90cdb004a0afebf29
-    directory: 0.32.1
+    commit: 9d575bfe8076b0fa6a4555f24ecd0adde560b91f
+    directory: 0.33.0
     release:
       0-26.04:
-        end-of-life: '2026-08-11T00:00:00Z'
+        end-of-life: '2026-09-21T00:00:00Z'
         risks:
           - stable
-      0.32-26.04:
-        end-of-life: '2026-08-11T00:00:00Z'
+      0.33-26.04:
+        end-of-life: '2026-09-21T00:00:00Z'
         risks:
           - stable
-    ignored-vulnerabilities:
-      - CVE-2026-39883  # /usr/bin/alertmanager HIGH go.opentelemetry.io/otel/sdk # Unaffected, vulnerable code paths not utilized
