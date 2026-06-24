@@ -1,20 +1,14 @@
 version: 2
 upload:
   - source: canonical/xk6-rock
-    commit: ee6ca22d84502340c88a66468fc946b6ba40b241
-    directory: 1.7.1
+    commit: 608fe36ab144aa344fe3e13b564e2d8a0685edea
+    directory: 1.8.0
     release:
       1-26.04:
-        end-of-life: '2026-08-31T00:00:00Z'
+        end-of-life: '2026-09-21T00:00:00Z'
         risks:
           - stable
-      1.7-26.04:
-        end-of-life: '2026-08-31T00:00:00Z'
+      1.8-26.04:
+        end-of-life: '2026-09-21T00:00:00Z'
         risks:
           - stable
-    ignored-vulnerabilities:
-      - CVE-2026-24051  # go.opentelemetry.io/otel/sdk, Experimental API misuse, CVSS 9.1 (Critical), Ubuntu Medium, 26.04 Needs evaluation
-      - CVE-2024-45337  # golang.org/x/crypto, SSH auth callback misuse, CVSS 9.1 (Critical), Ubuntu Medium, 26.04 Vulnerable
-      - CVE-2025-22869  # golang.org/x/crypto, SSH server DoS on slow key exchange, CVSS 7.5 (High), Ubuntu Medium, 26.04 Needs evaluation
-      - CVE-2026-33186  # google.golang.org/grpc, gRPC HTTP/2 CONTINUATION frame DoS, CVSS 7.5 (High), Ubuntu Medium, 26.04 Needs evaluation
-      - CVE-2026-39883  # google.golang.org/grpc, gRPC HTTP/2 RST stream DoS, CVSS 7.5 (High), Ubuntu Medium, 26.04 Needs evaluation
