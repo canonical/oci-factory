@@ -2,7 +2,7 @@ version: 2
 
 upload:
   - source: canonical/curl-rock
-    commit: d9103a98d1767a13e8c4eddcf4e42b8d6c0b1a0b
+    commit: 51f3d1c5bed6188a7f272cf5f5e71e699773b7c5
     directory: curl/8.18-26.04/
     release:
       8.18-26.04:

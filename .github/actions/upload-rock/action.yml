@@ -4,19 +4,15 @@ inputs:
   artifact_name:
     description: "The name of the artifact to download"
     required: true
-    type: string
   name:
     description: "The name of the image to upload. This should include the namespace if applicable."
     required: true
-    type: string
   tags:
     description: "The tags to use for the image"
     required: true
-    type: string
   registry:
     description: "The container registry URL"
     required: true
-    type: string
   username:
     description: "The username for the container registry"
     required: true

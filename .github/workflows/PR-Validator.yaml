@@ -13,12 +13,15 @@ jobs:
       image-name: ${{ steps.changed-files-dir-names.outputs.all_changed_files }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
 
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@22103cc46bda19c2b464ffe86db46df6922fd323
         with:
           json: true
+          escape_json: false
           files: |
             oci/*/*.y*ml
 
@@ -38,16 +41,20 @@ jobs:
           fi
           source src/shared/logs.sh
           set -u
-          dir_names="${{ steps.changed-files-dir-names.outputs.all_changed_files }}"
+          dir_names="${STEPS_CHANGED_FILES_DIR_NAMES_OUTPUTS_ALL_CHANGED_FILES}"
           log_error "Can only modify 1 image per PR"
           (( $(echo "${dir_names}" | wc -w) == 1 ))
+        env:
+          STEPS_CHANGED_FILES_DIR_NAMES_OUTPUTS_ALL_CHANGED_FILES: ${{ steps.changed-files-dir-names.outputs.all_changed_files }}
 
       - name: Save matrix layout for file validation
         id: changed-files-matrix
         run: |
           source src/shared/logs.sh
-          log_info 'Changed files are: ${{ steps.changed-files.outputs.all_changed_files }}'
-          echo "matrix={\"filename\":${{ steps.changed-files.outputs.all_changed_files }}}" >> "$GITHUB_OUTPUT"
+          log_info "Changed files are: ${STEPS_CHANGED_FILES_OUTPUTS_ALL_CHANGED_FILES}"
+          echo "matrix={\"filename\":${STEPS_CHANGED_FILES_OUTPUTS_ALL_CHANGED_FILES}}" >> "$GITHUB_OUTPUT"
+        env:
+          STEPS_CHANGED_FILES_OUTPUTS_ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
 
   check-missing-files:
     runs-on: ubuntu-22.04
@@ -57,6 +64,8 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
 
       - name: Check if documentation.yaml exists
         uses: andstor/file-existence-action@558493d6c74bf472d87c84eab196434afc2fa029
@@ -79,6 +88,8 @@ jobs:
       matrix: ${{ fromJSON(needs.get-submitted-files.outputs.changed-files-matrix) }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
@@ -92,17 +103,21 @@ jobs:
           fi
           set -u
           pip install yamllint
-          yamllint -c .yamllint.yaml ${{ matrix.filename }}
+          yamllint -c .yamllint.yaml ${MATRIX_FILENAME}
+        env:
+          MATRIX_FILENAME: ${{ matrix.filename }}
 
       - name: Validate documentation trigger file
         if: ${{ contains(matrix.filename, 'documentation.yaml') }}
         run: |
           pip install -r src/docs/requirements.txt
 
-          python3 -c '
+          python3 -c "
           import src.docs.generate_oci_doc_yaml as OCIDoc
-          OCIDoc.OCIDocumentationData.read_documentation_yaml("${{ matrix.filename }}")
-          '
+          OCIDoc.OCIDocumentationData.read_documentation_yaml('${MATRIX_FILENAME}')
+          "
+        env:
+          MATRIX_FILENAME: ${{ matrix.filename }}
 
   validate-registry-has-repo:
     runs-on: ubuntu-latest
@@ -112,16 +127,17 @@ jobs:
       pull-requests: write
     env:
       IS_PROD: ${{ ! startsWith(needs.get-submitted-files.outputs.image-name, 'mock-') }}
-      COMMENT_TAG: "repo-not-exist"
     steps:
       - name: Validate registry has repo
         id: validate-registry-has-repo
         env:
           NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu' || 'rocksdev' }}
+          NEEDS_GET_SUBMITTED_FILES_OUTPUTS_IMAGE_NAME: ${{ needs.get-submitted-files.outputs.image-name }}
         run: |
           DOCKER_REPO_EXISTS='true'
+          img_name="$(basename "${NEEDS_GET_SUBMITTED_FILES_OUTPUTS_IMAGE_NAME}")"
           if curl -w "%{http_code}" -o /dev/null -s \
-              https://hub.docker.com/v2/repositories/$NAMESPACE/$(basename ${{ needs.get-submitted-files.outputs.image-name }}) \
+              "https://hub.docker.com/v2/repositories/${NAMESPACE}/${img_name}" \
             | grep -qv "200" ; then
             DOCKER_REPO_EXISTS='false'
           fi
@@ -129,15 +145,34 @@ jobs:
 
       - name: Comment PR if repo does not exist
         if: ${{ steps.validate-registry-has-repo.outputs.docker-repo-exists == 'false' }}
-        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b
-        with:
-          message: |
-            The Docker repository for this image does not exist yet. Merging of this repo is blocked.
-            _Run ID: **${{ github.run_id }}** ; Attempt: **${{ github.run_attempt }}**_
+        id: comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          SERVER_URL: ${{ github.server_url }}
+        run: |
+          comment_url=$(gh pr comment "${PR_NUMBER}" \
+            --repo "${REPO}" \
+            --body "The Docker repository for this image does not exist yet. Merging of this repo is blocked.
+          _Run ID: **${RUN_ID}** ; Attempt: **${RUN_ATTEMPT}**_
 
-            See [logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
-          reactions: eyes
-          comment_tag: ${{ env.COMMENT_TAG }}
+          See [logs](${SERVER_URL}/${REPO}/actions/runs/${RUN_ID}).")
+          echo "comment-id=${comment_url##*issuecomment-}" >> "$GITHUB_OUTPUT"
+
+      - name: Add reaction to comment
+        if: ${{ steps.validate-registry-has-repo.outputs.docker-repo-exists == 'false' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ steps.comment.outputs.comment-id }}
+        run: |
+          gh api \
+            --method POST \
+            repos/${REPO}/issues/comments/${COMMENT_ID}/reactions \
+            --field content=eyes
 
   update-pr:
     runs-on: ubuntu-22.04
@@ -147,14 +182,31 @@ jobs:
     permissions: 
       pull-requests: write 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-
       - name: Comment PR
-        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b
-        with:
-          message: |
-            One or more files in this PR are not valid! :grimacing:
-            _Run ID: **${{ github.run_id }}** ; Attempt: **${{ github.run_attempt }}**_
+        id: comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          SERVER_URL: ${{ github.server_url }}
+        run: |
+          comment_url=$(gh pr comment "${PR_NUMBER}" \
+            --repo "${REPO}" \
+            --body "One or more files in this PR are not valid! :grimacing:
+          _Run ID: **${RUN_ID}** ; Attempt: **${RUN_ATTEMPT}**_
 
-            See [logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
-          reactions: eyes
+          See [logs](${SERVER_URL}/${REPO}/actions/runs/${RUN_ID}).")
+          echo "comment-id=${comment_url##*issuecomment-}" >> "$GITHUB_OUTPUT"
+
+      - name: Add reaction to comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ steps.comment.outputs.comment-id }}
+        run: |
+          gh api \
+            --method POST \
+            repos/${REPO}/issues/comments/${COMMENT_ID}/reactions \
+            --field content=eyes
