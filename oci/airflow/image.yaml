@@ -1,10 +1,103 @@
-version: 1
+version: 2
+
 upload:
   - source: canonical/airflow-rocks
-    commit: be4c91f3380d6f0a72e618d8bc3cc7bbe907216c # 3.1.8
+    commit: aac154991d1392f65edd65753d2f700432724e32  # 3.1.8
     directory: 3.1
     release:
       3.1-24.04:
         end-of-life: "2026-10-30T00:00:00Z"
         risks:
           - edge
+    ignored-vulnerabilities:
+      - CVE-2023-46136  # werkzeug (pip)
+      - CVE-2024-12797  # cryptography (pip)
+      - CVE-2024-34069  # werkzeug (pip)
+      - CVE-2024-49766  # werkzeug (pip)
+      - CVE-2025-48924  # org.apache.commons:commons-lang3
+      - CVE-2025-53643  # aiohttp (pip)
+      - CVE-2025-58065  # flask-appbuilder (pip)
+      - CVE-2025-62402  # apache-airflow (pip)
+      - CVE-2025-62503  # apache-airflow (pip)
+      - CVE-2025-62593  # ray (pip); ray not installed in rock
+      - CVE-2025-62611  # aiomysql (pip)
+      - CVE-2025-62727  # starlette (pip)
+      - CVE-2025-66221  # werkzeug (pip)
+      - CVE-2025-66418  # urllib3 (pip)
+      - CVE-2025-66471  # urllib3 (pip)
+      - CVE-2025-8869  # pip (pip)
+      - CVE-2024-49767  # werkzeug (pip)
+      - GHSA-h4gh-qq45-vh27  # cryptography (pip)
+      - CVE-2025-61727  # go toolchain (golang-1.24/1.25); not present in Ubuntu 24.04-based rock
+      - CVE-2025-61729  # go toolchain (golang-1.24/1.25); not present in Ubuntu 24.04-based rock
+      - CVE-2016-2781  # coreutils (deb); chroot ioctl flaw not reachable in containerised Airflow
+      - CVE-2022-3219  # gpgv (deb); DoS via crafted key; not used by Airflow; Ubuntu fix deferred
+      - CVE-2023-48022  # ray (pip); job submission API; ray not installed in rock
+      - CVE-2024-2236  # libgcrypt (deb); RSA side-channel; OpenSSL used instead, not libgcrypt
+      - CVE-2024-41996  # glibc (deb); DH validation path unused; OpenSSL handles DH/TLS
+      - CVE-2024-56433  # shadow-utils (deb); subuid collision only affects multi-user hosts, not containers
+      - CVE-2025-45582  # no upstream affected package present in image
+      - CVE-2025-8941  # linux-pam (deb); pam_namespace flaw; Airflow does not use PAM
+      - CVE-2025-69223  # aiohttp (pip); zip bomb DoS requires attacker-controlled server
+      - CVE-2025-68438  # apache-airflow (pip); secrets in templates UI; resolved in airflow 3.1.6
+      - CVE-2025-68675  # apache-airflow (pip); proxy credential leak in logs; resolved in airflow 3.1.6
+      - CVE-2026-21226  # azure-core (pip); deserialization RCE requires attacker-controlled data
+      - CVE-2026-23949  # jaraco.context (pip); path traversal in tarball extraction; no untrusted tarballs extracted
+      - CVE-2026-23490  # pyasn1 (pip); DoS via malformed ASN.1; only trusted TLS certs parsed
+      - CVE-2026-24486  # python-multipart (pip); path traversal in uploads; file ops restricted to admins
+      - CVE-2026-21441  # urllib3 (pip); decompression bomb on redirects; Airflow connects to admin-configured endpoints only
+      - CVE-2026-24049  # wheel (pip); path traversal in unpack; wheel installation occurs at build time only
+      - CVE-2026-0994  # protobuf (pip); DoS via recursion depth bypass in ParseDict()
+      - GHSA-72hv-8253-57qq  # jackson-core (Java); not executed in Airflow Python runtime
+      - CVE-2026-32597  # PyJWT (pip); improper crit header handling; Airflow does not use JWT crit extensions
+      - CVE-2025-69219  # apache-airflow-providers-http (pip); unsafe pickle deserialization requires untrusted server
+      - CVE-2026-26007  # cryptography (pip); subgroup attack on SECT curves not used in Airflow TLS config
+      - CVE-2026-2472  # google-cloud-aiplatform (pip); stored XSS in Vertex AI; Airflow uses trusted service accounts
+      - CVE-2026-2473  # google-cloud-aiplatform (pip); predictable bucket naming; mitigated by IAM restrictions
+      - CVE-2025-67221  # orjson (pip); unbounded recursion DoS on malformed JSON not present in Airflow metadata
+      - CVE-2026-27459  # pyOpenSSL (pip); buffer overflow in DTLS callbacks; Airflow does not use DTLS
+      - CVE-2026-31958  # tornado (pip); DoS via large multipart bodies; mitigated by gateway body-size limits
+      - CVE-2026-30922  # pyasn1 (pip); unbounded recursion DoS; breeze dev-tool dependency, not in image
+      - CVE-2026-35030  # litellm (pip); auth bypass via OIDC; resolved in next airflow release (https://github.com/apache/airflow/pull/64701)
+      - CVE-2026-35029  # litellm (pip); privilege escalation via proxy config; resolved in next airflow release (https://github.com/apache/airflow/pull/64701)
+      - GHSA-69x8-hrgq-fjj8  # litellm (pip); password hash exposure; resolved in next airflow release (https://github.com/apache/airflow/pull/64701)
+      - CVE-2026-35536  # tornado (pip); cookie attribute injection; resolved in next airflow release (tornado >= 6.5.5)
+      - CVE-2025-57735  # apache-airflow (pip); auth bypass; resolved in airflow 3.2.0
+      - CVE-2025-54550  # apache-airflow (pip); RCE race condition in example_xcom dag; resolved in airflow 3.2.0
+      - CVE-2026-33858  # apache-airflow (pip); unsafe deserialization via XCom API; resolved in airflow 3.2.0
+      - CVE-2026-25917  # apache-airflow (pip); RCE via crafted XCom payloads; resolved in airflow 3.2.0
+      - CVE-2026-32228  # apache-airflow (pip); asset materialize permissions bypass; resolved in airflow 3.2.0
+      - GHSA-xqmj-j6mv-4862  # litellm (pip); server-side template injection in /prompts/test endpoint
+      - CVE-2026-41066  # lxml (pip); XXE via iterparse() default config
+      - CVE-2026-50203  # apache-airflow-providers-sftp (pip); resolved in next airflow provider release (sftp >= 5.8.1)
+      - CVE-2026-27173  # apache-airflow-providers-cncf-kubernetes (pip); resolved in airflow 3.2.0
+      - CVE-2026-42215  # GitPython (pip); resolved in next airflow release (gitpython >= 3.1.47)
+      - CVE-2026-42284  # GitPython (pip); resolved in next airflow release (gitpython >= 3.1.47)
+      - CVE-2026-44243  # GitPython (pip); resolved in next airflow release (gitpython >= 3.1.47)
+      - CVE-2026-44244  # GitPython (pip); resolved in next airflow release (gitpython >= 3.1.47)
+      - GHSA-mv93-w799-cj2w  # GitPython (pip); resolved in next airflow release (gitpython >= 3.1.47)
+      - CVE-2026-41205  # Mako (pip); resolved in next airflow release (Mako >= 1.3.12)
+      - CVE-2026-44307  # Mako (pip); resolved in next airflow release (Mako >= 1.3.12)
+      - GHSA-537c-gmf6-5ccf  # cryptography (pip); resolved in next airflow release (cryptography >= 48.0.1)
+      - CVE-2026-42208  # litellm (pip); resolved with litellm >= 1.83.7; not a core dependency
+      - CVE-2026-49468  # litellm (pip); resolved with litellm >= 1.83.7; not a core dependency
+      - CVE-2026-40217  # litellm (pip); resolved with litellm >= 1.83.7; not a core dependency
+      - CVE-2026-42203  # litellm (pip); resolved with litellm >= 1.83.7; not a core dependency
+      - CVE-2026-42271  # litellm (pip); resolved with litellm >= 1.83.7; not a core dependency
+      - CVE-2026-25087  # pyarrow (pip); resolved with pyarrow >= 23.0.1; upstream issue: https://github.com/apache/airflow/issues/15635
+      - CVE-2026-42561  # python-multipart (pip); resolved in next airflow release (python-multipart >= 0.0.30)
+      - CVE-2026-53539  # python-multipart (pip); resolved in next airflow release (python-multipart >= 0.0.30)
+      - CVE-2026-8838  # redshift-connector (pip); resolved in next airflow provider release (amazon-redshift-python-driver >= 2.1.14)
+      - CVE-2026-48818  # starlette (pip); resolved in next airflow release (starlette >= 1.1.0)
+      - CVE-2026-54283  # starlette (pip); resolved in next airflow release (starlette >= 1.1.0)
+      - CVE-2026-49853  # tornado (pip); resolved in next airflow release (tornado >= 6.5.6)
+      - CVE-2026-49855  # tornado (pip); resolved in next airflow release (tornado >= 6.5.6)
+      - CVE-2026-44431  # urllib3 (pip); resolved in next airflow release (urllib3 >= 2.7.0)
+      - CVE-2026-44432  # urllib3 (pip); resolved in next airflow release (urllib3 >= 2.7.0)
+      - CVE-2026-48526  # PyJWT (pip); resolved in next airflow release (PyJWT >= 2.13.0)
+      - CVE-2026-45447  # libssl3t64 (deb); resolved with rebuild from ubuntu@24.04 >= 3.0.13-0ubuntu3.11
+      - CVE-2026-54512  # java based - does not affect Airflow
+      - CVE-2026-54513  # java based - does not affect Airflow
+      - CVE-2026-47101  # litellm (pip); resolved in next airflow release (litellm >= 1.83.14)
+      - CVE-2026-47102  # litellm (pip); resolved in next airflow release (litellm >= 1.83.14)
+      - GHSA-6v7p-g79w-8964  # msgpack (pip); resolved in next airflow release (msgpackmsgpack >= 1.2.1)
