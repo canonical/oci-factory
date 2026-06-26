@@ -43,5 +43,20 @@
         "edge": {
             "target": "36"
         }
+    },
+    "7.2.12-24.04": {
+        "end-of-life": "2029-04-01T00:00:00Z",
+        "stable": {
+            "target": "37"
+        },
+        "candidate": {
+            "target": "7.2.12-24.04_stable"
+        },
+        "beta": {
+            "target": "7.2.12-24.04_candidate"
+        },
+        "edge": {
+            "target": "7.2.12-24.04_beta"
+        }
     }
 }
