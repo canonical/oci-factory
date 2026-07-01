@@ -218,6 +218,7 @@ jobs:
     name: Prepare upload
     if: ${{ inputs.upload || (github.ref_name == 'main' && github.event_name == 'push') }}
     env:
+      OS_AUTH_URL: ${{ secrets.SWIFT_OS_AUTH_URL_PS7 }}
       OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME_PS7 }}
       OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME_PS7 }}
       OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD_PS7 }}
@@ -505,6 +506,7 @@ jobs:
 
       - name: Upload build metadata to Swift
         env:
+          OS_AUTH_URL: ${{ secrets.SWIFT_OS_AUTH_URL_PS7 }}
           OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME_PS7 }}
           OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME_PS7 }}
           OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD_PS7 }}
