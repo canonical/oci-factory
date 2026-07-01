@@ -2,7 +2,7 @@ version: 2
 upload:
   - source: canonical/rabbitmq-rock
     commit: f58aea30b3743816e75050a2b18b44f16175c0a7
-    directory: 4.0-26.04
+    directory: rabbitmq/4.0-26.04
     release:
       4.0-26.04:
         end-of-life: '2031-05-27T00:00:00Z'
@@ -10,7 +10,7 @@ upload:
           - edge
   - source: canonical/rabbitmq-rock
     commit: f58aea30b3743816e75050a2b18b44f16175c0a7
-    directory: 3.12-24.04
+    directory: rabbitmq/3.12-24.04
     release:
       3.12-24.04:
         end-of-life: '2029-05-31T00:00:00Z'
@@ -22,7 +22,7 @@ upload:
           - edge
   - source: canonical/rabbitmq-rock
     commit: f58aea30b3743816e75050a2b18b44f16175c0a7
-    directory: 3.9-22.04
+    directory: rabbitmq/3.9-22.04
     release:
       3.9-22.04:
         end-of-life: '2027-06-01T00:00:00Z'
