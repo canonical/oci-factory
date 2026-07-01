@@ -30,7 +30,14 @@ def parse_args():
 
 def main():
     args = parse_args()
-    base_cmd = ["skopeo", "copy", "--preserve-digests", args.source_uri]
+    # --insecure-policy is required on private-endpoint runners.
+    base_cmd = [
+        "skopeo",
+        "--insecure-policy",
+        "copy",
+        "--preserve-digests",
+        args.source_uri,
+    ]
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         if args.registry_auth:
