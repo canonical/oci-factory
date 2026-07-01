@@ -4,5 +4,20 @@
         "edge": {
             "target": "2"
         }
+    },
+    "2026-22.04": {
+        "end-of-life": "2026-10-01T00:00:00Z",
+        "stable": {
+            "target": "3"
+        },
+        "candidate": {
+            "target": "2026-22.04_stable"
+        },
+        "beta": {
+            "target": "2026-22.04_candidate"
+        },
+        "edge": {
+            "target": "2026-22.04_beta"
+        }
     }
 }
