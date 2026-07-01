@@ -223,6 +223,7 @@ jobs:
       OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD_PS7 }}
       OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL_PS7 }}
       IMAGE_NAME: ${{ needs.prepare-build.outputs.oci-img-name }}
+      SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
       DATA_DIR: "revision-data"
     outputs:
       build-matrix: ${{ steps.prepare-matrix.outputs.build-matrix }}
@@ -510,6 +511,7 @@ jobs:
           OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME_PS7 }}
           OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL_PS7 }}
           IMAGE_NAME: ${{ matrix.name }}
+          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
           MATRIX_BASE: ${{ matrix.base }}
           STEPS_UPLOAD_IMAGE_OUTPUTS_DIGEST: ${{ steps.upload-image.outputs.digest }}
           MATRIX_IGNORED_VULNERABILITIES: ${{ matrix.ignored-vulnerabilities }}

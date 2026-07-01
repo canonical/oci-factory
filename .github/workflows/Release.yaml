@@ -130,6 +130,7 @@ jobs:
           OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD_PS7 }}
           OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL_PS7 }}
           IMAGE_NAME: ${{ inputs.oci-image-name }}
+          SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: ./src/image/get_canonical_tags_from_swift.sh
       
       # Pull the latest changes to prevent conflicts merging _releases.json
