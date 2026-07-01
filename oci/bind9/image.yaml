@@ -8,3 +8,6 @@ upload:
         end-of-life: "2031-05-29T00:00:00Z"
         risks:
           - edge
+          - beta
+          - candidate
+          - stable
