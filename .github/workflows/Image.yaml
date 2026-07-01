@@ -425,7 +425,7 @@ jobs:
 
             log_info "Generate SBOM for ${arch}"
 
-            skopeo --override-arch "${arch}" copy \
+            skopeo --insecure-policy --override-arch "${arch}" copy \
               "oci-archive:${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME}" \
               "oci:${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME}.${arch}:${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_CANONICAL_TAG}" \
 
