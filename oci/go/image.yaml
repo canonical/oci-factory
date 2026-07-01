@@ -35,7 +35,7 @@ upload:
       - CVE-2025-61729  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2025-61729
       - CVE-2025-68121  # Vulnerable, but no fix available. CVSS: 7.4 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2025-68121
       - CVE-2026-25679  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-25679
-      - CVE-2026-27145 # Needs evaluation. CVSS: 6.5 (Medium), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-27145
+      - CVE-2026-27145  # Needs evaluation. CVSS: 6.5 (Medium), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-27145
       - CVE-2026-32280  # Vulnerable, but no fix available. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-32280
       - CVE-2026-32281  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-32281
       - CVE-2026-32282  # Needs evaluation. CVSS: 6.4 (Medium), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-32282
