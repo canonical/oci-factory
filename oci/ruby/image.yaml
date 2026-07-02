@@ -1,13 +1,19 @@
-version: 1
+version: 2
 upload:
   - source: canonical/ruby-rock
-    commit: bc370ce666898d0f49dfd9d8ab30acc24468d71d
+    commit: 6b157df0d44c6bd88d9c76c81bb6e289e592c6dc
     directory: ruby/3.2-24.04
     release:
       3.2-24.04:
         end-of-life: "2029-05-31T00:00:00Z"
         risks:
-          - stable
-          - candidate
-          - beta
           - edge
+    ignored-vulnerabilities:
+      - CVE-2026-41316 # Needs evaluation. CVSS: 8.1 (High), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2026-41316
+      - CVE-2026-42257 # Vulnerable. CVSS: 5.8 (Medium), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2026-42257
+      - CVE-2026-42245 # Not affected. CVSS: 2.3 (Low), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2026-42245
+      - CVE-2026-42246 # Vulnerable. CVSS: 7.6 (High), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2026-42246
+      - CVE-2025-61594 # Fixed. CVSS: 2.7 (Low), Ubuntu priority: Low, Status (24.04 noble). https://ubuntu.com/security/CVE-2025-61594
+      - CVE-2026-27820 # Needs evaluation. CVSS: 5.9 (Medium), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2026-27820
+      - CVE-2024-49761 # Some fixes available 8 of 9. CVSS: 6.6 (High), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2024-49761
+      - CVE-2024-47220 # Fixed. CVSS: 7.5 (High), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2024-47220
