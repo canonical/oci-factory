@@ -11,7 +11,7 @@ on:
     
 jobs:
     rebuild-images:
-        runs-on: ubuntu-latest
+        runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
         name: Rebuild images
         steps:
         - name: Checkout
@@ -34,11 +34,11 @@ jobs:
         - name: Trigger auto-updates
           working-directory: tools/workflow-engine/charms/temporal-worker/oci_factory/activities/
           env:
-            OS_AUTH_URL: ${{ secrets.SWIFT_OS_AUTH_URL }}
-            OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
-            OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
-            OS_PROJECT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
-            OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+            OS_AUTH_URL: ${{ secrets.SWIFT_OS_AUTH_URL_PS7 }}
+            OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME_PS7 }}
+            OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD_PS7 }}
+            OS_PROJECT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME_PS7 }}
+            OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL_PS7 }}
             GITHUB_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
             INPUTS_IMAGE_NAME: ${{ inputs.image-name || '*' }}
           run: |

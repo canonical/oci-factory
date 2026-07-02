@@ -80,7 +80,7 @@ jobs:
 
   
   do-releases:
-    runs-on: ubuntu-24.04
+    runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
     name: Release
     needs: [validate-push-release-request]
     outputs:
@@ -125,11 +125,11 @@ jobs:
       - name: Get all revisions per track
         id: get-all-canonical-tags
         env:
-          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
-          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
-          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
-          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
-          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+          OS_AUTH_URL: ${{ secrets.SWIFT_OS_AUTH_URL_PS7 }}
+          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME_PS7 }}
+          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME_PS7 }}
+          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD_PS7 }}
+          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL_PS7 }}
           IMAGE_NAME: ${{ inputs.oci-image-name }}
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: ./src/image/get_canonical_tags_from_swift.sh

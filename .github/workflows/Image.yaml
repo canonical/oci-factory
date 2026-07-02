@@ -213,16 +213,16 @@ jobs:
     secrets: inherit
 
   prepare-upload:
-    runs-on: ubuntu-24.04
+    runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
     needs: [prepare-build, build-rock, test-rock]
     name: Prepare upload
     if: ${{ inputs.upload || (github.ref_name == 'main' && github.event_name == 'push') }}
     env:
-      OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
-      OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
-      OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
-      OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
-      OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+      OS_AUTH_URL: ${{ secrets.SWIFT_OS_AUTH_URL_PS7 }}
+      OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME_PS7 }}
+      OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME_PS7 }}
+      OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD_PS7 }}
+      OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL_PS7 }}
       IMAGE_NAME: ${{ needs.prepare-build.outputs.oci-img-name }}
       SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
       DATA_DIR: "revision-data"
@@ -307,7 +307,7 @@ jobs:
           key: ${{ steps.prepare-matrix.outputs.revision-data-cache-key }}
 
   upload:
-    runs-on: ubuntu-24.04
+    runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
     needs: [prepare-build, prepare-upload]
     name: Upload
     strategy:
@@ -425,7 +425,8 @@ jobs:
 
             log_info "Generate SBOM for ${arch}"
 
-            skopeo --override-arch "${arch}" copy \
+            # --insecure-policy is required on private-endpoint runners.
+            skopeo --insecure-policy --override-arch "${arch}" copy \
               "oci-archive:${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME}" \
               "oci:${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME}.${arch}:${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_CANONICAL_TAG}" \
 
@@ -506,11 +507,12 @@ jobs:
 
       - name: Upload build metadata to Swift
         env:
-          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
-          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
-          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
-          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
-          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+          OS_AUTH_URL: ${{ secrets.SWIFT_OS_AUTH_URL_PS7 }}
+          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME_PS7 }}
+          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME_PS7 }}
+          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD_PS7 }}
+          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME_PS7 }}
+          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL_PS7 }}
           IMAGE_NAME: ${{ matrix.name }}
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
           MATRIX_BASE: ${{ matrix.base }}
