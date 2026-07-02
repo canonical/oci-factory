@@ -8,4 +8,4 @@ upload:
       8.18-26.04:
         end-of-life: "2031-05-29T00:00:00Z"
         risks:
-          - edge
+          - stable
