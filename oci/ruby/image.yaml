@@ -9,14 +9,14 @@ upload:
         risks:
           - edge
     ignored-vulnerabilities:
-      - CVE-2026-41316 # Needs evaluation. CVSS: 8.1 (High), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2026-41316
-      - CVE-2026-42257 # Vulnerable. CVSS: 5.8 (Medium), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2026-42257
-      - CVE-2026-42245 # Not affected. CVSS: 2.3 (Low), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2026-42245
-      - CVE-2026-42246 # Vulnerable. CVSS: 7.6 (High), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2026-42246
-      - CVE-2025-61594 # Fixed. CVSS: 2.7 (Low), Ubuntu priority: Low, Status (24.04 noble). https://ubuntu.com/security/CVE-2025-61594
-      - CVE-2026-27820 # Needs evaluation. CVSS: 5.9 (Medium), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2026-27820
-      - CVE-2024-49761 # Some fixes available 8 of 9. CVSS: 6.6 (High), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2024-49761
-      - CVE-2024-47220 # Fixed. CVSS: 7.5 (High), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2024-47220
+      - CVE-2026-41316  # Needs evaluation. CVSS: 8.1 (High), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2026-41316
+      - CVE-2026-42257  # Vulnerable. CVSS: 5.8 (Medium), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2026-42257
+      - CVE-2026-42245  # Not affected. CVSS: 2.3 (Low), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2026-42245
+      - CVE-2026-42246  # Vulnerable. CVSS: 7.6 (High), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2026-42246
+      - CVE-2025-61594  # Fixed. CVSS: 2.7 (Low), Ubuntu priority: Low, Status (24.04 noble). https://ubuntu.com/security/CVE-2025-61594
+      - CVE-2026-27820  # Needs evaluation. CVSS: 5.9 (Medium), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2026-27820
+      - CVE-2024-49761  # Some fixes available 8 of 9. CVSS: 6.6 (High), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2024-49761
+      - CVE-2024-47220  # Fixed. CVSS: 7.5 (High), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2024-47220
 
   - source: canonical/ruby-rock
     commit: d1e8d000038621eafb4ef4d837393eb32ee86601
@@ -27,9 +27,9 @@ upload:
         risks:
           - edge
     ignored-vulnerabilities:
-      - CVE-2026-41316 # Needs evaluation. CVSS: 8.1 (High), Ubuntu priority: Medium, Status (26.04 resolute). https://ubuntu.com/security/CVE-2026-41316
-      - CVE-2026-42257 # Vulnerable. CVSS: 5.8 (Medium), Ubuntu priority: Medium, Status (26.04 resolute). https://ubuntu.com/security/CVE-2026-42257
-      - CVE-2026-42245 # Not affected. CVSS: 2.3 (Low), Ubuntu priority: Medium, Status (26.04 resolute). https://ubuntu.com/security/CVE-2026-42245
-      - CVE-2026-42246 # Vulnerable. CVSS: 7.6 (High), Ubuntu priority: Medium, Status (26.04 resolute). https://ubuntu.com/security/CVE-2026-42246
-      - CVE-2025-61594 # Fixed. CVSS: 2.7 (Low), Ubuntu priority: Low, Status (26.04 resolute). https://ubuntu.com/security/CVE-2025-61594
-      - CVE-2026-27820 # Needs evaluation. CVSS: 5.9 (Medium), Ubuntu priority: Medium, Status (26.04 resolute). https://ubuntu.com/security/CVE-2026-27820
+      - CVE-2026-41316  # Needs evaluation. CVSS: 8.1 (High), Ubuntu priority: Medium, Status (26.04 resolute). https://ubuntu.com/security/CVE-2026-41316
+      - CVE-2026-42257  # Vulnerable. CVSS: 5.8 (Medium), Ubuntu priority: Medium, Status (26.04 resolute). https://ubuntu.com/security/CVE-2026-42257
+      - CVE-2026-42245  # Not affected. CVSS: 2.3 (Low), Ubuntu priority: Medium, Status (26.04 resolute). https://ubuntu.com/security/CVE-2026-42245
+      - CVE-2026-42246  # Vulnerable. CVSS: 7.6 (High), Ubuntu priority: Medium, Status (26.04 resolute). https://ubuntu.com/security/CVE-2026-42246
+      - CVE-2025-61594  # Fixed. CVSS: 2.7 (Low), Ubuntu priority: Low, Status (26.04 resolute). https://ubuntu.com/security/CVE-2025-61594
+      - CVE-2026-27820  # Needs evaluation. CVSS: 5.9 (Medium), Ubuntu priority: Medium, Status (26.04 resolute). https://ubuntu.com/security/CVE-2026-27820
