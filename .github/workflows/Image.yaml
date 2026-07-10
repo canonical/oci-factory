@@ -60,7 +60,7 @@ jobs:
     steps:
       - name: ${{ inputs.external_ref_id }}  # (2)
         if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: echo 'Started by ${INPUTS_EXTERNAL_REF_ID}' >> "$GITHUB_STEP_SUMMARY"
+        run: echo "Started by ${INPUTS_EXTERNAL_REF_ID}" >> "$GITHUB_STEP_SUMMARY"
         env:
           INPUTS_EXTERNAL_REF_ID: ${{ inputs.external_ref_id }}
 

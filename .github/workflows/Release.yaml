@@ -35,7 +35,7 @@ jobs:
       oci-image-name: ${{ steps.get-image-name.outputs.img-name }}
     steps:
       - name: ${{ inputs.external_ref_id }}  # (2)
-        run: echo 'Started by ${INPUTS_EXTERNAL_REF_ID}' >> "$GITHUB_STEP_SUMMARY"
+        run: echo "Started by ${INPUTS_EXTERNAL_REF_ID}" >> "$GITHUB_STEP_SUMMARY"
         env:
           INPUTS_EXTERNAL_REF_ID: ${{ inputs.external_ref_id }}
         
