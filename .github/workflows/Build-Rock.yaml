@@ -63,6 +63,8 @@ on:
         description: "Passphrase for encrypting/decrypting rock artifacts when pro-services is used."
       pro-token:
         description: "The Ubuntu Pro token. Required for building Ubuntu Pro based rocks."
+      LP_CREDENTIALS_B64:
+        description: "Launchpad credentials for fallback builds."
 
 
 env:

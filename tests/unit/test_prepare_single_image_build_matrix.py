@@ -122,3 +122,87 @@ def test_locate_trigger_yaml(tmpdir):
     image_yaml_path.unlink()
     found_path = prep_matrix.locate_trigger_yaml(tmpdir_path)
     assert found_path == image_yml_path
+
+
+def test_flatten_pro_builds():
+    builds = [
+        {
+            "name": "mock",
+            "release": {
+                "1.0-24.04": {
+                    "end-of-life": "2030-05-01T00:00:00Z",
+                    "risks": ["stable"],
+                    "pro": {
+                        "services": ["esm-apps", "esm-infra"],
+                        "config": {
+                            "token": "secrets.UBUNTU_PRO_TOKEN",
+                            "artifact-passphrase": "secrets.PRO_ARTIFACT_PASSPHRASE",
+                        },
+                    },
+                }
+            },
+        },
+        {"name": "public"},
+    ]
+
+    prep_matrix.flatten_pro_builds(builds)
+
+    assert builds[0]["pro-services"] == "esm-apps esm-infra"
+    assert builds[0]["pro-token"] == "UBUNTU_PRO_TOKEN"
+    assert builds[0]["pro-artifact-passphrase"] == "PRO_ARTIFACT_PASSPHRASE"
+    assert builds[0]["pro"] == builds[0]["release"]["1.0-24.04"]["pro"]
+    assert builds[1]["pro-services"] == ""
+
+
+def test_flatten_pro_builds_rejects_multiple_configs():
+    builds = [
+        {
+            "name": "mock",
+            "release": {
+                "1.0-24.04": {
+                    "pro": {
+                        "services": ["esm-apps"],
+                        "config": {
+                            "token": "secrets.UBUNTU_PRO_TOKEN",
+                            "artifact-passphrase": "secrets.PRO_ARTIFACT_PASSPHRASE",
+                        },
+                    },
+                },
+                "1.1-24.04": {
+                    "pro": {
+                        "services": ["esm-infra"],
+                        "config": {
+                            "token": "secrets.UBUNTU_PRO_TOKEN",
+                            "artifact-passphrase": "secrets.PRO_ARTIFACT_PASSPHRASE",
+                        },
+                    },
+                },
+            },
+        }
+    ]
+
+    with pytest.raises(prep_matrix.InvalidSchemaError):
+        prep_matrix.flatten_pro_builds(builds)
+
+
+def test_flatten_pro_builds_rejects_mixed_public_and_pro_tracks():
+    builds = [
+        {
+            "name": "mock",
+            "release": {
+                "1.0-24.04": {
+                    "pro": {
+                        "services": ["esm-apps"],
+                        "config": {
+                            "token": "secrets.UBUNTU_PRO_TOKEN",
+                            "artifact-passphrase": "secrets.PRO_ARTIFACT_PASSPHRASE",
+                        },
+                    },
+                },
+                "latest": {"risks": ["stable"]},
+            },
+        }
+    ]
+
+    with pytest.raises(prep_matrix.InvalidSchemaError):
+        prep_matrix.flatten_pro_builds(builds)

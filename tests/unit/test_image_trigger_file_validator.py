@@ -114,3 +114,66 @@ def test_ignored_vulnerabilities_with_v2_schema():
     }
 
     prep_matrix.validate_image_trigger(image_trigger)
+
+
+def test_image_trigger_validator_pro_release():
+    image_trigger = {
+        "version": 2,
+        "release": {
+            "1.0-24.04": {
+                "end-of-life": "2030-05-01T00:00:00Z",
+                "stable": "1",
+                "pro": {
+                    "services": ["esm-apps", "esm-infra"],
+                    "config": {
+                        "token": "secrets.UBUNTU_PRO_TOKEN",
+                        "artifact-passphrase": "secrets.PRO_ARTIFACT_PASSPHRASE",
+                    },
+                },
+            },
+        },
+        "upload": [
+            {
+                "source": "canonical/rocks-toolbox",
+                "commit": "abcdef1234567890",
+                "directory": "mock_rock/1.2",
+                "release": {
+                    "1.0-24.04": {
+                        "end-of-life": "2030-05-01T00:00:00Z",
+                        "risks": ["stable"],
+                        "pro": {
+                            "services": ["esm-apps", "esm-infra"],
+                            "config": {
+                                "token": "secrets.UBUNTU_PRO_TOKEN",
+                                "artifact-passphrase": "secrets.PRO_ARTIFACT_PASSPHRASE",
+                            },
+                        },
+                    }
+                },
+            }
+        ],
+    }
+
+    prep_matrix.validate_image_trigger(image_trigger)
+
+
+def test_image_trigger_validator_pro_requires_services():
+    image_trigger = {
+        "version": 2,
+        "release": {
+            "1.0-24.04": {
+                "end-of-life": "2030-05-01T00:00:00Z",
+                "stable": "1",
+                "pro": {
+                    "services": [],
+                    "config": {
+                        "token": "secrets.UBUNTU_PRO_TOKEN",
+                        "artifact-passphrase": "secrets.PRO_ARTIFACT_PASSPHRASE",
+                    },
+                },
+            }
+        },
+    }
+
+    with pytest.raises(ImageTriggerValidationError):
+        prep_matrix.validate_image_trigger(image_trigger)

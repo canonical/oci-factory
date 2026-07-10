@@ -84,6 +84,9 @@ if __name__ == "__main__":
         if "end-of-life" in val:
             user_releases[track]["end-of-life"] = val["end-of-life"]
 
+        if "pro" in val:
+            user_releases[track]["pro"] = val["pro"]
+
         for risk in val["risks"]:
             user_releases[track][risk] = str(new_revision)
 

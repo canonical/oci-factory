@@ -197,7 +197,12 @@ jobs:
       rock-repo-commit: ${{ matrix.commit }}
       rockfile-directory: ${{ matrix.directory }}
       lpci-fallback: true
-    secrets: inherit
+      pro-services: ${{ matrix.pro-services }}
+    secrets:
+      source-github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+      pro-token: ${{ secrets[matrix.pro-token] }}
+      pro-artifact-passphrase: ${{ secrets[matrix.pro-artifact-passphrase] }}
+      LP_CREDENTIALS_B64: ${{ secrets.LP_CREDENTIALS_B64 }}
 
   test-rock:
     needs: [prepare-build, build-rock]
@@ -210,7 +215,8 @@ jobs:
       oci-archive-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}"
       trivyignore-path: ${{ matrix.ignored-vulnerabilities == '' && format('oci/{0}/.trivyignore', matrix.name) || '' }}
       ignored-vulnerabilities: ${{ matrix.ignored-vulnerabilities }}
-    secrets: inherit
+    secrets:
+      pro-artifact-passphrase: ${{ secrets[matrix.pro-artifact-passphrase] }}
 
   prepare-upload:
     runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
@@ -527,7 +533,9 @@ jobs:
             --arg digest "${STEPS_UPLOAD_IMAGE_OUTPUTS_DIGEST}" \
             --arg ignored_vulnerabilities "${MATRIX_IGNORED_VULNERABILITIES}" \
             '. + {base: $base, digest: $digest, "ignored-vulnerabilities": $ignored_vulnerabilities}' \
-            <<< '${{ toJSON(matrix) }}' > build_metadata.json
+            <<< '${{ toJSON(matrix) }}' \
+            | jq 'del(."pro-services", ."pro-token", ."pro-artifact-passphrase")' \
+            > build_metadata.json
           ./src/uploads/upload_to_swift.sh \
             "${MATRIX_NAME}" \
             "${MATRIX_TRACK}" \

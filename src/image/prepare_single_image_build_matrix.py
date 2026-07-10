@@ -125,6 +125,53 @@ def filter_eol_builds(builds: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return non_release_builds + release_builds
 
 
+def get_build_pro(build: dict[str, Any]) -> dict[str, Any] | None:
+    """Return the Pro config for a build, ensuring all released tracks agree."""
+    releases = build.get("release", {})
+    if not releases:
+        return None
+
+    pro_configs = []
+    for release in releases.values():
+        if pro_config := release.get("pro"):
+            pro_configs.append(pro_config)
+
+    if not pro_configs:
+        return None
+
+    if len(pro_configs) != len(releases):
+        raise InvalidSchemaError(
+            f'Build "{build["name"]}" mixes Pro and public release tracks.'
+        )
+
+    first_config = pro_configs[0]
+    if any(pro_config != first_config for pro_config in pro_configs):
+        raise InvalidSchemaError(
+            f'Build "{build["name"]}" has multiple different Pro configurations.'
+        )
+
+    return first_config
+
+
+def flatten_pro_builds(builds: list[dict[str, Any]]) -> None:
+    """Flatten Pro fields for the GitHub Actions matrix."""
+    for build in builds:
+        pro_config = get_build_pro(build)
+        build["pro-services"] = ""
+        build["pro-token"] = ""
+        build["pro-artifact-passphrase"] = ""
+
+        if not pro_config:
+            continue
+
+        build["pro"] = pro_config
+        build["pro-services"] = " ".join(pro_config["services"])
+        build["pro-token"] = pro_config["config"]["token"].removeprefix("secrets.")
+        build["pro-artifact-passphrase"] = pro_config["config"][
+            "artifact-passphrase"
+        ].removeprefix("secrets.")
+
+
 def write_revision_data(data_dir: Path, build: dict[str, Any]):
     """Prepare and dump revision data from build dict. Ignore any fields not included in RevisionDataSchema"""
     revision_data = RevisionDataSchemaFilter(**build)
@@ -260,6 +307,7 @@ def main():
 
     # remove any builds without valid tracks
     builds = filter_eol_builds(builds)
+    flatten_pro_builds(builds)
 
     # pretty print builds
     logger.info(

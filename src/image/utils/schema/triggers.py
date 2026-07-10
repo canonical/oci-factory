@@ -16,6 +16,32 @@ class ImageReachedEol(Exception):
     """Exception to be thrown when end-of-life is reached."""
 
 
+class ProConfigSchema(pydantic.BaseModel):
+    """Schema of the Ubuntu Pro credentials configuration."""
+
+    token: str
+    artifact_passphrase: str = pydantic.Field(alias="artifact-passphrase")
+
+    model_config = pydantic.ConfigDict(extra="forbid")
+
+
+class ProSchema(pydantic.BaseModel):
+    """Schema of the Ubuntu Pro build configuration."""
+
+    services: List[str]
+    config: ProConfigSchema
+
+    model_config = pydantic.ConfigDict(extra="forbid")
+
+    @pydantic.field_validator("services", mode="after")
+    def _ensure_non_empty_services(cls, value):
+        if not value:
+            raise ImageTriggerValidationError(
+                "At least one Ubuntu Pro service must be present."
+            )
+        return value
+
+
 class ImageUploadReleaseSchema(pydantic.BaseModel):
     """Schema of the release option for uploads in the image.yaml trigger"""
 
@@ -24,6 +50,7 @@ class ImageUploadReleaseSchema(pydantic.BaseModel):
     # TODO: when upgrading to 24.04, switch to the following line
     # risks: List[Literal[*KNOWN_RISKS_ORDERED]]
     risks: List[Literal["stable", "candidate", "beta", "edge"]]
+    pro: Optional[ProSchema] = None
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
@@ -58,6 +85,7 @@ class ChannelsSchema(pydantic.BaseModel):
     candidate: str = None
     beta: str = None
     edge: str = None
+    pro: Optional[ProSchema] = None
 
     model_config = pydantic.ConfigDict(extra="forbid")
 

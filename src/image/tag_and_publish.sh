@@ -93,9 +93,10 @@ ghcr_repo_name="${GHCR_REPO}/${image_name}"
 docker_hub_repo_name="${DOCKER_HUB_NAMESPACE}/${image_name}"
 acr_repo_name="${ACR_NAMESPACE}/${image_name}"
 ecr_repo_name="${ECR_NAMESPACE}/${image_name}"
+publish_destination="${PUBLISH_DESTINATION:-public}"
 # ecr_lts_repo_name="${ECR_LTS_NAMESPACE}/${image_name}"
 
-log_info "Publishing ${image_name} to registries with tags: ${tag_names[*]}"
+log_info "Publishing ${image_name} to ${publish_destination} registries with tags: ${tag_names[*]}"
 
 trace_suspend
 if [ ! -z $GHCR_REPO ]; then
@@ -108,6 +109,22 @@ if [ ! -z $GHCR_REPO ]; then
         "${tag_names[@]}"
     
     exit 0
+fi
+
+if [ "${publish_destination}" = "pro-acr" ]; then
+    ### ACR
+    publish_with_username_password \
+        "$ACR_CREDS_USR" \
+        "$ACR_CREDS_PSW" \
+        ${acr_repo_name} \
+        "${tag_names[@]}"
+
+    exit 0
+fi
+
+if [ "${publish_destination}" != "public" ]; then
+    log_error "Unknown publish destination: ${publish_destination}"
+    exit 1
 fi
 
 docker login -u $DOCKER_HUB_CREDS_USR -p $DOCKER_HUB_CREDS_PSW

@@ -1,4 +1,4 @@
-from .triggers import ImageUploadSchema
+from .triggers import ImageUploadSchema, ProSchema
 
 
 class RevisionDataSchema(ImageUploadSchema):
@@ -8,3 +8,4 @@ class RevisionDataSchema(ImageUploadSchema):
     path: str
     revision: int
     track: str
+    pro: ProSchema | None = None

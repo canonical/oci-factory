@@ -24,6 +24,7 @@ from .utils.eol_utils import (
     generate_base_eol_exceed_warning,
     track_eol_exceeds_base_eol,
 )
+from .pro import get_track_from_tag, is_pro_track
 from .utils.schema.triggers import KNOWN_RISKS_ORDERED, ImageSchema
 
 logger = get_logger()
@@ -132,6 +133,16 @@ def find_tracks_has_eol_exceeding_base_eol(all_releases):
             tracks.append(eols)
 
     return tracks
+
+
+def group_release_tags_by_revision_and_destination(release_tags, image_trigger):
+    """Group tags by revision and publish destination."""
+    group_by_revision = defaultdict(lambda: defaultdict(list))
+    for tag, revision in sorted(release_tags.items()):
+        destination = "pro-acr" if is_pro_track(image_trigger, get_track_from_tag(tag)) else "public"
+        group_by_revision[revision][destination].append(tag)
+
+    return group_by_revision
 
 
 def main():
@@ -290,9 +301,9 @@ def main():
 
     # we finally have all the OCI tags to be released,
     # and which revisions to release for each tag. Let's release!
-    group_by_revision = defaultdict(list)
-    for tag, revision in sorted(release_tags.items()):
-        group_by_revision[revision].append(tag)
+    group_by_revision = group_release_tags_by_revision_and_destination(
+        release_tags, image_trigger
+    )
 
     if not args.update_releases_json:
         logger.info(
@@ -301,28 +312,35 @@ def main():
         )
 
         github_tags = []
-        for revision, tags in group_by_revision.items():
+        for revision, tags_by_destination in group_by_revision.items():
             revision_track = revision_to_track[revision]
             source_img = (
                 "docker://ghcr.io/"
                 f"{args.ghcr_repo}/{img_name}:{revision_track}_{revision}"
             )
             this_dir = os.path.dirname(__file__)
-            logger.info(f"Releasing {source_img} with tags:\n{tags}")
-            subprocess.check_call(
-                [f"{this_dir}/tag_and_publish.sh", source_img, img_name] + tags
-            )
-
-            for tag in tags:
-                gh_release_info = {}
-                gh_release_info["canonical-tag"] = (
-                    f"{img_name}_{revision_track}_{revision}"
+            for destination, tags in tags_by_destination.items():
+                logger.info(
+                    f"Releasing {source_img} to {destination} with tags:\n{tags}"
                 )
-                gh_release_info["release-name"] = f"{img_name}_{tag}"
-                gh_release_info["name"] = f"{img_name}"
-                gh_release_info["revision"] = f"{revision}"
-                gh_release_info["channel"] = f"{tag}"
-                github_tags.append(gh_release_info)
+                env = os.environ.copy()
+                env["PUBLISH_DESTINATION"] = destination
+                subprocess.check_call(
+                    [f"{this_dir}/tag_and_publish.sh", source_img, img_name] + tags,
+                    env=env,
+                )
+
+            for tags in tags_by_destination.values():
+                for tag in tags:
+                    gh_release_info = {}
+                    gh_release_info["canonical-tag"] = (
+                        f"{img_name}_{revision_track}_{revision}"
+                    )
+                    gh_release_info["release-name"] = f"{img_name}_{tag}"
+                    gh_release_info["name"] = f"{img_name}"
+                    gh_release_info["revision"] = f"{revision}"
+                    gh_release_info["channel"] = f"{tag}"
+                    github_tags.append(gh_release_info)
 
         matrix = {"include": github_tags}
 

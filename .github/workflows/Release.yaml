@@ -85,6 +85,7 @@ jobs:
     needs: [validate-push-release-request]
     outputs:
       gh-releases-matrix: ${{ steps.release-image.outputs.gh-releases-matrix }}
+      has-public-tracks: ${{ steps.check-public-tracks.outputs.has-public-tracks }}
     env:
       IS_PROD: ${{ ! startsWith(inputs.oci-image-name, 'mock-') }}
       RELEASES_BRANCH: _releases
@@ -122,6 +123,16 @@ jobs:
         run: | 
           ./src/image/requirements.sh
           pip install -r src/image/requirements.txt
+
+      - name: Check public tracks
+        id: check-public-tracks
+        run: |
+          has_public_tracks=$(python3 -m src.image.pro has_public_tracks \
+            --image-trigger oci/${INPUTS_OCI_IMAGE_NAME}/image.yaml)
+          echo "has-public-tracks=${has_public_tracks}" >> "$GITHUB_OUTPUT"
+        env:
+          INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
+
       - name: Get all revisions per track
         id: get-all-canonical-tags
         env:
@@ -144,14 +155,14 @@ jobs:
           # https://github.com/actions/runner/issues/1483
           DOCKER_HUB_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.DOCKER_HUB_CREDS_PSW || secrets.DOCKER_HUB_CREDS_PSW_DEV }}
           DOCKER_HUB_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.DOCKER_HUB_CREDS_USR || secrets.DOCKER_HUB_CREDS_USR_DEV }}
-          # ACR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_USR || secrets.ACR_CREDS_USR_DEV }}
-          # ACR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_PSW || secrets.ACR_CREDS_PSW_DEV }}
+          ACR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ACR_PRO_CREDS_USR || secrets.ACR_PRO_CREDS_USR_DEV }}
+          ACR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ACR_PRO_CREDS_PSW || secrets.ACR_PRO_CREDS_PSW_DEV }}
           ECR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_USR || secrets.ECR_CREDS_USR_DEV }}
           ECR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ECR_CREDS_PSW || secrets.ECR_CREDS_PSW_DEV }}
           # ECR_LTS_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ECR_LTS_CREDS_USR || secrets.ECR_LTS_CREDS_USR_DEV }}
           # ECR_LTS_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ECR_LTS_CREDS_PSW || secrets.ECR_LTS_CREDS_PSW_DEV }}
           
-          # ACR_NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu.azurecr.io' || secrets.ACR_NAMESPACE_DEV }}
+          ACR_NAMESPACE: ${{ env.IS_PROD == 'true' && secrets.ACR_PRO_NAMESPACE || secrets.ACR_PRO_NAMESPACE_DEV }}
           DOCKER_HUB_NAMESPACE: ${{ env.IS_PROD == 'true' && 'docker.io/ubuntu' || secrets.DOCKER_HUB_NAMESPACE_DEV }}
           ECR_NAMESPACE: ${{ env.IS_PROD == 'true' && 'ubuntu' || secrets.ECR_NAMESPACE_DEV }}
           # ECR_LTS_NAMESPACE: ${{ env.IS_PROD == 'true' && 'lts' || secrets.ECR_LTS_NAMESPACE_DEV }}
@@ -207,6 +218,7 @@ jobs:
   update-documentation:
     name: Update documentation
     needs: [do-releases]
+    if: ${{ needs.do-releases.outputs.has-public-tracks == 'true' }}
     uses: ./.github/workflows/Documentation.yaml
     with:
       oci-image-name: "${{ inputs.oci-image-name }}"

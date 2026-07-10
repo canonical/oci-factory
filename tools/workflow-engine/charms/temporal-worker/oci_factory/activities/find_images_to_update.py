@@ -23,9 +23,9 @@ import zipfile
 from datetime import datetime, timezone
 from fnmatch import fnmatchcase
 
-import requests
 import swiftclient
 import yaml
+import requests
 
 
 # TODO:
@@ -47,6 +47,64 @@ def find_released_revisions(releases_json: dict) -> list:
                 released_revisions.append(revision)
 
     return released_revisions
+
+
+def resolve_release_target(releases_json: dict, target: str, visited: set[str]) -> int | None:
+    """Resolve a release target to a concrete revision number."""
+    if target in visited:
+        logging.warning(f"Skipping circular release target {target}")
+        return None
+    visited.add(target)
+
+    try:
+        return int(target)
+    except ValueError:
+        pass
+
+    try:
+        track, risk = target.rsplit("_", 1)
+        return resolve_release_target(
+            releases_json, releases_json[track][risk]["target"], visited
+        )
+    except (KeyError, ValueError, TypeError):
+        logging.warning(f"Skipping unresolved release target {target}")
+        return None
+
+
+def find_release_channels(releases_json: dict, target_revision: int) -> dict:
+    """Find release tracks and risks that point to a revision in _releases.json."""
+    release_to = {}
+    for track, risks in releases_json.items():
+        if risks.get("end-of-life"):
+            if risks["end-of-life"] < datetime.now(timezone.utc).strftime(
+                "%Y-%m-%dT%H:%M:%SZ"
+            ):
+                logging.info(
+                    f"Skipping track {track} because it reached its end of life: "
+                    f"{risks['end-of-life']}"
+                )
+                continue
+        else:
+            logging.warning(f"Track {track} is missing its end-of-life field")
+            continue
+
+        for risk, targets in risks.items():
+            if risk in ["end-of-life", "pro"]:
+                continue
+
+            revision = resolve_release_target(releases_json, targets["target"], set())
+
+            if revision != target_revision:
+                continue
+
+            if track not in release_to:
+                release_to[track] = {"risks": []}
+            release_to[track]["risks"].append(risk)
+            release_to[track]["end-of-life"] = risks["end-of-life"]
+            if pro_config := risks.get("pro"):
+                release_to[track]["pro"] = pro_config
+
+    return release_to
 
 
 def trigger_triplet(trigger: dict) -> str:
@@ -82,19 +140,6 @@ def trigger_image_rebuild():
     # Let's use an uber image trigger file to trigger the CI rebuilds
     uber_img_trigger = {"version": 2, "upload": []}
     uploads = {}  # key: trigger triplet, value: uber_image_trigger["upload"] entry
-    # We'll also need to find which tags (channels) to release the new
-    # rebuilds to
-    # TODO: Get rid of this once we have a proper DB where to store all the
-    # image information.
-    # This is a bit nasty as these APIs return paginated results
-    # and don't offer enough querying parameters to filter the results.
-    ecr_tags_url = "https://api.us-east-1.gallery.ecr.aws/describeImageTags"
-    body = {"repositoryName": image, "maxResults": 1000}
-    if image.startswith("mock-"):
-        body["registryAliasName"] = "rocksdev"
-    else:
-        body["registryAliasName"] = "ubuntu"
-    tags = json.loads(requests.post(ecr_tags_url, json=body).content.decode())
     # Each Swift object corresponds to an image revision (<=> build)
     for image_revision in img_objs:
         _, _, revision, _ = image_revision["name"].split("/")
@@ -134,61 +179,10 @@ def trigger_image_rebuild():
                 "ignored-vulnerabilities", ""
             ).split(),
         }
-        release_to = {}
-        imageTagDetails = tags.get("imageTagDetails", {})
-        if not imageTagDetails:
-            logging.warning(
-                f"{tags.get('message', 'Image tags not found in registry')}. Skip!"
-            )
-            continue
-
-        tags_matched = False
-        for tag in imageTagDetails:
-            if tag["imageDetail"].get("imageDigest") != revision_digest:
-                continue
-            tags_matched = True
-
-            if tag["imageTag"] in ["edge", "beta", "candidate", "stable"]:
-                to_track = "latest"
-                to_risk = tag["imageTag"]
-            else:
-                try:
-                    to_track, to_risk = tag["imageTag"].rsplit("_", 1)
-                except ValueError as err:
-                    if "not enough values to unpack" in str(err):
-                        # These cases are driven by the <track> alias which
-                        # is created for tags like <track>_stable
-                        to_track = tag["imageTag"]
-                        to_risk = "stable"
-                    else:
-                        logging.exception(f"Unrecognized tag {tag['imageTag']}")
-                        continue
-
-            if releases[to_track].get("end-of-life"):
-                if releases[to_track]["end-of-life"] < datetime.now(
-                    timezone.utc
-                ).strftime("%Y-%m-%dT%H:%M:%SZ"):
-                    logging.info(
-                        f"Skipping track {to_track} because it reached its "
-                        f"end of life: {releases[to_track]['end-of-life']}"
-                    )
-                    continue
-                else:
-                    if to_track not in release_to:
-                        release_to[str(to_track)] = {"risks": [to_risk]}
-                    else:
-                        release_to[to_track]["risks"].append(to_risk)
-                    release_to[to_track]["end-of-life"] = releases[to_track][
-                        "end-of-life"
-                    ]
-            else:
-                logging.warning(f"Track {to_track} is missing its end-of-" "life field")
-
-        if not tags_matched:
-            logging.warning(
-                f"Unable to find a tag for {image} revision {revision} in ECR"
-            )
-            continue
+        release_to = find_release_channels(releases, int(revision))
+        if pro_config := build_metadata.get("pro"):
+            for release in release_to.values():
+                release["pro"] = pro_config
 
         triplet = trigger_triplet(build_and_upload_data)
 
