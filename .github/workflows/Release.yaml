@@ -11,6 +11,10 @@ on:
         description: 'Cache key (to fetch image trigger from cache)'
         required: false
         type: string
+      pro-artifact-passphrase-secret-name:
+        description: 'Secret name used to decrypt Pro release source artifacts'
+        required: false
+        type: string
       external_ref_id:  # (1)
         description: 'Optional ID for unique run detection'
         required: false
@@ -24,6 +28,10 @@ on:
         type: string
       image-trigger-cache-key:
         description: 'Cache key (to fetch image trigger from cache)'
+        required: false
+        type: string
+      pro-artifact-passphrase-secret-name:
+        description: 'Secret name used to decrypt Pro release source artifacts'
         required: false
         type: string
 
@@ -133,6 +141,35 @@ jobs:
         env:
           INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
 
+      - name: Check Pro tracks
+        id: check-pro-tracks
+        run: |
+          has_pro_tracks=$(python3 -m src.image.pro has_pro_tracks \
+            --image-trigger oci/${INPUTS_OCI_IMAGE_NAME}/image.yaml)
+          echo "has-pro-tracks=${has_pro_tracks}" >> "$GITHUB_OUTPUT"
+        env:
+          INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
+
+      - name: Download Pro release sources
+        if: ${{ steps.check-pro-tracks.outputs.has-pro-tracks == 'true' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: ${{ inputs.oci-image-name }}_*.gpg
+          path: pro-release-sources
+          merge-multiple: true
+
+      - name: Decrypt Pro release sources
+        if: ${{ steps.check-pro-tracks.outputs.has-pro-tracks == 'true' }}
+        env:
+          ARTIFACT_PASSPHRASE: ${{ secrets[inputs.pro-artifact-passphrase-secret-name] }}
+        run: |
+          for artifact in pro-release-sources/*.gpg; do
+            ./.github/actions/crypt-artifact/crypt-artifact.sh decrypt \
+              -i "${artifact}" \
+              -p "${ARTIFACT_PASSPHRASE}" \
+              -o "${artifact%.gpg}"
+          done
+
       - name: Get all revisions per track
         id: get-all-canonical-tags
         env:
@@ -183,6 +220,7 @@ jobs:
             --image-name ${INPUTS_OCI_IMAGE_NAME} \
             --all-releases oci/${INPUTS_OCI_IMAGE_NAME}/_releases.json \
             --all-revision-tags "${STEPS_GET_ALL_CANONICAL_TAGS_OUTPUTS_CANONICAL_TAGS_FILE}" \
+            --pro-release-sources pro-release-sources \
             --ghcr-repo "${{ github.repository_owner }}/oci-factory"
 
       - name: Update _releases.json

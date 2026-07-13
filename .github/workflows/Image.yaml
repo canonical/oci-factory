@@ -479,7 +479,16 @@ jobs:
           fi
           echo "hashes=$(sha256sum ${VULN_REPORT} ${OCI_IMAGE_ARCHIVE} ${SBOMS} | base64 -w0)"
 
+      - name: Calculate image digest
+        id: image-digest
+        run: |
+          digest=$(skopeo inspect --raw "oci-archive:${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME}" | sha256sum | cut -d' ' -f1)
+          echo "digest=sha256:${digest}" >> "$GITHUB_OUTPUT"
+        env:
+          STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME: ${{ steps.rename-oci-archive.outputs.name }}
+
       - name: Login to GHCR
+        if: ${{ matrix.pro-services == '' }}
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121
         with:
           registry: ghcr.io
@@ -501,6 +510,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload to GHCR
+        if: ${{ matrix.pro-services == '' }}
         id: upload-image
         uses: ./.github/actions/upload-rock
         with:
@@ -522,7 +532,7 @@ jobs:
           IMAGE_NAME: ${{ matrix.name }}
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
           MATRIX_BASE: ${{ matrix.base }}
-          STEPS_UPLOAD_IMAGE_OUTPUTS_DIGEST: ${{ steps.upload-image.outputs.digest }}
+          IMAGE_DIGEST: ${{ matrix.pro-services == '' && steps.upload-image.outputs.digest || steps.image-digest.outputs.digest }}
           MATRIX_IGNORED_VULNERABILITIES: ${{ matrix.ignored-vulnerabilities }}
           MATRIX_NAME: ${{ matrix.name }}
           MATRIX_TRACK: ${{ matrix.track }}
@@ -530,7 +540,7 @@ jobs:
           STEPS_GENERATE_SBOMS_OUTPUTS_SBOMS: ${{ steps.generate-sboms.outputs.sboms }}
         run: |
           jq --arg base "${MATRIX_BASE}" \
-            --arg digest "${STEPS_UPLOAD_IMAGE_OUTPUTS_DIGEST}" \
+            --arg digest "${IMAGE_DIGEST}" \
             --arg ignored_vulnerabilities "${MATRIX_IGNORED_VULNERABILITIES}" \
             '. + {base: $base, digest: $digest, "ignored-vulnerabilities": $ignored_vulnerabilities}' \
             <<< '${{ toJSON(matrix) }}' \
@@ -560,6 +570,8 @@ jobs:
     needs: [prepare-build, prepare-upload, upload]
     runs-on: ubuntu-22.04
     if: ${{ needs.prepare-build.outputs.release-to != '' }}
+    outputs:
+      pro-artifact-passphrase-secret-name: ${{ steps.merge-release-requests.outputs.pro-artifact-passphrase-secret-name }}
     concurrency:
       group: ${{ needs.prepare-build.outputs.oci-img-path }}
       cancel-in-progress: true
@@ -619,6 +631,11 @@ jobs:
               --revision-data-file "${REVISION_DATA_DIR}/${revision_file}"
           done
 
+          pro_artifact_passphrase_secret_name=$(python3 -m src.image.pro \
+            pro_artifact_passphrase_secret \
+            --image-trigger "${NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_PATH}/image.yaml")
+          echo "pro-artifact-passphrase-secret-name=${pro_artifact_passphrase_secret_name}" >> "$GITHUB_OUTPUT"
+
       - uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
           path: ${{ needs.prepare-build.outputs.oci-img-path }}/image.yaml
@@ -633,6 +650,7 @@ jobs:
     with:
       oci-image-name: "${{ needs.prepare-build.outputs.oci-img-name }}"
       image-trigger-cache-key: "${{ github.run_id }}-image-trigger"
+      pro-artifact-passphrase-secret-name: "${{ needs.prepare-releases.outputs.pro-artifact-passphrase-secret-name }}"
     secrets: inherit
 
   generate-provenance:

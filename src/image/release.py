@@ -64,6 +64,12 @@ parser.add_argument(
     action="store_true",
     default=False,
 )
+parser.add_argument(
+    "--pro-release-sources",
+    help="Directory containing decrypted Pro OCI archive release sources.",
+    required=False,
+    default="",
+)
 
 
 def remove_eol_tags(tag_to_revision, all_releases):
@@ -143,6 +149,17 @@ def group_release_tags_by_revision_and_destination(release_tags, image_trigger):
         group_by_revision[revision][destination].append(tag)
 
     return group_by_revision
+
+
+def get_release_source(destination, revision_track, revision, img_name, ghcr_repo, pro_sources):
+    """Return the skopeo source image reference for a release destination."""
+    if destination == "pro-acr":
+        source_path = os.path.join(pro_sources, f"{img_name}_{revision_track}_{revision}")
+        if not os.path.isfile(source_path):
+            raise FileNotFoundError(f"Pro release source not found: {source_path}")
+        return f"oci-archive:{source_path}"
+
+    return f"docker://ghcr.io/{ghcr_repo}/{img_name}:{revision_track}_{revision}"
 
 
 def main():
@@ -314,12 +331,16 @@ def main():
         github_tags = []
         for revision, tags_by_destination in group_by_revision.items():
             revision_track = revision_to_track[revision]
-            source_img = (
-                "docker://ghcr.io/"
-                f"{args.ghcr_repo}/{img_name}:{revision_track}_{revision}"
-            )
             this_dir = os.path.dirname(__file__)
             for destination, tags in tags_by_destination.items():
+                source_img = get_release_source(
+                    destination,
+                    revision_track,
+                    revision,
+                    img_name,
+                    args.ghcr_repo,
+                    args.pro_release_sources,
+                )
                 logger.info(
                     f"Releasing {source_img} to {destination} with tags:\n{tags}"
                 )
