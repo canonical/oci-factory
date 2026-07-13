@@ -17,8 +17,10 @@ import sys
 from datetime import datetime, timezone
 
 import docker
+import yaml
 
 from ..shared.logs import get_logger
+from ..image.pro import is_pro_track
 
 SKOPEO_IMAGE = os.getenv("SKOPEO_IMAGE", "quay.io/skopeo/stable:v1.20.0")
 REGISTRY = "ghcr.io/canonical/oci-factory"
@@ -58,6 +60,60 @@ def get_image_name_in_registry(img_name: str, revision: str) -> str:
             return f"{tagless_image_name}:{tag}"
 
 
+def build_released_revisions_matrix(oci_images_path: str) -> tuple[dict, list[dict]]:
+    """Return released revisions and the continuous-testing matrix entries."""
+    released_revisions = {}
+    ghcr_images = []
+    for img in os.listdir(oci_images_path):
+        _releases_file = f"{oci_images_path}/{img}/_releases.json"
+        if not os.path.isfile(_releases_file):
+            continue
+
+        with open(_releases_file) as rf:
+            releases = json.load(rf)
+
+        image_trigger_file = f"{oci_images_path}/{img}/image.yaml"
+        with open(image_trigger_file, encoding="UTF-8") as trigger:
+            image_trigger = yaml.load(trigger, Loader=yaml.BaseLoader)
+
+        released_revisions[img] = []
+        for track, risks in releases.items():
+            if risks.get("end-of-life") and risks["end-of-life"] < datetime.now(
+                timezone.utc
+            ).strftime("%Y-%m-%dT%H:%M:%SZ"):
+                logger.info(
+                    f"Skipping track {track} because it reached its end of life"
+                    f": {risks['end-of-life']}"
+                )
+                continue
+            elif not risks.get("end-of-life"):
+                logger.warning(f"Track {track} is missing its end-of-life field")
+
+            for key, targets in risks.items():
+                if key in ["end-of-life", "pro"]:
+                    continue
+                try:
+                    if int(targets["target"]) in released_revisions[img]:
+                        continue
+                except ValueError:
+                    # this target is following another tag and thus is not
+                    # a revision number
+                    continue
+
+                released_revisions[img].append(int(targets["target"]))
+                ghcr_images.append(
+                    {
+                        "name": img,
+                        "source-image": get_image_name_in_registry(
+                            img, targets["target"]
+                        ),
+                        "encrypted-source-image": is_pro_track(image_trigger, track),
+                    }
+                )
+
+    return released_revisions, ghcr_images
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description=str(
@@ -75,49 +131,9 @@ if __name__ == "__main__":
 
     logger.info(f"Looping through OCI images in {args.oci_images_path}")
 
-    released_revisions = {}
-    ghcr_images = []
-    for img in os.listdir(args.oci_images_path):
-        _releases_file = f"{args.oci_images_path}/{img}/_releases.json"
-        if not os.path.isfile(_releases_file):
-            continue
-
-        with open(_releases_file) as rf:
-            releases = json.load(rf)
-
-        released_revisions[img] = []
-        for track, risks in releases.items():
-            if risks.get("end-of-life") and risks["end-of-life"] < datetime.now(
-                timezone.utc
-            ).strftime("%Y-%m-%dT%H:%M:%SZ"):
-                logger.info(
-                    f"Skipping track {track} because it reached its end of life"
-                    f": {risks['end-of-life']}"
-                )
-                continue
-            elif not risks.get("end-of-life"):
-                logger.warning(f"Track {track} is missing its end-of-life field")
-
-            for key, targets in risks.items():
-                if key == "end-of-life":
-                    continue
-                try:
-                    if int(targets["target"]) in released_revisions[img]:
-                        continue
-                except ValueError:
-                    # this target is following another tag and thus is not
-                    # a revision number
-                    continue
-
-                released_revisions[img].append(int(targets["target"]))
-                ghcr_images.append(
-                    {
-                        "name": img,
-                        "source-image": get_image_name_in_registry(
-                            img, targets["target"]
-                        ),
-                    }
-                )
+    released_revisions, ghcr_images = build_released_revisions_matrix(
+        args.oci_images_path
+    )
 
     logger.info(f"Released revisions: {json.dumps(released_revisions, indent=2)}")
     logger.info(f"Released revisions in GHCR: {ghcr_images}")

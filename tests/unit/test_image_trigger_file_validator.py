@@ -157,6 +157,61 @@ def test_image_trigger_validator_pro_release():
     prep_matrix.validate_image_trigger(image_trigger)
 
 
+def test_image_trigger_validator_upload_pro():
+    image_trigger = {
+        "version": 2,
+        "upload": [
+            {
+                "source": "canonical/rocks-toolbox",
+                "commit": "abcdef1234567890",
+                "directory": "mock_rock/1.2",
+                "pro": {
+                    "services": ["esm-apps", "esm-infra"],
+                    "config": {
+                        "token": "secrets.UBUNTU_PRO_TOKEN",
+                        "artifact-passphrase": "secrets.PRO_ARTIFACT_PASSPHRASE",
+                    },
+                },
+                "release": {
+                    "1.0-24.04": {
+                        "end-of-life": "2030-05-01T00:00:00Z",
+                        "risks": ["stable"],
+                    }
+                },
+            }
+        ],
+    }
+
+    prep_matrix.validate_image_trigger(image_trigger)
+
+
+def test_image_trigger_validator_allows_duplicate_triplet_with_different_pro_services():
+    image_trigger = {
+        "version": 2,
+        "upload": [
+            {
+                "source": "canonical/rocks-toolbox",
+                "commit": "abcdef1234567890",
+                "directory": "mock_rock/1.2",
+            },
+            {
+                "source": "canonical/rocks-toolbox",
+                "commit": "abcdef1234567890",
+                "directory": "mock_rock/1.2",
+                "pro": {
+                    "services": ["esm-apps"],
+                    "config": {
+                        "token": "secrets.UBUNTU_PRO_TOKEN",
+                        "artifact-passphrase": "secrets.PRO_ARTIFACT_PASSPHRASE",
+                    },
+                },
+            },
+        ],
+    }
+
+    prep_matrix.validate_image_trigger(image_trigger)
+
+
 def test_image_trigger_validator_pro_requires_services():
     image_trigger = {
         "version": 2,

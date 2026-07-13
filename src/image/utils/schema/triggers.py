@@ -72,6 +72,7 @@ class ImageUploadSchema(pydantic.BaseModel):
     ignored_vulnerabilities: Optional[list[str]] = pydantic.Field(
         default_factory=list, alias="ignored-vulnerabilities"
     )
+    pro: Optional[ProSchema] = None
     release: Optional[Dict[str, ImageUploadReleaseSchema]] = None
 
     model_config = pydantic.ConfigDict(extra="forbid")
@@ -122,7 +123,11 @@ class ImageSchema(pydantic.BaseModel):
             return v
         unique_triggers = set()
         for upload in v:
-            trigger = f"{upload.source}_{upload.commit}_{upload.directory}"
+            pro_services = sorted(upload.pro.services) if upload.pro else []
+            trigger = (
+                f"{upload.source}_{upload.commit}_{upload.directory}_"
+                f"{','.join(pro_services)}"
+            )
             if trigger in unique_triggers:
                 raise ImageTriggerValidationError(
                     f"Image trigger {trigger} is not unique."

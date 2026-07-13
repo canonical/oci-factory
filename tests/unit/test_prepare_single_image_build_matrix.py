@@ -154,6 +154,38 @@ def test_flatten_pro_builds():
     assert builds[1]["pro-services"] == ""
 
 
+def test_flatten_pro_builds_uses_upload_pro():
+    pro_config = {
+        "services": ["esm-apps", "esm-infra"],
+        "config": {
+            "token": "secrets.UBUNTU_PRO_TOKEN",
+            "artifact-passphrase": "secrets.PRO_ARTIFACT_PASSPHRASE",
+        },
+    }
+    builds = [{"name": "mock", "pro": pro_config}]
+
+    prep_matrix.flatten_pro_builds(builds)
+
+    assert builds[0]["pro-services"] == "esm-apps esm-infra"
+    assert builds[0]["pro-token"] == "UBUNTU_PRO_TOKEN"
+    assert builds[0]["pro-artifact-passphrase"] == "PRO_ARTIFACT_PASSPHRASE"
+
+
+def test_dir_identifier_includes_sorted_pro_services():
+    build = {
+        "directory": "mock_rock/1.2",
+        "pro": {
+            "services": ["esm-infra", "esm-apps"],
+            "config": {
+                "token": "secrets.UBUNTU_PRO_TOKEN",
+                "artifact-passphrase": "secrets.PRO_ARTIFACT_PASSPHRASE",
+            },
+        },
+    }
+
+    assert prep_matrix.get_dir_identifier(build) == "mock_rock_1.2_esm-apps_esm-infra"
+
+
 def test_flatten_pro_builds_rejects_multiple_configs():
     builds = [
         {

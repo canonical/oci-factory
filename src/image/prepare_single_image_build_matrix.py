@@ -127,6 +127,9 @@ def filter_eol_builds(builds: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def get_build_pro(build: dict[str, Any]) -> dict[str, Any] | None:
     """Return the Pro config for a build, ensuring all released tracks agree."""
+    if build.get("pro"):
+        return build["pro"]
+
     releases = build.get("release", {})
     if not releases:
         return None
@@ -170,6 +173,16 @@ def flatten_pro_builds(builds: list[dict[str, Any]]) -> None:
         build["pro-artifact-passphrase"] = pro_config["config"][
             "artifact-passphrase"
         ].removeprefix("secrets.")
+
+
+def get_dir_identifier(build: dict[str, Any]) -> str:
+    """Return a unique artifact/cache directory identifier for a build."""
+    dir_identifier = build["directory"].rstrip("/").replace("/", "_")
+    if pro_config := build.get("pro"):
+        services = "_".join(sorted(pro_config["services"]))
+        dir_identifier = f"{dir_identifier}_{services}"
+
+    return dir_identifier
 
 
 def write_revision_data(data_dir: Path, build: dict[str, Any]):
@@ -238,7 +251,7 @@ def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: 
 
         # Add dir_identifier to assemble the cache key and artefact path
         # No need to write it to rev data file since it's only used in matrix
-        build["dir_identifier"] = build["directory"].rstrip("/").replace("/", "_")
+        build["dir_identifier"] = get_dir_identifier(build)
 
         with tempdir() as d:
             url = get_source_url(build["source"])

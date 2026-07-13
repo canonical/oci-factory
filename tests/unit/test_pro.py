@@ -2,6 +2,7 @@ import pytest
 
 from src.image.pro import (
     get_pro_artifact_passphrase_secret,
+    get_pro_revision_refs,
     get_track_from_tag,
     has_pro_tracks,
     has_public_tracks,
@@ -28,6 +29,9 @@ def test_has_public_tracks():
     assert not has_public_tracks(
         {"upload": [{"release": {"1.0-24.04": {"pro": pro_config}}}]}
     )
+    assert not has_public_tracks(
+        {"upload": [{"pro": pro_config, "release": {"1.0-24.04": {}}}]}
+    )
     assert has_public_tracks(
         {"release": {"1.0-24.04": {"pro": pro_config}, "latest": {}}}
     )
@@ -46,6 +50,10 @@ def test_pro_helpers():
 
     assert has_pro_tracks(image_trigger)
     assert get_pro_artifact_passphrase_secret(image_trigger) == "PRO_ARTIFACT_PASSPHRASE"
+
+    upload_trigger = {"upload": [{"pro": pro_config, "release": {"1.0-24.04": {}}}]}
+    assert has_pro_tracks(upload_trigger)
+    assert get_pro_artifact_passphrase_secret(upload_trigger) == "PRO_ARTIFACT_PASSPHRASE"
 
 
 def test_pro_artifact_passphrase_secret_must_be_unique():
@@ -74,3 +82,24 @@ def test_pro_artifact_passphrase_secret_must_be_unique():
 
     with pytest.raises(ValueError):
         get_pro_artifact_passphrase_secret(image_trigger)
+
+
+def test_get_pro_revision_refs():
+    image_trigger = {
+        "release": {
+            "1.0-24.04": {
+                "pro": {
+                    "services": ["esm-apps"],
+                    "config": {
+                        "token": "secrets.UBUNTU_PRO_TOKEN",
+                        "artifact-passphrase": "secrets.PRO_ARTIFACT_PASSPHRASE",
+                    },
+                }
+            },
+            "latest": {},
+        }
+    }
+
+    assert get_pro_revision_refs(
+        image_trigger, ["1.0-24.04_1", "latest_2"]
+    ) == ["1.0-24.04_1"]

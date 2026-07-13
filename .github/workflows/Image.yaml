@@ -488,7 +488,6 @@ jobs:
           STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME: ${{ steps.rename-oci-archive.outputs.name }}
 
       - name: Login to GHCR
-        if: ${{ matrix.pro-services == '' }}
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121
         with:
           registry: ghcr.io
@@ -521,6 +520,36 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           username: ${{ github.actor }}
 
+      - name: Upload encrypted Pro image to GHCR
+        if: ${{ matrix.pro-services != '' }}
+        id: upload-encrypted-pro-image
+        env:
+          PRO_ROCK_ENCRYPTION_PUBLIC_KEY: ${{ secrets.PRO_ROCK_ENCRYPTION_PUBLIC_KEY }}
+          GHCR_IMAGE: ghcr.io/${{ github.repository_owner }}/oci-factory/${{ matrix.name }}:${{ matrix.track }}_${{ matrix.revision }}
+          OCI_IMAGE_ARCHIVE: ${{ steps.rename-oci-archive.outputs.name }}
+        run: |
+          set -e
+          key_file="${RUNNER_TEMP}/pro-rock-encryption-public.pem"
+          printf '%s' "${PRO_ROCK_ENCRYPTION_PUBLIC_KEY}" > "${key_file}"
+          chmod 600 "${key_file}"
+
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
+
+          skopeo --insecure-policy copy \
+            --multi-arch all \
+            --remove-signatures \
+            --encryption-key "jwe:${key_file}" \
+            --encrypt-layer -1 \
+            --digestfile encrypted-pro-image-digest.txt \
+            --dest-username "${GITHUB_ACTOR}" \
+            --dest-password "${{ secrets.GITHUB_TOKEN }}" \
+            "oci-archive:${OCI_IMAGE_ARCHIVE}" \
+            "docker://${GHCR_IMAGE}"
+
+          echo "digest=$(cat encrypted-pro-image-digest.txt)" >> "$GITHUB_OUTPUT"
+
       - name: Upload build metadata to Swift
         env:
           OS_AUTH_URL: ${{ secrets.SWIFT_OS_AUTH_URL_PS7 }}
@@ -532,7 +561,7 @@ jobs:
           IMAGE_NAME: ${{ matrix.name }}
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
           MATRIX_BASE: ${{ matrix.base }}
-          IMAGE_DIGEST: ${{ matrix.pro-services == '' && steps.upload-image.outputs.digest || steps.image-digest.outputs.digest }}
+          IMAGE_DIGEST: ${{ matrix.pro-services == '' && steps.upload-image.outputs.digest || steps.upload-encrypted-pro-image.outputs.digest }}
           MATRIX_IGNORED_VULNERABILITIES: ${{ matrix.ignored-vulnerabilities }}
           MATRIX_NAME: ${{ matrix.name }}
           MATRIX_TRACK: ${{ matrix.track }}
@@ -646,6 +675,7 @@ jobs:
     needs: [prepare-build, prepare-releases]
     permissions:
       contents: write
+      packages: read
     uses: ./.github/workflows/Release.yaml
     with:
       oci-image-name: "${{ needs.prepare-build.outputs.oci-img-name }}"

@@ -91,6 +91,9 @@ jobs:
     runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
     name: Release
     needs: [validate-push-release-request]
+    permissions:
+      contents: write
+      packages: read
     outputs:
       gh-releases-matrix: ${{ steps.release-image.outputs.gh-releases-matrix }}
       has-public-tracks: ${{ steps.check-public-tracks.outputs.has-public-tracks }}
@@ -150,26 +153,6 @@ jobs:
         env:
           INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
 
-      - name: Download Pro release sources
-        if: ${{ steps.check-pro-tracks.outputs.has-pro-tracks == 'true' }}
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-        with:
-          pattern: ${{ inputs.oci-image-name }}_*.gpg
-          path: pro-release-sources
-          merge-multiple: true
-
-      - name: Decrypt Pro release sources
-        if: ${{ steps.check-pro-tracks.outputs.has-pro-tracks == 'true' }}
-        env:
-          ARTIFACT_PASSPHRASE: ${{ secrets[inputs.pro-artifact-passphrase-secret-name] }}
-        run: |
-          for artifact in pro-release-sources/*.gpg; do
-            ./.github/actions/crypt-artifact/crypt-artifact.sh decrypt \
-              -i "${artifact}" \
-              -p "${ARTIFACT_PASSPHRASE}" \
-              -o "${artifact%.gpg}"
-          done
-
       - name: Get all revisions per track
         id: get-all-canonical-tags
         env:
@@ -181,7 +164,42 @@ jobs:
           IMAGE_NAME: ${{ inputs.oci-image-name }}
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: ./src/image/get_canonical_tags_from_swift.sh
-      
+
+      - name: Decrypt Pro release sources from GHCR
+        if: ${{ steps.check-pro-tracks.outputs.has-pro-tracks == 'true' }}
+        env:
+          PRO_ROCK_DECRYPTION_PRIVATE_KEY: ${{ secrets.PRO_ROCK_DECRYPTION_PRIVATE_KEY }}
+          GHCR_REPO: ${{ github.repository_owner }}/oci-factory
+          INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
+          STEPS_GET_ALL_CANONICAL_TAGS_OUTPUTS_CANONICAL_TAGS_FILE: ${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}
+        run: |
+          set -e
+          mkdir -p pro-release-sources
+          key_file="${RUNNER_TEMP}/pro-rock-decryption-private.pem"
+          printf '%s' "${PRO_ROCK_DECRYPTION_PRIVATE_KEY}" > "${key_file}"
+          chmod 600 "${key_file}"
+
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
+
+          python3 -m src.image.pro pro_revision_refs \
+            --image-trigger "oci/${INPUTS_OCI_IMAGE_NAME}/image.yaml" \
+            --all-revision-tags "${STEPS_GET_ALL_CANONICAL_TAGS_OUTPUTS_CANONICAL_TAGS_FILE}" \
+            > pro-revision-refs.txt
+
+          while read -r revision_ref; do
+            if [[ -z "${revision_ref}" ]]; then
+              continue
+            fi
+            skopeo --insecure-policy copy \
+              --decryption-key "${key_file}" \
+              --src-username "${GITHUB_ACTOR}" \
+              --src-password "${{ secrets.GITHUB_TOKEN }}" \
+              "docker://ghcr.io/${GHCR_REPO}/${INPUTS_OCI_IMAGE_NAME}:${revision_ref}" \
+              "oci-archive:pro-release-sources/${INPUTS_OCI_IMAGE_NAME}_${revision_ref}"
+          done < pro-revision-refs.txt
+
       # Pull the latest changes to prevent conflicts merging _releases.json
       - run: pushd ${{ env.RELEASE_REPO_DIR }} && git pull --quiet && popd
 

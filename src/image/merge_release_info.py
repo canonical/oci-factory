@@ -75,6 +75,7 @@ if __name__ == "__main__":
 
     new_revision_releases = revision_data["release"]
     new_revision = revision_data["revision"]
+    new_revision_pro = revision_data.get("pro")
 
     # Update "release" from image trigger with new revision releases
     for track, val in new_revision_releases.items():
@@ -84,8 +85,8 @@ if __name__ == "__main__":
         if "end-of-life" in val:
             user_releases[track]["end-of-life"] = val["end-of-life"]
 
-        if val.get("pro"):
-            user_releases[track]["pro"] = val["pro"]
+        if pro_config := val.get("pro") or new_revision_pro:
+            user_releases[track]["pro"] = pro_config
 
         for risk in val["risks"]:
             user_releases[track][risk] = str(new_revision)

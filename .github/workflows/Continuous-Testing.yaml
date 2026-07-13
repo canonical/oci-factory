@@ -44,6 +44,9 @@ jobs:
   run-tests:
     name: Run tests for released images
     needs: [prepare-test-matrix]
+    permissions:
+      contents: read
+      packages: read
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.prepare-test-matrix.outputs.released-revisions-matrix) }}
@@ -54,4 +57,5 @@ jobs:
       trivyignore-path: "oci/${{ matrix.name }}/.trivyignore"
       date-last-scan: ${{ needs.prepare-test-matrix.outputs.last-scan }}
       create-issue: true
+      encrypted-source-image: ${{ matrix.encrypted-source-image }}
     secrets: inherit
