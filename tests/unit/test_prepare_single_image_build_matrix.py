@@ -147,7 +147,7 @@ def test_flatten_pro_builds():
 
     prep_matrix.flatten_pro_builds(builds)
 
-    assert builds[0]["pro-services"] == "esm-apps esm-infra"
+    assert builds[0]["pro-services"] == "esm-apps,esm-infra"
     assert builds[0]["pro-token"] == "UBUNTU_PRO_TOKEN"
     assert builds[0]["pro-artifact-passphrase"] == "PRO_ARTIFACT_PASSPHRASE"
     assert builds[0]["pro"] == builds[0]["release"]["1.0-24.04"]["pro"]
@@ -166,7 +166,7 @@ def test_flatten_pro_builds_uses_upload_pro():
 
     prep_matrix.flatten_pro_builds(builds)
 
-    assert builds[0]["pro-services"] == "esm-apps esm-infra"
+    assert builds[0]["pro-services"] == "esm-apps,esm-infra"
     assert builds[0]["pro-token"] == "UBUNTU_PRO_TOKEN"
     assert builds[0]["pro-artifact-passphrase"] == "PRO_ARTIFACT_PASSPHRASE"
 

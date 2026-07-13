@@ -168,7 +168,7 @@ def flatten_pro_builds(builds: list[dict[str, Any]]) -> None:
             continue
 
         build["pro"] = pro_config
-        build["pro-services"] = " ".join(pro_config["services"])
+        build["pro-services"] = ",".join(pro_config["services"])
         build["pro-token"] = pro_config["config"]["token"].removeprefix("secrets.")
         build["pro-artifact-passphrase"] = pro_config["config"][
             "artifact-passphrase"
