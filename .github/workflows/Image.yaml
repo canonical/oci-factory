@@ -356,6 +356,16 @@ jobs:
         with:
           name: ${{ env.OCI_ARCHIVE_NAME }}
 
+      - name: Decrypt Pro image artifact
+        if: ${{ matrix.pro-services != '' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: decrypt
+          passphrase: ${{ secrets[matrix.pro-artifact-passphrase] }}
+          input-path: ${{ env.OCI_ARCHIVE_NAME }}.gpg
+          output-path: ${{ env.OCI_ARCHIVE_NAME }}
+          preserve-original: false
+
       - name: Name output artefact
         id: rename-oci-archive
         run: |
