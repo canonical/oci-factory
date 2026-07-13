@@ -91,7 +91,7 @@ publish_to_aws_ecr_public()
 # From env
 ghcr_repo_name="${GHCR_REPO}/${image_name}"
 docker_hub_repo_name="${DOCKER_HUB_NAMESPACE}/${image_name}"
-acr_repo_name="${ACR_NAMESPACE}/${image_name}"
+acr_repo_name="${ACR_REGISTRY}/${image_name}"
 ecr_repo_name="${ECR_NAMESPACE}/${image_name}"
 publish_destination="${PUBLISH_DESTINATION:-public}"
 # ecr_lts_repo_name="${ECR_LTS_NAMESPACE}/${image_name}"
