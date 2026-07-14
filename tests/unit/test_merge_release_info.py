@@ -137,5 +137,12 @@ def test_merge_release_info_copies_upload_pro_to_release_tracks(tmp_path, monkey
     runpy.run_module("src.image.merge_release_info", run_name="__main__")
 
     merged_trigger = yaml.safe_load(image_trigger_path.read_text())
-    assert merged_trigger["release"]["1.1-22.04"]["pro"] == pro_config
+    assert merged_trigger["release"]["1.1-22.04"]["pro-variants"] == [
+        {
+            "services": ["esm-apps"],
+            "pro": pro_config,
+            "beta": "1",
+            "edge": "1",
+        }
+    ]
     prep_matrix.validate_image_trigger(merged_trigger)

@@ -24,7 +24,7 @@ from .utils.eol_utils import (
     generate_base_eol_exceed_warning,
     track_eol_exceeds_base_eol,
 )
-from .pro import get_track_from_tag, is_pro_track
+from .pro import get_track_from_tag
 from .utils.schema.triggers import KNOWN_RISKS_ORDERED, ImageSchema
 
 logger = get_logger()
@@ -76,7 +76,23 @@ def remove_eol_tags(tag_to_revision, all_releases):
     """Remove all EOL tags from tag to revision mapping."""
 
     filtered_tag_to_revision = tag_to_revision.copy()
-    for base_tag, _ in tag_to_revision.items():
+    for base_tag, target_value_data in tag_to_revision.items():
+        if isinstance(target_value_data, dict) and isinstance(
+            target_value_data["revision"], int
+        ):
+            track, _ = output_tag(base_tag).rsplit("_", 1)
+            if (
+                "end-of-life" in all_releases[track]
+                and (eol_date := all_releases[track]["end-of-life"])
+                < execution_timestamp
+                and base_tag in filtered_tag_to_revision
+            ):
+                logger.warning(
+                    f"Warning: Removing EOL tag {repr(base_tag)}, date: {eol_date}"
+                )
+                filtered_tag_to_revision.pop(base_tag)
+            continue
+
         path = []  # track revisions to prevent inf loop
         tag = base_tag  # init state
         while True:
@@ -88,6 +104,9 @@ def remove_eol_tags(tag_to_revision, all_releases):
             path.append(tag)
 
             # if we find a numeric revision, break since we reached the end of the path
+            if isinstance(tag, dict):
+                tag = str(tag["revision"])
+
             if tag.isdigit():
                 break
 
@@ -144,11 +163,63 @@ def find_tracks_has_eol_exceeding_base_eol(all_releases):
 def group_release_tags_by_revision_and_destination(release_tags, image_trigger):
     """Group tags by revision and publish destination."""
     group_by_revision = defaultdict(lambda: defaultdict(list))
-    for tag, revision in sorted(release_tags.items()):
-        destination = "pro-acr" if is_pro_track(image_trigger, get_track_from_tag(tag)) else "public"
-        group_by_revision[revision][destination].append(tag)
+    for _, release_data in sorted(release_tags.items()):
+        revision = release_data["revision"]
+        destination = release_data["destination"]
+        group_by_revision[revision][destination].append(release_data["tag"])
 
     return group_by_revision
+
+
+def validate_unique_destination_tags(release_tags):
+    """Ensure one destination/tag points to only one revision."""
+    seen = {}
+    for _, release_data in release_tags.items():
+        key = (release_data["destination"], release_data["tag"])
+        revision = release_data["revision"]
+        if key in seen and seen[key] != revision:
+            raise shared.BadChannel(
+                "Multiple release variants target the same destination/tag: "
+                f"{key[0]}:{key[1]} points to both revisions {seen[key]} and {revision}."
+            )
+        seen[key] = revision
+
+
+def get_or_create_pro_variant(track_release: dict, services: list[str], pro_config: dict) -> dict:
+    """Return the _releases.json Pro variant matching services, creating it if needed."""
+    services = sorted(services)
+    for variant in track_release.setdefault("pro-variants", []):
+        if sorted(variant["services"]) == services:
+            return variant
+    variant = {"services": services}
+    track_release["pro-variants"].append(variant)
+    return variant
+
+
+def target_value(value):
+    """Return the release target string from a scalar or target object."""
+    if isinstance(value, dict):
+        return value["target"]
+    return value
+
+
+def output_tag(map_key: str) -> str:
+    """Return the registry tag represented by an internal release map key."""
+    if map_key.startswith("pro:"):
+        return map_key.split(":", 2)[2]
+    return map_key
+
+
+def release_entry(revision, destination, tag=None, track=None):
+    """Return release routing metadata for a concrete revision."""
+    if tag is not None and track is None:
+        track = get_track_from_tag(tag)
+    return {
+        "revision": revision,
+        "destination": destination,
+        "tag": tag,
+        "track": track,
+    }
 
 
 def get_release_source(destination, revision_track, revision, img_name, ghcr_repo, pro_sources):
@@ -197,6 +268,7 @@ def main():
     _ = ImageSchema(**image_trigger)
 
     tag_mapping_from_trigger = {}
+    tag_destination = {}
     for track, risks in image_trigger["release"].items():
         if track not in all_releases:
             logger.info(f"Track {track} will be created for the 1st time")
@@ -210,14 +282,36 @@ def main():
                 all_releases[track]["end-of-life"] = value
                 continue
 
+            if risk == "pro-variants":
+                for variant in value or []:
+                    stored_variant = get_or_create_pro_variant(
+                        all_releases[track], variant["services"], variant["pro"]
+                    )
+                    for variant_risk in KNOWN_RISKS_ORDERED:
+                        variant_value = variant.get(variant_risk)
+                        if variant_value is None:
+                            continue
+                        stored_variant[variant_risk] = {
+                            "target": target_value(variant_value)
+                        }
+                        tag = f"{track}_{variant_risk}"
+                        map_key = f"pro:{','.join(variant['services'])}:{tag}"
+                        logger.info(
+                            f"Pro channel {tag} points to {target_value(variant_value)}"
+                        )
+                        tag_mapping_from_trigger[map_key] = target_value(variant_value)
+                        tag_destination[map_key] = "pro-acr"
+                continue
+
             if risk not in KNOWN_RISKS_ORDERED:
                 logger.warning(f"Skipping unknown risk {risk} in track {track}")
                 continue
 
-            all_releases[track][risk] = {"target": value}
+            all_releases[track][risk] = {"target": target_value(value)}
             tag = f"{track}_{risk}"
-            logger.info(f"Channel {tag} points to {value}")
-            tag_mapping_from_trigger[tag] = value
+            logger.info(f"Channel {tag} points to {target_value(value)}")
+            tag_mapping_from_trigger[tag] = target_value(value)
+            tag_destination[tag] = "public"
 
     # update EOL dates from upload dictionary
     for upload in image_trigger["upload"] or []:
@@ -247,7 +341,15 @@ def main():
     # - the target revisions exist
     # - the target tags (when following) do not incur in a circular dependency
     # - the target tags (when following) exist
-    tag_to_revision = tag_mapping_from_trigger.copy()
+    tag_to_revision = {
+        tag: release_entry(
+            target,
+            tag_destination[tag],
+            tag=output_tag(tag),
+            track=get_track_from_tag(output_tag(tag)),
+        )
+        for tag, target in tag_mapping_from_trigger.items()
+    }
     for channel_tag, target in tag_mapping_from_trigger.items():
         # a target cannot follow its own tag
         if target == channel_tag:
@@ -290,7 +392,12 @@ def main():
             )
             raise shared.BadChannel(msg)
 
-        tag_to_revision[channel_tag] = int(follow_tag)
+        tag_to_revision[channel_tag] = release_entry(
+            int(follow_tag),
+            tag_destination[channel_tag],
+            tag=output_tag(channel_tag),
+            track=get_track_from_tag(output_tag(channel_tag)),
+        )
 
     # if we get here, it is a valid (tag, revision)
 
@@ -299,25 +406,36 @@ def main():
 
     # we now need to add tag aliases
     release_tags = filtered_tag_to_revision.copy()
-    for base_tag, revision in tag_to_revision.items():
+    for base_tag, release_data in tag_to_revision.items():
+        revision = release_data["revision"]
+        destination = release_data["destination"]
         # "latest" is a special tag for OCI
         if re.match(
             rf"latest_({'|'.join(KNOWN_RISKS_ORDERED)})$",
             base_tag,
         ):
-            latest_alias = base_tag.split("_")[-1]
+            base_output_tag = output_tag(base_tag)
+            latest_alias = base_output_tag.split("_")[-1]
             logger.info(f"Exceptionally converting tag {base_tag} to {latest_alias}.")
-            release_tags[latest_alias] = revision
+            alias_key = f"{base_tag}:alias:{latest_alias}"
+            release_tags[alias_key] = release_entry(
+                revision, destination, tag=latest_alias, track="latest"
+            )
             release_tags.pop(base_tag)
 
         # stable risks have an alias with any risk string
-        if base_tag.endswith("_stable"):
-            stable_alias = "_".join(base_tag.split("_")[:-1])
+        if output_tag(base_tag).endswith("_stable"):
+            base_output_tag = output_tag(base_tag)
+            stable_alias = "_".join(base_output_tag.split("_")[:-1])
             logger.info(f"Adding stable tag alias {stable_alias} for {base_tag}")
-            release_tags[stable_alias] = revision
+            alias_key = f"{base_tag}:alias:{stable_alias}"
+            release_tags[alias_key] = release_entry(
+                revision, destination, tag=stable_alias, track=stable_alias
+            )
 
     # we finally have all the OCI tags to be released,
     # and which revisions to release for each tag. Let's release!
+    validate_unique_destination_tags(release_tags)
     group_by_revision = group_release_tags_by_revision_and_destination(
         release_tags, image_trigger
     )

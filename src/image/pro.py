@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+from typing import Any
 
 import yaml
 
@@ -25,9 +26,27 @@ def get_track_from_tag(tag: str) -> str:
     return tag
 
 
-def is_pro_track(image_trigger: dict, track: str) -> bool:
-    """Return whether a release track is configured for Ubuntu Pro."""
-    return bool(image_trigger.get("release", {}).get(track, {}).get("pro"))
+def normalize_services(services: list[str]) -> list[str]:
+    """Return a deterministic Pro services list."""
+    return sorted(services)
+
+
+def non_esm_services(services: list[str]) -> list[str]:
+    """Return Pro services that must be represented in published tags."""
+    return [service for service in normalize_services(services) if not service.startswith("esm-")]
+
+
+def get_published_track(track: str, pro: dict[str, Any] | None = None) -> str:
+    """Return the public tag track for a release track and optional Pro config."""
+    if not pro:
+        return track
+
+    tag_services = non_esm_services(pro.get("services", []))
+    if not tag_services:
+        return track
+
+    version, base = track.rsplit("-", 1)
+    return f"{version}-{'-'.join(tag_services)}-{base}"
 
 
 def get_release_tracks(image_trigger: dict) -> list[dict]:
@@ -42,19 +61,42 @@ def get_release_tracks(image_trigger: dict) -> list[dict]:
     return release_tracks
 
 
+def get_pro_variants(image_trigger: dict) -> list[dict]:
+    """Return all merged Pro variants from the release section."""
+    variants = []
+    for track, release in image_trigger.get("release", {}).items():
+        for variant in release.get("pro-variants", []) or []:
+            variants.append({**variant, "track": track})
+    return variants
+
+
 def has_public_tracks(image_trigger: dict) -> bool:
     """Return whether the image trigger has any non-Pro release tracks."""
-    release_tracks = get_release_tracks(image_trigger)
+    root_releases = image_trigger.get("release", {}).values()
+    if any(
+        any(risk in release for risk in KNOWN_RISKS_ORDERED)
+        for release in root_releases
+    ):
+        return True
+
+    release_tracks = []
+    for upload in image_trigger.get("upload", []) or []:
+        for release in upload.get("release", {}).values():
+            if upload.get("pro") and not release.get("pro"):
+                release = {**release, "pro": upload["pro"]}
+            release_tracks.append(release)
 
     if not release_tracks:
-        return True
+        return not has_pro_tracks(image_trigger)
 
     return any(not release.get("pro") for release in release_tracks)
 
 
 def has_pro_tracks(image_trigger: dict) -> bool:
     """Return whether the image trigger has any Pro release tracks."""
-    return any(release.get("pro") for release in get_release_tracks(image_trigger))
+    return bool(get_pro_variants(image_trigger)) or any(
+        release.get("pro") for release in get_release_tracks(image_trigger)
+    )
 
 
 def get_pro_artifact_passphrase_secret(image_trigger: dict) -> str:
@@ -64,24 +106,42 @@ def get_pro_artifact_passphrase_secret(image_trigger: dict) -> str:
         for release in get_release_tracks(image_trigger)
         if release.get("pro")
     }
+    secrets.update(
+        variant["pro"]["config"]["artifact-passphrase"].removeprefix("secrets.")
+        for variant in get_pro_variants(image_trigger)
+        if variant.get("pro")
+    )
 
     if not secrets:
         return ""
 
     if len(secrets) != 1:
-        raise ValueError("All Pro release tracks must use the same artifact passphrase.")
+        raise ValueError(
+            "All Pro release tracks must use the same artifact passphrase."
+        )
 
     return secrets.pop()
 
 
-def get_pro_revision_refs(image_trigger: dict, all_revision_tags: list[str]) -> list[str]:
-    """Return canonical <track>_<revision> refs whose track is configured for Pro."""
+def get_pro_revision_refs(
+    image_trigger: dict, all_revision_tags: list[str]
+) -> list[str]:
+    """Return canonical <source-track>_<revision> refs for Pro revisions."""
+    pro_revisions = set()
+    for variant in get_pro_variants(image_trigger):
+        for risk in KNOWN_RISKS_ORDERED:
+            target = variant.get(risk)
+            if isinstance(target, dict):
+                target = target.get("target")
+            if target and str(target).isdigit():
+                pro_revisions.add(str(target))
+
     refs = []
     for revision_ref in all_revision_tags:
         if not revision_ref:
             continue
-        track, _ = revision_ref.rsplit("_", 1)
-        if is_pro_track(image_trigger, track):
+        _, revision = revision_ref.rsplit("_", 1)
+        if revision in pro_revisions:
             refs.append(revision_ref)
     return refs
 

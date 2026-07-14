@@ -42,6 +42,27 @@ class ProSchema(pydantic.BaseModel):
         return value
 
 
+class ProVariantSchema(pydantic.BaseModel):
+    """Schema of a Pro release variant in the merged release section."""
+
+    services: List[str]
+    pro: ProSchema
+    stable: str = None
+    candidate: str = None
+    beta: str = None
+    edge: str = None
+
+    model_config = pydantic.ConfigDict(extra="forbid")
+
+    @pydantic.model_validator(mode="after")
+    def _check_risks(self) -> "ProVariantSchema":
+        if not any([self.stable, self.candidate, self.beta, self.edge]):
+            raise ImageTriggerValidationError(
+                "At least one risk must be specified per Pro variant."
+            )
+        return self
+
+
 class ImageUploadReleaseSchema(pydantic.BaseModel):
     """Schema of the release option for uploads in the image.yaml trigger"""
 
@@ -87,6 +108,9 @@ class ChannelsSchema(pydantic.BaseModel):
     beta: str = None
     edge: str = None
     pro: Optional[ProSchema] = None
+    pro_variants: Optional[List[ProVariantSchema]] = pydantic.Field(
+        default_factory=list, alias="pro-variants"
+    )
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
@@ -94,7 +118,7 @@ class ChannelsSchema(pydantic.BaseModel):
     def _check_risks(self, values: List) -> List:
         """There must be at least one risk specified."""
         error = "At least one risk must be specified per track."
-        if not any([self.stable, self.candidate, self.beta, self.edge]):
+        if not any([self.stable, self.candidate, self.beta, self.edge, self.pro_variants]):
             raise ImageTriggerValidationError(error)
 
         return values

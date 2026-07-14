@@ -5,6 +5,8 @@ from src.image.release import (
     get_release_source,
     group_release_tags_by_revision_and_destination,
     remove_eol_tags,
+    release_entry,
+    validate_unique_destination_tags,
 )
 
 from ..fixtures.sample_data import circular_release_json, release_json
@@ -85,34 +87,35 @@ def test_remove_eol_tags_circular_release(circular_release_json):
 
 
 def test_group_release_tags_by_revision_and_destination():
-    image_trigger = {
-        "version": "2",
-        "release": {
-            "latest": {"end-of-life": "2030-05-01T00:00:00Z", "stable": "1"},
-            "1.0-24.04": {
-                "end-of-life": "2030-05-01T00:00:00Z",
-                "stable": "2",
-                "pro": {
-                    "services": ["esm-apps"],
-                    "config": {
-                        "token": "secrets.UBUNTU_PRO_TOKEN",
-                        "artifact-passphrase": "secrets.PRO_ARTIFACT_PASSPHRASE",
-                    },
-                },
-            },
-        },
-    }
     release_tags = {
-        "stable": 1,
-        "latest": 1,
-        "1.0-24.04_stable": 2,
-        "1.0-24.04": 2,
+        "stable": release_entry(1, "public", tag="stable"),
+        "latest": release_entry(1, "public", tag="latest"),
+        "pro:esm-apps:1.0-24.04_stable": release_entry(
+            2, "pro-acr", tag="1.0-24.04_stable"
+        ),
+        "pro:esm-apps:1.0-24.04_stable:alias:1.0-24.04": release_entry(
+            2, "pro-acr", tag="1.0-24.04"
+        ),
     }
 
-    result = group_release_tags_by_revision_and_destination(release_tags, image_trigger)
+    result = group_release_tags_by_revision_and_destination(release_tags, {})
 
     assert result[1]["public"] == ["latest", "stable"]
-    assert result[2]["pro-acr"] == ["1.0-24.04", "1.0-24.04_stable"]
+    assert sorted(result[2]["pro-acr"]) == ["1.0-24.04", "1.0-24.04_stable"]
+
+
+def test_validate_unique_destination_tags_rejects_collision():
+    release_tags = {
+        "pro:esm-apps:1.0-24.04_stable": release_entry(
+            1, "pro-acr", tag="1.0-24.04_stable"
+        ),
+        "pro:esm-infra:1.0-24.04_stable": release_entry(
+            2, "pro-acr", tag="1.0-24.04_stable"
+        ),
+    }
+
+    with pytest.raises(shared.BadChannel):
+        validate_unique_destination_tags(release_tags)
 
 
 def test_get_release_source_for_public_uses_ghcr():

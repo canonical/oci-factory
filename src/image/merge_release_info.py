@@ -21,6 +21,7 @@ import json
 import yaml
 
 from ..shared.logs import get_logger
+from .pro import get_published_track, normalize_services
 from .utils.schema.revision_data import RevisionDataSchema
 from .utils.schema.triggers import KNOWN_RISKS_ORDERED, ImageSchema
 
@@ -42,6 +43,28 @@ def backfill_higher_risks(channels: dict) -> None:
                 # if there a lower risk to follow?
                 if KNOWN_RISKS_ORDERED[i - 1] in val:
                     val[risk] = f"{track}_{KNOWN_RISKS_ORDERED[i-1]}"
+
+
+def backfill_higher_risks_for_variant(track: str, variant: dict) -> None:
+    """Backfill risks inside a Pro variant."""
+    for i, risk in enumerate(KNOWN_RISKS_ORDERED):
+        if risk not in variant:
+            if risk == "stable":
+                continue
+            if KNOWN_RISKS_ORDERED[i - 1] in variant:
+                variant[risk] = variant[KNOWN_RISKS_ORDERED[i - 1]]
+
+
+def find_or_create_pro_variant(track_release: dict, pro_config: dict) -> dict:
+    """Return the Pro variant matching the given config, creating it if needed."""
+    services = normalize_services(pro_config["services"])
+    for variant in track_release.setdefault("pro-variants", []):
+        if normalize_services(variant["services"]) == services:
+            return variant
+
+    variant = {"services": services, "pro": {**pro_config, "services": services}}
+    track_release["pro-variants"].append(variant)
+    return variant
 
 
 if __name__ == "__main__":
@@ -79,17 +102,23 @@ if __name__ == "__main__":
 
     # Update "release" from image trigger with new revision releases
     for track, val in new_revision_releases.items():
-        if track not in user_releases:
-            user_releases[track] = {}
+        pro_config = val.get("pro") or new_revision_pro
+        published_track = get_published_track(track, pro_config)
+        if published_track not in user_releases:
+            user_releases[published_track] = {}
 
         if "end-of-life" in val:
-            user_releases[track]["end-of-life"] = val["end-of-life"]
+            user_releases[published_track]["end-of-life"] = val["end-of-life"]
 
-        if pro_config := val.get("pro") or new_revision_pro:
-            user_releases[track]["pro"] = pro_config
+        if pro_config:
+            variant = find_or_create_pro_variant(user_releases[published_track], pro_config)
+            for risk in val["risks"]:
+                variant[risk] = str(new_revision)
+            backfill_higher_risks_for_variant(published_track, variant)
+            continue
 
         for risk in val["risks"]:
-            user_releases[track][risk] = str(new_revision)
+            user_releases[published_track][risk] = str(new_revision)
 
     # For every track, we need to backfill the risks
     backfill_higher_risks(user_releases)

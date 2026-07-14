@@ -17,10 +17,8 @@ import sys
 from datetime import datetime, timezone
 
 import docker
-import yaml
 
 from ..shared.logs import get_logger
-from ..image.pro import is_pro_track
 
 SKOPEO_IMAGE = os.getenv("SKOPEO_IMAGE", "quay.io/skopeo/stable:v1.20.0")
 REGISTRY = "ghcr.io/canonical/oci-factory"
@@ -72,10 +70,6 @@ def build_released_revisions_matrix(oci_images_path: str) -> tuple[dict, list[di
         with open(_releases_file) as rf:
             releases = json.load(rf)
 
-        image_trigger_file = f"{oci_images_path}/{img}/image.yaml"
-        with open(image_trigger_file, encoding="UTF-8") as trigger:
-            image_trigger = yaml.load(trigger, Loader=yaml.BaseLoader)
-
         released_revisions[img] = []
         for track, risks in releases.items():
             if risks.get("end-of-life") and risks["end-of-life"] < datetime.now(
@@ -90,7 +84,7 @@ def build_released_revisions_matrix(oci_images_path: str) -> tuple[dict, list[di
                 logger.warning(f"Track {track} is missing its end-of-life field")
 
             for key, targets in risks.items():
-                if key in ["end-of-life", "pro"]:
+                if key in ["end-of-life", "pro", "pro-variants"]:
                     continue
                 try:
                     if int(targets["target"]) in released_revisions[img]:
@@ -107,9 +101,31 @@ def build_released_revisions_matrix(oci_images_path: str) -> tuple[dict, list[di
                         "source-image": get_image_name_in_registry(
                             img, targets["target"]
                         ),
-                        "encrypted-source-image": is_pro_track(image_trigger, track),
+                        "encrypted-source-image": False,
                     }
                 )
+
+            for variant in risks.get("pro-variants", []) or []:
+                for key, targets in variant.items():
+                    if key in ["services", "pro"]:
+                        continue
+                    try:
+                        revision = int(targets["target"])
+                        if revision in released_revisions[img]:
+                            continue
+                    except ValueError:
+                        continue
+
+                    released_revisions[img].append(revision)
+                    ghcr_images.append(
+                        {
+                            "name": img,
+                            "source-image": get_image_name_in_registry(
+                                img, targets["target"]
+                            ),
+                            "encrypted-source-image": True,
+                        }
+                    )
 
     return released_revisions, ghcr_images
 
