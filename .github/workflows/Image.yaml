@@ -537,6 +537,7 @@ jobs:
           PRO_ROCK_ENCRYPTION_PUBLIC_KEY: ${{ secrets.PRO_ROCK_ENCRYPTION_PUBLIC_KEY }}
           GHCR_IMAGE: ghcr.io/${{ github.repository_owner }}/oci-factory/${{ matrix.name }}:${{ matrix.track }}_${{ matrix.revision }}
           OCI_IMAGE_ARCHIVE: ${{ steps.rename-oci-archive.outputs.name }}
+          STEPS_GET_ARCHES_OUTPUTS_ARCHES: ${{ steps.get-arches.outputs.arches }}
         run: |
           set -e
           key_file="${RUNNER_TEMP}/pro-rock-encryption-public.pem"
@@ -547,16 +548,51 @@ jobs:
             set -x
           fi
 
+          first_arch="${STEPS_GET_ARCHES_OUTPUTS_ARCHES%%,*}"
+          raw_manifest=$(skopeo --override-arch "${first_arch}" inspect --raw "oci-archive:${OCI_IMAGE_ARCHIVE}")
+          layer_count=$(jq -r '.layers | length' <<< "${raw_manifest}")
+
+          if [[ -z "${layer_count}" || "${layer_count}" = "null" ]]; then
+            echo "Unable to determine OCI image layers to encrypt."
+            exit 1
+          fi
+          if [[ "${layer_count}" -le 0 ]]; then
+            echo "Cannot encrypt image with no layers."
+            exit 1
+          fi
+          encrypt_layers=$(seq -s, 0 "$((layer_count - 1))")
+
           skopeo --insecure-policy copy \
             --multi-arch all \
             --remove-signatures \
             --encryption-key "jwe:${key_file}" \
-            --encrypt-layer -1 \
+            --encrypt-layer "${encrypt_layers}" \
             --digestfile encrypted-pro-image-digest.txt \
             --dest-username "${GITHUB_ACTOR}" \
             --dest-password "${{ secrets.GITHUB_TOKEN }}" \
             "oci-archive:${OCI_IMAGE_ARCHIVE}" \
             "docker://${GHCR_IMAGE}"
+
+          encrypted_manifest=$(skopeo inspect --raw "docker://${GHCR_IMAGE}" \
+            --src-username "${GITHUB_ACTOR}" \
+            --src-password "${{ secrets.GITHUB_TOKEN }}")
+          if jq -e 'has("layers")' <<< "${encrypted_manifest}" > /dev/null; then
+            unencrypted_layers=$(jq '[.layers[].mediaType | select(endswith("+encrypted") | not)] | length' <<< "${encrypted_manifest}")
+          else
+            unencrypted_layers=$(
+              jq -r '.manifests[].digest' <<< "${encrypted_manifest}" |
+              while read -r digest; do
+                child_manifest=$(skopeo inspect --raw "docker://${GHCR_IMAGE%:*}@${digest}" \
+                  --src-username "${GITHUB_ACTOR}" \
+                  --src-password "${{ secrets.GITHUB_TOKEN }}")
+                jq '[.layers[].mediaType | select(endswith("+encrypted") | not)] | length' <<< "${child_manifest}"
+              done | awk '{sum += $1} END {print sum}'
+            )
+          fi
+          if [[ "${unencrypted_layers}" -ne 0 ]]; then
+            echo "Encrypted Pro image upload left ${unencrypted_layers} unencrypted layers."
+            exit 1
+          fi
 
           echo "digest=$(cat encrypted-pro-image-digest.txt)" >> "$GITHUB_OUTPUT"
 
