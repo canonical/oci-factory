@@ -530,6 +530,16 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           username: ${{ github.actor }}
 
+      - name: Get Pro image layers to encrypt
+        if: ${{ matrix.pro-services != '' }}
+        id: get-encrypt-layers
+        run: |
+          layers=$(src/image/get_encrypt_layers_from_oci_archive.sh \
+            --archive "${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME}")
+          echo "layers=${layers}" >> "$GITHUB_OUTPUT"
+        env:
+          STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME: ${{ steps.rename-oci-archive.outputs.name }}
+
       - name: Upload encrypted Pro image to GHCR
         if: ${{ matrix.pro-services != '' }}
         id: upload-encrypted-pro-image
@@ -537,7 +547,7 @@ jobs:
           PRO_ROCK_ENCRYPTION_PUBLIC_KEY: ${{ secrets.PRO_ROCK_ENCRYPTION_PUBLIC_KEY }}
           GHCR_IMAGE: ghcr.io/${{ github.repository_owner }}/oci-factory/${{ matrix.name }}:${{ matrix.track }}_${{ matrix.revision }}
           OCI_IMAGE_ARCHIVE: ${{ steps.rename-oci-archive.outputs.name }}
-          STEPS_GET_ARCHES_OUTPUTS_ARCHES: ${{ steps.get-arches.outputs.arches }}
+          STEPS_GET_ENCRYPT_LAYERS_OUTPUTS_LAYERS: ${{ steps.get-encrypt-layers.outputs.layers }}
         run: |
           set -e
           key_file="${RUNNER_TEMP}/pro-rock-encryption-public.pem"
@@ -548,25 +558,11 @@ jobs:
             set -x
           fi
 
-          first_arch="${STEPS_GET_ARCHES_OUTPUTS_ARCHES%%,*}"
-          raw_manifest=$(skopeo --override-arch "${first_arch}" inspect --raw "oci-archive:${OCI_IMAGE_ARCHIVE}")
-          layer_count=$(jq -r '.layers | length' <<< "${raw_manifest}")
-
-          if [[ -z "${layer_count}" || "${layer_count}" = "null" ]]; then
-            echo "Unable to determine OCI image layers to encrypt."
-            exit 1
-          fi
-          if [[ "${layer_count}" -le 0 ]]; then
-            echo "Cannot encrypt image with no layers."
-            exit 1
-          fi
-          encrypt_layers=$(seq -s, 0 "$((layer_count - 1))")
-
           skopeo --insecure-policy copy \
             --multi-arch all \
             --remove-signatures \
             --encryption-key "jwe:${key_file}" \
-            --encrypt-layer "${encrypt_layers}" \
+            --encrypt-layer "${STEPS_GET_ENCRYPT_LAYERS_OUTPUTS_LAYERS}" \
             --digestfile encrypted-pro-image-digest.txt \
             --dest-username "${GITHUB_ACTOR}" \
             --dest-password "${{ secrets.GITHUB_TOKEN }}" \
