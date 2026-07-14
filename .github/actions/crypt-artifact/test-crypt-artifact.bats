@@ -208,7 +208,7 @@ teardown() {
  
   # Check that test_file_1.log was *not* removed (it was skipped)
   [ -f "$test_file" ]
-  grep -q "Input file is not a valid GPG encrypted file: $test_file" <<< "$output"
+  grep -q "Decryption failed for file: $test_file." <<< "$output"
 }
 
 @test "encryption fails with incorrect passphrase on decryption attempt" {
@@ -226,6 +226,7 @@ teardown() {
 
   # Check that the decryption failed
   [[ "$status" -eq 1 ]]
+  grep -q "Decryption failed for file: $encrypted_file." <<< "$output"
   
   # Check that the original file was not recreated, and the encrypted file remains
   ! [ -f "$test_file" ]

@@ -80,10 +80,6 @@ validate_args() {
         exit 1
     fi
 
-    if [ "$mode" = "decrypt" ] && ! file "$input_file" | grep -q "PGP symmetric key encrypted data"; then
-        log_error "Input file is not a valid GPG encrypted file: $input_file"
-        exit 1
-    fi
 }
 
 #
@@ -103,10 +99,8 @@ encrypt_file() {
 decrypt_file() {
     local output_file="${output_path:-${input_file%.gpg}}"
 
-    output=$(gpg --batch --yes --passphrase "$passphrase" -o "$output_file" -d "$input_file" 2>&1)
-    
-    if echo "$output" | grep -q "gpg: decryption failed:"; then
-        log_error "Decryption failed for file: $input_file. Bad passphrase."
+    if ! output=$(gpg --batch --yes --passphrase "$passphrase" -o "$output_file" -d "$input_file" 2>&1); then
+        log_error "Decryption failed for file: $input_file."
         exit 1
     else
         log_info "Decrypted file: $input_file into $output_file"
