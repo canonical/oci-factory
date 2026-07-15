@@ -570,8 +570,8 @@ jobs:
             "docker://${GHCR_IMAGE}"
 
           encrypted_manifest=$(skopeo inspect --raw "docker://${GHCR_IMAGE}" \
-            --src-username "${GITHUB_ACTOR}" \
-            --src-password "${{ secrets.GITHUB_TOKEN }}")
+            --username "${GITHUB_ACTOR}" \
+            --password "${{ secrets.GITHUB_TOKEN }}")
           if jq -e 'has("layers")' <<< "${encrypted_manifest}" > /dev/null; then
             unencrypted_layers=$(jq '[.layers[].mediaType | select(endswith("+encrypted") | not)] | length' <<< "${encrypted_manifest}")
           else
@@ -579,8 +579,8 @@ jobs:
               jq -r '.manifests[].digest' <<< "${encrypted_manifest}" |
               while read -r digest; do
                 child_manifest=$(skopeo inspect --raw "docker://${GHCR_IMAGE%:*}@${digest}" \
-                  --src-username "${GITHUB_ACTOR}" \
-                  --src-password "${{ secrets.GITHUB_TOKEN }}")
+                  --username "${GITHUB_ACTOR}" \
+                  --password "${{ secrets.GITHUB_TOKEN }}")
                 jq '[.layers[].mediaType | select(endswith("+encrypted") | not)] | length' <<< "${child_manifest}"
               done | awk '{sum += $1} END {print sum}'
             )
