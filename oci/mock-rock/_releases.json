@@ -35,35 +35,46 @@
     "1.1-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "candidate": {
-            "target": "3034"
+            "target": "3057"
         },
         "beta": {
-            "target": "3034"
+            "target": "3057"
         },
         "edge": {
-            "target": "3034"
+            "target": "3057"
         }
     },
     "1-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "candidate": {
-            "target": "3034"
+            "target": "3057"
         },
         "beta": {
-            "target": "3034"
+            "target": "3057"
         },
         "edge": {
-            "target": "3034"
+            "target": "3057"
         }
     },
     "1.2-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "beta": {
-            "target": "3035"
+            "target": "3058"
         },
         "edge": {
             "target": "1.2-22.04_beta"
-        }
+        },
+        "pro-variants": [
+            {
+                "services": [
+                    "esm-apps",
+                    "esm-infra"
+                ],
+                "edge": {
+                    "target": "3059"
+                }
+            }
+        ]
     },
     "1.0.0-22.04": {},
     "eol": {
