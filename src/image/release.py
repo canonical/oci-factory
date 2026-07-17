@@ -63,6 +63,12 @@ parser.add_argument(
     action="store_true",
     default=False,
 )
+parser.add_argument(
+    "--pro",
+    help="Release the Pro rocks to ACR.",
+    action="store_true",
+    default=False,
+)
 
 
 def remove_eol_tags(tag_to_revision, all_releases):
@@ -136,9 +142,9 @@ def find_tracks_has_eol_exceeding_base_eol(all_releases):
 
 def main():
     args = parser.parse_args()
-    if not args.update_releases_json and not args.ghcr_repo:
+    if not args.pro or (not args.update_releases_json and not args.ghcr_repo):
         parser.error(
-            "If not updating the releases JSON, --ghcr-repo must be specified."
+            "If not updating the releases JSON, either --pro or --ghcr-repo must be specified."
         )
     img_name = (
         args.image_name
@@ -168,8 +174,10 @@ def main():
 
     _ = ImageSchema(**image_trigger)
 
+    release = "pro-release" if args.pro else "release"
+
     tag_mapping_from_trigger = {}
-    for track, risks in image_trigger["release"].items():
+    for track, risks in image_trigger[release].items():
         if track not in all_releases:
             logger.info(f"Track {track} will be created for the 1st time")
             all_releases[track] = {}
@@ -190,19 +198,6 @@ def main():
             tag = f"{track}_{risk}"
             logger.info(f"Channel {tag} points to {value}")
             tag_mapping_from_trigger[tag] = value
-
-    # update EOL dates from upload dictionary
-    for upload in image_trigger["upload"] or []:
-        for track, upload_release_dict in upload.get("release", {}).items():
-            if track not in all_releases:
-                logger.info(f"Track {track} will be created for the 1st time")
-                all_releases[track] = {}
-
-            if (
-                isinstance(upload_release_dict, dict)
-                and "end-of-life" in upload_release_dict
-            ):
-                all_releases[track]["end-of-life"] = upload_release_dict["end-of-life"]
 
     logger.info(
         "Going to update channels according to the following:\n"
@@ -303,14 +298,20 @@ def main():
         github_tags = []
         for revision, tags in group_by_revision.items():
             revision_track = revision_to_track[revision]
-            source_img = (
-                "docker://ghcr.io/"
-                f"{args.ghcr_repo}/{img_name}:{revision_track}_{revision}"
-            )
+            if not args.pro:
+                source_img = (
+                    "docker://ghcr.io/"
+                    f"{args.ghcr_repo}/{img_name}:{revision_track}_{revision}"
+                )
+            else:
+                source_img = "oci-archive:" f"{img_name}_{revision_track}_{revision}"
             this_dir = os.path.dirname(__file__)
             logger.info(f"Releasing {source_img} with tags:\n{tags}")
+            pro_flag = ["--pro"] if args.pro else []
             subprocess.check_call(
-                [f"{this_dir}/tag_and_publish.sh", source_img, img_name] + tags
+                [f"{this_dir}/tag_and_publish.sh", source_img, img_name]
+                + pro_flag
+                + tags
             )
 
             for tag in tags:
@@ -331,9 +332,13 @@ def main():
 
     else:
         # Write warnings to the summary
-        tracks_eol_exceeding_base_eol = find_tracks_has_eol_exceeding_base_eol(all_releases)
+        tracks_eol_exceeding_base_eol = find_tracks_has_eol_exceeding_base_eol(
+            all_releases
+        )
         if tracks_eol_exceeding_base_eol:
-            title, text = generate_base_eol_exceed_warning(tracks_eol_exceeding_base_eol)
+            title, text = generate_base_eol_exceed_warning(
+                tracks_eol_exceeding_base_eol
+            )
             title = f"## Release: {title}"
             with GithubStepSummary() as summary:
                 summary.write(title, text)
