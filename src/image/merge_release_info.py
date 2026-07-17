@@ -44,6 +44,20 @@ def backfill_higher_risks(channels: dict) -> None:
                     val[risk] = f"{track}_{KNOWN_RISKS_ORDERED[i-1]}"
 
 
+def _assemble_pro_track(_track: str, _pro_services: list[str]) -> str:
+    """Assembles the track name with the pro services."""
+    # Remove any esm- services from the pro services to form the tag,
+    # as they are excluded from the pro track names.
+    _pro_services = [ps for ps in _pro_services if not ps.startswith("esm-")]
+
+    if not _pro_services:
+        return _track
+
+    version, base = _track.split("-", 1)
+
+    return f"{version}-{'-'.join(sorted(_pro_services))}-{base}"
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -65,8 +79,6 @@ if __name__ == "__main__":
 
     _ = ImageSchema(**image_trigger)
 
-    user_releases = image_trigger.get("release", {})
-
     logger.info(f"Getting pre-release from {args.revision_data_file}")
     with open(args.revision_data_file, encoding="UTF-8") as revision_data_f:
         revision_data = json.load(revision_data_f)
@@ -76,8 +88,24 @@ if __name__ == "__main__":
     new_revision_releases = revision_data["release"]
     new_revision = revision_data["revision"]
 
+    pro_entry = revision_data.get("pro", {})
+    if not pro_entry:
+        logger.info("No pro entry found in revision data.")
+        pro_services = []
+    else:
+        pro_services = pro_entry.get("services", [])
+
+    user_releases = (
+        image_trigger.get("pro-release", {})
+        if pro_services
+        else image_trigger.get("release", {})
+    )
+
     # Update "release" from image trigger with new revision releases
     for track, val in new_revision_releases.items():
+        if pro_services:
+            track = _assemble_pro_track(track, pro_services)
+
         if track not in user_releases:
             user_releases[track] = {}
 
@@ -87,11 +115,17 @@ if __name__ == "__main__":
         for risk in val["risks"]:
             user_releases[track][risk] = str(new_revision)
 
+        if pro_services:
+            user_releases[track]["services"] = pro_services
+
     # For every track, we need to backfill the risks
     backfill_higher_risks(user_releases)
 
     # Overwrite the image trigger with the new release value
-    image_trigger["release"] = user_releases
+    if pro_services:
+        image_trigger["pro-release"] = user_releases
+    else:
+        image_trigger["release"] = user_releases
 
     logger.info(f"Finished merging pre releases:\n{json.dumps(image_trigger)}")
     logger.info(f"Overwriting {args.image_trigger}...")
