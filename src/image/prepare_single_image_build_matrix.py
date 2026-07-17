@@ -25,7 +25,6 @@ from .utils.eol_utils import (
 from .utils.schema.revision_data import RevisionDataSchema
 from .utils.schema.triggers import ImageSchema
 
-
 # TODO:
 # - inject_metadata uses a static github url, does this break builds that are sourced
 #   from non-gh repos?
@@ -175,6 +174,16 @@ def write_github_output(
         github_output.write(**outputs)
 
 
+def _get_dir_identifier(build: dict[str, Any]) -> str:
+    """Return a unique artifact/cache directory identifier for a build."""
+    dir_identifier = build["directory"].rstrip("/").replace("/", "_")
+    if pro_config := build.get("pro"):
+        services = "-".join(sorted(pro_config["services"]))
+        dir_identifier = f"{dir_identifier}_{services}"
+
+    return dir_identifier
+
+
 def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: Path):
     """Inject additional metadata (name, path, revision, directory, dir_identifier,
     track, base) into build dicts.
@@ -191,7 +200,7 @@ def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: 
 
         # Add dir_identifier to assemble the cache key and artefact path
         # No need to write it to rev data file since it's only used in matrix
-        build["dir_identifier"] = build["directory"].rstrip("/").replace("/", "_")
+        build["dir_identifier"] = _get_dir_identifier(build)
 
         with tempdir() as d:
             url = get_source_url(build["source"])
@@ -237,6 +246,24 @@ def flatten_ignored_vulnerabilities(builds: list[dict[str, Any]]) -> None:
         )
 
 
+def inject_pro_metadata(builds: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Inject additional metadata for Pro builds."""
+    _builds = deepcopy(builds)
+    for build in _builds:
+        if pro := build.get("pro"):
+            build["pro-services"] = ",".join(sorted(pro.get("services", [])))
+            build["pro-token"] = (
+                pro.get("config", {}).get("token", "").removeprefix("secrets.")
+            )
+            build["pro-artifact-passphrase"] = (
+                pro.get("config", {})
+                .get("artifact-passphrase", "")
+                .removeprefix("secrets.")
+            )
+
+    return _builds
+
+
 def main():
     """Executed when script is called directly."""
     args = parser.parse_args()
@@ -249,6 +276,9 @@ def main():
 
     # inject additional meta data into builds
     builds = inject_metadata(builds, args.next_revision, args.oci_path)
+
+    # convert the Pro field into matrix-friendly fields
+    builds = inject_pro_metadata(builds)
 
     # check if any of the builds have an EOL date that exceeds the EOL date of the base image
     if args.warn_image_eol_exceeds_base_eol:
