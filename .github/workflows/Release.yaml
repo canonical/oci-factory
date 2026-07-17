@@ -154,6 +154,10 @@ jobs:
             set -x
           fi
           source src/shared/logs.sh
+          ls -l $GITHUB_WORKSPACE
+          echo "${{ steps.download-image-artifact.outputs.download-path }}"
+          ls -l "${{ steps.download-image-artifact.outputs.download-path }}"
+          find "${{ steps.download-image-artifact.outputs.download-path }}"
           artifact_path="${{ steps.download-image-artifact.outputs.download-path }}"
           for artifact in $artifact_path/*.gpg; do
             if [ -f "$artifact" ]; then
