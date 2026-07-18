@@ -1,0 +1,47 @@
+name: Prepare rock for testing
+description: Decrypts an OCI archive artifact and converts it to an OCI layout.
+
+inputs:
+  artifact-name:
+    description: Name of the encrypted OCI archive artifact.
+    required: true
+  passphrase:
+    description: Passphrase used to decrypt the artifact.
+    required: true
+  test-image-name:
+    description: Name of the output OCI layout.
+    default: test-img
+  test-image-tag:
+    description: Tag in the output OCI layout.
+    default: test
+
+runs:
+  using: composite
+  steps:
+    - name: Download Rock
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        name: ${{ inputs.artifact-name }}
+
+    - name: Decrypt Rock
+      uses: ./.github/actions/crypt-artifact
+      with:
+        mode: decrypt
+        passphrase: ${{ inputs.passphrase }}
+        input-path: ${{ inputs.artifact-name }}.gpg
+        output-path: ${{ inputs.artifact-name }}
+        preserve-original: false
+
+    - name: Convert Rock to OCI layout
+      shell: bash
+      env:
+        ARTIFACT_NAME: ${{ inputs.artifact-name }}
+        SKOPEO_IMAGE: quay.io/skopeo/stable:v1.20.0
+        TEST_IMAGE_NAME: ${{ inputs.test-image-name }}
+        TEST_IMAGE_TAG: ${{ inputs.test-image-tag }}
+      run: |
+        docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+          -v "$PWD:/workdir" -w /workdir \
+          "${SKOPEO_IMAGE}" \
+          copy "oci-archive:${ARTIFACT_NAME}" \
+          "oci:${TEST_IMAGE_NAME}:${TEST_IMAGE_TAG}"
