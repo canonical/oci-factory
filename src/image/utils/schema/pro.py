@@ -3,6 +3,22 @@ from typing import Literal
 import pydantic
 from pydantic import BaseModel, Field
 
+# A Pro image can currently only be released by adding `upload[*].release` to the
+# same build request. OCI Factory converts that request into internal
+# `pro-release` data and publishes the resulting image only to
+# `${ACR_REGISTRY}/<image-name>`. Pro releases are not uploaded to GHCR, Docker
+# Hub, or public ECR, and do not create GitHub Releases or registry documentation
+# updates. Maintainers cannot use `pro-release` directly to promote an existing
+# Pro revision.
+
+# Pro channels use the same risks, EOL handling, aliases, and risk backfilling as
+# public channels. Services other than ESM are sorted and inserted between the
+# application version and Ubuntu base. For example, `1.2-22.04` with `fips` and
+# `ros` becomes `1.2-fips-ros-22.04`. `esm-apps` and `esm-infra` are omitted from
+# the track name, so an ESM-only build retains `1.2-22.04`. A Pro track cannot be
+# reused with a different full service combination.
+
+
 UbuntuProServiceLiteral = Literal[
     "esm-apps",
     "esm-infra",
