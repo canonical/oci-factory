@@ -198,7 +198,7 @@ def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: 
         # used in setting the path where the build info is saved
         build["revision"] = img_number + int(next_revision)
 
-        # Add dir_identifier to assemble the cache key and artefact path
+        # Add dir_identifier to assemble the cache key and artifact path
         # No need to write it to rev data file since it's only used in matrix
         build["dir_identifier"] = _get_dir_identifier(build)
 

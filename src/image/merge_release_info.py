@@ -57,7 +57,7 @@ def _assemble_pro_track(_track: str, _pro_services: list[str]) -> str:
     if not _pro_services:
         return _track
 
-    version, base = _track.split("-", 1)
+    version, base = _track.rsplit("-", 1)
 
     return f"{version}-{'-'.join(sorted(_pro_services))}-{base}"
 

@@ -269,7 +269,7 @@ fi
 
 # trace_resume
 
-# # We need to stored this artifacts to get the digest for the OCI-Attach-artefacts jobs
+# # We need to stored this artifacts to get the digest for the OCI-Attach-artifacts jobs
 # # in order to attach sbom to the oci images.
 
 # skopeo inspect --raw oci:${oci_images} > manifest_list.json
