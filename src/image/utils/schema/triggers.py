@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Literal, Optional
 
 import pydantic
 
-from .pro import Pro, UbuntuProServiceLiteral
+from .pro import Pro, UbuntuProServiceLiteral, validate_pro_services
 
 LATEST_SCHEMA_VERSION = 2
 KNOWN_RISKS_ORDERED = ["stable", "candidate", "beta", "edge"]
@@ -85,6 +85,10 @@ class ProChannelsSchema(ChannelsSchema):
     )
 
     model_config = pydantic.ConfigDict(extra="forbid")
+
+    @pydantic.field_validator("services")
+    def _check_services(cls, services):  # pylint: disable=no-self-argument
+        return validate_pro_services(services)
 
 
 class ImageSchema(pydantic.BaseModel):

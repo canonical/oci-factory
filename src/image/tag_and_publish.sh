@@ -29,6 +29,11 @@ fi
 # The tag names are handled by the CI
 tag_names=("$@")
 
+if [[ ${#tag_names[@]} -eq 0 ]]; then
+    log_error "At least one tag is required."
+    exit 1
+fi
+
 publish_with_auth_token()
 {
     local token=$1 name=$2
@@ -104,13 +109,18 @@ ecr_repo_name="${ECR_NAMESPACE}/${image_name}"
 log_info "Publishing ${image_name} to registries with tags: ${tag_names[*]}"
 
 trace_suspend
-if [ ! -z $GHCR_REPO ]; then
+if [[ "$pro_flag" == true && -n "${GHCR_REPO:-}" ]]; then
+    log_error "Pro images cannot be published to GHCR."
+    exit 1
+fi
+
+if [[ -n "${GHCR_REPO:-}" ]]; then
     # When this env variable is set we only upload to GHCR and stop
     ## DOCKER HUB
     publish_with_username_password \
         "$GHCR_USERNAME" \
         "$GHCR_PASSWORD" \
-        ${ghcr_repo_name} \
+        "${ghcr_repo_name}" \
         "${tag_names[@]}"
     
     exit 0
@@ -121,12 +131,12 @@ fi
 
 if [ "$pro_flag" = false ]; then
     log_info "Publishing to Docker"
-    docker login -u $DOCKER_HUB_CREDS_USR -p $DOCKER_HUB_CREDS_PSW
+    docker login -u "$DOCKER_HUB_CREDS_USR" -p "$DOCKER_HUB_CREDS_PSW"
     ## DOCKER HUB
     publish_with_username_password \
         "$DOCKER_HUB_CREDS_USR" \
         "$DOCKER_HUB_CREDS_PSW" \
-        ${docker_hub_repo_name} \
+        "${docker_hub_repo_name}" \
         "${tag_names[@]}"
 fi
 # # publish the docs for Docker Hub
@@ -165,7 +175,7 @@ if [ "$pro_flag" = false ]; then
     publish_to_aws_ecr_public \
         "$ECR_CREDS_USR" \
         "$ECR_CREDS_PSW" \
-        ${ecr_repo_name} \
+        "${ecr_repo_name}" \
         "${tag_names[@]}"
 fi
 
@@ -209,7 +219,7 @@ if [ "$pro_flag" = true ]; then
     publish_with_username_password \
         "$ACR_CREDS_USR" \
         "$ACR_CREDS_PSW" \
-        ${acr_repo_name} \
+        "${acr_repo_name}" \
         "${tag_names[@]}"
 fi
 

@@ -9,6 +9,10 @@ on:
         description: "OCI image artifact name."
         required: true
         type: string
+      encrypted-artifact:
+        description: "Whether the OCI image artifact is encrypted."
+        default: false
+        type: boolean
 
       # Individual Test Parameters:
 
@@ -76,6 +80,7 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       cache-key: ${{ steps.set-cache.outputs.key }}
+      encrypted-artifact: ${{ steps.artifact-type.outputs.encrypted-artifact }}
     name: "configure-tests ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
 
     steps:
@@ -96,26 +101,38 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
+      - name: Determine artifact type
+        id: artifact-type
+        env:
+          ARTIFACT_PASSPHRASE: ${{ secrets.pro-artifact-passphrase }}
+          ENCRYPTED_ARTIFACT: ${{ inputs.encrypted-artifact }}
+        run: |
+          if [[ "$ENCRYPTED_ARTIFACT" == "true" || -n "${ARTIFACT_PASSPHRASE:-}" ]]; then
+            echo "encrypted-artifact=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "encrypted-artifact=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate Pro artifact passphrase
+        if: ${{ steps.artifact-type.outputs.encrypted-artifact == 'true' }}
+        env:
+          ARTIFACT_PASSPHRASE: ${{ secrets.pro-artifact-passphrase }}
+        run: |
+          if [[ -z "${ARTIFACT_PASSPHRASE:-}" ]]; then
+            echo "Error: 'pro-artifact-passphrase' is required for an encrypted artifact."
+            exit 1
+          fi
+
       # download and unpack the image under test, then store it under a common cache key. 
       # This unpacked image is used in test-oci-compliance, test-black-box and test-malware jobs
       - name: Download Rock
+        if: ${{ steps.artifact-type.outputs.encrypted-artifact == 'false' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: ${{ inputs.oci-archive-name }}
 
-      - name: Decrypt Rock
-        env:
-          ARTIFACT_PASSPHRASE: ${{ secrets.pro-artifact-passphrase }}
-        if: ${{ env.ARTIFACT_PASSPHRASE != '' }}
-        uses: ./.github/actions/crypt-artifact
-        with:
-          mode: decrypt
-          passphrase: ${{ secrets.pro-artifact-passphrase }}
-          input-path: ${{ inputs.oci-archive-name }}*
-          output-path: ${{ inputs.oci-archive-name }}
-          preserve-original: false
-
       - name: Unpack Rock
+        if: ${{ steps.artifact-type.outputs.encrypted-artifact == 'false' }}
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
             -v "$PWD:/workdir" -w /workdir \
@@ -126,6 +143,7 @@ jobs:
           INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
 
       - name: Set Cache Key
+        if: ${{ steps.artifact-type.outputs.encrypted-artifact == 'false' }}
         id: set-cache
         run: |
           echo "key=${{ github.run_id }}-${INPUTS_OCI_ARCHIVE_NAME}"  >> "$GITHUB_OUTPUT"
@@ -133,6 +151,7 @@ jobs:
           INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
 
       - name: Cache Rock
+        if: ${{ steps.artifact-type.outputs.encrypted-artifact == 'false' }}
         uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
           path: ${{ env.TEST_IMAGE_NAME }}
@@ -152,9 +171,17 @@ jobs:
           persist-credentials: false
 
       - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        if: ${{ needs.configure-tests.outputs.encrypted-artifact == 'false' }}
         with:
           path: ${{ env.TEST_IMAGE_NAME }}
           key: ${{ needs.configure-tests.outputs.cache-key }}
+
+      - name: Prepare encrypted Rock
+        if: ${{ needs.configure-tests.outputs.encrypted-artifact == 'true' }}
+        uses: ./.github/actions/prepare-rock-for-testing
+        with:
+          artifact-name: ${{ inputs.oci-archive-name }}
+          passphrase: ${{ secrets.pro-artifact-passphrase }}
 
       - name: Install Umoci
         uses: ./.github/actions/install-umoci
@@ -179,10 +206,25 @@ jobs:
     needs: [configure-tests]
     if: inputs.test-black-box
     steps:
+      - name: Cloning OCI Factory
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          repository: canonical/oci-factory
+          fetch-depth: 1
+          persist-credentials: false
+
       - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        if: ${{ needs.configure-tests.outputs.encrypted-artifact == 'false' }}
         with:
           path: ${{ env.TEST_IMAGE_NAME }}
           key: ${{ needs.configure-tests.outputs.cache-key }}
+
+      - name: Prepare encrypted Rock
+        if: ${{ needs.configure-tests.outputs.encrypted-artifact == 'true' }}
+        uses: ./.github/actions/prepare-rock-for-testing
+        with:
+          artifact-name: ${{ inputs.oci-archive-name }}
+          passphrase: ${{ secrets.pro-artifact-passphrase }}
 
       - name: Copy image to Docker daemon
         run: |
@@ -222,9 +264,17 @@ jobs:
           persist-credentials: false
 
       - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        if: ${{ needs.configure-tests.outputs.encrypted-artifact == 'false' }}
         with:
           path: ${{ env.TEST_IMAGE_NAME }}
           key: ${{ needs.configure-tests.outputs.cache-key }}
+
+      - name: Prepare encrypted Rock
+        if: ${{ needs.configure-tests.outputs.encrypted-artifact == 'true' }}
+        uses: ./.github/actions/prepare-rock-for-testing
+        with:
+          artifact-name: ${{ inputs.oci-archive-name }}
+          passphrase: ${{ secrets.pro-artifact-passphrase }}
 
       - name: Copy image to Docker daemon
         run: |
@@ -297,14 +347,12 @@ jobs:
           name: ${{ inputs.oci-archive-name }}
       
       - name: Decrypt Rock
-        env:
-          ARTIFACT_PASSPHRASE: ${{ secrets.pro-artifact-passphrase }}
-        if: ${{ env.ARTIFACT_PASSPHRASE != '' }}
+        if: ${{ needs.configure-tests.outputs.encrypted-artifact == 'true' }}
         uses: ./.github/actions/crypt-artifact
         with:
           mode: decrypt
           passphrase: ${{ secrets.pro-artifact-passphrase }}
-          input-path: ${{ inputs.oci-archive-name }}*
+          input-path: ${{ inputs.oci-archive-name }}.gpg
           output-path: ${{ inputs.oci-archive-name }}
           preserve-original: false
 
@@ -426,9 +474,17 @@ jobs:
           persist-credentials: false
 
       - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        if: ${{ needs.configure-tests.outputs.encrypted-artifact == 'false' }}
         with:
           path: ${{ env.TEST_IMAGE_NAME }}
           key: ${{ needs.configure-tests.outputs.cache-key }}
+
+      - name: Prepare encrypted Rock
+        if: ${{ needs.configure-tests.outputs.encrypted-artifact == 'true' }}
+        uses: ./.github/actions/prepare-rock-for-testing
+        with:
+          artifact-name: ${{ inputs.oci-archive-name }}
+          passphrase: ${{ secrets.pro-artifact-passphrase }}
 
       - name: Install Umoci
         uses: ./.github/actions/install-umoci

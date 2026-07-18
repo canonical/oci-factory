@@ -46,10 +46,20 @@ runs:
         git config user.email "${{ inputs.email }}"
         git config user.name "${{ inputs.actor }}"
 
-        git add oci/${{ inputs.image-name }}/_releases.json
-        if [[ -f oci/${{ inputs.image-name }}/_pro_releases.json ]]; then
-          git add oci/${{ inputs.image-name }}/_pro_releases.json
+        release_files=()
+        for release_file in _releases.json _pro_releases.json; do
+          path="oci/${{ inputs.image-name }}/${release_file}"
+          if [[ -f "$path" ]]; then
+            release_files+=("$path")
+          fi
+        done
+
+        if [[ ${#release_files[@]} -eq 0 ]]; then
+          echo "No release files found for ${{ inputs.image-name }}" >&2
+          exit 1
         fi
+
+        git add -- "${release_files[@]}"
         git commit -m "${{ inputs.message }}"
         
         for i in {1..10}; do

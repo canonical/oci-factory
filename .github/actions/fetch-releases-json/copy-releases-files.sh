@@ -19,8 +19,10 @@ if [[ "$image_name" = "*" ]]; then
     find . -name "_releases.json" -exec cp --parents {} "$OLDPWD" \;
     find . -name "_pro_releases.json" -exec cp --parents {} "$OLDPWD" \;
     cd "$OLDPWD" || exit 1
-elif [[ -f "$directory/oci/$image_name/_releases.json" ]]; then
-    cp "$directory/oci/$image_name/_releases.json" "oci/$image_name/_releases.json"
+else
+    if [[ -f "$directory/oci/$image_name/_releases.json" ]]; then
+        cp "$directory/oci/$image_name/_releases.json" "oci/$image_name/_releases.json"
+    fi
     if [[ -f "$directory/oci/$image_name/_pro_releases.json" ]]; then
         cp "$directory/oci/$image_name/_pro_releases.json" "oci/$image_name/_pro_releases.json"
     fi

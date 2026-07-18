@@ -250,16 +250,9 @@ def inject_pro_metadata(builds: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Inject additional metadata for Pro builds."""
     _builds = deepcopy(builds)
     for build in _builds:
+        build["pro-services"] = ""
         if pro := build.get("pro"):
             build["pro-services"] = ",".join(sorted(pro.get("services", [])))
-            build["pro-token"] = (
-                pro.get("config", {}).get("token", "").removeprefix("secrets.")
-            )
-            build["pro-artifact-passphrase"] = (
-                pro.get("config", {})
-                .get("artifact-passphrase", "")
-                .removeprefix("secrets.")
-            )
 
     return _builds
 
@@ -270,6 +263,12 @@ def main():
 
     # locate and load image.yaml
     image_trigger = load_trigger_yaml(args.oci_path)
+
+    if image_trigger.get("pro-release"):
+        raise InvalidSchemaError(
+            "Releasing an existing Pro revision is not supported. "
+            "Request an immediate release with upload[*].release instead."
+        )
 
     # extract builds to upload
     builds = image_trigger.get("upload", [])
@@ -301,6 +300,9 @@ def main():
 
     for build in builds:
         write_revision_data(args.revision_data_dir, build)
+
+        # The nested Pro field belongs in revision data, not the workflow matrix.
+        build.pop("pro", None)
 
         if "release" in build:
             # trigger a release if specified in any of the builds

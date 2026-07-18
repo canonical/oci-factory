@@ -22,7 +22,11 @@ import yaml
 
 from ..shared.logs import get_logger
 from .utils.schema.revision_data import RevisionDataSchema
-from .utils.schema.triggers import KNOWN_RISKS_ORDERED, ImageSchema
+from .utils.schema.triggers import (
+    KNOWN_RISKS_ORDERED,
+    ImageSchema,
+    ImageTriggerValidationError,
+)
 
 logger = get_logger()
 
@@ -108,6 +112,14 @@ if __name__ == "__main__":
 
         if track not in user_releases:
             user_releases[track] = {}
+
+        if pro_services:
+            existing_services = user_releases[track].get("services")
+            if existing_services and sorted(existing_services) != sorted(pro_services):
+                raise ImageTriggerValidationError(
+                    f"Pro track '{track}' cannot have different pro service combinations:"
+                    f"already got {sorted(existing_services)}, now have {sorted(pro_services)}."
+                )
 
         if "end-of-life" in val:
             user_releases[track]["end-of-life"] = val["end-of-life"]

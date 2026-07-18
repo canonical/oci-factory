@@ -62,9 +62,6 @@ upload:
       services:
         - esm-infra
         - esm-apps
-      config:
-        token: secrets.ROCKS_PRO_TOKEN
-        artifact-passphrase: secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE
     release:
       1.2-22.04:
         end-of-life: "2030-05-01T00:00:00Z"

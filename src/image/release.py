@@ -69,6 +69,12 @@ parser.add_argument(
     action="store_true",
     default=False,
 )
+parser.add_argument(
+    "--validate-only",
+    help="Validate the release request without publishing or updating release state.",
+    action="store_true",
+    default=False,
+)
 
 
 def remove_eol_tags(tag_to_revision, all_releases):
@@ -184,12 +190,25 @@ def main():
             logger.info(f"Track {track} will be created for the 1st time")
             all_releases[track] = {}
 
+        if args.pro:
+            requested_services = sorted(risks["services"])
+            existing_services = sorted(all_releases[track].get("services", []))
+            if existing_services and existing_services != requested_services:
+                raise shared.BadChannel(
+                    f"Pro track {track} already uses services {existing_services}, "
+                    f"not {requested_services}."
+                )
+            all_releases[track]["services"] = requested_services
+
         for risk, value in risks.items():
             if value is None:
                 continue
 
             if risk in ["end-of-life", "end_of_life"]:
                 all_releases[track]["end-of-life"] = value
+                continue
+
+            if risk == "services":
                 continue
 
             if risk not in KNOWN_RISKS_ORDERED:
@@ -200,6 +219,25 @@ def main():
             tag = f"{track}_{risk}"
             logger.info(f"Channel {tag} points to {value}")
             tag_mapping_from_trigger[tag] = value
+
+    # Preserve EOL metadata supplied by immediate public upload requests.
+    if not args.pro:
+        # update EOL dates from upload dictionary
+        for upload in image_trigger["upload"] or []:
+            if upload.get("pro"):
+                continue
+            for track, upload_release_dict in upload.get("release", {}).items():
+                if track not in all_releases:
+                    logger.info(f"Track {track} will be created for the 1st time")
+                    all_releases[track] = {}
+
+                if (
+                    isinstance(upload_release_dict, dict)
+                    and "end-of-life" in upload_release_dict
+                ):
+                    all_releases[track]["end-of-life"] = upload_release_dict[
+                        "end-of-life"
+                    ]
 
     logger.info(
         "Going to update channels according to the following:\n"
@@ -291,6 +329,10 @@ def main():
     for tag, revision in sorted(release_tags.items()):
         group_by_revision[revision].append(tag)
 
+    if args.validate_only:
+        logger.info("Release request validation completed successfully.")
+        return
+
     if not args.update_releases_json:
         logger.info(
             "Processed tag aliases and ready to release the following revisions:\n"
@@ -327,10 +369,15 @@ def main():
                 gh_release_info["channel"] = f"{tag}"
                 github_tags.append(gh_release_info)
 
-        matrix = {"include": github_tags}
+        if not args.pro:
+            matrix = {"include": github_tags}
 
-        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="UTF-8") as gh_out:
-            print(f"gh-releases-matrix={matrix}", file=gh_out)
+            with open(os.environ["GITHUB_OUTPUT"], "a", encoding="UTF-8") as gh_out:
+                print(f"gh-releases-matrix={json.dumps(matrix)}", file=gh_out)
+                print(
+                    f"has-github-releases={'true' if github_tags else 'false'}",
+                    file=gh_out,
+                )
 
     else:
         # Write warnings to the summary
