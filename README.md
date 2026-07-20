@@ -265,7 +265,6 @@ encrypted.
 Pro support is currently a preview with these limitations:
 
 - continuous post-release vulnerability scanning does not support Pro images,
-- Launchpad build fallback does not support Pro images,
 - promotion of an existing Pro revision is not supported.
 
 #### Documentation trigger file
