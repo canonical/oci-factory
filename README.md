@@ -264,7 +264,6 @@ encrypted.
 
 Pro support is currently a preview with these limitations:
 
-- automated rebuilds do not support Pro images,
 - continuous post-release vulnerability scanning does not support Pro images,
 - Launchpad build fallback does not support Pro images,
 - promotion of an existing Pro revision is not supported.
