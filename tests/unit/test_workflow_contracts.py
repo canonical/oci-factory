@@ -166,3 +166,50 @@ def test_commit_release_action_handles_public_and_pro_state_independently() -> N
     assert "for release_file in _releases.json _pro_releases.json" in script
     assert 'if [[ -f "$path" ]]' in script
     assert 'git add -- "${release_files[@]}"' in script
+
+
+def test_vulnerability_scan_pro_inputs_are_optional_and_backward_compatible() -> None:
+    workflow = load_yaml(".github/workflows/Vulnerability-Scan.yaml")
+    inputs = workflow["on"]["workflow_call"]["inputs"]
+
+    # The new Pro inputs must be optional with defaults that reproduce the
+    # existing (public) behavior, so external callers are not affected.
+    for name, default in (("pro", "false"), ("released-tags", "")):
+        assert inputs[name]["required"] == "false"
+        assert inputs[name]["default"] == default
+
+    # Pre-existing inputs must remain untouched (no removed/newly-required ones).
+    assert inputs["oci-image-name"]["required"] == "true"
+    for name in ("oci-image-path", "trivyignore-path", "date-last-scan", "create-issue"):
+        assert inputs[name]["required"] == "false"
+
+
+def test_vulnerability_scan_uses_acr_credentials_only_for_pro() -> None:
+    workflow = load_yaml(".github/workflows/Vulnerability-Scan.yaml")
+    configure_step = next(
+        step
+        for step in workflow["jobs"]["configure-scan"]["steps"]
+        if step.get("id") == "configure"
+    )
+    script = configure_step["run"]
+
+    assert 'if [ "${INPUTS_PRO}" = "true" ]' in script
+    assert configure_step["env"]["ACR_CREDS_USR"] == "${{ secrets.ACR_CREDS_USR }}"
+    assert configure_step["env"]["ACR_CREDS_PSW"] == "${{ secrets.ACR_CREDS_PSW }}"
+
+
+def test_continuous_testing_forwards_pro_matrix_fields() -> None:
+    workflow = load_yaml(".github/workflows/Continuous-Testing.yaml")
+
+    prepare = step_named(
+        workflow, "prepare-test-matrix", "Prepare test matrix"
+    )
+    assert "--acr-registry" in prepare["run"]
+    assert prepare["env"]["ACR_REGISTRY"] == "${{ secrets.ACR_REGISTRY }}"
+
+    run_tests_with = workflow["jobs"]["run-tests"]["with"]
+    assert run_tests_with["pro"] == "${{ matrix.pro }}"
+    assert run_tests_with["released-tags"] == "${{ join(matrix.released-tags, ',') }}"
+    # Pro images are pulled with an explicit tag; public keep the bare source.
+    assert "matrix.released-tags[0]" in run_tests_with["oci-image-name"]
+

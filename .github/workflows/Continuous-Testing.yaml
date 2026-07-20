@@ -27,7 +27,9 @@ jobs:
 
       - name: Prepare test matrix
         id: prepare-test-matrix
-        run: python3 -m src.tests.get_released_revisions --oci-images-path "$PWD/oci"
+        run: python3 -m src.tests.get_released_revisions --oci-images-path "$PWD/oci" --acr-registry "${ACR_REGISTRY}"
+        env:
+          ACR_REGISTRY: ${{ secrets.ACR_REGISTRY }}
 
       - name: Infer date of last scan
         id: last-scan
@@ -49,9 +51,11 @@ jobs:
       matrix: ${{ fromJSON(needs.prepare-test-matrix.outputs.released-revisions-matrix) }}
     uses: ./.github/workflows/Vulnerability-Scan.yaml
     with:
-      oci-image-name: "${{ matrix.source-image }}"
+      oci-image-name: ${{ matrix.pro && format('{0}:{1}', matrix.source-image, matrix.released-tags[0]) || matrix.source-image }}
       oci-image-path: "oci/${{ matrix.name }}"
       trivyignore-path: "oci/${{ matrix.name }}/.trivyignore"
       date-last-scan: ${{ needs.prepare-test-matrix.outputs.last-scan }}
       create-issue: true
+      pro: ${{ matrix.pro }}
+      released-tags: ${{ join(matrix.released-tags, ',') }}
     secrets: inherit
