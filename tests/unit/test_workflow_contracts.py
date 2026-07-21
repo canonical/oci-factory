@@ -13,7 +13,6 @@ CHANGED_WORKFLOW_AND_ACTION_FILES = (
     ".github/workflows/Test-Rock.yaml",
     ".github/actions/commit-releases-json/action.yaml",
     ".github/actions/fetch-releases-json/action.yaml",
-    ".github/actions/prepare-rock-for-testing/action.yaml",
 )
 
 
@@ -104,56 +103,44 @@ def test_release_steps_keep_public_and_pro_release_files_separate() -> None:
         assert "_pro_releases.json" not in command
 
 
-def test_test_rock_prepares_encrypted_jobs_and_gates_public_caches() -> None:
+def test_test_rock_caches_encrypted_archive_and_decrypts_per_job() -> None:
     workflow = load_yaml(".github/workflows/Test-Rock.yaml")
-    jobs_with_public_cache = set()
 
-    for job_name, job in workflow["jobs"].items():
-        cache_steps = [
-            step
-            for step in job.get("steps", [])
-            if step.get("uses", "").startswith("actions/cache/")
-        ]
-        for cache_step in cache_steps:
-            assert "encrypted-artifact == 'false'" in cache_step.get("if", ""), (
-                f"{job_name} cache step is not restricted to public artifacts"
-            )
+    # The `encrypted-artifact` input is gone; Pro is detected via the passphrase.
+    assert "encrypted-artifact" not in workflow["on"]["workflow_call"]["inputs"]
 
-        if job_name == "configure-tests" or not cache_steps:
-            continue
-        jobs_with_public_cache.add(job_name)
-        prepare_steps = [
-            step
-            for step in job["steps"]
-            if step.get("uses") == "./.github/actions/prepare-rock-for-testing"
-        ]
-        assert len(prepare_steps) == 1
-        assert "encrypted-artifact == 'true'" in prepare_steps[0].get("if", "")
+    # configure-tests caches the (possibly gpg-encrypted) archive as-is, never a
+    # decrypted/unpacked layout, under the run-scoped key.
+    cache_step = step_named(workflow, "configure-tests", "Cache Rock")
+    assert cache_step["uses"].startswith("actions/cache/save@")
+    cache_path = cache_step["with"]["path"]
+    assert "${{ inputs.oci-archive-name }}" in cache_path
+    assert "${{ inputs.oci-archive-name }}.gpg" in cache_path
 
-    assert jobs_with_public_cache == {
+    consuming_jobs = (
         "test-oci-compliance",
         "test-black-box",
         "test-efficiency",
+        "test-vulnerabilities",
         "test-malware",
-    }
-
-
-def test_prepare_rock_action_downloads_decrypts_and_converts_to_oci() -> None:
-    action = load_yaml(".github/actions/prepare-rock-for-testing/action.yaml")
-    steps = action["runs"]["steps"]
-
-    download = next(step for step in steps if step.get("name") == "Download Rock")
-    decrypt = next(step for step in steps if step.get("name") == "Decrypt Rock")
-    convert = next(
-        step for step in steps if step.get("name") == "Convert Rock to OCI layout"
     )
+    for job_name in consuming_jobs:
+        steps = workflow["jobs"][job_name]["steps"]
 
-    assert download["uses"].startswith("actions/download-artifact@")
-    assert decrypt["uses"] == "./.github/actions/crypt-artifact"
-    assert decrypt["with"]["mode"] == "decrypt"
-    assert "docker run" in convert["run"]
-    assert 'copy "oci-archive:${ARTIFACT_NAME}"' in convert["run"]
-    assert '"oci:${TEST_IMAGE_NAME}:${TEST_IMAGE_TAG}"' in convert["run"]
+        # Each consuming job decrypts locally, gated on the passphrase presence
+        # (not on any removed encrypted-artifact flag).
+        decrypt = next(step for step in steps if step.get("name") == "Decrypt Rock")
+        assert decrypt["uses"] == "./.github/actions/crypt-artifact"
+        assert decrypt["if"] == "${{ env.ARTIFACT_PASSPHRASE != '' }}"
+        assert decrypt["with"]["input-path"] == "${{ inputs.oci-archive-name }}.gpg"
+
+        # No leftovers from the previous per-job composite / gating approach.
+        for step in steps:
+            assert step.get("uses") != "./.github/actions/prepare-rock-for-testing"
+            assert "encrypted-artifact" not in str(step.get("if", ""))
+
+    # The composite action it replaced must be gone.
+    assert not (ROOT / ".github/actions/prepare-rock-for-testing").exists()
 
 
 def test_commit_release_action_handles_public_and_pro_state_independently() -> None:
