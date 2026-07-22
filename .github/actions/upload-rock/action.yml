@@ -25,6 +25,11 @@ inputs:
     description: "The github token needed for downloading the artifact from a different repository or workflow run."
   decrypt-passphrase:
     description: "The passphrase for the artifact if it is encrypted."
+  skopeo-image:
+    description: "Skopeo image used to inspect and upload the artifact."
+    required: false
+    # Skopeo v1.22.2.
+    default: "quay.io/skopeo/stable@sha256:c7d3c512612f52805023cd38351081dad7e2729fc13d14b701e47c7c8bdd6615"
 outputs:
   digest:
     description: "The digest of the uploaded image"
@@ -53,10 +58,12 @@ runs:
     - name: Get Metadata
       id: meta
       shell: bash
+      env:
+        SKOPEO_IMAGE: ${{ inputs.skopeo-image }}
       run: |
         docker run --rm \
           -v $PWD:/workdir -w /workdir \
-          "quay.io/skopeo/stable:v1.20.0" \
+          "${SKOPEO_IMAGE}" \
           inspect oci-archive:${{ inputs.artifact_name }} > metadata.json
 
         digest="$(cat metadata.json | jq -r .Digest)"
@@ -64,11 +71,13 @@ runs:
 
     - name: Upload Rock to Registry
       shell: bash
+      env:
+        SKOPEO_IMAGE: ${{ inputs.skopeo-image }}
       run: |
         for tag in ${{ inputs.tags }}; do
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+          docker run --rm \
           -v $PWD:/workdir -w /workdir \
-          "quay.io/skopeo/stable:v1.20.0" \
+          "${SKOPEO_IMAGE}" \
           copy \
           --dest-username "${{ inputs.username }}" \
           --dest-password "${{ inputs.password }}" \

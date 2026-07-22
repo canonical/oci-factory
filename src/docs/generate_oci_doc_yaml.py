@@ -23,6 +23,7 @@ from src.docs.schema.v1.DocSchema import DocSchema as DocSchemaV1
 from src.docs.schema.v2.DocSchema import DocSchema as DocSchemaV2
 
 from ..shared.logs import get_logger
+from ..shared.skopeo import DEFAULT_SKOPEO_IMAGE
 
 MOCK_RELEASE: List[Dict[str, Any]] = [
     {
@@ -58,11 +59,9 @@ logger = get_logger()
 
 def cli_args() -> argparse.ArgumentParser:
     """Arguments parser"""
-    parser = argparse.ArgumentParser(
-        description="""
+    parser = argparse.ArgumentParser(description="""
         Generate documentation of OCI images in OCI Factory.
-        """
-    )
+        """)
 
     parser.add_argument(
         "--ecr-api-key",
@@ -201,7 +200,17 @@ class OCIDocumentationData:
                 os.fchmod(file.fileno(), 0o600)
                 json.dump(auth_config, file)
 
-            command = ["skopeo", cmd] + ["--authfile", auth_file] + args
+            command = [
+                "docker",
+                "run",
+                "--rm",
+                "-v",
+                f"{tmp_dir}:/skopeo-auth:ro",
+                os.environ.get("SKOPEO_IMAGE", DEFAULT_SKOPEO_IMAGE),
+                cmd,
+                "--authfile",
+                "/skopeo-auth/auth.json",
+            ] + args
 
             return json.loads(self.process_run(command))
 
