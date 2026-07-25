@@ -1,13 +1,13 @@
 {
     "latest": {
         "candidate": {
-            "target": "1.2-22.04_beta"
+            "target": "3110"
         },
         "beta": {
-            "target": "latest_candidate"
+            "target": "3110"
         },
         "edge": {
-            "target": "latest_beta"
+            "target": "3110"
         },
         "end-of-life": "2030-05-01T00:00:00Z"
     },
@@ -25,44 +25,44 @@
     },
     "test": {
         "beta": {
-            "target": "1.1-22.04_beta"
+            "target": "3109"
         },
         "edge": {
-            "target": "test_beta"
+            "target": "3109"
         },
         "end-of-life": "2030-05-01T00:00:00Z"
     },
     "1.1-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "candidate": {
-            "target": "3105"
+            "target": "3109"
         },
         "beta": {
-            "target": "3105"
+            "target": "3109"
         },
         "edge": {
-            "target": "3105"
+            "target": "3109"
         }
     },
     "1-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "candidate": {
-            "target": "3105"
+            "target": "3109"
         },
         "beta": {
-            "target": "3105"
+            "target": "3109"
         },
         "edge": {
-            "target": "3105"
+            "target": "3109"
         }
     },
     "1.2-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "beta": {
-            "target": "3106"
+            "target": "3110"
         },
         "edge": {
-            "target": "1.2-22.04_beta"
+            "target": "3110"
         }
     },
     "1.0.0-22.04": {},
@@ -87,10 +87,10 @@
     "eol-upload": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "beta": {
-            "target": "1.0-22.04_beta"
+            "target": "3107"
         },
         "edge": {
-            "target": "eol-upload_beta"
+            "target": "3107"
         }
     },
     "eol-all": {
@@ -105,7 +105,7 @@
     "devel": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "edge": {
-            "target": "2985"
+            "target": "3108"
         }
     }
 }
