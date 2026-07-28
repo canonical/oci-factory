@@ -1,21 +1,12 @@
-version: 1
+version: 2
 application: kafka
-is_chiselled: False
 description: |
-  Current Apache Kafka Docker Image from Canonical, based on Ubuntu. 
+  Apache Kafka is an open-source distributed event streaming platform for
+  high-performance data pipelines, streaming analytics and integrations.
+
   Receives security updates and tracks the newest combination of Apache 
   Kafka and Ubuntu. **This repository is free to use and exempted from 
   per-user rate limits.**
-  
-  # About Apache Kafka
-  Apache Kafka is an open-source distributed event streaming platform for
-  high-performance data pipelines, streaming analytics and integrations.
-  Read more on the [Apache Kafka website](https://kafka.apache.org/).
-  
-  Please note that the images tagged up to 3.1 are Dockerfile-base images,
-  whereas from version 3.6.1 onward the images are now rocks. As such the
-  entrypoint is now Pebble. Read more on the
-  [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/explanation/rocks/).
 
   # Apache Kafka 3 Quickstart
   To deploy a single-broker containerized Kafka, you need to first 
@@ -69,43 +60,49 @@ description: |
 
   docker exec kafka chown -R kafka:kafka /tmp/kraft-combined-logs/
   ````
+  
+  Please note that the images tagged up to 3.1 are Dockerfile-base images,
+  whereas from version 3.6.1 onward the images are now rocks.
+website: https://kafka.apache.org
+issues: https://github.com/canonical/kafka-rock/issues
+source-code: https://github.com/canonical/kafka-rock
 
-# --- USAGE INFORMATION ---
 docker:
-  parameters:
-    - -p 9092:9092
-  access: Access your Apache Kafka server at `localhost:9092`.
-parameters:
-  - type: -e
-    value: 'TZ=UTC'
-    description: Timezone.
-  - type: -p
-    value: '9092:9092'
-    description: Expose Apache Kafka server on `localhost:9092`.
-  - type: -v
-    value: "/path/to/config/file:/etc/kafka/server.properties"
-    description: Local Kafka configuration file.
-  - type: -v
-    value: "kafkaData:/var/lib/kafka"
-    description: > 
-      "Persist data in a docker volume named `kafkaData`. "
-      "Make sure that the mount point is consistent with the configuration property `logs.dirs`.
-  - type: -e
-    value: 'ZOOKEEPER_HOST=<zookeeper>'
+  parameters: >-
+    -p 9092:9092
+  run_conclusion: |
+    Access the Apache Kafka server at `localhost:9092`.
+  legacy:
+    parameters: >- 
+      -p 9092:9092
+    run_conclusion: |
+      Access the Apache Kafka server at `localhost:9092`.
+
+config:
+  '`TZ`':
+    type: env
+    description: Configure the container timezone value.
+    default: 'UTC'
+  '`ZOOKEEPER_HOST`':
+    type: env
     description: Hostname for the related Zookeeper instance. Only used in Apache Kafka 3.
-  - type: -e
-    value: 'ZOOKEEPER_PORT=2181'
+    default: 'zookeeper'
+  '`ZOOKEEPER_PORT`':
+    type: env
     description: Port for the related Zookeeper instance. Only used in Apache Kafka 3.
-debug:
-  text: |
-    ### Debugging
-    
-    To debug the container:
-    ```bash
-    docker logs -f <kafka-container>
-    ```
-    
-    To get an interactive shell:
-    ```bash
-    docker exec -it <kafka-container> /bin/bash
-    ```
+    default: '2181'
+  '`JAVA_HOME`':
+    type: env
+    description: Directory in which Java is installed.
+    default: '/usr/lib/jvm/java-18-openjdk-amd64'
+  '`-v <path>:/etc/kafka/server.properties`':
+    type: mount
+    description: Override Kafka server configuration file.
+  '`-v <path>:/var/lib/kafka`':
+    type: mount
+    description: >-
+      Persist data mounted inside the container. 
+      The mount point should be consistent with the configuration property `logs.dirs`.
+  '`-p <port>:9092`':
+    type: port
+    description: Expose the container's port `9092` on the host's `<port>`.
