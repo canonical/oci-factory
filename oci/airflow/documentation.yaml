@@ -13,7 +13,6 @@ source-code: https://github.com/canonical/airflow-rocks
 
 docker:
   parameters: >-
-    -d
     -p 8080:8080
     -e AIRFLOW_HOME=/opt/airflow
     -v /path/to/dags:/opt/airflow/dags
