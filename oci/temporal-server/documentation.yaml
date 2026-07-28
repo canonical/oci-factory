@@ -22,11 +22,10 @@ source-code: https://github.com/canonical/temporal-rocks
 
 docker:
   parameters: >-
+     -d
      -p 7233:7233
      -e SQL_HOST=1.2.3.4
      -v /path/to/temporal/config.yaml:/etc/temporal/config/config.yaml
-  run_cmd: >-
-    -d
   run_conclusion: |
     Temporal server starts and listens on its configured ports.
 
@@ -36,15 +35,12 @@ config:
   TEMPORAL_ROOT:
     type: env
     description: Root directory of Temporal execution environment.
-    default: .
   TEMPORAL_CONFIG_DIR:
     type: env
     description: Config directory path relative to the Temporal root.
-    default: config
   TEMPORAL_ENVIRONMENT:
     type: env
     description: Run time Temporal environment.
-    default: development
   TEMPORAL_AVAILABILITY_ZONE:
     type: env
     description: Temporal's availability zone.
