@@ -205,7 +205,7 @@ class OCIDocumentationData:
                 "run",
                 "--rm",
                 "-v",
-                f"{tmp_dir}:/skopeo-auth:ro",
+                f"{auth_file}:/skopeo-auth/auth.json:ro",
                 os.environ.get("SKOPEO_IMAGE", DEFAULT_SKOPEO_IMAGE),
                 cmd,
                 "--authfile",
