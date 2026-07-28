@@ -17,6 +17,11 @@ docker:
     -p 2181:2181
   run_conclusion: |
     Access the ZooKeeper server at `localhost:2181`.
+  legacy:
+    parameters: >-
+      -p 2181:2181
+    run_conclusion: |
+      Access the ZooKeeper server at `localhost:2181`.
 
 config:
   TZ:
