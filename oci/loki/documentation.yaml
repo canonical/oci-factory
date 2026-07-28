@@ -17,7 +17,7 @@ docker:
     -v /path/to/config/file:/etc/loki/local-config.yaml
     -v lokidata:/loki
   run_conclusion: |
-    Access the Loki instance at http://localhost:<port-value-defined-as-parameter-e.g.-3100>.
+    Access the Loki instance at http://localhost:3100.
   legacy:
     parameters: >-
       -e TZ=UTC
@@ -25,7 +25,7 @@ docker:
       -v /path/to/config/file:/etc/loki/loki.yaml
       -v lokidata:/loki
     run_conclusion: |
-      Access the legacy Loki instance at http://localhost:<port-value-defined-as-parameter-e.g.-3100>.
+      Access the legacy Loki instance at http://localhost:3100.
 
       Legacy tags up to 2.4 are Dockerfile-based images. To open an
       interactive shell in one of these containers, use:
