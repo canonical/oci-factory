@@ -1,8 +1,7 @@
-version: 1
+version: 2
 application: glauth
-is_chiselled: True
 description: |
-  Go-lang LDAP Authentication (GLAuth) is a secure, easy-to-use, LDAP server w/ configurable 
+  Go-lang LDAP Authentication (GLAuth) is a secure, easy-to-use, LDAP server with configurable 
   backends. Use it to centralize account management across your Linux servers, your OSX machines,
   and your support applications (Jenkins, Apache/Nginx, Graylog2, and many more!).
   * Centrally manage accounts across your infrastructure
@@ -11,30 +10,31 @@ description: |
   * Store your user directory in a file, local or in S3; SQL database; or proxy to existing LDAP servers.
   * Two Factor Authentication (transparent to applications)
   * Multiple backends can be chained to inject features
+website: https://glauth.github.io/
+issues: https://github.com/canonical/glauth-rock/issues
+source-code: https://github.com/canonical/glauth-rock
+
 docker:
-  parameters:
-    - -p 3893:3893  # ldap
-    - -p 3894:3894  # ldaps
-    - -p 5555:5555  # ui and prometheus metrics
-  access: Access the LDAP server on "ldap://localhost:3893"
-parameters:
-  - type: -p
-    value: '3893:3893'
-    description: LDAP port.
-  - type: -p
-    value: '3894:3894'
-    description: LDAPS port.
-  - type: -p
-    value: '5555:5555'
-    description: UI and metrics port.
-  - type: -v
-    value: '/path/to/glauth/config.cfg:/glauth.cfg'
-    description: >
+  parameters: >-
+    -p 3893:3893
+    -p 3894:3894
+    -p 5555:5555
+  run_conclusion: |
+    GLAuth starts and serves LDAP on port `3893`, LDAPS on port `3894`, and UI and metrics on port `5555`.
+    Access the LDAP server on `ldap://localhost:3893`.
+
+config:
+  '`-v <path>:/etc/config/glauth.cfg`':
+    type: mount
+    description: >-
       GLAuth config contains all the information needed to successfully configure a basic LDAP
       server, see https://github.com/glauth/glauth/blob/master/v2/sample-simple.cfg as a reference
-  - type: CMD
-    value: "glauth -c /glauth.cfg"
-    description: >
-      Launch GLAuth server with a set config.
-debug:
-  text: ""
+  '`-p <port>:3893`':
+    type: port
+    description: Expose LDAP port `3893` on the host's `<port>`.
+  '`-p <port>:3894`':
+    type: port
+    description: Expose LDAPS port `3894` on the host's `<port>`.
+  '`-p <port>:5555`':
+    type: port
+    description: Expose UI and metrics port `5555` on the host's `<port>`.

@@ -1,69 +1,55 @@
-version: 1
-# --- OVERVIEW INFORMATION ---
-application: litmuschaos-authserver
-description: >
-  Litmus authentication server is a component of the LitmusChaos solution, an open source platform used for chaos testing.
-  Read more in the [official documentation](https://github.com/litmuschaos/litmus)
-  Please note that this repository holds a rock instead of a Dockerfile-based image.
-  As such, the entrypoint is Pebble.
-  Read more in the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
-# --- USAGE INFORMATION ---
-docker:
-  parameters:
-    - -p 3000:3000
-  access: Access the authentication server at `http://localhost:3000`.
-parameters:
-  - type: -e
-    value: 'ADMIN_USERNAME=<user>'
-    description: Web UI admin username.
-  - type: -e
-    value: 'ADMIN_PASSWORD=<password>'
-    description: Web UI admin password.
-  - type: -e
-    value: 'DB_SERVER=<db_address>'
-    description: Database server address.
-  - type: -e
-    value: 'DB_USER=<db_user>'
-    description: Database username.
-  - type: -e
-    value: 'DB_PASSWORD=<db_password>'
-    description: Database password. 
-  - type: -e
-    value: 'REST_PORT=3000'
-    description: REST API auth server port. 
-  - type: -e
-    value: 'GRPC_PORT=3030'
-    description: gRPC auth server port. 
-  - type: -p
-    value: '3000:3000'
-    description: Access the authentication server at `http://localhost:3000`.
-debug:
-  text: |
-    ### Debugging
-    
-    To run the server:
-    ```bash
-    # litmuschaos-authserver needs a MongoDB database to work
-    docker run -d -e MONGO_INITDB_ROOT_USERNAME=root -e MONGO_INITDB_ROOT_PASSWORD=password -p 27017:27017 mongo:7
-    # don't use `--network host` in production
-    docker run -d --network host -p 3000:3000 --name litmuschaos-authserver-container \
-      -e DB_USER=root \
-      -e DB_PASSWORD=password \
-      -e REST_PORT=3000 \
-      -e GRPC_PORT=3030 \
-      -e DB_SERVER=mongodb://localhost:27017 \
-      -e ADMIN_USERNAME=admin \
-      -e ADMIN_PASSWORD=password \
-      ubuntu/litmuschaos-authserver:3.19-24.04_edge
-    ```
-     
-    To verify that the server is running:
-    ```bash
-    # should get a 200 OK response 
-    curl -v localhost:3000/capabilities
-    ```
+version: 2
 
-    To debug the container:
-    ```bash
-    docker exec -it litmuschaos-authserver-container pebble logs -f authserver
-    ```
+application: litmuschaos-authserver
+description: |
+  litmuschaos-authserver is a component of the LitmusChaos solution, an open
+  source platform used for chaos testing.
+  Read more in the [official documentation](https://github.com/litmuschaos/litmus)
+website: https://litmuschaos.io/
+issues: https://github.com/canonical/litmuschaos-authserver-rock/issues
+source-code: https://github.com/canonical/litmuschaos-authserver-rock
+
+docker:
+  parameters: >-
+    -p 3000:3000
+  run_conclusion: |
+    Before starting, ensure a MongoDB instance is running and set `DB_SERVER`, `DB_USER`, and
+    `DB_PASSWORD` to point to it (e.g. `docker run -d -e MONGO_INITDB_ROOT_USERNAME=root -e MONGO_INITDB_ROOT_PASSWORD=password -p 27017:27017 mongo:7`).
+
+    Access the LitmusChaos server at `http://localhost:3000`.
+
+
+config:
+  ADMIN_USERNAME:
+    type: env
+    description: Web UI admin username.
+  ADMIN_PASSWORD:
+    type: env
+    description: Web UI admin password.
+  DB_SERVER:
+    type: env
+    description: Database server address.
+  DB_USER:
+    type: env
+    description: Database username.
+  DB_PASSWORD:
+    type: env
+    description: Database password.
+  REST_PORT:
+    type: env
+    description: REST API auth server port, e.g., `3000`.
+  GRPC_PORT:
+    type: env
+    description: gRPC auth server port, e.g., `3030`.
+  '`-p <port>:3000`':
+    type: port
+    description: >-
+      Expose the container's port 3000 on the host's `<port>`.
+      Replace port 3000 if any other port is passed to the environmental
+      variable `REST_PORT`.
+  '`-p <port>:3030`':
+    type: port
+    description: >-
+      Expose the container's port 3030 on the host's `<port>`.
+      Replace port 3030 if any other port is passed to the environmental
+      variable `GRPC_PORT`.

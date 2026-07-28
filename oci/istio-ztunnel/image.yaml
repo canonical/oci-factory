@@ -1,18 +1,10 @@
-version: 1
+version: 2
 upload:
   - source: canonical/istio-ztunnel-rock
-    commit: f417dee77a948358e2bb82a5943a98463089a65b
+    commit: b6fe05503e02cbe6189ef7d56400ad46083e0374
     directory: 1.29.0
     release:
-      1-24.04:
-        end-of-life: '2026-07-08T00:00:00Z'
-        risks:
-          - stable
       1.29-24.04:
-        end-of-life: '2026-07-08T00:00:00Z'
-        risks:
-          - stable
-      1.29.0-24.04:
-        end-of-life: '2026-04-07T00:00:00Z'
+        end-of-life: '2026-09-10T00:00:00Z'
         risks:
           - stable

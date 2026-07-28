@@ -1,28 +1,30 @@
-version: 1
-
-application: Apache2
-is_chiselled: true
+version: 2
+application: apache2
 description: |
-  The Apache HTTP Server Project's goal is to build a secure, efficient and extensible
+  The Apache HTTP Server Project's goal is to build a secure, efficient, and extensible
   HTTP server as standards-compliant open source software. The result has long been the
-  number one web server on the Internet. Read more on the [apache2 website](https://httpd.apache.org/).
+  number one web server on the Internet.
+website: https://httpd.apache.org/
+issues: https://github.com/canonical/apache2-rock/issues
+source-code: https://github.com/canonical/apache2-rock
 
 docker:
-  parameters:
-    - -p 8080:80
-  access: Access your Apache2 server at `http://localhost:8080`.
+  parameters: >-
+    -p 8080:80
+  run_conclusion: |
+    Apache2 starts and serves HTTP traffic on port 80.
+    Access the Apache2 server at `http://localhost:8080`.
 
-parameters:
-  - type: -p
-    value: '8080:80'
-    description: Expose Apache2 on `localhost:8080`.
-  - type: -v
-    value: /local/path/to/website:/var/www/html:ro
+config:
+  '`-p <port>:80`':
+    type: port
+    description: Expose port 80 on the host.
+  '`-v <path>:/var/www/html:ro`':
+    type: mount
     description: Mount and serve a local website.
-  - type: -v
-    value: /path/to/apache2.conf:/etc/apache2/apache2.conf:ro
+  '`-v <path>:/etc/apache2/apache2.conf:ro`':
+    type: mount
     description: Local [configuration file](https://httpd.apache.org/docs/2.4) `apache2.conf` (try [this example](https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/config/apache2.conf?h=2.4-22.04))
-
 microk8s:
   deploy:
     link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/apache2/plain/examples/apache2-deployment.yml?h=2.4-22.04

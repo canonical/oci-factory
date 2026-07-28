@@ -1,40 +1,31 @@
-version: 1
-# --- OVERVIEW INFORMATION ---
+version: 2
 application: traefik
-description: >
+description: |
   Traefik is a modern HTTP reverse proxy and load balancer that makes deploying
   microservices easy. Traefik integrates with your existing infrastructure
   components (Docker, Swarm mode, Kubernetes, Consul, Etcd, Rancher v2, Amazon
   ECS, ...) and configures itself automatically and dynamically.
-  Read more on the [official website](https://traefik.io/)
-# --- USAGE INFORMATION ---
+website: https://traefik.io/
+issues: https://github.com/canonical/traefik-rock/issues
+source-code: https://github.com/canonical/traefik-rock
+
 docker:
-  parameters:
-    - -p 80:80
-  access: Access your Traefik instance at `http://localhost:80`.
-parameters:
-  - type: -e
-    value: 'TZ=UTC'
+  parameters: >-
+    -p 80:80
+  run_conclusion: |
+    Access the Traefik instance at `http://localhost:80`.
+
+config:
+  TZ:
+    type: env
     description: Timezone.
-  - type: -p
-    value: '80:80'
-    description: >
-      Expose Traefik on `localhost:80`. For TLS, you should port 443.
-  - type: -v 
-    value: "/path/to/traefik.yml:/etc/traefik/prometheus.yml"
-    description: Local configuration file `traefik.yml`.
-debug:
-  text: |
-    ### Debugging
-    
-    To debug the container:
-
-    ```bash
-    docker logs -f traefik-container
-    ```
-
-    To get an interactive shell:
-
-    ```bash
-    docker exec -it traefik-container /bin/bash
-    ```
+    default: 'UTC'
+  '`-v <path>:/etc/traefik/prometheus.yml`':
+    type: mount
+    description: Local configuration file for Traefik.
+  '`-p <port>:80`':
+    type: port
+    description: Expose the container's port `80` on the host's `<port>` for HTTP connections.
+  '`-p <port>:443`':
+    type: port
+    description: Expose the container's port `443` on the host's `<port>` for HTTPS connections.

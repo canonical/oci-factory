@@ -1,47 +1,67 @@
-version: 1
-# --- OVERVIEW INFORMATION ---
+version: 2
 application: rabbitmq
-description: >
+description: |
   RabbitMQ is a reliable and mature messaging and streaming broker, which is
   easy to deploy on cloud environments, on-premises, and on your local machine.
   It is currently used by millions worldwide.
-# --- USAGE INFORMATION ---
+website: https://www.rabbitmq.com/
+issues: https://github.com/canonical/rabbitmq-rock/issues
+source-code: https://github.com/canonical/rabbitmq-rock
+
 docker:
-  parameters:
-    - -p 5672:5672
-    - -p 15672:15672
-  access: Access your RabbitMQ instance using AMQP and HTTPS clients without TLS.
-
-parameters:
-  - type: -p
-    value: '5672:5672'
-    description: Expose RabbitMQ on `localhost:5672` for AMQP clients without TLS.
-  - type: -p
-    value: '5671:5671'
-    description: Expose RabbitMQ on `localhost:5671` for AMQP clients with TLS. 
-  - type: -p
-    value: '15672:15672'
-    description: Expose RabbitMQ on `localhost:15672` for HTTP clients without TLS.
-  - type: -p
-    value: '15671:15671'
-    description: Expose RabbitMQ on `localhost:15692` for HTTP clients UI with TLS.
-debug:
-  text: |  
-    ### Testing / Debugging
-
-    Configure the default user and password:
-
-    ```bash
-    docker exec rabbitmq-container /scripts/config-defaults.sh
-    docker exec rabbitmq-container pebble restart rabbitmq-server
-    ```
-
-    Note that after configuring the default user and password, this container
-    is no longer production-ready. Refer to the [official documentation]
-    (https://www.rabbitmq.com/docs/configure) for production deployments.
+  parameters: >-
+    -p 5672:5672
+    -p 15672:15672
+  run_conclusion: |
+    RabbitMQ starts and exposes AMQP and HTTP management interfaces.
+    Access AMQP on `localhost:5672` and HTTP management UI on `http://localhost:15672`.
     
-    To query the node status:
-
-    ```bash
-    curl -u guest:guest http://localhost:15672/api/healthchecks/node
+    Note that the clients provided by RabbitMQ won't be accessible by default unless a properly
+    defined configuration file is applied in the container. For demonstration purposes, we enable
+    access for the default `guest` user from a non-localhost network by running the following
+    commands:
+    
+    ```shell
+    $ docker exec rabbitmq-container /scripts/config-defaults.sh
+    $ docker exec rabbitmq-container pebble restart rabbitmq-server
     ```
+
+    **CAUTION**: This container is no longer production-ready if configured with 
+    `/scripts/config-defaults.sh`. Refer to the [official
+    documentation](https://www.rabbitmq.com/docs/configure) for production deployments.
+
+    The node status can be queried with the following command:
+
+    ```shell
+    $ curl -u guest:guest http://localhost:15672/api/healthchecks/node
+    ```
+
+config:
+  '`-p <port>:5672`':
+    type: port
+    description: Expose the container's port 5672 on the host's <port> for AMQP clients without TLS.
+  '`-p <port>:5671`':
+    type: port
+    description: Expose the container's port 5671 on the host's <port> for AMQP clients with TLS.
+  '`-p <port>:15672`':
+    type: port
+    description: Expose the container's port 15672 on the host's <port> for HTTP clients without TLS.
+  '`-p <port>:15671`':
+    type: port
+    description: Expose the container's port 15671 on the host's <port> for HTTP clients with TLS.
+  '`-v <path>:/etc/rabbitmq/rabbitmq.conf`':
+    type: mount
+    description: >-
+      Map the local [main configuration file](https://www.rabbitmq.com/docs/configure#config-file) into the container.
+      Change the target path if any other configuration file path is passed to the environmental variable `RABBITMQ_CONFIG_FILE`.
+  '`-v <path>:/etc/rabbitmq/conf.d`':
+    type: mount
+    description: >-
+      Map the local [configuration directory](https://www.rabbitmq.com/docs/configure#config-confd-directory) into the container.
+      Change the target path if any other configure directory is passed to the environmental variable `RABBITMQ_CONFIG_FILES`.
+  '`RABBITMQ_CONFIG_FILE`':
+    type: env
+    description: Main RabbitMQ config file path. Defaults to `/etc/rabbitmq/rabbitmq.conf` by RabbitMQ.
+  '`RABBITMQ_CONFIG_FILES`':
+    type: env
+    description: Path to a directory of RabbitMQ configuration files. Defaults to `/etc/rabbitmq/conf.d` by RabbitMQ.

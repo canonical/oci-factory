@@ -1,43 +1,40 @@
-version: 1
-# --- OVERVIEW INFORMATION ---
+version: 2
+
 application: metrics-proxy
-description: >
+description: |
   Metrics Proxy is a lightweight proxy designed to expose a unified metrics endpoint for multiple Kubernetes pods.
   The proxy watches for pods in a Kubernetes cluster and listens on a configurable port,
   where it exposes aggregated metrics on a configurable endpoint.
-  Read more on the [project repo](https://github.com/canonical/metrics-k8s-proxy).
-# --- USAGE INFORMATION ---
+  Read more in the [project repo](https://github.com/canonical/metrics-k8s-proxy).
+website: https://github.com/canonical/metrics-k8s-proxy
+issues: https://github.com/canonical/metrics-proxy-rock/issues
+source-code: https://github.com/canonical/metrics-proxy-rock
+
 docker:
-  parameters:
-    - -p 15090:15090
-  access: Access aggregated metrics at `http://localhost:15090`.
+  parameters: >-
+    -e TZ=UTC
+    -p 15090:15090
+  run_conclusion: |
+    Metrics Proxy listens on port 15090.
+    Access aggregated metrics at http://localhost:15090.
 
-parameters:
-  - type: -e
-    value: 'TZ=UTC'
+config:
+  TZ:
+    type: env
     description: Timezone setting for the container.
-  - type: -p
-    value: '15090:15090'
-    description: Port mapping for accessing the metrics-proxy aggregated metrics endpoint.
-  - type: -e
-    value: 'POD_LABEL_SELECTOR="foo=bar"'
-    description: Specify labels to filter Kubernetes pods for metrics aggregation.
-  - type: -e
-    value: 'PORT="15090"'
-    description: The port on which the metrics-proxy listens for scrape requests.
-  - type: -e
-    value: 'SCRAPE_TIMEOUT="9s"'
+    default: 'UTC'
+  POD_LABEL_SELECTOR:
+    type: env
+    description: Specify labels to filter Kubernetes pods for metrics aggregation, using the format `foo=bar`.
+  SCRAPE_TIMEOUT:
+    type: env
     description: Configures the timeout duration for scraping metrics from the pods.
-
-debug:
-  text: |
-    ### Debugging
+    default: '9s'
+  PORT:
+    type: env
+    description: The port on which the metrics-proxy listens for scrape requests.
+    default: '15090'
+  '`-p <port>:15090`':
+    type: port
+    description: Port mapping for accessing the metrics-proxy aggregated metrics endpoint. Replace port 15090 if any other port is passed to the environmental variable `PORT`.
     
-    To debug the container:
-    ```bash
-    docker exec -it metrics-proxy-container pebble logs -f metrics-proxy
-    ```
-    To get an interactive shell:
-    ```bash
-    docker exec -it metrics-proxy-container /bin/bash
-    ```

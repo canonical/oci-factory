@@ -1,18 +1,14 @@
-version: 1
+version: 2
 upload:
   - source: canonical/prometheus-rock
-    commit: c7696b18c348b3a2831d13253586b38d971966dc
-    directory: 3.11.1
+    commit: 47ada9f1061692a9091f6eb77f34828570e44715
+    directory: 3.11.3
     release:
-      3-24.04:
-        end-of-life: '2026-07-11T00:00:00Z'
+      3-26.04:
+        end-of-life: '2026-08-11T00:00:00Z'
         risks:
           - stable
-      3.11-24.04:
-        end-of-life: '2026-07-11T00:00:00Z'
-        risks:
-          - stable
-      3.11.1-24.04:
-        end-of-life: '2026-04-10T00:00:00Z'
+      3.11-26.04:
+        end-of-life: '2026-08-11T00:00:00Z'
         risks:
           - stable

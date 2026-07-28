@@ -1,19 +1,13 @@
-version: 1
-# --- OVERVIEW INFORMATION ---
+version: 2
+
 application: install-cni
-description: >
+description: |
   Install-cni is an image used for installing Istio's CNI plugin, which is used in the CNI component in Istio ambient mesh.
   Read more on the [project repo](https://github.com/istio/istio/tree/master/cni#overview).
+website: https://istio.io/
+issues: https://github.com/canonical/istio-install-cni-rock/issues
+source-code: https://github.com/canonical/istio-install-cni-rock
 
-debug:
-  text: |
-    ### Debugging
-    
-    To debug the container:
-    ```bash
-    docker exec -it install-cni-container pebble logs -f install-cni
-    ```
-    To get an interactive shell:
-    ```bash
-    docker exec -it install-cni-container /bin/bash
-    ```
+docker:
+  run_conclusion: |
+    The Istio CNI plugin installer will run to configure network plugin components.

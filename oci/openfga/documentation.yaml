@@ -1,38 +1,47 @@
-version: 1
+version: 2
+
 application: openfga
-is_chiselled: True
 description: |
   A high-performance and flexible authorization/permission engine built for developers
-  and inspired by Google Zanzibar. OpenFGA is designed to make it easy for developers 
+  and inspired by Google Zanzibar. OpenFGA is designed to make it easy for developers
   to model their application permissions and add and integrate fine-grained authorization
-  into their applications. It allows in-memory data storage for quick development, as 
-  well as pluggable database modules. 
+  into their applications. It allows in-memory data storage for quick development, as
+  well as pluggable database modules.
+website: https://openfga.dev/
+issues: https://github.com/canonical/openfga-rock/issues
+source-code: https://github.com/canonical/openfga-rock
+
 docker:
-  parameters:
-    - -p 8080:8080  # http
-    - -p 8081:8081  # grpc
-    - -p 3000:3000  # playground
-    - -p 2112:2112  # prometheus metrics
-  access: Access the API either on http via "http://localhost:8080" or grpc on "localhost:8081", UI playground on "http://localhost:3000" 
-parameters:
-  - type: -e
-    value: 'OPENFGA_DATASTORE_ENGINE=postgres'
+  parameters: >-
+    -p 8080:8080 
+    -p 8081:8081
+    -p 3000:3000
+    -p 2112:2112
+  run_conclusion: |
+    Access the API either on http via `http://localhost:8080` or grpc on `localhost:8081`, UI playground on `http://localhost:3000`. Prometheus metrics are available at `http://localhost:2112/metrics`.
+
+config:
+  OPENFGA_DATASTORE_ENGINE:
+    type: env
     description: Datastore type, currently supports postgresql, mysql and sqlite (beta).
-  - type: -e
-    value: 'OPENFGA_DATASTORE_URI=postgres://postgres:password@postgres:5432/postgres?sslmode=disable'
-    description: Database connection string.
-  - type: -e
-    value: 'OPENFGA_PLAYGROUND_ENABLED=true'
-    description: Allow playground UI.
-  - type: -p
-    value: '8080:8080'
-    description: HTTP API port.
-  - type: -p
-    value: '8081:8081'
-    description: gRPC API port.
-  - type: CMD
-    value: "openfga run"
-    description: >
-      Launch OpenFGA server(s) using a mix of environment variables.
-debug:
-  text: ""
+  OPENFGA_DATASTORE_URI:
+    type: env
+    description: Database connection string, e.g., `postgres://postgres:password@postgres:5432/postgres?sslmode=disable`.
+  OPENFGA_PLAYGROUND_ENABLED:
+    type: env
+    description: Allow playground UI, e.g., `true`.
+  '`-p <port>:8080`':
+    type: port
+    description: Expose the container's port 8080 on the host's `<port>` for HTTP connections.
+  '`-p <port>:8081`':
+    type: port
+    description: Expose the container's port 8081 on the host's `<port>` for gRPC connections.
+  '`-p <port>:3000`':
+    type: port
+    description: Expose the container's port 3000 on the host's `<port>` for the playground UI.
+  '`-p <port>:2112`':
+    type: port
+    description: Expose the container's port 2112 on the host's `<port>` for Prometheus metrics endpoint.
+  '`openfga run`':
+    type: app
+    description: Launch OpenFGA server(s) using a mix of environment variables.

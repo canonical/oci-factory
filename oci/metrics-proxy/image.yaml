@@ -1,18 +1,32 @@
-version: 1
+version: 2
 upload:
   - source: canonical/metrics-proxy-rock
-    commit: 78ab3165104b87d648d077a1c3f80c308a10b6af
+    commit: 73212b81aedafa785d176473a6408eb2ce3d02e0
     directory: 0.1.1
     release:
-      0-24.04:
-        end-of-life: '2025-03-14T00:00:00Z'
+      0-26.04:
+        end-of-life: '2026-08-31T00:00:00Z'
         risks:
-          - stable
-      0.1-24.04:
-        end-of-life: '2025-03-14T00:00:00Z'
+          - edge
+      0.1-26.04:
+        end-of-life: '2026-08-31T00:00:00Z'
         risks:
-          - stable
-      0.1.1-24.04:
-        end-of-life: '2025-03-14T00:00:00Z'
-        risks:
-          - stable
+          - edge
+    ignored-vulnerabilities:
+      - CVE-2025-22868  # golang.org/x/oauth2
+      - CVE-2025-68121  # stdlib
+      - CVE-2025-61726  # stdlib
+      - CVE-2025-61729  # stdlib
+      - CVE-2026-25679  # stdlib
+      - CVE-2026-32280  # stdlib
+      - CVE-2026-32281  # stdlib
+      - CVE-2026-32283  # stdlib
+      - CVE-2026-33811  # stdlib
+      - CVE-2026-33814  # stdlib
+      - CVE-2026-39820  # stdlib
+      - CVE-2026-39823  # stdlib
+      - CVE-2026-39825  # stdlib
+      - CVE-2026-39826  # stdlib
+      - CVE-2026-39836  # stdlib
+      - CVE-2026-42499  # stdlib
+      - CVE-2026-42504  # stdlib

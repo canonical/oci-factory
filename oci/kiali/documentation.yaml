@@ -1,33 +1,23 @@
-version: 1
-# --- OVERVIEW INFORMATION ---
+version: 2
 application: kiali
 description: >
   Kiali is a management console for Istio service mesh. It provides observability,
   monitoring, and troubleshooting capabilities for Istio-based microservices.
-  Read more on the [project repo](https://github.com/kiali/kiali).
-# --- USAGE INFORMATION ---
+website: https://github.com/kiali/kiali
+issues: https://github.com/canonical/kiali-rock
+source-code: https://github.com/canonical/kiali-rock
+
 docker:
-  parameters:
-    - -p 20001:20001
-  access: Access Kiali UI at `http://localhost:20001`.
+  parameters: >-
+    -e TZ=UTC
+    -p 20001:20001
+  run_conclusion: |
+    Access the Kiali UI at `http://localhost:20001`.
 
-parameters:
-  - type: -e
-    value: 'TZ=UTC'
+config:
+  TZ:
+    type: env
     description: Timezone setting for the container.
-  - type: -p
-    value: '20001:20001'
-    description: Port mapping for accessing the Kiali UI.
-
-debug:
-  text: |
-    ### Debugging
-    
-    To debug the container:
-    ```bash
-    docker exec -it kiali-container pebble logs -f kiali
-    ```
-    To get an interactive shell:
-    ```bash
-    docker exec -it kiali-container /bin/bash
-    ```
+  '`-p <port>:20001`':
+    type: port
+    description: Exposes the container's port `20001` on the host's `<port>`.

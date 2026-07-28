@@ -29,7 +29,9 @@ jobs:
     name: Validate access to mock-rock
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/validate-actor
         with:
           admin-only: true
@@ -42,11 +44,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Job Setup
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 1
+          persist-credentials: false
 
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: "3.x"
 
@@ -57,6 +60,9 @@ jobs:
       # build_rock/configure requirements
       - run: pip install -r src/build_rock/configure/requirements.txt
 
+      # docs requirements
+      - run: pip install -r src/docs/requirements.txt
+
       - name: Run pytest
         continue-on-error: true
         run: |
@@ -65,11 +71,11 @@ jobs:
       - name: Generate Summary
         if: ${{ !cancelled() }}
         run: |
-          python3 -m tools.junit_to_markdown --input-junit "${{ env.PYTEST_RESULT_PATH }}" >> $GITHUB_STEP_SUMMARY
+          python3 -m tools.junit_to_markdown --input-junit "${{ env.PYTEST_RESULT_PATH }}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload pytest Result
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: ${{ env.PYTEST_RESULT_PATH }}
           path: ${{ env.PYTEST_RESULT_PATH }}
@@ -81,9 +87,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Job Setup
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Install bats
         run: |
@@ -94,7 +101,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.ROCKSBOT_TOKEN }}
         run: |
-          find ${{ github.workspace }} -name 'test-*.bats' | xargs bats
+          find "${{ github.workspace }}" -name 'test-*.bats' -print0 | xargs -0 bats
   
   # # Test use case of reuseable workflow 
   # build-rock:
@@ -136,3 +143,6 @@ jobs:
       oci-image-name: "mock-rock"
       upload: true
     secrets: inherit
+    permissions:
+      packages: write
+      contents: write

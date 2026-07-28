@@ -1,30 +1,38 @@
-version: 1
+version: 2
 
 application: Nginx
-is_chiselled: true
 description: |
-  Nginx ("engine X") is a high-performance web and reverse proxy server created by Igor Sysoev.
+  Nginx is a high-performance web and reverse proxy server created by Igor Sysoev.
   It can be used both as a standalone web server and as a proxy to reduce the load on back-end HTTP
   or mail servers. Read more on the [nginx website](https://www.f5.com/products/nginx).
+website: https://www.f5.com/products/nginx
+issues: https://github.com/canonical/nginx-rock/issues
+source-code: https://github.com/canonical/nginx-rock
 
 docker:
-  parameters:
-    - -p 8080:80
-  access: Access your Nginx server at `http://localhost:8080`.
+  parameters: >-
+    -p 8080:80
+  run_conclusion: |
+    Nginx starts and serves content on port 80.
+    Access your Nginx server at http://localhost:8080.
 
-parameters:
-  - type: -p
-    value: '8080:80'
-    description: Expose Nginx on `localhost:8080`.
-  - type: -v
-    value: /local/path/to/website:/var/www/html:ro
+config:
+  TZ:
+    type: env
+    description: Timezone setting for the container.
+    default: 'UTC'
+  '`-v <path>:/var/www/html:ro`':
+    type: mount
     description: Mount and serve a local website.
-  - type: -v
-    value: /path/to/conf.template:/etc/nginx/templates/conf.template
-    description: Mount template files inside `/etc/nginx/templates`. They will be processed and the results will be placed at `/etc/nginx/conf.d`. (e.g.  listen ${NGINX_PORT}``; will generate `listen 80`;).
-  - type: -v
-    value: /path/to/nginx.conf:/etc/nginx/nginx.conf:ro
-    description: Local [configuration file](https://nginx.org/en/docs/) (try [this example](https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/nginx/plain/examples/config/nginx.conf?h=1.18-22.04))
+  '`-v <path>:/etc/nginx/templates/conf.template`':
+    type: mount
+    description: Mount template files inside `/etc/nginx/templates`. They are processed and the results are placed at `/etc/nginx/conf.d` (for example, `listen ${NGINX_PORT};` generates `listen 80;`).
+  '`-v <path>:/etc/nginx/nginx.conf:ro`':
+    type: mount
+    description: Local [configuration file](https://nginx.org/en/docs/) (try [this example](https://git.launchpad.net/~canonical-server/ubuntu-docker-images/+git/nginx/plain/examples/config/nginx.conf?h=1.18-22.04)).
+  '`-p <port>:80`':
+    type: port
+    description: Expose port 80 on the host.
 
 microk8s:
   deploy:

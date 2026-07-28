@@ -1,18 +1,42 @@
-version: 1
+version: 2
 upload:
   - source: canonical/grafana-rock
-    commit: acb0ed80cef195e8f26d69f57a0995ea6b948119
+    commit: a65643bcf59748779c1419adb831ad6e2e5c1e34
     directory: 12.4.2
     release:
-      12-24.04:
-        end-of-life: '2026-07-07T00:00:00Z'
+      12-26.04:
+        end-of-life: '2026-08-11T00:00:00Z'
         risks:
-          - stable
-      12.4-24.04:
-        end-of-life: '2026-07-07T00:00:00Z'
+          - edge
+      12.4-26.04:
+        end-of-life: '2031-05-01T00:00:00Z'
         risks:
-          - stable
-      12.4.2-24.04:
-        end-of-life: '2026-04-09T00:00:00Z'
-        risks:
-          - stable
+          - edge
+    ignored-vulnerabilities:
+      - CVE-2026-41602  # github.com/apache/thrift
+      - CVE-2026-21728  # github.com/grafana/tempo
+      - CVE-2026-28377  # github.com/grafana/tempo
+      - CVE-2026-33816  # github.com/jackc/pgx/v5
+      - CVE-2026-42151  # github.com/prometheus/prometheus
+      - CVE-2026-42154  # github.com/prometheus/prometheus
+      - CVE-2026-29181  # go.opentelemetry.io/otel
+      - CVE-2026-34986  # github.com/go-jose/go-jose/v4
+      - CVE-2026-34040  # github.com/moby/moby
+      - CVE-2026-24051  # go.opentelemetry.io/otel/sdk
+      - CVE-2026-39883  # go.opentelemetry.io/otel/sdk
+      # Go vulnerabilities fixed by automatic rebuilds
+      - CVE-2026-32280  # stdlib
+      - CVE-2026-32281  # stdlib
+      - CVE-2026-32283  # stdlib
+      - CVE-2026-33811  # stdlib
+      - CVE-2026-33814  # stdlib
+      - CVE-2026-39820  # stdlib
+      - CVE-2026-39823  # stdlib
+      - CVE-2026-39825  # stdlib
+      - CVE-2026-39826  # stdlib
+      - CVE-2026-39836  # stdlib
+      - CVE-2026-42499  # stdlib
+      - CVE-2026-42504  # stdlib
+      # Upstream github/gitlab related
+      - github-pat
+      - gitlab-pat

@@ -426,8 +426,9 @@ methods as the OCI Factory itself.
 ### Build-Rock Workflow
 
 The [Build-Rock workflow](.github/workflows/Build-Rock.yaml)
-can create multi-architecture Rocks (OCI images) from a specified Rockcraft
-project file (rockcraft.yaml). This project file can be located in the
+can create multi-architecture Rocks (OCI images) from a specified [Rockcraft
+project file](https://documentation.ubuntu.com/rockcraft/latest/reference/rockcraft-yaml/)
+(rockcraft.yaml). This project file can be located in the
 repository initiating the workflow, an external repository hosted on GitHub, or
 a Git repository hosted elsewhere. The resulting image is uploaded as a build
 artifact in the GitHub workflow. Currently, multi-architecture builds support
@@ -488,8 +489,9 @@ needed.
 - OCI compliance testing of images using [Umoci](https://umo.ci/). The image's
   readability and layout are tested by unpacking and listing the image tags.
 - Black-box testing of images performed using Docker to create a container and
-  attempting to run the Pebble service manager. This test applies only to
-  images created with Rockcraft.
+  attempting to run the [Pebble](https://documentation.ubuntu.com/pebble/)
+  service manager. This test applies only to
+  images created with [Rockcraft](https://documentation.ubuntu.com/rockcraft/latest/).
 - Testing image storage efficiency using [Dive](https://github.com/wagoodman/dive)
 - Scanning for vulnerabilities using [Trivy](https://trivy.dev/)
 - Scanning for malware using [ClamAV](https://www.clamav.net/)

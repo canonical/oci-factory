@@ -1,0 +1,19 @@
+# Upstream CVEs
+
+# gRPC-Go: Authorization bypass due to improper HTTP/2 path validation in grpc/authz middleware
+# chaos-runner uses gRPC only as an OTLP tracing client (otlptracegrpc exporter); it never
+# serves gRPC nor uses the authz interceptor
+CVE-2026-33186
+
+# OpenTelemetry Go SDK: Arbitrary code execution via PATH hijacking
+# PATH hijacking requires planting a malicious binary in $PATH, which is not feasible inside
+# a read-only container filesystem; chaos-runner is also a short-lived Kubernetes job
+CVE-2026-24051
+
+# opentelemetry-go: BSD kenv command not using absolute path enables PATH hijacking
+# BSD-specific attack vector (kenv is a FreeBSD utility); not applicable on Linux containers
+CVE-2026-39883
+
+# golang.org/x/oauth2/jws: Unexpected memory consumption during token parsing
+# Not in use as shown by govulncheck
+CVE-2025-22868

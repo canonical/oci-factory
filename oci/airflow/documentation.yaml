@@ -115,4 +115,4 @@ parameters:
 
 override_tracks:
   3-24.04:
-    end-of-life: "2026-04-02"
+    end-of-life: "2026-04-02T00:00:00Z"

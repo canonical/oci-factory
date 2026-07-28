@@ -1,0 +1,15 @@
+version: 2
+
+application: litmuschaos-runner
+website: https://litmuschaos.io/
+source-code: https://github.com/canonical/litmus-rocks
+issues: https://github.com/canonical/litmus-rocks/issues
+description: |
+  Litmus Chaos Runner is a Kubernetes controller that executes chaos
+  experiments in target pods as part of the LitmusChaos platform.
+
+docker:
+  run_conclusion: |
+    The Litmus Chaos Runner is intended to be deployed as a Kubernetes
+    controller. Refer to the [official documentation](https://litmuschaos.io/)
+    for deployment instructions.

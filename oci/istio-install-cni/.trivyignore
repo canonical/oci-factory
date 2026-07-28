@@ -14,6 +14,30 @@ CVE-2026-33186
 # The rock runs exclusively on Linux, so this CVE is not applicable.
 CVE-2026-24051
 
+# github.com/moby/spdystream - DoS in the SPDY streaming code that affects servers
+# accepting SPDY connections (Kubelet, CRI-O, kube-apiserver). install-cni only writes
+# CNI plugin configuration to the host; it does not serve SPDY. The dependency is
+# pulled in transitively via k8s client-go.
+# Fixed in moby/spdystream v0.5.1. Remove once Istio bumps the dependency.
+CVE-2026-35469
+
+# go.opentelemetry.io/otel - DoS via crafted multi-value baggage headers in the
+# baggage processor. install-cni uses OpenTelemetry for instrumentation only.
+# Fixed in v1.41.0. Remove once Istio bumps go.opentelemetry.io/otel >= 1.41.0.
+CVE-2026-29181
+
+# go.opentelemetry.io/otel/sdk - PATH hijacking of the "kenv" command in
+# sdk/resource/host_id_bsd.go. This is exploitable only on BSD/Solaris platforms.
+# The rock runs exclusively on Linux, so this CVE is not applicable.
+# Fixed in otel/sdk v1.43.0. Remove once Istio bumps to >= v1.43.0.
+CVE-2026-39883
+
+# github.com/go-jose/go-jose/v4 - Panic in JWE decryption when using key wrapping
+# algorithms with an empty encrypted_key field, leading to DoS. install-cni does not
+# decrypt JWE tokens; the dependency is pulled in transitively.
+# Fixed in v4.1.4. Remove once Istio bumps github.com/go-jose/go-jose/v4 >= 4.1.4.
+CVE-2026-34986
+
 # istio.io/istio - False positives caused by Go pseudo-versioning. The rock builds from
 # the Istio 1.29.0 source tag, but the compiled binary reports a pseudo-version
 # (v0.0.0-<timestamp>-<hash>) which Trivy incorrectly matches against ancient CVEs

@@ -1,0 +1,73 @@
+version: 2
+
+application: Squid
+website: http://www.squid-cache.org
+source-code: https://github.com/canonical/squid-rock
+issues: https://github.com/canonical/squid-rock/issues
+description: |
+  Squid is a caching proxy for the Web supporting HTTP, HTTPS, FTP, and more.
+  It reduces bandwidth and improves response times by caching and reusing
+  frequently-requested web pages. Squid has extensive access controls and
+  makes a great server accelerator. It runs on most available operating systems,
+  including Windows and is licensed under the GNU GPL.
+
+docker:
+  parameters: >-
+    -p 3128:3128
+  run_conclusion: |
+    Access the Squid proxy at `localhost:3128`.
+
+config:
+  TZ:
+    type: env
+    description: Timezone.
+    default: UTC
+  '`-v <path>:/var/log/squid`':
+    type: mount
+    description: Volume to store squid logs.
+  '`-v <path>:/var/spool/squid`':
+    type: mount
+    description: Volume to store the squid cache.
+  '`-v <path>:/etc/squid/squid.conf`':
+    type: mount
+    description: Main squid configuration file.
+  '`-v <path>:/etc/squid/conf.d/snippet.conf`':
+    type: mount
+    description: Configuration snippets included by squid.conf.
+  '`-p <port>:3128`':
+    type: port
+    description: Expose the container's port `3128` on the host's `<port>`.
+
+microk8s:
+  deploy:
+    link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/squid/plain/examples/squid-deployment.yml?h=6.1-23.10
+    access: |
+      Access the Squid proxy on port 3128.
+  configmap:
+    files:
+      - key: squid-config
+        name: squid.conf
+        link: https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/squid/plain/examples/config/squid.conf?h=6.1-23.10
+
+override_tracks:
+  # Tracks released from legacy repo
+  6.13-25.04:
+    end-of-life: '2026-01-15T00:00:00Z'
+  6.10-24.10:
+    end-of-life: '2025-07-10T00:00:00Z'
+  6.6-24.04:
+    end-of-life: '2029-05-31T00:00:00Z'
+  6.1-23.10:
+    end-of-life: '2024-07-11T00:00:00Z'
+  5.7-23.04:
+    end-of-life: '2024-01-25T00:00:00Z'
+  5.6-22.10:
+    end-of-life: '2023-07-20T00:00:00Z'
+  5.2-22.04:
+    end-of-life: '2027-06-01T00:00:00Z'
+  4.13-21.10:
+    end-of-life: '2022-07-14T00:00:00Z'
+  4.13-21.04:
+    end-of-life: '2022-01-20T00:00:00Z'
+  4.10-20.04:
+    end-of-life: '2025-05-29T00:00:00Z'

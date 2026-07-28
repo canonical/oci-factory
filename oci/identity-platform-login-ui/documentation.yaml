@@ -1,54 +1,56 @@
-version: 1
+version: 2
 application: identity-platform-login-ui
-is_chiselled: True
 description: |
   Canonical IAM Login UI is a core components of the Identity Platform solution.
-  
+
   It provides a way to login using OIDC via interactions with Ory Kratos and Ory Hydra, also allows
-  you to manage self service functionalities for everything related to authentication 
+  you to manage self service functionalities for everything related to authentication.
 
   For further information check our repository on Github https://github.com/canonical/identity-platform-login-ui
+website: https://github.com/canonical/identity-platform-login-ui
+issues: https://github.com/canonical/identity-platform-login-ui/issues
+source-code: https://github.com/canonical/identity-platform-login-ui
+
 docker:
-  parameters:
-    - -p 8080:8080
-  access: Access the API at `http://localhost:8080`.
-parameters:
-  - type: -e
-    value: 'TRACING_ENABLED=true'
-    description: Tracing enablement.
-  - type: -e
-    value: 'OTEL_GRPC_ENDPOINT=tempo-0.tempo-endpoints.stg-identity-jaas-dev.svc.cluster.local:4317'
-    description: Tracing server GRPC endpoint, has priority on OTEL_HTTP_ENDPOINT.
-  - type: -e
-    value: 'OTEL_HTTP_ENDPOINT=http://tempo-0.tempo-endpoints.stg-identity-jaas-dev.svc.cluster.local:4318'
-    description: Tracing server HTTP endpoint.
-  - type: -e
-    value: 'MFA_ENABLED="true"'
-    description: Enable MFA validation on logins.
-  - type: -e
-    value: 'HYDRA_ADMIN_URL=http://hydra.io:4445'
-    description: Hydra Admin API URL, used to validate logins 
-  - type: -e
-    value: 'KRATOS_ADMIN_URL=http://kratos.io:4434'
-    description: Kratos Admin API URL, used to manage identities
-  - type: -e
-    value: 'KRATOS_PUBLIC_URL=http://kratos.io:4433'
-    description: Kratos Public API URL, used to manage identities
-  - type: -e
-    value: 'BASE_URL=https://iam.io/dev/path'
-    description: Public URL Login UI will be served from.
-  - type: -e
-    value: 'LOG_FILE=log.txt'
-    description: Destination file for logs.
-  - type: -e
-    value: 'LOG_LEVEL=error'
-    description: Log level.
-  - type: -p
-    value: '8080:8080'
-    description: Server API port.
-  - type: CMD
-    value: '/usr/bin/identity-platform-login-ui serve'
-    description: >
-      Launch Login UI web server(s) using environment variables.
-debug:
-  text: ""
+  parameters: >-
+    -p 8080:8080
+  run_conclusion: |
+    Access the API at `http://localhost:8080`.
+
+config:
+  '`TRACING_ENABLED`':
+    type: env
+    description: Tracing enablement, e.g., `true`.
+  '`OTEL_GRPC_ENDPOINT`':
+    type: env
+    description: Tracing server GRPC endpoint, e.g., `tempo-0.tempo-endpoints.stg-identity-jaas-dev.svc.cluster.local:4317`. Has priority on OTEL_HTTP_ENDPOINT.
+  '`OTEL_HTTP_ENDPOINT`':
+    type: env
+    description: Tracing server HTTP endpoint, e.g., `http://tempo-0.tempo-endpoints.stg-identity-jaas-dev.svc.cluster.local:4318`.
+  '`MFA_ENABLED`':
+    type: env
+    description: Enable MFA validation on logins, e.g., `true`.
+  '`HYDRA_ADMIN_URL`':
+    type: env
+    description: Hydra Admin API URL, used to validate logins, e.g., `http://hydra.io:4445`.
+  '`KRATOS_ADMIN_URL`':
+    type: env
+    description: Kratos Admin API URL, used to manage identities, e.g., `http://kratos.io:4434`.
+  '`KRATOS_PUBLIC_URL`':
+    type: env
+    description: Kratos Public API URL, used to manage identities, e.g., `http://kratos.io:4433`.
+  '`BASE_URL`':
+    type: env
+    description: Public URL Login UI will be served from, e.g., `https://iam.io/dev/path`.
+  '`LOG_FILE`':
+    type: env
+    description: Destination file for logs, e.g., `log.txt`.
+  '`LOG_LEVEL`':
+    type: env
+    description: Log level, e.g., `error`.
+  '`-p <port>:8080`':
+    type: port
+    description: Expose the container's port `8080` on the host's `<port>`.
+  '`/usr/bin/identity-platform-login-ui serve`':
+    type: app
+    description: Launch Login UI web server(s) using environment variables.

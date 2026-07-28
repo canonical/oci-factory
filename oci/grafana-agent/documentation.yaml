@@ -1,40 +1,31 @@
-version: 1
-# --- OVERVIEW INFORMATION ---
+version: 2
 application: grafana-agent
-description: >
+description: |
   Grafana Agent is a batteries-included, open source telemetry collector for
   collecting logs, metrics, and traces. It uses established battle-tested code
-  to be fully compatible with Prometheus, Loki and Tmepo telemetry stack. 
+  to be fully compatible with Prometheus, Loki and Tmepo telemetry stack.
   Grafana Agent can forward metrics to any Prometheus-compatible endpoint, logs
   to any Loki-compatible endpoint, and traces to any OpenTelemetry-compatible
-  endpoint. Read more on the [official website](https://grafana.com/oss/agent/).
-# --- USAGE INFORMATION ---
+  endpoint.
+website: https://grafana.com/oss/agent/
+issues: https://github.com/canonical/grafana-agent-rock/issues
+source-code: https://github.com/canonical/grafana-agent-rock
+
 docker:
-  parameters:
-    - -p 12345:12345
-  access: Access your Grafana Agent instance at `http://localhost:12345`.
-parameters:
-  - type: -e
-    value: 'TZ=UTC'
+  parameters: >-
+    -p 12345:12345
+  run_conclusion: |
+    Grafana Agent starts and listens on port 12345.
+    Access the Grafana Agent instance at `http://localhost:12345`.
+
+config:
+  TZ:
+    type: env
     description: Timezone.
-  - type: -p
-    value: '12345:12345'
-    description: Expose Grafana Agent on `localhost:12345`.
-  - type: -v 
-    value: "/path/to/agent/config.yaml:/etc/agent/agent.yaml"
-    description: Local configuration file `agent.yml`.
-debug:
-  text: |
-    ### Debugging
-    
-    To debug the container:
-
-    ```bash
-    docker logs -f grafana-agent-container
-    ```
-
-    To get an interactive shell:
-
-    ```bash
-    docker exec -it grafana-agent-container /bin/bash
-    ```
+    default: 'UTC'
+  '`-v <path>:/etc/agent/agent.yaml`':
+    type: mount
+    description: Local configuration file agent.yaml.
+  '`-p <port>:12345`':
+    type: port
+    description: Expose port 12345 on the host.

@@ -1,34 +1,27 @@
-version: 1
-# --- OVERVIEW INFORMATION ---
+version: 2
+
 application: mimir
-description: >
+description: |
   Mimir is an open source, horizontally scalable, highly available,
   multi-tenant TSDB for long-term storage for Mimir.
-  Read more on the [official website](https://grafana.com/oss/mimir/).
-# --- USAGE INFORMATION ---
+  Read more in the [official website](https://grafana.com/oss/mimir/).
+website: https://grafana.com/oss/mimir/
+issues: https://github.com/canonical/mimir-rock/issues
+source-code: https://github.com/canonical/mimir-rock
+
 docker:
-  parameters:
-    - -p 9009:9009
-  access: Access your Mimir instance at `http://localhost:9009`.
-parameters:
-  - type: -e
-    value: 'TZ=UTC'
+  parameters: >-
+    -e TZ=UTC
+    -p 9009:9009
+  run_conclusion: |
+    Mimir starts on port 9009.
+    Access the instance at http://localhost:9009.
+
+config:
+  TZ:
+    type: env
     description: Timezone.
-  - type: -p
-    value: '9009:9009'
-    description: Expose Mimir on `localhost:9009`.
-debug:
-  text: |
-    ### Debugging
-    
-    To debug the container:
-
-    ```bash
-    docker logs -f mimir-container
-    ```
-
-    To get an interactive shell:
-
-    ```bash
-    docker exec -it mimir-container /bin/bash
-    ```
+    default: 'UTC'
+  '`-p <port>:9009`':
+    type: port
+    description: Expose port 9009 on the host.

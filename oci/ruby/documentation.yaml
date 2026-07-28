@@ -1,25 +1,28 @@
-version: 1
+version: 2
 
 application: ruby
-is_chiselled: true
 description: |
   Ruby is a general-purpose programming language. It is interpreted, high-level,
   and dynamically typed. It supports multiple programming paradigms, including
   procedural, object-oriented, and functional programming.
-  
-  This chiseled Ruby rock contains only the core Ruby runtime, with the essential
-  dependencies to run simple Ruby applications. This rock should also be used as
-  a base if additional Ruby gems are needed.
+website: https://www.ruby-lang.org/
+issues: https://github.com/canonical/ruby-rock/issues
+source-code: https://github.com/canonical/ruby-rock
 
-debug:
-  text: |
-    ### Debugging
+docker:
+  parameters: -d
+  run_conclusion: |
+    The container starts in detached mode.
 
-    To debug the container:
-
-    ```bash
-    docker exec ruby-container pebble logs
-    ```
+config:
+  RUBYOPT:
+    type: env
+    description: Ruby options applied at startup.
+    default: "--disable-did_you_mean --disable-error_highlight --disable-syntax_suggest"
+  GEM_PATH:
+    type: env
+    description: Colon-separated list of paths used to locate installed gems.
+    default: "/usr/lib/ruby/gems/3.2.0/gems:/usr/share/rubygems-integration/all"
 
 override_tracks:
   # Tracks with different tag than build-base

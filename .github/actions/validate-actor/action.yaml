@@ -32,7 +32,7 @@ runs:
       if: ${{ !cancelled() && steps.check-if-permitted.outcome == 'failure' }}
       shell: bash
       env:
-        GITHUB_TOKEN: ${{ github.token }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
         source src/shared/logs.sh
         log_error "The workflow is not triggered by a permitted user. Cancelling the workflow."

@@ -1,54 +1,44 @@
-version: 1
-# --- OVERVIEW INFORMATION ---
+version: 2
 application: tempo
-description: >
+description: |
   Tempo is a distributed tracing backend by Grafana, supporting Jaeger,
   Zipkin, and OpenTelemetry protocols.
-  Read more on the [official website](https://grafana.com/oss/tempo/).
-# --- USAGE INFORMATION ---
+website: https://grafana.com/oss/tempo/
+issues: https://github.com/canonical/tempo-rock/issues
+source-code: https://github.com/canonical/tempo-rock
+
 docker:
-  parameters:
-    - -p 3200:3200
-    - -p 14268:14268
-    - -p 9095:9095
-    - -p 4317:4317
-    - -p 4318:4318
-    - -p 9411:9411
-  access: Access your Tempo API at `http://localhost:3200`. Ingestion endpoints for each format open a separate port.
-parameters:
-  - type: -e
-    value: 'TZ=UTC'
+  parameters: >-
+    -p 3200:3200
+    -p 14268:14268
+    -p 9095:9095
+    -p 4317:4317
+    -p 4318:4318
+    -p 9411:9411
+  run_conclusion: |
+    Access the Tempo API at `http://localhost:3200`.
+    Ingestion endpoints for each format open separate ports.
+
+config:
+  TZ:
+    type: env
     description: Timezone.
-  - type: -p
-    value: '3200:3200'
-    description: Tempo HTTP API port.
-  - type: -p
-    value: '9095:9095'
-    description: Tempo GRPC API port.
-  - type: -p
-    value: '14268:14268'
-    description: Jaeger thrift format ingestion port.
-  - type: -p
-    value: '4317:4317'
-    description: OpenTelemetry GRPC ingestion port.
-  - type: -p
-    value: '4318:4318'
-    description: OpenTelemetry HTTP ingestion port.
-  - type: -p
-    value: '9411:9411'
-    description: Zipkin format ingestion port.
-debug:
-  text: |
-    ### Debugging
-    
-    To debug the container:
-
-    ```bash
-    docker exec -it tempo-container pebble logs -f tempo
-    ```
-
-    To get an interactive shell:
-
-    ```bash
-    docker exec -it tempo-container /bin/bash
-    ```
+    default: 'UTC'
+  '`-p <port>:3200`':
+    type: port
+    description: Expose the container's port `3200` on the host's `<port>` for the Tempo HTTP API.
+  '`-p <port>:9095`':
+    type: port
+    description: Expose the container's port `9095` on the host's `<port>` for the Tempo GRPC API.
+  '`-p <port>:14268`':
+    type: port
+    description: Expose the container's port `14268` on the host's `<port>` for Jaeger thrift format ingestion.
+  '`-p <port>:4317`':
+    type: port
+    description: Expose the container's port `4317` on the host's `<port>` for OpenTelemetry GRPC ingestion.
+  '`-p <port>:4318`':
+    type: port
+    description: Expose the container's port `4318` on the host's `<port>` for OpenTelemetry HTTP ingestion.
+  '`-p <port>:9411`':
+    type: port
+    description: Expose the container's port `9411` on the host's `<port>` for Zipkin format ingestion.

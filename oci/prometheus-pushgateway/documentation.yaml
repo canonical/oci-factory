@@ -1,34 +1,23 @@
-version: 1
-# --- OVERVIEW INFORMATION ---
+version: 2
 application: prometheus-pushgateway
-description: >
+description: |
   The Prometheus Pushgateway allows ephemeral and batch jobs to expose their
-  metrics to Prometheus. Read more on the 
-  [prometheus pushgateway repository](https://github.com/prometheus/pushgateway).
-# --- USAGE INFORMATION ---
+  metrics to Prometheus.
+website: https://github.com/prometheus/pushgateway
+issues: https://github.com/canonical/prometheus-pushgateway-rock/issues
+source-code: https://github.com/canonical/prometheus-pushgateway-rock
+
 docker:
-  parameters:
-    - -p 9091:9091
-  access: Access your Pushgateway instance at `http://localhost:9091`.
-parameters:
-  - type: -e
-    value: 'TZ=UTC'
+  parameters: >-
+    -p 9091:9091
+  run_conclusion: |
+    Access the Pushgateway instance at `http://localhost:9091`.
+
+config:
+  TZ:
+    type: env
     description: Timezone.
-  - type: -p
-    value: '9091:9091'
-    description: Expose the Pushgateway on `localhost:9091`.
-debug:
-  text: |
-    ### Debugging
-    
-    To debug the container:
-
-    ```bash
-    docker logs -f pushgateway-container
-    ```
-
-    To get an interactive shell:
-
-    ```bash
-    docker exec -it pushgateway-container /bin/bash
-    ```
+    default: 'UTC'
+  '`-p <port>:9091`':
+    type: port
+    description: Exposes the container's port `9091` on the host's `<port>`.

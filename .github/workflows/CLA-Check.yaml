@@ -6,18 +6,23 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Check if CLA signed
-        uses: canonical/has-signed-canonical-cla@v2
+        uses: canonical/has-signed-canonical-cla@19bae73390fdbfdc1ef9a9bb9408d87a1de755f6  # v2 (20260526)
 
   update-pr:
     runs-on: ubuntu-22.04
     name: Add comment to PR
     needs: [cla-check]
     if: ${{ always() && contains(needs.*.result, 'failure') }}
+    permissions:
+      pull-requests: write
     steps:
       - name: Comment PR
-        uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6
-        with:
-          message: |
-            @${{ github.actor }} please make sure all PR contributors have signed the CLA.
-          comment_tag: cla-check
-          mode: recreate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          gh pr comment "${PR_NUMBER}" \
+            --repo "${REPO}" \
+            --body "@${ACTOR} please make sure all PR contributors have signed the CLA."

@@ -1,38 +1,18 @@
-version: 1
+version: 2
 
 application: Rust
-is_chiselled: true
 description: |
-    Rust is a modern memory-safe systems programming language focused on
-    performance and reliability.
+  Rust is a modern memory-safe systems programming language focused on performance and reliability.
+website: https://www.rust-lang.org/
+issues: https://github.com/canonical/rust-rock/issues
+source-code: https://github.com/canonical/rust-rock
 
-    This image is a chiselled Ubuntu rock. It contains a minimal Rust toolchain
-    and the Cargo build system which can be used to build a wide variety of Rust
-    applications. It also includes a minimal GCC toolchain to custom build
-    steps in Cargo builds.
-    
-    Any additional dependencies can be either mounted at runtime or installed
-    with the apt installation included in this rock.
-
-debug:
-  text: |
-    ### Debugging
-
-    To get a shell inside the container:
-
-    ```bash
-    docker run -it --rm ubuntu/rust:1.75-24.04_edge exec sh
-    ```
-
-    To mount a directory with your Rust project and build it with Cargo:
-
-    ```bash
-    docker run -it --rm \
-      -v /path/to/your/rust/project:/work \
-      --workdir /work \
-      ubuntu/rust:1.75-24.04_edge exec \
-      cargo build --release
-    ```
+docker:
+  parameters: --rm -v /path/to/your/rust/project:/work -w /work
+  run_cmd: exec cargo build --release
+  run_conclusion: |
+    The project within the current working directory will be built with Cargo.
+    The resulting binary will be placed in the current working directory.
 
 override_tracks:
   # Tracks with different tag than build-base

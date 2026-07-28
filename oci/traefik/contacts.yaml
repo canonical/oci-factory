@@ -1,5 +1,7 @@
 notify:
   emails:
-    - observability@lists.launchpad.net
+    - platform-engineering@groups.canonical.com
   mattermost-channels:
-    - 1ayd5kim67bbing34i3h1x9uac
+    - pphoirkuo3na9bbjjnswrni7nh
+maintainers:
+  - swetha1654

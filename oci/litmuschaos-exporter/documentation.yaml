@@ -1,0 +1,30 @@
+version: 2
+
+application: litmuschaos-exporter
+website: https://litmuschaos.io/
+source-code: https://github.com/canonical/litmus-rocks
+issues: https://github.com/canonical/litmus-rocks/issues
+description: |
+  Litmus chaos exporter is a Prometheus exporter for LitmusChaos experiments.
+  It scrapes Kubernetes ChaosResult resources and exposes experiment metrics,
+  enabling monitoring and alerting on chaos experiment outcomes.
+
+docker:
+  parameters: >-
+    -p 8080:8080
+  run_conclusion: |
+    Access Prometheus metrics at `http://localhost:8080/metrics`.
+
+config:
+  '`-e WATCH_NAMESPACE=<namespace>`':
+    type: env
+    description: Kubernetes namespace to watch for ChaosResult resources. Watches all namespaces if unset.
+  '`-e CLUSTER_NAME=<name>`':
+    type: env
+    description: Name of the cluster, used as a label in exported metrics.
+  '`-e APP_NAME=<name>`':
+    type: env
+    description: Application name, used as a label in exported metrics.
+  '`-p 8080:8080`':
+    type: port
+    description: Access Prometheus metrics at `http://localhost:8080/metrics`.

@@ -55,11 +55,12 @@ upload:
     ignored-vulnerabilities:
       - "CVE-2023-1234"
       - "CVE-2023-5678"
-  - source: "canonical/rocks-toolbox"
-    commit: bb9138fbe81f893b4303a0e29df7cf9581069de0
-    directory: mock_rock/devel
-    release:
-      devel:
-        end-of-life: "2030-05-01T00:00:00Z"
-        risks:
-          - edge
+  # TODO: Restore the devel release once the https://github.com/canonical/rockcraft/issues/1262 is resolved.
+  # - source: "canonical/rocks-toolbox"
+  #   commit: bb9138fbe81f893b4303a0e29df7cf9581069de0
+  #   directory: mock_rock/devel
+  #   release:
+  #     devel:
+  #       end-of-life: "2030-05-01T00:00:00Z"
+  #       risks:
+  #         - edge

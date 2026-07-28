@@ -64,6 +64,7 @@ on:
       pro-token:
         description: "The Ubuntu Pro token. Required for building Ubuntu Pro based rocks."
 
+
 env:
   ROCK_REPO_DIR: rock-repo  # path where the image repo is cloned into
   ROCK_CI_FOLDER: ci-rocks  # path of uploaded/downloaded artifacts
@@ -96,25 +97,27 @@ jobs:
         id: check-pro-build
         env:
           UBUNTU_PRO_TOKEN: ${{ secrets.pro-token }}
+          INPUTS_PRO_SERVICES: ${{ inputs.pro-services }}
         run: |
-          if [[ -n "${{ inputs.pro-services }}" ]]; then
+          if [[ -n "${INPUTS_PRO_SERVICES}" ]]; then
             if [[ -z "${UBUNTU_PRO_TOKEN:-}" ]]; then
               echo "Error: 'pro-token' must be provided in order to use 'pro-services'."
               exit 1
             fi
-            echo "pro-build=true" >> $GITHUB_OUTPUT
+            echo "pro-build=true" >> "$GITHUB_OUTPUT"
           else
-            echo "pro-build=false" >> $GITHUB_OUTPUT
+            echo "pro-build=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Cloning OCI Factory
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           # Here we clone the oci-factory repo using the default ref of the checkout action.
           # It will be set to a ref that triggered this workflow if the workflow is run within the oci-factory repo,
           # or to the default branch of the oci-factory repo if the workflow is called from another repo.
           repository: canonical/oci-factory
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Cloning Target Repo
         uses: ./.github/actions/checkout
@@ -128,7 +131,7 @@ jobs:
           lfs-include: ${{ inputs.lfs-include }}
 
       - name: Installing Python 
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: "3.x"
 
@@ -140,9 +143,11 @@ jobs:
         id: configure
         run: |
           python3 -m src.build_rock.configure.generate_build_matrix \
-            --rockfile-directory "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}" \
+            --rockfile-directory "${{ env.ROCK_REPO_DIR }}/${INPUTS_ROCKFILE_DIRECTORY}" \
             --lpci-fallback "${{ toJSON(inputs.lpci-fallback) }}" \
             --config ${{ toJSON(inputs.arch-map || env.DEFAULT_ARCH_MAP) }} # important: do not use quotes here
+        env:
+          INPUTS_ROCKFILE_DIRECTORY: ${{ inputs.rockfile-directory }}
 
   runner-build:
     # runner-build builds rocks per target architecture using pre configured runner images.
@@ -156,10 +161,11 @@ jobs:
     steps:
 
       - name: Cloning OCI Factory
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           repository: canonical/oci-factory
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Cloning Target Repo
         uses: ./.github/actions/checkout
@@ -182,16 +188,12 @@ jobs:
 
       - name: Building Target
         id: rockcraft
-        uses: canonical/craft-actions/rockcraft-pack@main
+        uses: canonical/craft-actions/rockcraft-pack@67304fab78ef627dc3f2e72c8a6ad51a493a6070  # main (20260605)
         with:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
-          # TODO Change back to the following line once the pro feature is merged to stable
-          # test: "${{ inputs.rockcraft-test }}"
-          test: "${{ needs.configure-build.outputs.pro-build == 'true' && 'false' || inputs.rockcraft-test }}"
+          test: "${{ inputs.rockcraft-test }}"
           pro: "${{ inputs.pro-services }}"
           verbosity: debug
-          # TODO remove once the pro feature is merged to stable
-          rockcraft-channel: ${{ needs.configure-build.outputs.pro-build == 'true' && 'edge/pro-sources' || '' }}
       
       - name: Detaching Pro Token
         if: always() && steps.attach_pro.outcome == 'success'
@@ -201,8 +203,8 @@ jobs:
       - name: Collecting Artifacts
         id: collect-artifacts
         run: |
-          mkdir -p ${{ env.ROCK_CI_FOLDER }} && cp ${{ steps.rockcraft.outputs.rock }} "$_"
-          echo "filename=$(basename ${{ steps.rockcraft.outputs.rock }})" >> $GITHUB_OUTPUT
+          mkdir -p "${{ env.ROCK_CI_FOLDER }}" && cp "${{ steps.rockcraft.outputs.rock }}" "$_"
+          echo "filename=$(basename "${{ steps.rockcraft.outputs.rock }}")" >> "$GITHUB_OUTPUT"
 
       - name: Encrypting Single Arch Rock Artifacts
         if: ${{ needs.configure-build.outputs.pro-build == 'true' }}
@@ -215,7 +217,7 @@ jobs:
           preserve-original: false
 
       - name: Uploading Artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: ${{ inputs.oci-archive-name }}-${{ steps.collect-artifacts.outputs.filename }}
           path: ${{ env.ROCK_CI_FOLDER }}
@@ -236,10 +238,11 @@ jobs:
     steps:
 
       - name: Cloning OCI Factory
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           repository: canonical/oci-factory
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Cloning Target Repo
         uses: ./.github/actions/checkout
@@ -252,7 +255,7 @@ jobs:
 
       - name: Building Target
         # TODO: Replace this retry action with bash equivalent for better testing
-        uses: nick-fields/retry@7152eba30c6575329ac0576536151aca5a72780e
+        uses: nick-fields/retry@ad984534de44a9489a53aefd81eb77f87c70dc60
         id: lpci-build
         with:
           timeout_minutes: 180
@@ -266,7 +269,7 @@ jobs:
 
       - name: Upload Build Logs
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: lpci-build-logs-${{ matrix.architecture }}
           path: ${{ steps.lpci-build.outputs.build-log }}
@@ -274,11 +277,15 @@ jobs:
       - name: Collecting Artifacts
         id: collect-artifacts
         run: |
-          mkdir -p ${{ env.ROCK_CI_FOLDER }} && cp ${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}/*.rock "$_"
-          echo "filename=${{ matrix.rock-name }}_${{ matrix.architecture }}" >> $GITHUB_OUTPUT
+          mkdir -p "${ROCK_CI_FOLDER}" && cp "${ROCK_REPO_DIR}/${INPUTS_ROCKFILE_DIRECTORY}"/*.rock "$_"
+          echo "filename=${MATRIX_ROCK_NAME}_${MATRIX_ARCHITECTURE}" >> "$GITHUB_OUTPUT"
+        env:
+          INPUTS_ROCKFILE_DIRECTORY: ${{ inputs.rockfile-directory }}
+          MATRIX_ROCK_NAME: ${{ matrix.rock-name }}
+          MATRIX_ARCHITECTURE: ${{ matrix.architecture }}
 
       - name: Uploading Artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: ${{ inputs.oci-archive-name }}-${{ steps.collect-artifacts.outputs.filename }}
           path: ${{ env.ROCK_CI_FOLDER }}
@@ -295,14 +302,15 @@ jobs:
     steps:
       # Job Setup
       - name: Cloning OCI Factory
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           repository: canonical/oci-factory
           fetch-depth: 1
+          persist-credentials: false
 
       - run: src/build_rock/assemble_rock/requirements.sh
       - name: Downloading Single Arch rocks
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         id: download
         with:
           path: ${{ env.ROCK_CI_FOLDER }}
@@ -326,17 +334,22 @@ jobs:
       - name: Assembling Multi Arch rock
         run: |
           src/build_rock/assemble_rock/assemble.sh \
-            -n "${{ inputs.oci-archive-name }}" \
-            -d "${{ env.ROCK_CI_FOLDER }}"
+            -n "${INPUTS_OCI_ARCHIVE_NAME}" \
+            -d "${ROCK_CI_FOLDER}"
+        env:
+          INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
       
       - name: Get artifact name
         id: final-artifact
         run: |
-          name="${{ inputs.oci-archive-name }}"
-          if [[ ${{ needs.configure-build.outputs.pro-build }} == 'true' ]]; then
+          name="${INPUTS_OCI_ARCHIVE_NAME}"
+          if [[ ${NEEDS_CONFIGURE_BUILD_OUTPUTS_PRO_BUILD} == 'true' ]]; then
             name="${name}.gpg"
           fi
-          echo "name=$name" >> $GITHUB_OUTPUT
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+        env:
+          INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
+          NEEDS_CONFIGURE_BUILD_OUTPUTS_PRO_BUILD: ${{ needs.configure-build.outputs.pro-build }}
 
       - name: Encrypting Multi Arch Rock Artifact
         if: ${{ needs.configure-build.outputs.pro-build == 'true' }}
@@ -349,7 +362,7 @@ jobs:
           preserve-original: false
 
       - name: Uploading Multi Arch rock
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: ${{ inputs.oci-archive-name }}
           path: ${{ steps.final-artifact.outputs.name }}

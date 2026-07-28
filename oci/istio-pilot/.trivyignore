@@ -29,6 +29,30 @@ CVE-2025-15558
 # Remove once Istio bumps github.com/go-jose/go-jose/v4 >= 4.1.4.
 CVE-2026-34986
 
+# github.com/moby/spdystream - DoS in the SPDY streaming code that affects servers
+# accepting SPDY connections (Kubelet, CRI-O, kube-apiserver). pilot-discovery (Istiod)
+# does not serve SPDY; the dependency is pulled in transitively via k8s client-go.
+# Fixed in moby/spdystream v0.5.1. Remove once Istio bumps the dependency.
+CVE-2026-35469
+
+# github.com/prometheus/prometheus - Information disclosure of Azure OAuth client
+# secret via the Prometheus server's config API. Istiod vendors the Prometheus
+# library only for client-side metrics instrumentation; it does not run a Prometheus
+# server nor expose the vulnerable /api/v1/status/config endpoint.
+# Fixed in v0.311.3. Remove once Istio bumps github.com/prometheus/prometheus.
+CVE-2026-42151
+
+# github.com/prometheus/prometheus - DoS via uncontrolled memory allocation in the
+# remote read endpoint. Same rationale as CVE-2026-42151: Istiod does not run a
+# Prometheus server and does not expose the remote read endpoint.
+# Fixed in v0.311.3 / v0.305.2. Remove once Istio bumps github.com/prometheus/prometheus.
+CVE-2026-42154
+
+# go.opentelemetry.io/otel - DoS via crafted multi-value baggage headers in the
+# baggage processor. Istiod uses OpenTelemetry for tracing instrumentation.
+# Fixed in v1.41.0. Remove once Istio bumps go.opentelemetry.io/otel >= 1.41.0.
+CVE-2026-29181
+
 # istio.io/istio - False positives caused by Go pseudo-versioning. The rock builds from
 # the Istio 1.29.0 source tag, but the compiled binary reports a pseudo-version
 # (v0.0.0-<timestamp>-<hash>) which Trivy incorrectly matches against ancient CVEs

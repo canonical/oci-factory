@@ -1,42 +1,27 @@
-version: 1
-# --- OVERVIEW INFORMATION ---
+version: 2
 application: pyroscope
-description: >
-  Grafana Pyroscope is an open source continuous profiling database that provides fast, scalable, 
-  highly available, and efficient storage and querying. This helps you get a better understanding 
+description: |
+  Grafana Pyroscope is an open source continuous profiling database that provides fast, scalable,
+  highly available, and efficient storage and querying. This helps you get a better understanding
   of resource usage in your applications down to the line number.
-  Read more on the [official documentation](https://grafana.com/oss/pyroscope/)
+website: https://grafana.com/oss/pyroscope/
+issues: https://github.com/canonical/pyroscope-rock/issues
+source-code: https://github.com/canonical/pyroscope-rock
 
-  Please note that this repository is now holding a rock, not a
-  Dockerfile-based image. As such the entrypoint is now Pebble. Read more on
-  the [Rockcraft docs](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/).
-# --- USAGE INFORMATION ---
 docker:
-  parameters:
-    - -p 4040:4040
-  access: Access your Pyroscope instance at `http://localhost:4040`.
-parameters:
-  - type: -e
-    value: 'TZ=UTC'
+  parameters: >-
+    -p 4040:4040
+  run_conclusion: |
+    Access the Pyroscope instance at `http://localhost:4040`.
+
+config:
+  TZ:
+    type: env
     description: Timezone.
-  - type: -p
-    value: '4040:4040'
-    description: Expose Pyroscope on `localhost:4040`.
-  - type: -v
-    value: "/path/to/pyroscope/config.yaml:/etc/pyroscope/pyroscope.yaml"
-    description: Local configuration file `pyroscope.yaml`.
-debug:
-  text: |
-    ### Debugging
-    
-    To debug the container:
-
-    ```bash
-    docker exec -it pyroscope-container pebble logs -f pyroscope
-    ```
-
-    To get an interactive shell:
-
-    ```bash
-    docker exec -it pyroscope-container /bin/bash
-    ```
+    default: 'UTC'
+  '`-v <path>:/etc/pyroscope/pyroscope.yaml`':
+    type: mount
+    description: Local configuration file for Pyroscope.
+  '`-p <port>:4040`':
+    type: port
+    description: Expose the container's port `4040` on the host's `<port>`.

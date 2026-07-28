@@ -1,33 +1,31 @@
-version: 1
+version: 2
 
 application: PHP
-is_chiselled: true
 description: |
   PHP is a general-purpose scripting language well-suited for Web
   development. Fast, flexible and pragmatic, PHP powers everything
   from your blog to the most popular websites in the world.
 
-debug:
-  text: |
-    ### Usage
+website: https://www.php.net/
+issues: https://github.com/canonical/php-rock/issues
+source-code: https://github.com/canonical/php-rock
 
-    To run php code from input:
+docker:
+  run_cmd: exec php <args>
+  run_conclusion: |
+    PHP will execute any given instruction, for example running php code from input:
 
     ```bash
     docker run --rm ubuntu/php:8.3-24.04_edge exec php -r "echo 'hello, world! In PHP!';"
     ```
 
-    To run a php server for development purposes:
+    Or setting up a php server for development purposes:
 
     ```bash
     docker run -d --rm --name php-container -p 8080:8080 -v /my-app:/app ubuntu/php:8.3-24.04_edge exec php -S 0.0.0.0:8080 -t /app
     ```
 
-    To get the container logs:
-
-    ```bash
-    docker logs -f php-container
-    ```
+    A list of all the available options can be queried by running the image with the `-h` switch.
 
 override_tracks:
   # Tracks with different tag than build-base
