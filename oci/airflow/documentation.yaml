@@ -25,6 +25,40 @@ docker:
     The generated admin password is printed in the container logs.
     Access the Airflow web UI at http://localhost:8080.
 
+    #### Airflow service
+
+    The `airflow` service is configured with:
+      ```
+      command: /usr/bin/airflow standalone
+      startup: enabled
+      ```
+
+    `airflow standalone` initializes a local metadata DB, creates a default admin user,
+    and starts the webserver, scheduler, and other core components in one process group
+    (intended for development).
+
+    #### Configuration & State
+
+    - Runtime state (AIRFLOW_HOME) lives at `/opt/airflow`. This includes `airflow.cfg`,
+    `airflow.db` (Database by default for standalone), logs, and `dags/`.
+    - It is required to mount volumes to persist that data or to inject custom dags.
+      For example:
+        `-v ./dags:/opt/airflow/dags`
+        `-v ./airflow.cfg:/opt/airflow/airflow.cfg`
+
+    #### Providers
+
+    The rock is built from Airflow with many providers pre-installed (Amazon, GCP,
+    Kubernetes, MySQL, Postgres, etc.), so common integrations work out of the box without requiring
+    `pip install` inside the container.
+
+    ### Full Configuration Reference:
+    Airflow offers a large number of configuration options that can be set via environment variables
+    or `airflow.cfg`.
+    For the complete list of configurable settings, consult the official
+    [configuration reference](https://airflow.apache.org/docs/apache-airflow/stable/configurations-ref.html)
+
+
 config:
   '`AIRFLOW_HOME`':
     type: env
