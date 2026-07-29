@@ -17,7 +17,10 @@
             "target": "8.4-26.04_beta"
         },
         "beta": {
-            "target": "186"
+            "target": "8.4-26.04_candidate"
+        },
+        "candidate": {
+            "target": "187"
         }
     }
 }
