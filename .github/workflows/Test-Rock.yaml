@@ -64,7 +64,8 @@ env:
   VULNERABILITY_REPORT_SUFFIX: ".vulnerability-report.json"  # TODO: inherit string from caller
   TEST_IMAGE_NAME: "test-img"
   TEST_IMAGE_TAG: "test"
-  SKOPEO_IMAGE: "quay.io/skopeo/stable:v1.20.0"
+  # Skopeo v1.22.2.
+  SKOPEO_IMAGE: "quay.io/skopeo/stable@sha256:c7d3c512612f52805023cd38351081dad7e2729fc13d14b701e47c7c8bdd6615"
   UMOCI_VERSION: "v0.4.7"
   UMOCI_BINARY: "umoci.amd64"
   DIVE_IMAGE: "wagoodman/dive:v0.13.1"
@@ -117,7 +118,7 @@ jobs:
 
       - name: Unpack Rock
         run: |
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+          docker run --rm \
             -v "$PWD:/workdir" -w /workdir \
             "${SKOPEO_IMAGE}" \
             copy "oci-archive:${INPUTS_OCI_ARCHIVE_NAME}" \
