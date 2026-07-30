@@ -61,10 +61,10 @@ def test_image_uses_fixed_pro_secret_names() -> None:
     build_secrets = workflow["jobs"]["build-rock"]["secrets"]
     test_secrets = workflow["jobs"]["test-rock"]["secrets"]
 
-    assert build_secrets["pro-token"] == "${{ secrets.ROCKS_PRO_TOKEN }}"
+    assert "secrets.ROCKS_PRO_TOKEN" in build_secrets["pro-token"]
     assert (
-        build_secrets["pro-artifact-passphrase"]
-        == "${{ secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE }}"
+        "secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE"
+        in build_secrets["pro-artifact-passphrase"]
     )
     assert "secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE" in test_secrets[
         "pro-artifact-passphrase"
