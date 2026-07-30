@@ -200,8 +200,8 @@ jobs:
       pro-services: ${{ matrix.pro-services }}
     secrets:
       source-github-token: ${{ secrets.ROCKSBOT_TOKEN }}
-      pro-token: ${{ secrets.ROCKS_PRO_TOKEN }}
-      pro-artifact-passphrase: ${{ secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE }}
+      pro-token: ${{ matrix.pro-services != '' && secrets.ROCKS_PRO_TOKEN || '' }}
+      pro-artifact-passphrase: ${{ matrix.pro-services != '' && secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE || '' }}
 
   test-rock:
     needs: [prepare-build, build-rock]

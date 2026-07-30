@@ -551,7 +551,6 @@ needed.
 | Property | Required | Type | Description |
 |---|---|---|---|
 |`oci-archive-name`| True | str | Artifact name to download for testing. |
-|`encrypted-artifact`| False | bool | Whether the OCI archive artifact is encrypted. Defaults to `false`. Supplying `pro-artifact-passphrase` also selects encrypted-artifact handling. |
 |`test-black-box`| False | bool | Enable rock black-box test. Enabled by default. |
 |`test-oci-compliance`| False | bool | Enable Umoci OCI Image compliance test. Enabled by default. |
 |`test-efficiency`| False | bool | Enable Dive image efficiency test. Enabled by default. |
