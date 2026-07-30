@@ -40,6 +40,11 @@ def main():
             "--rm",
             "-v",
             f"{tmp_dir}:/skopeo-auth:ro",
+        ]
+        # Local OCI archives must be bind-mounted into the skopeo container.
+        if args.source_uri.startswith("oci-archive:"):
+            base_cmd += ["-v", f"{os.getcwd()}:/workspace:ro", "-w", "/workspace"]
+        base_cmd += [
             os.environ.get("SKOPEO_IMAGE", DEFAULT_SKOPEO_IMAGE),
             "--insecure-policy",
             "copy",
