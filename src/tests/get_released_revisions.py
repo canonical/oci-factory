@@ -25,8 +25,9 @@ import docker
 from ..image.utils.schema.triggers import KNOWN_RISKS_ORDERED
 from ..shared import release_info
 from ..shared.logs import get_logger
+from ..shared.skopeo import DEFAULT_SKOPEO_IMAGE
 
-SKOPEO_IMAGE = os.getenv("SKOPEO_IMAGE", "quay.io/skopeo/stable:v1.20.0")
+SKOPEO_IMAGE = os.getenv("SKOPEO_IMAGE", DEFAULT_SKOPEO_IMAGE)
 REGISTRY = "ghcr.io/canonical/oci-factory"
 
 logger = get_logger(stream=sys.stdout, level="INFO")
