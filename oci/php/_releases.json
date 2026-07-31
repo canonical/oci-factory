@@ -2,16 +2,16 @@
     "8.3-24.04": {
         "end-of-life": "2029-05-31T00:00:00Z",
         "edge": {
-            "target": "175"
+            "target": "177"
         },
         "beta": {
-            "target": "175"
+            "target": "177"
         },
         "candidate": {
-            "target": "175"
+            "target": "177"
         },
         "stable": {
-            "target": "175"
+            "target": "177"
         }
     },
     "8.4-25.04": {
@@ -38,7 +38,7 @@
     "8.5-26.04": {
         "end-of-life": "2031-05-29T00:00:00Z",
         "edge": {
-            "target": "176"
+            "target": "178"
         }
     }
 }
