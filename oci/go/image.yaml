@@ -9,9 +9,6 @@ upload:
         end-of-life: "2029-05-31T00:00:00Z"
         risks:
           - edge
-          - beta
-          - candidate
-          - stable
     ignored-vulnerabilities:
       - CVE-2024-24788  # Not affected. CVSS: 5.9 (Medium), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2024-24788
       - CVE-2024-24790  # Patched. CVSS: 9.8 (Critical), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2024-24790
@@ -43,6 +40,7 @@ upload:
       - CVE-2026-33811  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-33811
       - CVE-2026-33814  # Not tracked for golang-1.22 (golang-golang-x-net only). CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-33814
       - CVE-2026-39820  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39820
+      - CVE-2026-39822  # Needs evaluation. CVSS: 7.8 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39822
       - CVE-2026-39823  # Needs evaluation. CVSS: 6.1 (Medium), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39823
       - CVE-2026-39825  # Needs evaluation. CVSS: 5.3 (Medium), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39825
       - CVE-2026-39826  # Needs evaluation. CVSS: 6.1 (Medium), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39826
@@ -55,7 +53,7 @@ upload:
     commit: a09cbbfe909148cd965fae74f73b92cfb623f48f
     release:
       1.25-26.04:
-        end-of-life: "2026-07-31T00:00:00Z"
+        end-of-life: "2026-08-03T00:00:00Z"
         risks:
           - edge
     ignored-vulnerabilities:
@@ -67,6 +65,7 @@ upload:
       - CVE-2026-33811  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-33811
       - CVE-2026-33814  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-33814
       - CVE-2026-39820  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39820
+      - CVE-2026-39822  # Needs evaluation. CVSS: 7.8 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39822
       - CVE-2026-39823  # Needs evaluation. CVSS: 6.1 (Medium), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39823
       - CVE-2026-39825  # Needs evaluation. CVSS: 5.3 (Medium), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39825
       - CVE-2026-39836  # Not affected. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39836
@@ -81,9 +80,6 @@ upload:
         end-of-life: "2031-05-29T00:00:00Z"
         risks:
           - edge
-          - beta
-          - candidate
-          - stable
     ignored-vulnerabilities:
       - CVE-2026-25679  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-25679
       - CVE-2026-27137  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-27137
@@ -95,6 +91,7 @@ upload:
       - CVE-2026-33811  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-33811
       - CVE-2026-33814  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-33814
       - CVE-2026-39820  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39820
+      - CVE-2026-39822  # Needs evaluation. CVSS: 7.8 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39822
       - CVE-2026-39823  # Needs evaluation. CVSS: 6.1 (Medium), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39823
       - CVE-2026-39825  # Needs evaluation. CVSS: 5.3 (Medium), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39825
       - CVE-2026-39836  # Not affected. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39836
