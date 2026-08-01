@@ -1,0 +1,18 @@
+version: 2
+
+upload:
+  - source: canonical/rocks-toolbox
+    commit: 17916dd5de270e61a6a3fd3f4661a6413a50fd6f
+    directory: mock_rock/1.2
+  - source: canonical/rocks-toolbox
+    commit: 17916dd5de270e61a6a3fd3f4661a6413a50fd6f
+    directory: mock_rock/1.2
+    pro:
+      services:
+        - esm-infra
+        - esm-apps
+    release:
+      1.2-22.04:
+        end-of-life: "2030-05-01T00:00:00Z"
+        risks:
+          - beta

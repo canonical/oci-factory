@@ -87,44 +87,13 @@ jobs:
         run: |
           echo "::warning:: 'host-github-token' is unused and deprecated. Please remove this secret from the caller workflow."
 
-      - name: Cloning OCI Factory
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          # Here we clone the oci-factory repo using the default ref of the checkout action.
-          # It will be set to a ref that triggered this workflow if the workflow is run within the oci-factory repo,
-          # or to the default branch of the oci-factory repo if the workflow is called from another repo.
-          repository: canonical/oci-factory
-          fetch-depth: 1
-          persist-credentials: false
-
-      # download and unpack the image under test, then store it under a common cache key. 
-      # This unpacked image is used in test-oci-compliance, test-black-box and test-malware jobs
+      # Download the image under test and store it (still gpg-encrypted for Pro
+      # images) under a common, run-scoped cache key. Each test job restores this
+      # archive, decrypts it if needed, and converts it to the layout it needs.
       - name: Download Rock
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: ${{ inputs.oci-archive-name }}
-
-      - name: Decrypt Rock
-        env:
-          ARTIFACT_PASSPHRASE: ${{ secrets.pro-artifact-passphrase }}
-        if: ${{ env.ARTIFACT_PASSPHRASE != '' }}
-        uses: ./.github/actions/crypt-artifact
-        with:
-          mode: decrypt
-          passphrase: ${{ secrets.pro-artifact-passphrase }}
-          input-path: ${{ inputs.oci-archive-name }}*
-          output-path: ${{ inputs.oci-archive-name }}
-          preserve-original: false
-
-      - name: Unpack Rock
-        run: |
-          docker run --rm \
-            -v "$PWD:/workdir" -w /workdir \
-            "${SKOPEO_IMAGE}" \
-            copy "oci-archive:${INPUTS_OCI_ARCHIVE_NAME}" \
-            "oci:${TEST_IMAGE_NAME}:${TEST_IMAGE_TAG}"
-        env:
-          INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
 
       - name: Set Cache Key
         id: set-cache
@@ -136,7 +105,9 @@ jobs:
       - name: Cache Rock
         uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
-          path: ${{ env.TEST_IMAGE_NAME }}
+          path: |
+            ${{ inputs.oci-archive-name }}
+            ${{ inputs.oci-archive-name }}.gpg
           key: ${{ steps.set-cache.outputs.key }}
 
   test-oci-compliance:
@@ -154,8 +125,32 @@ jobs:
 
       - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
-          path: ${{ env.TEST_IMAGE_NAME }}
+          path: |
+            ${{ inputs.oci-archive-name }}
+            ${{ inputs.oci-archive-name }}.gpg
           key: ${{ needs.configure-tests.outputs.cache-key }}
+
+      - name: Decrypt Rock
+        env:
+          ARTIFACT_PASSPHRASE: ${{ secrets.pro-artifact-passphrase }}
+        if: ${{ env.ARTIFACT_PASSPHRASE != '' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: decrypt
+          passphrase: ${{ secrets.pro-artifact-passphrase }}
+          input-path: ${{ inputs.oci-archive-name }}.gpg
+          output-path: ${{ inputs.oci-archive-name }}
+          preserve-original: false
+
+      - name: Unpack Rock
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$PWD:/workdir" -w /workdir \
+            "${SKOPEO_IMAGE}" \
+            copy "oci-archive:${INPUTS_OCI_ARCHIVE_NAME}" \
+            "oci:${TEST_IMAGE_NAME}:${TEST_IMAGE_TAG}"
+        env:
+          INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
 
       - name: Install Umoci
         uses: ./.github/actions/install-umoci
@@ -180,18 +175,41 @@ jobs:
     needs: [configure-tests]
     if: inputs.test-black-box
     steps:
+      - name: Cloning OCI Factory
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          repository: canonical/oci-factory
+          fetch-depth: 1
+          persist-credentials: false
+
       - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
-          path: ${{ env.TEST_IMAGE_NAME }}
+          path: |
+            ${{ inputs.oci-archive-name }}
+            ${{ inputs.oci-archive-name }}.gpg
           key: ${{ needs.configure-tests.outputs.cache-key }}
+
+      - name: Decrypt Rock
+        env:
+          ARTIFACT_PASSPHRASE: ${{ secrets.pro-artifact-passphrase }}
+        if: ${{ env.ARTIFACT_PASSPHRASE != '' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: decrypt
+          passphrase: ${{ secrets.pro-artifact-passphrase }}
+          input-path: ${{ inputs.oci-archive-name }}.gpg
+          output-path: ${{ inputs.oci-archive-name }}
+          preserve-original: false
 
       - name: Copy image to Docker daemon
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
             -v "$PWD:/workdir" -w /workdir \
             "${SKOPEO_IMAGE}" \
-            copy "oci:${TEST_IMAGE_NAME}:${TEST_IMAGE_TAG}" \
+            copy "oci-archive:${INPUTS_OCI_ARCHIVE_NAME}" \
             "docker-daemon:${TEST_IMAGE_NAME}:${TEST_IMAGE_TAG}"
+        env:
+          INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
 
       - name: Create container
         run: |
@@ -224,16 +242,32 @@ jobs:
 
       - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
-          path: ${{ env.TEST_IMAGE_NAME }}
+          path: |
+            ${{ inputs.oci-archive-name }}
+            ${{ inputs.oci-archive-name }}.gpg
           key: ${{ needs.configure-tests.outputs.cache-key }}
+
+      - name: Decrypt Rock
+        env:
+          ARTIFACT_PASSPHRASE: ${{ secrets.pro-artifact-passphrase }}
+        if: ${{ env.ARTIFACT_PASSPHRASE != '' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: decrypt
+          passphrase: ${{ secrets.pro-artifact-passphrase }}
+          input-path: ${{ inputs.oci-archive-name }}.gpg
+          output-path: ${{ inputs.oci-archive-name }}
+          preserve-original: false
 
       - name: Copy image to Docker daemon
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
             -v "$PWD:/workdir" -w /workdir \
             "${SKOPEO_IMAGE}" \
-            copy "oci:${TEST_IMAGE_NAME}:${TEST_IMAGE_TAG}" \
+            copy "oci-archive:${INPUTS_OCI_ARCHIVE_NAME}" \
             "docker-daemon:${TEST_IMAGE_NAME}:${TEST_IMAGE_TAG}"
+        env:
+          INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
 
       # The existing Dive GH actions are outdated:
       # https://github.com/MartinHeinz/dive-action/issues/1
@@ -305,7 +339,7 @@ jobs:
         with:
           mode: decrypt
           passphrase: ${{ secrets.pro-artifact-passphrase }}
-          input-path: ${{ inputs.oci-archive-name }}*
+          input-path: ${{ inputs.oci-archive-name }}.gpg
           output-path: ${{ inputs.oci-archive-name }}
           preserve-original: false
 
@@ -428,8 +462,32 @@ jobs:
 
       - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7
         with:
-          path: ${{ env.TEST_IMAGE_NAME }}
+          path: |
+            ${{ inputs.oci-archive-name }}
+            ${{ inputs.oci-archive-name }}.gpg
           key: ${{ needs.configure-tests.outputs.cache-key }}
+
+      - name: Decrypt Rock
+        env:
+          ARTIFACT_PASSPHRASE: ${{ secrets.pro-artifact-passphrase }}
+        if: ${{ env.ARTIFACT_PASSPHRASE != '' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: decrypt
+          passphrase: ${{ secrets.pro-artifact-passphrase }}
+          input-path: ${{ inputs.oci-archive-name }}.gpg
+          output-path: ${{ inputs.oci-archive-name }}
+          preserve-original: false
+
+      - name: Unpack Rock
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$PWD:/workdir" -w /workdir \
+            "${SKOPEO_IMAGE}" \
+            copy "oci-archive:${INPUTS_OCI_ARCHIVE_NAME}" \
+            "oci:${TEST_IMAGE_NAME}:${TEST_IMAGE_TAG}"
+        env:
+          INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
 
       - name: Install Umoci
         uses: ./.github/actions/install-umoci
