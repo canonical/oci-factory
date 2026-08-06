@@ -1,0 +1,46 @@
+version: 2
+application: authentik-ldap-outpost
+description: |
+  The authentik LDAP outpost is an Identity Provider outpost that allows authentik
+  to act as an LDAP server. It serves as an LDAP interface for your authentik instance,
+  enabling legacy applications that do not support modern protocols like OIDC or SAML
+  to authenticate users.
+website: https://goauthentik.io
+issues: https://github.com/canonical/authentik-ldap-outpost-rock/issues
+source-code: https://github.com/canonical/authentik-ldap-outpost-rock
+
+docker:
+  parameters: >-
+    -p 3389:3389
+    -p 6636:6636
+    -e AUTHENTIK_HOST=http://authentik-server:9000
+    -e AUTHENTIK_TOKEN=your-ldap-outpost-token
+  run_conclusion: |
+    The authentik LDAP outpost starts and serves LDAP on port `3389` and LDAPS on port `6636`.
+    Access the LDAP outpost server at `ldap://localhost:3389`.
+
+config:
+  AUTHENTIK_HOST:
+    type: env
+    description: The URL of the authentik server that the outpost connects to (e.g., `https://authentik.company` or `http://authentik-server:9000`).
+  AUTHENTIK_TOKEN:
+    type: env
+    description: The token used to authenticate with the core authentik server. Create an outpost in the authentik Admin UI to generate this token.
+  AUTHENTIK_INSECURE:
+    type: env
+    description: Set to "true" to disable TLS certificate verification when connecting to the authentik server (e.g., when using self-signed certificates).
+    default: "false"
+  AUTHENTIK_LISTEN__LDAP:
+    type: env
+    description: Internal address and port for the LDAP server to listen on.
+    default: "[::]:3389"
+  AUTHENTIK_LISTEN__LDAPS:
+    type: env
+    description: Internal address and port for the LDAPS server to listen on.
+    default: "[::]:6636"
+  '`-p <port>:3389`':
+    type: port
+    description: Expose the LDAP port 3389 on the host's `<port>`.
+  '`-p <port>:6636`':
+    type: port
+    description: Expose the LDAPS port 6636 on the host's `<port>`.
