@@ -5,24 +5,37 @@
 name = "oci-factory-workflows"
 version = "0.0.1"
 description = "Temporal workflows for supporting the OCI Factory processes"
-authors = ["cjdc <cristovao.cordeiro@canonical.com>"]
+authors = [
+    "cjdc <cristovao.cordeiro@canonical.com>",
+    "zhijie-yang <zhijie.yang@canonical.com>"
+]
 packages = [
     { include = "**/*.py", from = "."  },
-    { include = "**/ca.crt", from = "." }
 ]
-include = ["**/*.avsc"]
+# Rockcraft's Python plugin calls `pip install -U .`, which installs the package
+# as a wheel.
+# "include" defaults to sdist only. We need to override this to include wheels.
+include = [
+    {path = "**/*.avsc", format=["sdist", "wheel"]},
+    {path = "**/*.crt", format=["sdist", "wheel"]},
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
 PyYAML = "^6.0"
-temporal-lib-py = "^1.1.0"
+temporal-lib-py = "^1.8.0"
 python-json-logger = "^2.0.4"
 python-keystoneclient = "^5.2.0"
 python-swiftclient = "^4.4.0"
 protobuf = "^3.2.0"
-confluent-kafka = "^2.0.2"
+confluent-kafka = "2.8.0"
 fastavro = "^1.7.4"
 importlib-resources = "^6.0.1"
+urllib3 = "^1.26.16"
+psycopg2 = "^2.9.10"
+pydantic-settings = "^2.4.0"
+httpx = "^0.26.0"
+attrs = "^21.2.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.1.3"

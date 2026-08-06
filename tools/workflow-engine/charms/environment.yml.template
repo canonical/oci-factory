@@ -1,0 +1,27 @@
+env:
+  - name: ROCKS_EVENTBUS_USERNAME
+    value:
+  - name: ROCKS_EVENTBUS_PASSWORD
+    value:
+  - name: ROCKS_EVENTBUS_KAFKA_ADDRESS
+    value:
+  - name: ROCKS_EVENTBUS_KARAPACE_URL
+    value:
+  - name: OS_AUTH_URL
+    value:
+  - name: OS_USERNAME
+    value:
+  - name: OS_PASSWORD
+    value:
+  - name: OS_PROJECT_NAME
+    value:
+  - name: OS_STORAGE_URL
+    value:
+  - name: GITHUB_TOKEN
+    value:
+  - name: MATTERMOST_TOKEN
+    value:
+  - name: MATTERMOST_SERVER
+    value: https://chat.canonical.com
+  - name: MATTERMOST_CHANNEL_ID
+    value:
