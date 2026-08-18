@@ -3,7 +3,7 @@ version: 1
 upload:
   - source: "canonical/valkey-artifacts"
     commit: 252920e17d56e097efd0323e26a4ebdcb68312d7
-    directory: .
+    directory: ./valkey/rocks/standard
     release:
       7.2.13-24.04:
         end-of-life: "2029-04-01T00:00:00Z"
