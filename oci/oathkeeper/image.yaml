@@ -1,0 +1,33 @@
+version: 2
+
+upload:
+  - source: "canonical/oathkeeper-rock"
+    commit: 6aca981a8b92b51206f366110901e149c7170566
+    directory: .
+    release:
+      0.40.6-26.04:
+        risks:
+          - stable
+          - candidate
+          - edge
+        end-of-life: "2031-05-01T00:00:00Z"
+    ignored-vulnerabilities:
+      - CVE-2023-45142  # opentelemetry: DoS vulnerability in otelhttp. Dep pinned in upstream Ory X. https://github.com/advisories/GHSA-cg3q-j54f-5p7p
+      - CVE-2024-28180  # jose-go: improper handling of highly compressed data. Dep pinned in upstream Oathkeeper. https://avd.aquasec.com/nvd/cve-2024-28180
+      - CVE-2026-32286  # Denial of Service via malicious PostgreSQL server (jackc/pgproto3/v2). No upstream fix. https://github.com/advisories/GHSA-jqcq-xjh3-6g23
+      - CVE-2026-33186  # google.golang.org/grpc/authz: Authorization bypass due to improper HTTP/2 path validation. https://avd.aquasec.com/nvd/cve-2026-33186
+      - CVE-2026-33494  # Ory Oathkeeper has a path traversal authorization bypass. Upstream unreleased fix. https://avd.aquasec.com/nvd/cve-2026-33494
+      - CVE-2026-33495  # Ory Oathkeeper has an authentication bypass by usage of untrusted header. Upstream unreleased fix. https://avd.aquasec.com/nvd/cve-2026-33495
+      - CVE-2026-33496  # Ory Oathkeeper has an authentication bypass by cache key confusion. Upstream unreleased fix. https://avd.aquasec.com/nvd/cve-2026-33496
+      - CVE-2026-33818  # encoding/asn1: DoS via excessive recursion in Unmarshal (Go stdlib). Fixed in Go 1.26.6+. https://avd.aquasec.com/nvd/cve-2026-33818
+      - CVE-2026-39821  # golang.org/x/net/idna: Privilege escalation via incorrect Punycode label processing (Go stdlib). Fixed in Go 1.26.6+. https://avd.aquasec.com/nvd/cve-2026-39821
+      - CVE-2026-39882  # OpenTelemetry-Go: Memory exhaustion via uncapped HTTP response body reading. Dep pinned in Ory X. https://avd.aquasec.com/nvd/cve-2026-39882
+      - CVE-2026-41889  # github.com/jackc/pgx/v4: SQL injection via specific query conditions. Dep pinned in Ory X. https://avd.aquasec.com/nvd/cve-2026-41889
+      - CVE-2026-46600  # golang.org/x/net/dns/dnsmessage: DoS via invalid DNS record parsing (Go stdlib). Fixed in Go 1.26.6+. https://avd.aquasec.com/nvd/cve-2026-46600
+      - CVE-2026-56853  # net/http: Unencrypted HTTP/2 connections vulnerable to DoS (Go stdlib). Fixed in Go 1.26.6+. https://avd.aquasec.com/nvd/cve-2026-56853
+      - CVE-2026-56858  # html/template: Cross-Site Scripting via pathological input (Go stdlib). Fixed in Go 1.26.6+. https://avd.aquasec.com/nvd/cve-2026-56858
+      - CVE-2026-56859  # encoding/xml: DoS via XML decoding recursion depth issue (Go stdlib). Fixed in Go 1.26.6+. https://avd.aquasec.com/nvd/cve-2026-56859
+      - CVE-2026-56860  # net/url: DoS from quadratic complexity in path resolution (Go stdlib). Fixed in Go 1.26.6+. https://avd.aquasec.com/nvd/cve-2026-56860
+      - CVE-2026-56862  # crypto/tls: DoS via indefinite KeyUpdate messages (Go stdlib). Fixed in Go 1.26.6+. https://avd.aquasec.com/nvd/cve-2026-56862
+      - GHSA-hrxh-6v49-42gf  # gRPC-Go: xDS RBAC and HTTP/2 Vulnerabilities. Dep pinned in Ory X. https://github.com/advisories/GHSA-hrxh-6v49-42gf
+      - GO-2026-5932    # golang.org/x/crypto/openpgp: Package is unmaintained/deprecated. https://pkg.go.dev/vuln/GO-2026-5932

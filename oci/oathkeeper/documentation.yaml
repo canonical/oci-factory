@@ -1,0 +1,32 @@
+version: 2
+application: oathkeeper
+description: |
+  Ory Oathkeeper is a cloud native Identity & Access Proxy / API (IAP) and Access Control Decision API
+  that authenticates, authorizes, and mutates incoming HTTP(s) requests.
+website: https://github.com/ory/oathkeeper
+issues: https://github.com/canonical/oathkeeper-rock/issues
+source-code: https://github.com/canonical/oathkeeper-rock
+
+docker:
+  parameters: >-
+    -p 4455:4455
+    -p 4456:4456
+  run_conclusion: |
+    Access the Oathkeeper Proxy API at `http://localhost:4455`, Decision/API at `http://localhost:4456`.
+
+config:
+  '`-v <path>:/oathkeeper.yaml`':
+    type: mount
+    description: >-
+      Oathkeeper config contains all the information needed to configure authentication and authorization rules,
+      see https://github.com/ory/oathkeeper/blob/master/.oathkeeper.yaml as a reference
+  '`-p <port>:4455`':
+    type: port
+    description: Expose Oathkeeper Proxy port 4455 on the host's `<port>`.
+  '`-p <port>:4456`':
+    type: port
+    description: Expose Oathkeeper API port 4456 on the host's `<port>`.
+  '`--args oathkeeper -- serve --config /oathkeeper.yaml`':
+    type: app
+    description: >-
+      Launch Oathkeeper proxy server using configuration mounted via volume.
