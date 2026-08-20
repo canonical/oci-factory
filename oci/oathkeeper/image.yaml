@@ -2,7 +2,7 @@ version: 2
 
 upload:
   - source: "canonical/oathkeeper-rock"
-    commit: 6aca981a8b92b51206f366110901e149c7170566
+    commit: 6aca981a1d64aa327069242014d3628db66d08bd
     directory: .
     release:
       0.40.6-26.04:
