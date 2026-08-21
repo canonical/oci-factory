@@ -68,12 +68,12 @@ jobs:
           python3 -m pytest --junit-xml "${{ env.PYTEST_RESULT_PATH }}"
 
       - name: Generate Summary
-        if: ${{ !cancelled() }}
+        if: always()
         run: |
           python3 -m tools.junit_to_markdown --input-junit "${{ env.PYTEST_RESULT_PATH }}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload pytest Result
-        if: ${{ !cancelled() }}
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: ${{ env.PYTEST_RESULT_PATH }}

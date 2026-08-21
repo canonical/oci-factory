@@ -332,8 +332,7 @@ jobs:
           for rock in ${{ env.ROCK_CI_FOLDER }}/*; do
             ./.github/actions/crypt-artifact/crypt-artifact.sh decrypt \
               -i "$rock" \
-              -p "$ARTIFACT_PASSPHRASE" \
-              -o "${rock%.gpg}"
+              -p "$ARTIFACT_PASSPHRASE"
           done
 
       - name: Assembling Multi Arch rock
