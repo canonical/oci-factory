@@ -193,7 +193,7 @@ jobs:
 
       - name: Building Target
         id: rockcraft
-        uses: canonical/craft-actions/rockcraft-pack@67304fab78ef627dc3f2e72c8a6ad51a493a6070  # main (20260605)
+        uses: canonical/craft-actions/rockcraft/pack@acd2f2e61c7563b38ba89390ca0e910fa7d2784f  # v0.1.1
         with:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
           test: "${{ inputs.rockcraft-test }}"
