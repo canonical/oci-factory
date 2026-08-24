@@ -12,3 +12,6 @@ upload:
         end-of-life: '2026-11-23T00:00:00Z'
         risks:
           - edge
+    ignored-vulnerabilities:
+      - CVE-2026-56864  # no actual code paths are affected, checked via govulncheck
+      - CVE-2026-56865  # no actual code paths are affected, checked via govulncheck
