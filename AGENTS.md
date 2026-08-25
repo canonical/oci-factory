@@ -133,7 +133,6 @@ is missing (the `rock/*` labels are applied by maintainers, not auto-labeled):
 | --- | --- | --- |
 | `rock/update` (`oci/<name>/image.yaml`) | Existing image-trigger update | [2](#2-security--vulnerability-gating-hard-gate), [3](#3-release-policy-risk-tracks-eol-versioning), [4](#4-source-recipe-rockcraftyaml-review) |
 | `rock/new` (new `oci/<name>/`, new track/base) | New rock / new track / new base | [2](#2-security--vulnerability-gating-hard-gate), [3](#3-release-policy-risk-tracks-eol-versioning), [4](#4-source-recipe-rockcraftyaml-review), [5](#5-documentation-documentationyaml-checklist) |
-| `rock/chore` (`oci/<name>/` digest/source/version bump) | Misc rock change, incl. bot/dependency updates | [2](#2-security--vulnerability-gating-hard-gate), [4](#4-source-recipe-rockcraftyaml-review), [7](#7-evidence--process-hygiene) |
 | `rock/docs` (`oci/<name>/documentation.yaml`) | Documentation change | [5](#5-documentation-documentationyaml-checklist) |
 | `onboarding` (issue) | Image onboarding request (intake) | [3](#3-release-policy-risk-tracks-eol-versioning), [5](#5-documentation-documentationyaml-checklist) |
 | no `rock/*` label (`.github/`, `src/`, `tools/`) | Factory source / CI workflow | [6](#6-ci--github-actions-review), [7](#7-evidence--process-hygiene) |
@@ -189,14 +188,16 @@ verdicts as described above.
   comment**, not to silence findings blindly.
 
 - The `.trivyignore` file is **deprecated**. Do not accept new `.trivyignore`
-  files. When ignore entries are added or modified, require the applicable
-  rules to move to `ignored-vulnerabilities` in the image trigger. Legacy files
-  may remain temporarily because released revisions can still depend on them.
+  files. When migrating an affected build to `ignored-vulnerabilities`, require
+  every still-applicable rule to move, not only the changed rules. Once
+  `ignored-vulnerabilities` is present, that build no longer uses
+  `.trivyignore`. The legacy file may remain temporarily because previously
+  released revisions can still depend on it.
   Example wording:
 
-  > Let's move these changed entries to `ignored-vulnerabilities`; new use of
-  > `.trivyignore` in OCI Factory is deprecated. The legacy file may remain for
-  > released revisions that still depend on it.
+  > Let's move every still-applicable rule to `ignored-vulnerabilities`; once
+  > present, that build no longer uses `.trivyignore`. The legacy file may
+  > remain for previously released revisions that still depend on it.
 
 - `ignored-vulnerabilities` requires a `version: 2` trigger. A `version: 1`
   trigger may stay as-is only until it needs this field; then it MUST switch to
@@ -244,7 +245,7 @@ verdicts as described above.
 
 ### 4. Source recipe (`rockcraft.yaml`) review
 
-For image-trigger changes (`rock/update`, `rock/new`, `rock/chore`), review the
+For image-trigger changes (`rock/update`, `rock/new`), review the
 build recipe behind the release, not just the trigger. For **each** `upload[]`
 item, fetch the `rockcraft.yaml` at that item's pinned `source` repository and
 `commit` (under the item's `directory` subpath when set) — via `gh`/`git` or the
@@ -281,9 +282,10 @@ when the file cannot be retrieved.
   directly from an external repository — e.g. a `source:` pointing at
   GitHub/Launchpad with `source-type: git`, or a plugin that compiles upstream
   code — treat the rock as upstream-sourced **even when the repository lives
-  under the `canonical` org**. When it is, apply the `end-of-life` cap from
-  [§3](#3-release-policy-risk-tracks-eol-versioning); do not restate the rule
-  here.
+  under the `canonical` org**. The sole exemption is a part sourced from
+  `https://github.com/canonical/rocks-security-manifest`. Otherwise, apply the
+  `end-of-life` cap from [§3](#3-release-policy-risk-tracks-eol-versioning); do
+  not restate the rule here.
 
 - **Recipe regression (blocker).** When the source is bumped (a new `commit` or
   `directory`) and the new recipe drops a `parts:` entry or a `services:` entry
@@ -374,8 +376,7 @@ uses three families:
 - **`rock/new`** — a new rock, or a new track/base for an existing rock.
 - **`rock/update`** — an existing rock's image trigger is modified (release or
   track change).
-- **`rock/chore`** — misc rock change (digest/source/version bump, incl.
-  bot/dependency updates).
+- **`rock/chore`** — maintainer contact changes in `contacts.yaml`.
 - **`rock/docs`** — a rock's `documentation.yaml` change.
 - **`onboarding`** — image onboarding request; auto-applied by the onboarding
   issue template.
