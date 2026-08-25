@@ -71,14 +71,17 @@ this guide.
   `git diff --cached` for staged-only), lists the touched files, and **triages
   by file path** — the `rock/*` labels don't exist yet, so use the fallback path
   column in [Triage](#1-triage-the-pr-first).
-- It then applies the matching checklists ([§2](#2-security--vulnerability-gating-hard-gate)–[§6](#6-evidence--process-hygiene)).
+- It then applies the matching checklists ([§2](#2-security--vulnerability-gating-hard-gate)–[§7](#7-evidence--process-hygiene)).
   The vulnerability scan itself is **CI-only** and does not affect a local
   dry-run verdict. Locally, the harness checks the static requirements: trigger
   `version: 2` where `ignored-vulnerabilities` is used, sufficient comments on
   new or modified ignored entries, and `.trivyignore` deprecation (see
-  [§2](#2-security--vulnerability-gating-hard-gate)). A local `Approve` means
-  only that the locally-checkable gates passed; it is not an approval of a real
-  PR and does not imply that its vulnerability scan is clean.
+  [§2](#2-security--vulnerability-gating-hard-gate)). It also fetches each
+  `upload[]` item's `rockcraft.yaml` (network permitting) to run the
+  [§4](#4-source-recipe-rockcraftyaml-review) recipe checks, and marks them *not
+  assessed* when the recipe cannot be retrieved. A local `Approve` means only
+  that the locally-checkable gates passed; it is not an approval of a real PR and
+  does not imply that its vulnerability scan is clean.
 
 **Output format (mimics a GitHub PR review — keep it concise)**
 
@@ -90,9 +93,11 @@ this guide.
   concrete fixes.
 - **Gate summary** — a compact pass / ⚠ / blocker checklist for the
   locally-checkable gates: one-image scope, edge-first, EOL cap, track naming,
-  docs checklist, `ignored-vulnerabilities` justification, and `.trivyignore`
-  deprecation. Mark the vulnerability scan itself as *not assessed locally;
-  verify in CI*.
+  docs checklist, `ignored-vulnerabilities` justification, `.trivyignore`
+  deprecation, deb security manifest, and recipe regression. Mark the
+  deb-manifest and recipe-regression gates *not assessed* when the recipe cannot
+  be fetched, and the vulnerability scan itself as *not assessed locally; verify
+  in CI*.
 
 **Example**
 
@@ -114,24 +119,24 @@ this guide.
 > SemVer patch component; use `1.2-24.04`. (§3)
 >
 > **Gates:** one-image ✅ · edge-first ❌ · EOL cap ✅ · track naming ❌ · docs
-> n/a · CVE justification ❌ · `.trivyignore` ✅ · vuln scan → not assessed
-> locally; verify in CI
+> n/a · CVE justification ❌ · `.trivyignore` ✅ · deb-manifest ✅ ·
+> recipe-regression ✅ · vuln scan → not assessed locally; verify in CI
 
 ### 1. Triage the PR first
 
 Classify the PR before reviewing, then jump to the matching sections. Triage
 primarily on the **type label** (`rock/*`, `onboarding`) — see
-[section 7](#7-pr-labels) — falling back to the touched file path when the label
+[section 8](#8-pr-labels) — falling back to the touched file path when the label
 is missing (the `rock/*` labels are applied by maintainers, not auto-labeled):
 
 | Label (fallback path) | PR / issue type | Primary sections |
 | --- | --- | --- |
-| `rock/update` (`oci/<name>/image.yaml`) | Existing image-trigger update | [2](#2-security--vulnerability-gating-hard-gate), [3](#3-release-policy-risk-tracks-eol-versioning) |
-| `rock/new` (new `oci/<name>/`, new track/base) | New rock / new track / new base | [2](#2-security--vulnerability-gating-hard-gate), [3](#3-release-policy-risk-tracks-eol-versioning), [4](#4-documentation-documentationyaml-checklist) |
-| `rock/chore` (`oci/<name>/` digest/source/version bump) | Misc rock change, incl. bot/dependency updates | [2](#2-security--vulnerability-gating-hard-gate), [6](#6-evidence--process-hygiene) |
-| `rock/docs` (`oci/<name>/documentation.yaml`) | Documentation change | [4](#4-documentation-documentationyaml-checklist) |
-| `onboarding` (issue) | Image onboarding request (intake) | [3](#3-release-policy-risk-tracks-eol-versioning), [4](#4-documentation-documentationyaml-checklist) |
-| no `rock/*` label (`.github/`, `src/`, `tools/`) | Factory source / CI workflow | [5](#5-ci--github-actions-review), [6](#6-evidence--process-hygiene) |
+| `rock/update` (`oci/<name>/image.yaml`) | Existing image-trigger update | [2](#2-security--vulnerability-gating-hard-gate), [3](#3-release-policy-risk-tracks-eol-versioning), [4](#4-source-recipe-rockcraftyaml-review) |
+| `rock/new` (new `oci/<name>/`, new track/base) | New rock / new track / new base | [2](#2-security--vulnerability-gating-hard-gate), [3](#3-release-policy-risk-tracks-eol-versioning), [4](#4-source-recipe-rockcraftyaml-review), [5](#5-documentation-documentationyaml-checklist) |
+| `rock/chore` (`oci/<name>/` digest/source/version bump) | Misc rock change, incl. bot/dependency updates | [2](#2-security--vulnerability-gating-hard-gate), [4](#4-source-recipe-rockcraftyaml-review), [7](#7-evidence--process-hygiene) |
+| `rock/docs` (`oci/<name>/documentation.yaml`) | Documentation change | [5](#5-documentation-documentationyaml-checklist) |
+| `onboarding` (issue) | Image onboarding request (intake) | [3](#3-release-policy-risk-tracks-eol-versioning), [5](#5-documentation-documentationyaml-checklist) |
+| no `rock/*` label (`.github/`, `src/`, `tools/`) | Factory source / CI workflow | [6](#6-ci--github-actions-review), [7](#7-evidence--process-hygiene) |
 
 ### 2. Security & vulnerability gating (hard gate)
 
@@ -178,7 +183,7 @@ verdicts as described above.
   disposition.
 
 - When requesting changes for scan findings, apply the `pending cve` label (see
-  [section 7](#7-pr-labels)); remove it once every finding is fixed or justified.
+  [section 8](#8-pr-labels)); remove it once every finding is fixed or justified.
 
 - Ask maintainers to add ignored entries **with proper justifications in the
   comment**, not to silence findings blindly.
@@ -237,7 +242,62 @@ verdicts as described above.
   > update either this one or the other so they won't overwrite each other.
   > Marking this PR and #NNNN as invalid for now.
 
-### 4. Documentation (`documentation.yaml`) checklist
+### 4. Source recipe (`rockcraft.yaml`) review
+
+For image-trigger changes (`rock/update`, `rock/new`, `rock/chore`), review the
+build recipe behind the release, not just the trigger. For **each** `upload[]`
+item, fetch the `rockcraft.yaml` at that item's pinned `source` repository and
+`commit` (under the item's `directory` subpath when set) — via `gh`/`git` or the
+repository web UI — and apply the caveats below. This fetch is external: in a
+local dry-run it may be unavailable, so state that and skip the recipe checks
+when the file cannot be retrieved.
+
+- **deb security manifest (MUST).** If any part declares `stage-packages` — i.e.
+  the rock layers additional `.deb` packages on top of the Ubuntu base — the
+  recipe MUST include a security-manifest part whose `source` is
+  `https://github.com/canonical/rocks-security-manifest`, wired exactly as that
+  repository's README documents. The part name may differ, but the source and
+  usage must match. This enforces the maintainer obligation in
+  [`IMAGE_MAINTAINER_AGREEMENT.md`](/IMAGE_MAINTAINER_AGREEMENT.md#enable-security-monitoring).
+  If a `stage-packages` rock is missing this part, or wires it differently,
+  request changes:
+
+  ```yaml
+  parts:
+    deb-security-manifest:
+      plugin: make
+      source: https://github.com/canonical/rocks-security-manifest
+      source-type: git
+      source-branch: main
+      override-prime: gen_manifest
+  ```
+
+  > This rock stages `.deb` packages but the recipe does not include the
+  > standardized security manifest. Please add the `deb-security-manifest` part
+  > from `https://github.com/canonical/rocks-security-manifest`, wired per its
+  > README.
+
+- **External-source detection → EOL cap.** If any part is pulled and built
+  directly from an external repository — e.g. a `source:` pointing at
+  GitHub/Launchpad with `source-type: git`, or a plugin that compiles upstream
+  code — treat the rock as upstream-sourced **even when the repository lives
+  under the `canonical` org**. When it is, apply the `end-of-life` cap from
+  [§3](#3-release-policy-risk-tracks-eol-versioning); do not restate the rule
+  here.
+
+- **Recipe regression (blocker).** When the source is bumped (a new `commit` or
+  `directory`) and the new recipe drops a `parts:` entry or a `services:` entry
+  that the previously referenced recipe defined, treat it as a regression and
+  request changes as a **[blocker]**. Hold until the removed part/service is
+  restored, or the author confirms the removal is intentional and not a
+  regression (see [§9](#9-approve-vs-request-changes-criteria), "regressions are
+  ruled out"). Example:
+
+  > This source bump removes the `<name>` <part|service> that the previous
+  > revision shipped. Is this intentional? If so, please confirm it is not a
+  > regression; otherwise restore it. Marking as a blocker until then.
+
+### 5. Documentation (`documentation.yaml`) checklist
 
 - **Language:** US English spelling throughout; correct product capitalization
   (e.g., do not write an uncapitalized product name); no informal phrasing.
@@ -262,7 +322,7 @@ verdicts as described above.
 - Note: the GitHub web UI can mangle multi-line suggestions. If a suggestion is
   not applied correctly, ask the author to commit it manually.
 
-### 5. CI / GitHub Actions review
+### 6. CI / GitHub Actions review
 
 - **Least privilege for `GITHUB_TOKEN`.** OCI Factory inherits the read-only
   default configured by Canonical's organizational workflow-permission
@@ -286,7 +346,7 @@ verdicts as described above.
 - **Respect established patterns.** Avoid unnecessary changes to established,
   working workflows; remove genuinely dead code (e.g., retired build paths).
 
-### 6. Evidence & process hygiene
+### 7. Evidence & process hygiene
 
 - **Prove fixes.** Back a "fixed" or "works" claim with a link to a successful
   CI/test run or to upstream source. Example:
@@ -300,11 +360,11 @@ verdicts as described above.
 - **Close housekeeping PRs** that are stale (no activity for more than a month),
   outdated, or superseded by another PR — state the reason on close. Apply the
   `decaying` label after 2 weeks of no activity as an early warning (see
-  [section 7](#7-pr-labels)) before closing.
+  [section 8](#8-pr-labels)) before closing.
 - **Request a second reviewer** when the change is outside your area or warrants
   another set of eyes.
 
-### 7. PR labels
+### 8. PR labels
 
 Apply labels to make review state visible and to drive housekeeping. The repo
 uses three families:
@@ -340,7 +400,7 @@ uses three families:
 - **`decaying`** — apply to any PR with no update for **more than 2 weeks**. It
   is the early-warning step before closing: a `decaying` PR that stays inactive
   for more than a month should be closed as stale (see
-  [section 6](#6-evidence--process-hygiene)).
+  [section 7](#7-evidence--process-hygiene)).
 - **`invalid`** — apply to PRs that cannot proceed as-is, e.g. conflicting
   concurrent PRs on the same track (see
   [section 3](#3-release-policy-risk-tracks-eol-versioning)).
@@ -348,7 +408,7 @@ uses three families:
 **Priority labels** — `priority/critical`, `priority/high`, `priority/medium`,
 `priority/low` communicate urgency for triage and scheduling; set at most one.
 
-### 8. Approve vs. request-changes criteria
+### 9. Approve vs. request-changes criteria
 
 The following criteria govern actual GitHub PR reviews. For a local dry-run,
 exclude the CI-only vulnerability-scan result from the verdict while retaining
@@ -360,6 +420,11 @@ Request changes when any of the following holds:
 - The PR changes files below more than one distinct `oci/<name>/` directory.
 - A new rock/track/base first release is not restricted to `edge`.
 - The `end-of-life` exceeds the cap for an unsupported upstream-sourced rock.
+- A rock stages `.deb` packages but its recipe omits the `rocks-security-manifest`
+  part, or wires it differently (see [§4](#4-source-recipe-rockcraftyaml-review)).
+- A source bump drops a `parts:` or `services:` entry the previous recipe defined,
+  without the author confirming it is intentional (see
+  [§4](#4-source-recipe-rockcraftyaml-review)).
 - A documented default is unverified or wrong, or the documented run does not work.
 - A workflow grants more token/permission scope than necessary, or uses a PAT
   where `GITHUB_TOKEN` suffices.
@@ -371,7 +436,7 @@ release policy is satisfied, and regressions are ruled out. Keep approvals
 concise and, where relevant, note that no regressions/undermines were
 introduced.
 
-### 9. Related project conventions
+### 10. Related project conventions
 
 See [`CONTRIBUTING.md`](/CONTRIBUTING.md) for authoring rules the review should
 enforce:
