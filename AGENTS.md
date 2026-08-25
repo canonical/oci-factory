@@ -29,6 +29,9 @@ review standard.
   spec; squash commits by functional value.
 - In-progress PRs must be marked **Draft**; non-trivial changes should open an
   issue first.
+- A PR that changes files below `oci/` must affect only one `oci/<name>/`
+  directory. It may update multiple versions, tracks, or maintainer files for
+  that image, but changes for multiple images must be split into separate PRs.
 - See [`CONTRIBUTING.md`](/CONTRIBUTING.md) and [`README.md`](/README.md) for the
   full authoring and project reference, and
   [`IMAGE_MAINTAINER_AGREEMENT.md`](/IMAGE_MAINTAINER_AGREEMENT.md) for
@@ -69,10 +72,13 @@ this guide.
   by file path** — the `rock/*` labels don't exist yet, so use the fallback path
   column in [Triage](#1-triage-the-pr-first).
 - It then applies the matching checklists ([§2](#2-security--vulnerability-gating-hard-gate)–[§6](#6-evidence--process-hygiene)).
-  The blocking vulnerability scan is **CI-only**, so locally the harness just
-  confirms `version: 2` and that every `ignored-vulnerabilities` entry carries
-  a justification comment (see
-  [§2](#2-security--vulnerability-gating-hard-gate)).
+  The vulnerability scan itself is **CI-only** and does not affect a local
+  dry-run verdict. Locally, the harness checks the static requirements: trigger
+  `version: 2` where `ignored-vulnerabilities` is used, sufficient comments on
+  new or modified ignored entries, and `.trivyignore` deprecation (see
+  [§2](#2-security--vulnerability-gating-hard-gate)). A local `Approve` means
+  only that the locally-checkable gates passed; it is not an approval of a real
+  PR and does not imply that its vulnerability scan is clean.
 
 **Output format (mimics a GitHub PR review — keep it concise)**
 
@@ -83,9 +89,10 @@ this guide.
   pointer to the governing section. Use GitHub ```` ```suggestion ```` blocks for
   concrete fixes.
 - **Gate summary** — a compact pass / ⚠ / blocker checklist for the
-  locally-checkable gates: edge-first, EOL cap, semver, docs checklist,
-  `ignored-vulnerabilities` justification, `.trivyignore` deprecation. Mark the
-  vulnerability scan itself as *verify in CI*.
+  locally-checkable gates: one-image scope, edge-first, EOL cap, track naming,
+  docs checklist, `ignored-vulnerabilities` justification, and `.trivyignore`
+  deprecation. Mark the vulnerability scan itself as *not assessed locally;
+  verify in CI*.
 
 **Example**
 
@@ -99,15 +106,16 @@ this guide.
 >           - edge
 > ````
 >
-> `oci/foo/image.yaml:20` — [blocker] `ignored-vulnerabilities` entry has no
-> justification comment; add at least the affected package/source (fuller
-> description | CVSS | Ubuntu priority | Status preferred). (§2)
+> `oci/foo/image.yaml:20` — [blocker] This new `ignored-vulnerabilities` entry
+> lacks a sufficient justification; identify the affected package/source and
+> state the image-specific reason the risk can be accepted. (§2)
 >
-> `oci/foo/image.yaml:5` — [nit] Drop the patch from `version` since the rock
-> tracks a moving `stage-snap` channel. (§3)
+> `oci/foo/image.yaml:5` — [blocker] The new track `1.2.3-24.04` includes a
+> SemVer patch component; use `1.2-24.04`. (§3)
 >
-> **Gates:** edge-first ❌ · EOL cap ✅ · semver ⚠ · docs n/a · CVE justification
-> ❌ · `.trivyignore` ✅ · vuln scan → verify in CI
+> **Gates:** one-image ✅ · edge-first ❌ · EOL cap ✅ · track naming ❌ · docs
+> n/a · CVE justification ❌ · `.trivyignore` ✅ · vuln scan → not assessed
+> locally; verify in CI
 
 ### 1. Triage the PR first
 
@@ -127,8 +135,11 @@ is missing (the `rock/*` labels are applied by maintainers, not auto-labeled):
 
 ### 2. Security & vulnerability gating (hard gate)
 
-The vulnerability scan is a **blocking** gate. Any finding must be resolved
-before approval.
+For an actual GitHub PR review of an image change, the vulnerability scan is a
+**blocking** gate. Inspect the latest relevant CI run and do not approve until
+it succeeds. If the scan is pending or unavailable, withhold approval and
+re-review when it completes. This CI-only result is excluded from local dry-run
+verdicts as described above.
 
 - If the scan reports findings, request changes and link the exact run. Use the
   canonical phrasing:
@@ -137,18 +148,34 @@ before approval.
   > `https://github.com/canonical/oci-factory/actions/runs/<run-id>/attempts/<n>#summary-<summary-id>`
 
 - Findings are addressed in the `ignored-vulnerabilities:` field of the image
-  trigger, **each entry justified** with an explanatory comment. At minimum,
-  the comment must identify the affected package/source (e.g. `# werkzeug
-  (pip)`); entries should prefer the fuller justification format:
+  trigger. Every new or modified entry must have an explanatory comment that:
+  identifies the affected package/source and ecosystem, and states the
+  maintainer's actual risk disposition with an image-specific reason the
+  finding may be ignored. Existing untouched entries do not need to be updated
+  solely to meet this comment format.
+
+  A package name, description, CVSS score, Ubuntu priority, or status such as
+  `Needs evaluation` is useful supporting context, but is not by itself a risk
+  disposition or justification. For deb packages, link the Ubuntu Security
+  tracker at `https://ubuntu.com/security/<CVE-ID>` instead of creating an
+  internal ROCKS ticket. CVEs in language packages are not currently tracked
+  internally; state the upstream fix status and link an upstream advisory when
+  one is available.
 
   ```yaml
-  ignored-vulnerabilities:
-    - CVE-2026-42151  # prometheus: OAuth client secret exposed via /-/config endpoint | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute): Needs evaluation
-    - CVE-2026-33186  # grpc: authorization bypass via malformed HTTP/2 :path pseudo-header | CVSS: 9.1 (Critical) | Ubuntu priority: High | Status (26.04 resolute): Needs evaluation
+  upload:
+    - source: canonical/foo-rock
+      commit: "<full-commit-sha>"
+      directory: .
+      ignored-vulnerabilities:
+        - CVE-XXXX-XXXXX  # libfoo (deb): temporarily accepted pending an Ubuntu fix | Ubuntu tracker: https://ubuntu.com/security/CVE-XXXX-XXXXX
+        - CVE-YYYY-YYYYY  # google.golang.org/grpc (Go): temporarily accepted; no fixed upstream release is available
   ```
 
-  The full comment should carry: short description, `CVSS: <score> (<severity>)`,
-  `Ubuntu priority: <priority>`, and `Status (<series>): <triage>`.
+  Prefer also including a short description, `CVSS: <score> (<severity>)`,
+  `Ubuntu priority: <priority>`, `Status (<series>): <triage>`, and relevant
+  upstream evidence. This metadata supplements, but does not replace, the risk
+  disposition.
 
 - When requesting changes for scan findings, apply the `pending cve` label (see
   [section 7](#7-pr-labels)); remove it once every finding is fixed or justified.
@@ -156,11 +183,15 @@ before approval.
 - Ask maintainers to add ignored entries **with proper justifications in the
   comment**, not to silence findings blindly.
 
-- The `.trivyignore` file is **deprecated**. Require migration to
-  `ignored-vulnerabilities` in the image trigger. Example wording:
+- The `.trivyignore` file is **deprecated**. Do not accept new `.trivyignore`
+  files. When ignore entries are added or modified, require the applicable
+  rules to move to `ignored-vulnerabilities` in the image trigger. Legacy files
+  may remain temporarily because released revisions can still depend on them.
+  Example wording:
 
-  > Let's move this file away since using the `.trivyignore` file in OCI Factory
-  > is now deprecated.
+  > Let's move these changed entries to `ignored-vulnerabilities`; new use of
+  > `.trivyignore` in OCI Factory is deprecated. The legacy file may remain for
+  > released revisions that still depend on it.
 
 - `ignored-vulnerabilities` requires a `version: 2` trigger. A `version: 1`
   trigger may stay as-is only until it needs this field; then it MUST switch to
@@ -188,11 +219,15 @@ before approval.
   promotion is **not automated**, require an issue/Jira ticket to track any
   intended future promotion.
 
-- **Versioning scrutiny.**
-  - Reject non-`major-minor-patch` semver in the `version` field.
-  - If the version is not a source of truth (e.g., the rock pulls a moving
-    channel via `stage-snap`), drop the minor/patch from both the `version`
-    field and the track name.
+- **Canonical track naming (MUST).** New or modified image track keys use
+  `<version>-<base>` (for example, `1.27-26.04`). Here, `<version>` is the
+  application's track version, not the image trigger's top-level schema
+  `version:` field. When the application follows SemVer, the track MUST omit
+  the patch component: upstream `1.27.3` belongs to `1.27-26.04`, not
+  `1.27.3-26.04`. Non-SemVer `<version>` values are exempt from the SemVer shape
+  but must remain aligned with the application's versioning scheme. Do not
+  require cleanup of unchanged legacy patch-level tracks in an otherwise
+  unrelated update.
 
 - **Track-conflict detection.** Flag concurrent PRs that write the same track;
   they cause the track to oscillate/overwrite between values. Mark the
@@ -229,9 +264,13 @@ before approval.
 
 ### 5. CI / GitHub Actions review
 
-- **Least privilege for `GITHUB_TOKEN`.** Grant only the "just enough" write
-  permissions a job needs; the default is read-only, so **do not** add explicit
-  `permissions: ...: read` entries.
+- **Least privilege for `GITHUB_TOKEN`.** OCI Factory inherits the read-only
+  default configured by Canonical's organizational workflow-permission
+  controls. When no applicable `permissions` block is declared, do not add one
+  solely to restate that inherited default. Once a `permissions` block is
+  declared at workflow or job level, it is exhaustive: every omitted scope is
+  set to `none`. List every read or write scope the job actually needs and no
+  others; `write` already includes `read` for the same scope.
 - **Prefer `GITHUB_TOKEN` over broad PATs.** Do not use `ROCKSBOT_TOKEN` where
   `GITHUB_TOKEN` suffices — the bot token carries far wider scope.
 - **PAT-tag anti-pattern.** Pushing tags/commits with a PAT/bot identity
@@ -311,9 +350,14 @@ uses three families:
 
 ### 8. Approve vs. request-changes criteria
 
+The following criteria govern actual GitHub PR reviews. For a local dry-run,
+exclude the CI-only vulnerability-scan result from the verdict while retaining
+all locally-checkable security requirements.
+
 Request changes when any of the following holds:
 
 - The vulnerability scan reports unresolved findings.
+- The PR changes files below more than one distinct `oci/<name>/` directory.
 - A new rock/track/base first release is not restricted to `edge`.
 - The `end-of-life` exceeds the cap for an unsupported upstream-sourced rock.
 - A documented default is unverified or wrong, or the documented run does not work.
