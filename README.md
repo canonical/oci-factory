@@ -430,7 +430,7 @@ upload:
 ##### Legacy *.trivyignore* files
 
 Existing `.trivyignore` files follow [Trivy's upstream
-syntax](<https://aquasecurity.github.io/trivy/v0.19.2/vulnerability/examples/filter/#by-vulnerability-ids>)
+syntax](<https://trivy.dev/docs/latest/configuration/filtering/#by-finding-ids>)
 and remain supported temporarily for released revisions. Do not add new files
 or rules. When migrating an affected build to `ignored-vulnerabilities`, copy
 every still-applicable rule, not only the changed rules. Once

@@ -70,7 +70,8 @@ this guide.
 - The harness scopes the diff (`git diff --merge-base origin/main`, or
   `git diff --cached` for staged-only), lists the touched files, and **triages
   by file path** — the `rock/*` labels don't exist yet, so use the fallback path
-  column in [Triage](#1-triage-the-pr-first).
+  column in [Triage](#1-triage-the-pr-first), as labels are only applied to
+  actual PRs.
 - It then applies the matching checklists ([§2](#2-security--vulnerability-gating-hard-gate)–[§7](#7-evidence--process-hygiene)).
   The vulnerability scan itself is **CI-only** and does not affect a local
   dry-run verdict. Locally, the harness checks the static requirements: trigger
