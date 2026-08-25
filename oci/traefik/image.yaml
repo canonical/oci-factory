@@ -1,62 +1,35 @@
-version: 1
+version: 2
 upload:
   - source: canonical/traefik-rock
-    commit: c117afda0515f7f84ae415f31d84f233dc5ad0ff
-    directory: 2.11.49
+    commit: db61bd3c7e7a3cc2996998dd58ec686755f81bb3
+    directory: 2.11.54
     release:
       2.11-26.04:
-        end-of-life: "2026-09-15T00:00:00Z"
+        end-of-life: "2026-11-14T00:00:00Z"
         risks:
           - edge
-  - source: canonical/traefik-rock
-    commit: ea0e9420276193c05513d24efbc9a8eb39575b5e
-    directory: 2.11.0
-    release:
-      2.11.0-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
-      2.11-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
-      2-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
-  - source: canonical/traefik-rock
-    commit: ea0e9420276193c05513d24efbc9a8eb39575b5e
-    directory: 2.10.4
-    release:
-      2.10.4-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
-  - source: canonical/traefik-rock
-    commit: ea0e9420276193c05513d24efbc9a8eb39575b5e
-    directory: 2.10.5
-    release:
-      2.10.5-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
-  - source: canonical/traefik-rock
-    commit: ea0e9420276193c05513d24efbc9a8eb39575b5e
-    directory: 2.10.6
-    release:
-      2.10.6-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
-  - source: canonical/traefik-rock
-    commit: ea0e9420276193c05513d24efbc9a8eb39575b5e
-    directory: 2.10.7
-    release:
-      2.10.7-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
-      2.10-22.04:
-        end-of-life: "2025-03-14T00:00:00Z"
-        risks:
-          - stable
+    ignored-vulnerabilities:
+      - CVE-2026-56864  # golang.org/x/mod | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-56864
+      - CVE-2026-56865  # golang.org/x/mod | CVSS: 8.4 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-56865
+      - CVE-2026-25679  # stdlib | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-25679
+      - CVE-2026-27137  # stdlib | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-27137
+      - CVE-2026-27145  # stdlib | CVSS: 6.5 (Medium) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-27145
+      - CVE-2026-32280  # stdlib | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Vulnerable, but no fix available | https://ubuntu.com/security/CVE-2026-32280
+      - CVE-2026-32281  # stdlib | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-32281
+      - CVE-2026-32283  # stdlib | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-32283
+      - CVE-2026-33810  # stdlib | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-33810
+      - CVE-2026-33811  # stdlib | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-33811
+      - CVE-2026-33818  # stdlib | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-33818
+      - CVE-2026-33814  # stdlib | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-33814
+      - CVE-2026-39820  # stdlib | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-39820
+      - CVE-2026-39821  # golang.org/x/net | CVSS: 9.6 (Critical) | Ubuntu priority: Medium | Status (26.04 resolute): Not in release | https://ubuntu.com/security/CVE-2026-39821
+      - CVE-2026-39822  # stdlib | CVSS: 7.8 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-39822
+      - CVE-2026-39836  # stdlib | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Not affected | https://ubuntu.com/security/CVE-2026-39836
+      - CVE-2026-42499  # stdlib | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-42499
+      - CVE-2026-42504  # stdlib | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-42504
+      - CVE-2026-46600  # stdlib | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.23+): Needs evaluation | https://ubuntu.com/security/CVE-2026-46600
+      - CVE-2026-56853  # stdlib | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-56853
+      - CVE-2026-56858  # stdlib | CVSS: 6.1 (Medium) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-56858
+      - CVE-2026-56859  # stdlib | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-56859
+      - CVE-2026-56860  # stdlib | CVSS: 5.9 (Medium) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-56860
+      - CVE-2026-56862  # stdlib | CVSS: 7.5 (High) | Ubuntu priority: Medium | Status (26.04 resolute / golang-1.25): Needs evaluation | https://ubuntu.com/security/CVE-2026-56862
