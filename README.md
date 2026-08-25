@@ -371,7 +371,9 @@ OCI Factory's CI to notify the Maintainer when an event of interest occurs.
 - `.trivyignore`: this legacy vulnerability-filtering file is deprecated and
 must not be added for new filtering rules. Existing files remain temporarily
 supported because released image revisions may still depend on them. Use
-`upload[*].ignored-vulnerabilities` for new or modified rules.
+`upload[*].ignored-vulnerabilities` for new filtering rules. When migrating an
+affected build, copy every still-applicable rule because that build no longer
+uses `.trivyignore` once `ignored-vulnerabilities` is present.
 
 #### Contacts
 
@@ -430,9 +432,11 @@ upload:
 Existing `.trivyignore` files follow [Trivy's upstream
 syntax](<https://aquasecurity.github.io/trivy/v0.19.2/vulnerability/examples/filter/#by-vulnerability-ids>)
 and remain supported temporarily for released revisions. Do not add new files
-or rules; migrate changed rules to `ignored-vulnerabilities`. The reusable
-workflow's `trivyignore-path` input remains available as a deprecated
-compatibility interface.
+or rules. When migrating an affected build to `ignored-vulnerabilities`, copy
+every still-applicable rule, not only the changed rules. Once
+`ignored-vulnerabilities` is present, that build no longer uses `.trivyignore`.
+The reusable workflow's `trivyignore-path` input remains available as a
+deprecated compatibility interface.
 
 ## 📦 Reusable workflows
 
