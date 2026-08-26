@@ -407,11 +407,13 @@ contain unfixed findings inherited from upstream software. Add new or modified
 filtering rules to `upload[*].ignored-vulnerabilities` in a `version: 2` image
 trigger only when the risk is acknowledged and justified.
 
-Each new or modified entry must identify the affected package/source and
-ecosystem, and state the maintainer's risk disposition with an image-specific
-reason the finding may be ignored. For deb packages, link the Ubuntu Security
-tracker at `https://ubuntu.com/security/<CVE-ID>`. CVEs in language packages are
-not currently tracked internally; state the upstream fix status and link an
+Each new or modified vulnerability entry must identify the affected
+package/source and ecosystem; entries for other Trivy finding types must instead
+identify the affected file/component and rule category. Every entry must state
+the maintainer's risk disposition with an image-specific reason the finding may
+be ignored. For deb packages, link the Ubuntu Security tracker at
+`https://ubuntu.com/security/<CVE-ID>`. CVEs in language packages are not
+currently tracked internally; state the upstream fix status and link an
 upstream advisory when one is available.
 
 ##### Example: *ignored-vulnerabilities*

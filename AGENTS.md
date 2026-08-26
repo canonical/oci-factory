@@ -153,11 +153,12 @@ verdicts as described above.
   > `https://github.com/canonical/oci-factory/actions/runs/<run-id>/attempts/<n>#summary-<summary-id>`
 
 - Findings are addressed in the `ignored-vulnerabilities:` field of the image
-  trigger. Every new or modified entry must have an explanatory comment that:
-  identifies the affected package/source and ecosystem, and states the
-  maintainer's actual risk disposition with an image-specific reason the
-  finding may be ignored. Existing untouched entries do not need to be updated
-  solely to meet this comment format.
+  trigger. Every new or modified vulnerability entry must identify the affected
+  package/source and ecosystem; entries for other Trivy finding types must
+  instead identify the affected file/component and rule category. Every entry
+  must state the maintainer's actual risk disposition with an image-specific
+  reason the finding may be ignored. Existing untouched entries do not need to
+  be updated solely to meet this comment format.
 
   A package name, description, CVSS score, Ubuntu priority, or status such as
   `Needs evaluation` is useful supporting context, but is not by itself a risk
@@ -190,15 +191,17 @@ verdicts as described above.
 
 - The `.trivyignore` file is **deprecated**. Do not accept new `.trivyignore`
   files. When migrating an affected build to `ignored-vulnerabilities`, require
-  every still-applicable rule to move, not only the changed rules. Once
-  `ignored-vulnerabilities` is present, that build no longer uses
-  `.trivyignore`. The legacy file may remain temporarily because previously
-  released revisions can still depend on it.
+  every still-applicable rule to move, not only the changed rules. A non-empty
+  `ignored-vulnerabilities` list takes precedence over `.trivyignore`; an empty
+  or omitted list still falls back to the legacy file. The legacy file may
+  remain temporarily because previously released revisions can still depend on
+  it.
   Example wording:
 
-  > Let's move every still-applicable rule to `ignored-vulnerabilities`; once
-  > present, that build no longer uses `.trivyignore`. The legacy file may
-  > remain for previously released revisions that still depend on it.
+  > Let's move every still-applicable rule to `ignored-vulnerabilities`; a
+  > non-empty list takes precedence over `.trivyignore`, while an empty or
+  > omitted list still falls back to the legacy file. The file may remain for
+  > previously released revisions that still depend on it.
 
 - `ignored-vulnerabilities` requires a `version: 2` trigger. A `version: 1`
   trigger may stay as-is only until it needs this field; then it MUST switch to
