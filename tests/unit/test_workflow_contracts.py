@@ -167,7 +167,13 @@ def test_vulnerability_scan_pro_inputs_are_optional_and_backward_compatible() ->
 
     # Pre-existing inputs must remain untouched (no removed/newly-required ones).
     assert inputs["oci-image-name"]["required"] == "true"
-    for name in ("oci-image-path", "trivyignore-path", "date-last-scan", "create-issue"):
+    for name in (
+        "oci-image-path",
+        "trivyignore-path",
+        "ignored-vulnerabilities",
+        "date-last-scan",
+        "create-issue",
+    ):
         assert inputs[name]["required"] == "false"
 
 
@@ -199,4 +205,41 @@ def test_continuous_testing_forwards_pro_matrix_fields() -> None:
     assert run_tests_with["released-tags"] == "${{ join(matrix.released-tags, ',') }}"
     # Pro images are pulled with an explicit tag; public keep the bare source.
     assert "matrix.released-tags[0]" in run_tests_with["oci-image-name"]
+
+
+def test_continuous_testing_keeps_the_swift_build_metadata_lookup() -> None:
+    workflow = load_yaml(".github/workflows/Continuous-Testing.yaml")
+    prepare_job = workflow["jobs"]["prepare-test-matrix"]
+
+    # Swift is only reachable from the private endpoint runners.
+    assert prepare_job["runs-on"] == "self-hosted-linux-amd64-noble-private-endpoint-small"
+
+    # The matrix builder needs both the ACR registry (Pro images) and the Swift
+    # credentials (v2 'ignored-vulnerabilities' from the build metadata).
+    env = step_named(workflow, "prepare-test-matrix", "Prepare test matrix")["env"]
+    for name in (
+        "OS_AUTH_URL",
+        "OS_USERNAME",
+        "OS_PASSWORD",
+        "OS_PROJECT_NAME",
+        "OS_STORAGE_URL",
+    ):
+        assert env[name].startswith("${{ secrets.SWIFT_")
+    assert env["SWIFT_CONTAINER_NAME"] == "${{ vars.SWIFT_CONTAINER_NAME }}"
+
+
+def test_continuous_testing_keeps_trivyignore_and_ignored_vulns_exclusive() -> None:
+    # Test-Rock.yaml hard-fails when both are set, so the matrix must only ever
+    # forward one of them.
+    run_tests_with = load_yaml(".github/workflows/Continuous-Testing.yaml")["jobs"][
+        "run-tests"
+    ]["with"]
+
+    assert run_tests_with["ignored-vulnerabilities"] == (
+        "${{ matrix.ignored-vulnerabilities }}"
+    )
+    assert run_tests_with["trivyignore-path"] == (
+        "${{ matrix.ignored-vulnerabilities == '' "
+        "&& format('oci/{0}/.trivyignore', matrix.name) || '' }}"
+    )
 
