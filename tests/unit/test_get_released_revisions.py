@@ -1,4 +1,5 @@
 import json
+from types import SimpleNamespace
 
 from src.tests import get_released_revisions
 
@@ -24,7 +25,7 @@ def test_get_released_pro_images_groups_tags_by_revision_and_skips_eol():
     }
 
     assert get_released_revisions.get_released_pro_images(
-        "example", releases, "ubuntu.azurecr.io"
+        "example", releases, "ubuntu.azurecr.io", None, []
     ) == [
         {
             "name": "example",
@@ -33,6 +34,7 @@ def test_get_released_pro_images_groups_tags_by_revision_and_skips_eol():
             "released-tags": ["1.2-22.04_beta", "1.2-22.04_edge"],
             "pro": True,
             "release-file": "_pro_releases.json",
+            "ignored-vulnerabilities": "",
         }
     ]
 
@@ -48,7 +50,7 @@ def test_get_released_pro_images_normalizes_latest_tags():
     }
 
     images = get_released_revisions.get_released_pro_images(
-        "example", releases, "ubuntu.azurecr.io"
+        "example", releases, "ubuntu.azurecr.io", None, []
     )
 
     assert images[0]["released-tags"] == ["beta", "edge"]
@@ -69,7 +71,7 @@ def test_get_released_public_images_uses_resolved_active_revisions(monkeypatch):
     }
 
     assert get_released_revisions.get_released_public_images(
-        "example", releases
+        "example", releases, None, []
     ) == [
         {
             "name": "example",
@@ -78,6 +80,7 @@ def test_get_released_public_images_uses_resolved_active_revisions(monkeypatch):
             "released-tags": [],
             "pro": False,
             "release-file": "_releases.json",
+            "ignored-vulnerabilities": "",
         }
     ]
 
@@ -103,6 +106,11 @@ def test_main_builds_combined_public_and_pro_matrix(tmp_path, monkeypatch):
         get_released_revisions,
         "get_image_name_in_registry",
         lambda image, revision: f"ghcr.io/canonical/oci-factory/{image}:1.0_{revision}",
+    )
+    monkeypatch.setattr(
+        get_released_revisions,
+        "get_swift_connection",
+        lambda: SimpleNamespace(get_container=lambda *_args, **_kwargs: ({}, [])),
     )
 
     img_dir = tmp_path / "oci" / "example"
@@ -153,6 +161,7 @@ def test_main_builds_combined_public_and_pro_matrix(tmp_path, monkeypatch):
                 "released-tags": [],
                 "pro": False,
                 "release-file": "_releases.json",
+                "ignored-vulnerabilities": "",
             },
             {
                 "name": "example",
@@ -161,6 +170,7 @@ def test_main_builds_combined_public_and_pro_matrix(tmp_path, monkeypatch):
                 "released-tags": ["1.0-22.04_beta"],
                 "pro": True,
                 "release-file": "_pro_releases.json",
+                "ignored-vulnerabilities": "",
             },
         ]
     }

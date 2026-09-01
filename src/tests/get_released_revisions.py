@@ -19,8 +19,10 @@ import os
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
+from fnmatch import fnmatchcase
 
 import docker
+import swiftclient
 
 from ..image.utils.schema.triggers import KNOWN_RISKS_ORDERED
 from ..shared import release_info
@@ -29,8 +31,67 @@ from ..shared.skopeo import DEFAULT_SKOPEO_IMAGE
 
 SKOPEO_IMAGE = os.getenv("SKOPEO_IMAGE", DEFAULT_SKOPEO_IMAGE)
 REGISTRY = "ghcr.io/canonical/oci-factory"
+SWIFT_CONTAINER = os.getenv("SWIFT_CONTAINER_NAME", "oci-factory")
 
 logger = get_logger(stream=sys.stdout, level="INFO")
+
+
+def get_swift_connection() -> swiftclient.client.Connection:
+    """Open a connection to the Swift object storage holding the build metadata."""
+    return swiftclient.client.Connection(
+        authurl=os.environ["OS_AUTH_URL"],
+        user=os.environ["OS_USERNAME"],
+        key=os.environ["OS_PASSWORD"],
+        os_options={
+            "user_domain_name": os.getenv("OS_USER_DOMAIN_NAME", "Default"),
+            "project_domain_name": os.getenv("OS_PROJECT_DOMAIN_NAME", "Default"),
+            "project_name": os.environ["OS_PROJECT_NAME"],
+            "object_storage_url": os.environ["OS_STORAGE_URL"],
+        },
+        auth_version=os.getenv("OS_IDENTITY_API_VERSION", "3"),
+    )
+
+
+def get_ignored_vulnerabilities(
+    swift_conn: swiftclient.client.Connection,
+    swift_objs: list,
+    img_name: str,
+    revision: str | int,
+) -> str:
+    """Read the space-separated 'ignored-vulnerabilities' string for a given
+    image revision from its build_metadata.json in Swift.
+
+    Revisions are globally unique per image, so we match the build metadata
+    object regardless of the track it was built under, i.e.:
+        <img-name>/<track>/<revision>/build_metadata.json
+
+    :param swift_conn: an open connection to Swift
+    :param swift_objs: the listing of objects in the Swift container
+    :param img_name: name of the container image
+    :param revision: revision number of the image to look up
+    """
+    matches = [
+        obj
+        for obj in swift_objs
+        if fnmatchcase(obj["name"], f"{img_name}/*/{revision}/build_metadata.json")
+    ]
+    if not matches:
+        logger.warning(
+            f"No build metadata in Swift for {img_name} revision {revision}; "
+            "assuming no ignored vulnerabilities"
+        )
+        return ""
+
+    try:
+        _, build_metadata_raw = swift_conn.get_object(
+            SWIFT_CONTAINER, matches[0]["name"]
+        )
+    except swiftclient.exceptions.ClientException:
+        logger.exception(f"Unable to get {matches[0]['name']} from Swift")
+        return ""
+
+    build_metadata = json.loads(build_metadata_raw.decode())
+    return build_metadata.get("ignored-vulnerabilities", "") or ""
 
 
 def get_image_name_in_registry(img_name: str, revision: str) -> str:
@@ -88,7 +149,12 @@ def _active_tracks(releases: dict) -> dict:
     return active
 
 
-def get_released_public_images(img_name: str, releases: dict) -> list:
+def get_released_public_images(
+    img_name: str,
+    releases: dict,
+    swift_conn: swiftclient.client.Connection,
+    swift_objs: list,
+) -> list:
     """Build scan matrix entries for the released public revisions of an image.
 
     Each unique revision is resolved to its canonical GHCR tag.
@@ -117,6 +183,9 @@ def get_released_public_images(img_name: str, releases: dict) -> list:
                     "released-tags": [],
                     "pro": False,
                     "release-file": "_releases.json",
+                    "ignored-vulnerabilities": get_ignored_vulnerabilities(
+                        swift_conn, swift_objs, img_name, revision
+                    ),
                 }
             )
     return images
@@ -128,7 +197,13 @@ def _normalize_tag(tag: str) -> str:
     return risk if track == "latest" else tag
 
 
-def get_released_pro_images(img_name: str, releases: dict, acr_registry: str) -> list:
+def get_released_pro_images(
+    img_name: str,
+    releases: dict,
+    acr_registry: str,
+    swift_conn: swiftclient.client.Connection,
+    swift_objs: list,
+) -> list:
     """Build scan matrix entries for the released Pro revisions of an image.
 
     Pro images live only in ACR. Tags are assembled from the keys in
@@ -161,6 +236,9 @@ def get_released_pro_images(img_name: str, releases: dict, acr_registry: str) ->
                 "released-tags": released_tags,
                 "pro": True,
                 "release-file": "_pro_releases.json",
+                "ignored-vulnerabilities": get_ignored_vulnerabilities(
+                    swift_conn, swift_objs, img_name, revision
+                ),
             }
         )
     return images
@@ -188,18 +266,25 @@ def main(argv: list = None) -> None:
 
     logger.info(f"Looping through OCI images in {args.oci_images_path}")
 
+    # We need the build metadata (stored in Swift) to recover the v2
+    # 'ignored-vulnerabilities' for each released revision.
+    swift_conn = get_swift_connection()
+    _, swift_objs = swift_conn.get_container(SWIFT_CONTAINER, full_listing=True)
+
     matrix_include = []
     for img in sorted(os.listdir(args.oci_images_path)):
         public_file = f"{args.oci_images_path}/{img}/_releases.json"
         if os.path.isfile(public_file):
             with open(public_file) as rf:
-                matrix_include += get_released_public_images(img, json.load(rf))
+                matrix_include += get_released_public_images(
+                    img, json.load(rf), swift_conn, swift_objs
+                )
 
         pro_file = f"{args.oci_images_path}/{img}/_pro_releases.json"
         if os.path.isfile(pro_file):
             with open(pro_file) as rf:
                 matrix_include += get_released_pro_images(
-                    img, json.load(rf), args.acr_registry
+                    img, json.load(rf), args.acr_registry, swift_conn, swift_objs
                 )
 
     logger.info(f"Released revisions to scan: {json.dumps(matrix_include, indent=2)}")
