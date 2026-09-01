@@ -28,13 +28,14 @@ jobs:
       - name: Prepare test matrix
         id: prepare-test-matrix
         env:
+          ACR_REGISTRY: ${{ secrets.ACR_REGISTRY }}
           OS_AUTH_URL: ${{ secrets.SWIFT_OS_AUTH_URL_PS7 }}
           OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME_PS7 }}
           OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD_PS7 }}
           OS_PROJECT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME_PS7 }}
           OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL_PS7 }}
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
-        run: python3 -m src.tests.get_released_revisions --oci-images-path "$PWD/oci"
+        run: python3 -m src.tests.get_released_revisions --oci-images-path "$PWD/oci" --acr-registry "${ACR_REGISTRY}"
 
       - name: Infer date of last scan
         id: last-scan
@@ -56,10 +57,12 @@ jobs:
       matrix: ${{ fromJSON(needs.prepare-test-matrix.outputs.released-revisions-matrix) }}
     uses: ./.github/workflows/Vulnerability-Scan.yaml
     with:
-      oci-image-name: "${{ matrix.source-image }}"
+      oci-image-name: ${{ matrix.pro && format('{0}:{1}', matrix.source-image, matrix.released-tags[0]) || matrix.source-image }}
       oci-image-path: "oci/${{ matrix.name }}"
       trivyignore-path: ${{ matrix.ignored-vulnerabilities == '' && format('oci/{0}/.trivyignore', matrix.name) || '' }}
       ignored-vulnerabilities: ${{ matrix.ignored-vulnerabilities }}
       date-last-scan: ${{ needs.prepare-test-matrix.outputs.last-scan }}
       create-issue: true
+      pro: ${{ matrix.pro }}
+      released-tags: ${{ join(matrix.released-tags, ',') }}
     secrets: inherit
