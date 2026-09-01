@@ -28,7 +28,8 @@
       - [Contacts](#contacts)
         - [Example: *contacts.yaml*](#example-contactsyaml)
       - [Vulnerability Filtering](#vulnerability-filtering)
-        - [Example: *.trivyignore*](#example-trivyignore)
+        - [Example: *ignored-vulnerabilities*](#example-ignored-vulnerabilities)
+        - [Legacy *.trivyignore* files](#legacy-trivyignore-files)
   - [📦 Reusable workflows](#-reusable-workflows)
     - [Build-Rock Workflow](#build-rock-workflow)
     - [Test-Rock Workflow](#test-rock-workflow)
@@ -204,7 +205,7 @@ Having said that this trigger's syntax is as follows:
 | upload[*].source | True | str | Git repository hosting the image's project. |
 | upload[*].commit | True | str | Specific reference in the source, where to run the build from. |
 | upload[*].directory | True | str | Path to the "rockcraft.yaml". Where the build will run from. |
-| upload[*].ignored-vulnerabilities | False | conlist[str, unique_items=true] | List of vulnerability IDs (CVE or GHSA) to ignore during vulnerability scanning. These IDs will be added to the image's build metadata for future reference. When specifying this field, the `.trivyignore` file will be ignored. |
+| upload[*].ignored-vulnerabilities | False | conlist[str, unique_items=true] | List of Trivy finding IDs (for example, CVE, GHSA, or secret rule IDs) to ignore during vulnerability scanning. These IDs will be added to the image's build metadata for future reference. When specifying this field, the legacy `.trivyignore` file will be ignored. |
 | upload[*].release | False | Dict[Dict[str, Any]] | Immediately release this (yet unknown) revision to the given channels. Same as using `--release <channels>` with `rockcraft upload`. |
 | upload[*].release.\<track\> | True | Dict[str, Any] | Track to release this revision to. Canonical track `<version>-<base>` MUST be explicit, always! |
 | upload[*].release.\<track\>.end-of-life | True* | str | Same as `release.<track>` above. |
@@ -367,11 +368,12 @@ text dashboard).
 - `contacts.yaml`: this file is required for each OCI image. Although it won't
 trigger new builds/releases when updated by the Maintainer, it is used by the
 OCI Factory's CI to notify the Maintainer when an event of interest occurs.
-- `.trivyignore`: the vulnerability tests **should not be bypassed**!
-*However*, certain OCI images might have unfixed CVEs and/or vulnerabilities
-that come directly from the source upstream software that is being packaged. In
-these cases, it is acceptable to ignore specific CVEs, provided that the risks
-are acknowledged and proper justifications are provided.
+- `.trivyignore`: this legacy vulnerability-filtering file is deprecated and
+must not be added for new filtering rules. Existing files remain temporarily
+supported because released image revisions may still depend on them. Use
+`upload[*].ignored-vulnerabilities` for new filtering rules. When migrating an
+affected build, copy every still-applicable rule because that build no longer
+uses `.trivyignore` once `ignored-vulnerabilities` is present.
 
 #### Contacts
 
@@ -400,19 +402,43 @@ maintainers:
 
 #### Vulnerability Filtering
 
-The `.trivyignore` file follows [Trivy's upstream
-syntax](<https://aquasecurity.github.io/trivy/v0.19.2/vulnerability/examples/filter/#by-vulnerability-ids>).
+Vulnerability tests **should not be bypassed**. Certain images may nevertheless
+contain unfixed findings inherited from upstream software. Add new or modified
+filtering rules to `upload[*].ignored-vulnerabilities` in a `version: 2` image
+trigger only when the risk is acknowledged and justified.
 
-##### Example: *.trivyignore*
+Each new or modified vulnerability entry must identify the affected
+package/source and ecosystem; entries for other Trivy finding types must instead
+identify the affected file/component and rule category. Every entry must state
+the maintainer's risk disposition with an image-specific reason the finding may
+be ignored. For deb packages, link the Ubuntu Security tracker at
+`https://ubuntu.com/security/<CVE-ID>`. CVEs in language packages are not
+currently tracked internally; state the upstream fix status and link an
+upstream advisory when one is available.
 
-```text
-# <justifications>
-CVE-2024-0000
+##### Example: *ignored-vulnerabilities*
 
-# Trivy-specific rules
-# <justification>
-private-key
+```yaml
+version: 2
+upload:
+  - source: canonical/foo-rock
+    commit: "<full-commit-sha>"
+    directory: .
+    ignored-vulnerabilities:
+      - CVE-XXXX-XXXXX  # libfoo (deb): temporarily accepted pending an Ubuntu fix | Ubuntu tracker: https://ubuntu.com/security/CVE-XXXX-XXXXX
+      - CVE-YYYY-YYYYY  # google.golang.org/grpc (Go): temporarily accepted; no fixed upstream release is available
 ```
+
+##### Legacy *.trivyignore* files
+
+Existing `.trivyignore` files follow [Trivy's upstream
+syntax](<https://trivy.dev/docs/latest/configuration/filtering/#by-finding-ids>)
+and remain supported temporarily for released revisions. Do not add new files
+or rules. When migrating an affected build to `ignored-vulnerabilities`, copy
+every still-applicable rule, not only the changed rules. Once
+`ignored-vulnerabilities` is present, that build no longer uses `.trivyignore`.
+The reusable workflow's `trivyignore-path` input remains available as a
+deprecated compatibility interface.
 
 ## 📦 Reusable workflows
 
@@ -518,8 +544,8 @@ needed.
 |`test-efficiency`| False | bool | Enable Dive image efficiency test. Enabled by default. |
 |`test-vulnerabilities`| False | bool | Enable Trivy vulnerability test. Enabled by default. |
 |`vulnerability-report-artifact-name`| False | str | Custom filename for Trivy vulnerability report. |
-|`trivyignore-path`| False | str | Optional path to `.trivyignore` file used in vulnerability scan. When specifying this input, the `ignored-vulnerabilities` must be left empty. |
-|`ignored-vulnerabilities`| False | JSON str | Space separated list of vulnerability IDs (CVE or GHSA) to ignore during vulnerability scanning. When specifying this input, the `trivyignore-path` must be left empty. |
+|`trivyignore-path`| False | str | Deprecated compatibility input for an optional `.trivyignore` path. When specifying this input, `ignored-vulnerabilities` must be empty. |
+|`ignored-vulnerabilities`| False | str | Space-separated list of Trivy finding IDs to ignore during vulnerability scanning. When specifying this input, `trivyignore-path` must be empty. |
 |`test-malware`| False | bool | Enable ClamAV malware test. Enabled by default. |
 
 **Workflow Secrets:**
