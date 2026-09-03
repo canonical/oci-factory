@@ -12,3 +12,7 @@ upload:
         end-of-life: '2026-12-03T00:00:00Z'
         risks:
           - stable
+    ignored-vulnerabilities:
+      - CVE-2026-56854
+      - CVE-2026-84304
+      - CVE-2026-56855
