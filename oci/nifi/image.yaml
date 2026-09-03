@@ -1,0 +1,12 @@
+version: 2
+
+upload:
+  - source: canonical/nifi-rocks
+    commit: cb8e8b9ea68c76239b1c89ad3846e3c7dc2869cd
+    directory: "2.10"
+    release:
+      2.10-26.04:
+        end-of-life: "2031-05-31T00:00:00Z"
+        risks:
+          - edge
+    ignored-vulnerabilities: []  # TODO: populate from the OCI Factory Trivy scan output
