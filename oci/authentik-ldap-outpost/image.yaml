@@ -1,0 +1,19 @@
+version: 2
+upload:
+  - source: "canonical/authentik-ldap-outpost-rock"
+    commit: 7615949649e03d73d217b08494f9f3295550dd01
+    directory: .
+    release:
+      # Upstream does not follow semver; a new version is released every 3 months.
+      # Upstream versions have a patch version digit, which we are dropping (upstream
+      # follows the same convention on Docker Hub).
+      2026.5-26.04:
+        risks:
+          - edge
+        end-of-life: "2026-09-29T00:00:00Z"
+    ignored-vulnerabilities:
+      # Both CVEs are fixed upstream well before the version we build (2026.5.3);
+      # trivy matches them because Go stamps the main module of an in-tree build
+      # with a pseudo-version (v0.0.0-<ts>-<sha>) instead of the release version.
+      - CVE-2024-42490  # goauthentik.io: Insufficient authorization on several API endpoints. Fixed upstream in 2024.4.4/2024.6.4. https://github.com/goauthentik/authentik/security/advisories/GHSA-qxqc-27pr-wgc8
+      - CVE-2024-23647  # goauthentik.io: PKCE downgrade attack. Fixed upstream in 2023.8.7/2023.10.7. https://github.com/goauthentik/authentik/security/advisories/GHSA-mrx3-gxjx-hjqj
