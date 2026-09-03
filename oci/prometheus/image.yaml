@@ -12,3 +12,4 @@ upload:
         end-of-life: '2026-12-03T00:00:00Z'
         risks:
           - stable
+
