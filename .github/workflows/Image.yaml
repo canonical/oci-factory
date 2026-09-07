@@ -199,7 +199,11 @@ jobs:
       rock-repo-commit: ${{ matrix.commit }}
       rockfile-directory: ${{ matrix.directory }}
       lpci-fallback: true
-    secrets: inherit
+      pro-services: ${{ matrix.pro-services }}
+    secrets:
+      source-github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+      pro-token: ${{ matrix.pro-services != '' && secrets.ROCKS_PRO_TOKEN || '' }}
+      pro-artifact-passphrase: ${{ matrix.pro-services != '' && secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE || '' }}
 
   test-rock:
     needs: [prepare-build, build-rock]
@@ -212,7 +216,8 @@ jobs:
       oci-archive-name: "${{ matrix.name }}_${{ matrix.commit }}_${{ matrix.dir_identifier }}"
       trivyignore-path: ${{ matrix.ignored-vulnerabilities == '' && format('oci/{0}/.trivyignore', matrix.name) || '' }}
       ignored-vulnerabilities: ${{ matrix.ignored-vulnerabilities }}
-    secrets: inherit
+    secrets:
+      pro-artifact-passphrase: ${{ matrix.pro-services != '' && secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE || '' }}
 
   prepare-upload:
     runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
@@ -320,7 +325,7 @@ jobs:
       UMOCI_VERSION: "v0.4.7"
       UMOCI_BINARY: "umoci.amd64"
     outputs:
-      artefacts-hashes: ${{ steps.artefacts-hashes.outputs.hashes }}
+      artifacts-hashes: ${{ steps.artifacts-hashes.outputs.hashes }}
     
     permissions:
       packages: write
@@ -350,7 +355,17 @@ jobs:
         with:
           name: ${{ env.OCI_ARCHIVE_NAME }}
 
-      - name: Name output artefact
+      - name: Decrypt pro artifact
+        if: ${{ matrix.pro-services != '' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: decrypt
+          input-path: ${{ env.OCI_ARCHIVE_NAME }}.gpg
+          passphrase: ${{ secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE }}
+          output-path: ${{ env.OCI_ARCHIVE_NAME }}
+          preserve-original: false
+
+      - name: Name output artifact
         id: rename-oci-archive
         run: |
           # Rename the OCI archive tarball
@@ -364,11 +379,6 @@ jobs:
           MATRIX_TRACK: ${{ matrix.track }}
           MATRIX_REVISION: ${{ matrix.revision }}
           MATRIX_NAME: ${{ matrix.name }}
-
-      - uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7
-        with:
-          path: ${{ steps.rename-oci-archive.outputs.name }}
-          key: ${{ github.run_id }}-${{ steps.rename-oci-archive.outputs.name }}
 
       - name: Install Syft
         uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610
@@ -466,8 +476,8 @@ jobs:
           name: ${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
 
       # https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/generic/README.md
-      - name: Calculate artefacts hashes
-        id: artefacts-hashes
+      - name: Calculate artifacts hashes
+        id: artifacts-hashes
         env:
           VULN_REPORT: ${{ env.OCI_ARCHIVE_NAME }}${{ env.VULNERABILITY_REPORT_SUFFIX }}
           SBOMS: ${{ steps.generate-sboms.outputs.sboms }}
@@ -477,10 +487,12 @@ jobs:
           if [[ "$RUNNER_DEBUG" == "1" ]]; then
             set -x
           fi
-          echo "hashes=$(sha256sum ${VULN_REPORT} ${OCI_IMAGE_ARCHIVE} ${SBOMS} | base64 -w0)"
+          hashes=$(sha256sum "$VULN_REPORT" "$OCI_IMAGE_ARCHIVE" "$SBOMS" | base64 -w0)
+          echo "hashes=$hashes" >> "$GITHUB_OUTPUT"
 
       - name: Login to GHCR
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121
+        if: ${{ matrix.pro-services == '' }}
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -493,16 +505,26 @@ jobs:
           path: ${{ steps.generate-sboms.outputs.sboms }}
           if-no-files-found: error
 
+      - name: Encrypt pro artifact
+        if: ${{ matrix.pro-services != '' }}
+        uses: ./.github/actions/crypt-artifact
+        with:
+          mode: encrypt
+          input-path: ${{ steps.rename-oci-archive.outputs.name }}
+          passphrase: ${{ secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE }}
+          output-path: ${{ steps.rename-oci-archive.outputs.name }}.gpg
+
       - name: Upload image
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: ${{ steps.rename-oci-archive.outputs.name }}
-          path: ${{ steps.rename-oci-archive.outputs.name }}
+          path: ${{ matrix.pro-services == '' && steps.rename-oci-archive.outputs.name || format('{0}.gpg', steps.rename-oci-archive.outputs.name) }}
           if-no-files-found: error
 
       - name: Upload to GHCR
         id: upload-image
         uses: ./.github/actions/upload-rock
+        if: ${{ matrix.pro-services == '' }}
         with:
           artifact_name: ${{ env.OCI_ARCHIVE_NAME }}
           name: ${{ github.repository_owner }}/oci-factory/${{ matrix.name }}
@@ -528,12 +550,15 @@ jobs:
           MATRIX_NAME: ${{ matrix.name }}
           MATRIX_TRACK: ${{ matrix.track }}
           MATRIX_REVISION: ${{ matrix.revision }}
+          PRO_SERVICES: ${{ matrix.pro-services }}
           STEPS_GENERATE_SBOMS_OUTPUTS_SBOMS: ${{ steps.generate-sboms.outputs.sboms }}
         run: |
           jq --arg base "${MATRIX_BASE}" \
             --arg digest "${STEPS_UPLOAD_IMAGE_OUTPUTS_DIGEST}" \
             --arg ignored_vulnerabilities "${MATRIX_IGNORED_VULNERABILITIES}" \
-            '. + {base: $base, digest: $digest, "ignored-vulnerabilities": $ignored_vulnerabilities}' \
+            --arg pro_services "${PRO_SERVICES}" \
+            '. + {base: $base, digest: $digest, "ignored-vulnerabilities": $ignored_vulnerabilities}
+              | if $pro_services != "" then . + {"pro-services": $pro_services} else . end' \
             <<< '${{ toJSON(matrix) }}' > build_metadata.json
           ./src/uploads/upload_to_swift.sh \
             "${MATRIX_NAME}" \
@@ -701,7 +726,7 @@ jobs:
   #     contents: write # Needed for release uploads
   #   uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@7f4fdb871876c23e455853d694197440c5a91506
   #   with:
-  #     base64-subjects: "${{ needs.upload.outputs.artefacts-hashes }}"
+  #     base64-subjects: "${{ needs.upload.outputs.artifacts-hashes }}"
 
   notify:
     runs-on: ubuntu-22.04

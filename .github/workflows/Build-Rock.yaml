@@ -96,12 +96,17 @@ jobs:
       - name: Check Pro Build
         id: check-pro-build
         env:
+          ARTIFACT_PASSPHRASE: ${{ secrets.pro-artifact-passphrase }}
           UBUNTU_PRO_TOKEN: ${{ secrets.pro-token }}
           INPUTS_PRO_SERVICES: ${{ inputs.pro-services }}
         run: |
           if [[ -n "${INPUTS_PRO_SERVICES}" ]]; then
             if [[ -z "${UBUNTU_PRO_TOKEN:-}" ]]; then
               echo "Error: 'pro-token' must be provided in order to use 'pro-services'."
+              exit 1
+            fi
+            if [[ -z "${ARTIFACT_PASSPHRASE:-}" ]]; then
+              echo "Error: 'pro-artifact-passphrase' must be provided in order to use 'pro-services'."
               exit 1
             fi
             echo "pro-build=true" >> "$GITHUB_OUTPUT"
@@ -327,8 +332,7 @@ jobs:
           for rock in ${{ env.ROCK_CI_FOLDER }}/*; do
             ./.github/actions/crypt-artifact/crypt-artifact.sh decrypt \
               -i "$rock" \
-              -p "$ARTIFACT_PASSPHRASE" \
-              -o "${rock%%.*}.rock"
+              -p "$ARTIFACT_PASSPHRASE"
           done
 
       - name: Assembling Multi Arch rock

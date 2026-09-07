@@ -1,8 +1,9 @@
+from datetime import datetime
+from typing import Any, Dict, List, Literal, Optional
+
 import pydantic
 
-from datetime import datetime
-from typing import Dict, List, Literal, Optional, Any
-
+from .pro import Pro, UbuntuProServiceLiteral, validate_pro_services
 
 LATEST_SCHEMA_VERSION = 2
 KNOWN_RISKS_ORDERED = ["stable", "candidate", "beta", "edge"]
@@ -42,6 +43,10 @@ class ImageUploadSchema(pydantic.BaseModel):
     source: str
     commit: str
     directory: str
+    pro: Optional[Pro] = pydantic.Field(
+        description="Ubuntu Pro configuration for this image",
+        default=None,
+    )
     ignored_vulnerabilities: Optional[list[str]] = pydantic.Field(
         default_factory=list, alias="ignored-vulnerabilities"
     )
@@ -71,12 +76,30 @@ class ChannelsSchema(pydantic.BaseModel):
         return values
 
 
+class ProChannelsSchema(ChannelsSchema):
+    """Schema of the 'release' tracks within the image.yaml file for pro images."""
+
+    services: List[UbuntuProServiceLiteral] = pydantic.Field(
+        ...,
+        description="List of Ubuntu Pro services to build the rock with",
+    )
+
+    model_config = pydantic.ConfigDict(extra="forbid")
+
+    @pydantic.field_validator("services")
+    def _check_services(cls, services):  # pylint: disable=no-self-argument
+        return validate_pro_services(services)
+
+
 class ImageSchema(pydantic.BaseModel):
     """Validates the schema of the image.yaml files."""
 
     version: str
     upload: Optional[List[ImageUploadSchema]] = None
     release: Optional[Dict[str, ChannelsSchema]] = None
+    pro_release: Optional[Dict[str, ProChannelsSchema]] = pydantic.Field(
+        default=None, alias="pro-release"
+    )
 
     model_config = pydantic.ConfigDict(extra="forbid")
 
@@ -95,6 +118,8 @@ class ImageSchema(pydantic.BaseModel):
         unique_triggers = set()
         for upload in v:
             trigger = f"{upload.source}_{upload.commit}_{upload.directory}"
+            if pro := upload.pro:
+                trigger += f"_{','.join(sorted(pro.services))}"
             if trigger in unique_triggers:
                 raise ImageTriggerValidationError(
                     f"Image trigger {trigger} is not unique."

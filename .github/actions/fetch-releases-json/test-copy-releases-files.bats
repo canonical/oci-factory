@@ -1,44 +1,81 @@
 #!/usr/bin/env bats
 
-load '/usr/lib/bats/bats-support/load.bash'
-load '/usr/lib/bats/bats-assert/load.bash'
+setup() {
+  original_pwd=$PWD
+  workdir=$(mktemp -d "${BATS_TEST_TMPDIR}/copy-releases.XXXXXX")
+  releases_dir="${workdir}/releases"
+  output_dir="${workdir}/output"
+  mkdir -p \
+    "${releases_dir}/oci/public-only" \
+    "${releases_dir}/oci/pro-only" \
+    "${releases_dir}/oci/both" \
+    "${output_dir}/oci/public-only" \
+    "${output_dir}/oci/pro-only" \
+    "${output_dir}/oci/both"
 
-setup_file() {
-  echo "setup" >&3
-  workdir=$(mktemp -d)
-  pushd "$workdir" || exit 1
-  git clone https://github.com/canonical/oci-factory.git oci-factory-releases -b _releases --depth 1
-  popd || exit 1
-  export workdir
+  printf '%s\n' '{"source":"public-only"}' > "${releases_dir}/oci/public-only/_releases.json"
+  printf '%s\n' '{"source":"pro-only"}' > "${releases_dir}/oci/pro-only/_pro_releases.json"
+  printf '%s\n' '{"source":"both-public"}' > "${releases_dir}/oci/both/_releases.json"
+  printf '%s\n' '{"source":"both-pro"}' > "${releases_dir}/oci/both/_pro_releases.json"
+  printf '%s\n' '{"ignored":true}' > "${releases_dir}/oci/both/metadata.json"
+
+  cd "$output_dir" || return 1
 }
 
-@test "copy single existing _releases.json file" {
-  run "${BATS_TEST_DIRNAME}/copy-releases-files.sh" mock-rock "${workdir}/oci-factory-releases"
-  assert_success
-  [[ -f "oci/mock-rock/_releases.json" ]]
+teardown() {
+  cd "$original_pwd" || return 1
+  if [[ -n "${workdir:-}" && "$workdir" == "${BATS_TEST_TMPDIR}"/* ]]; then
+    rm -rf -- "$workdir"
+  fi
 }
 
-@test "copy single non-existing _releases.json file" {
-  run "${BATS_TEST_DIRNAME}/copy-releases-files.sh" mock-nonexistent "${workdir}/oci-factory-releases"
-  assert_success
-  [[ ! -f "oci/mock-nonexistent/_releases.json" ]]
+@test "copies a public-only release file" {
+  run "${BATS_TEST_DIRNAME}/copy-releases-files.sh" public-only "$releases_dir"
+
+  [[ "$status" -eq 0 ]]
+  cmp "${releases_dir}/oci/public-only/_releases.json" "oci/public-only/_releases.json"
+  [[ ! -e "oci/public-only/_pro_releases.json" ]]
 }
 
-@test "copy all _releases.json files" {
-  run "${BATS_TEST_DIRNAME}/copy-releases-files.sh" "*" "${workdir}/oci-factory-releases"
-  assert_success
-  run find oci/ -mindepth 1 -maxdepth 1 -type d | xargs -I{} test -f "{}/_releases.json"
-  assert_success
-  assert_equal \
-    "$(find 'oci/' -mindepth 1 -maxdepth 1 -type d | wc -l)" \
-    "$(find "${workdir}/oci-factory-releases/oci/" -mindepth 1 -maxdepth 1 -type d | wc -l)"
+@test "copies a Pro-only release file" {
+  run "${BATS_TEST_DIRNAME}/copy-releases-files.sh" pro-only "$releases_dir"
+
+  [[ "$status" -eq 0 ]]
+  cmp "${releases_dir}/oci/pro-only/_pro_releases.json" "oci/pro-only/_pro_releases.json"
+  [[ ! -e "oci/pro-only/_releases.json" ]]
 }
 
-@test "fail if directory not found" {
-  run "${BATS_TEST_DIRNAME}/copy-releases-files.sh" "*" "/nonexistent-directory"
-  assert_failure
+@test "copies both public and Pro release files" {
+  run "${BATS_TEST_DIRNAME}/copy-releases-files.sh" both "$releases_dir"
+
+  [[ "$status" -eq 0 ]]
+  cmp "${releases_dir}/oci/both/_releases.json" "oci/both/_releases.json"
+  cmp "${releases_dir}/oci/both/_pro_releases.json" "oci/both/_pro_releases.json"
 }
 
-teardown_file() {
-  find . -name "_releases.json" -exec rm {} \;
+@test "wildcard copies all public and Pro release files only" {
+  rm -rf -- "${output_dir}/oci"
+
+  run "${BATS_TEST_DIRNAME}/copy-releases-files.sh" "*" "$releases_dir"
+
+  [[ "$status" -eq 0 ]]
+  cmp "${releases_dir}/oci/public-only/_releases.json" "oci/public-only/_releases.json"
+  cmp "${releases_dir}/oci/pro-only/_pro_releases.json" "oci/pro-only/_pro_releases.json"
+  cmp "${releases_dir}/oci/both/_releases.json" "oci/both/_releases.json"
+  cmp "${releases_dir}/oci/both/_pro_releases.json" "oci/both/_pro_releases.json"
+  [[ ! -e "oci/both/metadata.json" ]]
+}
+
+@test "missing image succeeds without creating release files" {
+  run "${BATS_TEST_DIRNAME}/copy-releases-files.sh" missing "$releases_dir"
+
+  [[ "$status" -eq 0 ]]
+  [[ ! -e "oci/missing/_releases.json" ]]
+  [[ ! -e "oci/missing/_pro_releases.json" ]]
+}
+
+@test "wildcard fails for an invalid releases directory" {
+  run "${BATS_TEST_DIRNAME}/copy-releases-files.sh" "*" "${workdir}/missing-releases"
+
+  [[ "$status" -ne 0 ]]
 }

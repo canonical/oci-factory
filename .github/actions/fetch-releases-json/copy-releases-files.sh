@@ -14,10 +14,16 @@ if [[ "$RUNNER_DEBUG" == "1" ]]; then
 fi
 
 if [[ "$image_name" = "*" ]]; then
-    echo "Copying all _releases.json files"
+    echo "Copying all _releases.json (including _pro_releases.json) files"
     cd "$directory" || exit 1
     find . -name "_releases.json" -exec cp --parents {} "$OLDPWD" \;
+    find . -name "_pro_releases.json" -exec cp --parents {} "$OLDPWD" \;
     cd "$OLDPWD" || exit 1
-elif [[ -f "$directory/oci/$image_name/_releases.json" ]]; then
-    cp "$directory/oci/$image_name/_releases.json" "oci/$image_name/_releases.json"
+else
+    if [[ -f "$directory/oci/$image_name/_releases.json" ]]; then
+        cp "$directory/oci/$image_name/_releases.json" "oci/$image_name/_releases.json"
+    fi
+    if [[ -f "$directory/oci/$image_name/_pro_releases.json" ]]; then
+        cp "$directory/oci/$image_name/_pro_releases.json" "oci/$image_name/_pro_releases.json"
+    fi
 fi

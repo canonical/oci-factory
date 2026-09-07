@@ -27,6 +27,8 @@ import requests
 import swiftclient
 import yaml
 
+KNOWN_RISKS = ("stable", "candidate", "beta", "edge")
+
 
 # TODO:
 # - Future improvement: merge the functions below with similar code in temporal worker into its own module.
@@ -54,10 +56,62 @@ def trigger_triplet(trigger: dict) -> str:
     return f"{trigger['source']}_{trigger['commit']}_{trigger['directory']}"
 
 
-def trigger_image_rebuild():
+def resolve_release_target(tag: str, targets: dict, visited: set = None) -> int:
+    """Resolve a release channel alias to its revision."""
+    visited = visited or set()
+    if tag in visited or tag not in targets:
+        raise ValueError(f"Unable to resolve release channel {tag}")
+    visited.add(tag)
+    target = str(targets[tag])
+    return (
+        int(target)
+        if target.isdigit()
+        else resolve_release_target(target, targets, visited)
+    )
+
+
+def find_released_pro_channels(pro_releases: dict) -> dict:
+    """Map released Pro revisions to their active tracks and risks."""
+    targets = {
+        f"{track}_{risk}": data[risk]["target"]
+        for track, data in pro_releases.items()
+        for risk in KNOWN_RISKS
+        if isinstance(data.get(risk), dict) and data[risk].get("target") is not None
+    }
+    revisions = {}
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    for track, data in pro_releases.items():
+        end_of_life = data.get("end-of-life")
+        if not end_of_life or end_of_life < now:
+            continue
+        for risk in KNOWN_RISKS:
+            tag = f"{track}_{risk}"
+            if tag not in targets:
+                continue
+            try:
+                revision = resolve_release_target(tag, targets)
+            except ValueError as err:
+                logging.warning(str(err))
+                continue
+            release = revisions.setdefault(revision, {}).setdefault(
+                track,
+                {
+                    "end-of-life": end_of_life,
+                    "risks": [],
+                    "services": sorted(data.get("services", [])),
+                },
+            )
+            release["risks"].append(risk)
+    return revisions
+
+
+def trigger_image_rebuild(release_data: dict, pro: bool = False):
     # Get the released revision numbers so we can get their build data
     # from Swift
-    released_revisions = find_released_revisions(releases)
+    released_channels = find_released_pro_channels(release_data) if pro else {}
+    released_revisions = (
+        list(released_channels) if pro else find_released_revisions(release_data)
+    )
     logging.info(
         f"Currently, the released revisions for {image} are: {released_revisions}"
     )
@@ -88,13 +142,15 @@ def trigger_image_rebuild():
     # image information.
     # This is a bit nasty as these APIs return paginated results
     # and don't offer enough querying parameters to filter the results.
-    ecr_tags_url = "https://api.us-east-1.gallery.ecr.aws/describeImageTags"
-    body = {"repositoryName": image, "maxResults": 1000}
-    if image.startswith("mock-"):
-        body["registryAliasName"] = "rocksdev"
-    else:
-        body["registryAliasName"] = "ubuntu"
-    tags = json.loads(requests.post(ecr_tags_url, json=body).content.decode())
+    tags = {}
+    if not pro:
+        ecr_tags_url = "https://api.us-east-1.gallery.ecr.aws/describeImageTags"
+        body = {"repositoryName": image, "maxResults": 1000}
+        if image.startswith("mock-"):
+            body["registryAliasName"] = "rocksdev"
+        else:
+            body["registryAliasName"] = "ubuntu"
+        tags = json.loads(requests.post(ecr_tags_url, json=body).content.decode())
     # Each Swift object corresponds to an image revision (<=> build)
     for image_revision in img_objs:
         _, _, revision, _ = image_revision["name"].split("/")
@@ -111,7 +167,12 @@ def trigger_image_rebuild():
 
         build_metadata = json.loads(build_metadata_raw.decode())
         base = build_metadata.get("base")
-        revision_digest = build_metadata["digest"]
+        services = sorted(
+            build_metadata.get("pro-services", "").replace(",", " ").split()
+        )
+        if pro and not services:
+            continue
+        revision_digest = build_metadata.get("digest", "")
         revision_info = str(
             f"{image} | revision: {revision} "
             f"| base: {base} | digest: {revision_digest}"
@@ -135,62 +196,90 @@ def trigger_image_rebuild():
             ).split(),
         }
         release_to = {}
-        imageTagDetails = tags.get("imageTagDetails", {})
-        if not imageTagDetails:
-            logging.warning(
-                f"{tags.get('message', 'Image tags not found in registry')}. Skip!"
-            )
-            continue
+        if pro:
+            original_track = build_metadata["track"]
+            visible_services = [
+                service for service in services if not service.startswith("esm-")
+            ]
+            expected_track = original_track
+            if visible_services:
+                version, base_release = original_track.rsplit("-", 1)
+                expected_track = (
+                    f"{version}-{'-'.join(visible_services)}-{base_release}"
+                )
 
-        tags_matched = False
-        for tag in imageTagDetails:
-            if tag["imageDetail"].get("imageDigest") != revision_digest:
-                continue
-            tags_matched = True
-
-            if tag["imageTag"] in ["edge", "beta", "candidate", "stable"]:
-                to_track = "latest"
-                to_risk = tag["imageTag"]
-            else:
-                try:
-                    to_track, to_risk = tag["imageTag"].rsplit("_", 1)
-                except ValueError as err:
-                    if "not enough values to unpack" in str(err):
-                        # These cases are driven by the <track> alias which
-                        # is created for tags like <track>_stable
-                        to_track = tag["imageTag"]
-                        to_risk = "stable"
-                    else:
-                        logging.exception(f"Unrecognized tag {tag['imageTag']}")
-                        continue
-
-            if releases[to_track].get("end-of-life"):
-                if releases[to_track]["end-of-life"] < datetime.now(
-                    timezone.utc
-                ).strftime("%Y-%m-%dT%H:%M:%SZ"):
+            for track, release in released_channels[int(revision)].items():
+                if release["services"] != services or track != expected_track:
                     logging.info(
-                        f"Skipping track {to_track} because it reached its "
-                        f"end of life: {releases[to_track]['end-of-life']}"
+                        f"Skipping Pro track {track} for {image} revision "
+                        f"{revision}: release state does not match its build metadata"
                     )
                     continue
+                release_to[original_track] = {
+                    "end-of-life": release["end-of-life"],
+                    "risks": release["risks"],
+                }
+            build_and_upload_data["pro"] = {"services": services}
+        else:
+            imageTagDetails = tags.get("imageTagDetails", {})
+            if not imageTagDetails:
+                logging.warning(
+                    f"{tags.get('message', 'Image tags not found in registry')}. Skip!"
+                )
+                continue
+
+            tags_matched = False
+            for tag in imageTagDetails:
+                if tag["imageDetail"].get("imageDigest") != revision_digest:
+                    continue
+                tags_matched = True
+
+                if tag["imageTag"] in ["edge", "beta", "candidate", "stable"]:
+                    to_track = "latest"
+                    to_risk = tag["imageTag"]
                 else:
+                    try:
+                        to_track, to_risk = tag["imageTag"].rsplit("_", 1)
+                    except ValueError as err:
+                        if "not enough values to unpack" in str(err):
+                            # These cases are driven by the <track> alias which
+                            # is created for tags like <track>_stable
+                            to_track = tag["imageTag"]
+                            to_risk = "stable"
+                        else:
+                            logging.exception(f"Unrecognized tag {tag['imageTag']}")
+                            continue
+
+                if release_data[to_track].get("end-of-life"):
+                    if release_data[to_track]["end-of-life"] < datetime.now(
+                        timezone.utc
+                    ).strftime("%Y-%m-%dT%H:%M:%SZ"):
+                        logging.info(
+                            f"Skipping track {to_track} because it reached its "
+                            f"end of life: {release_data[to_track]['end-of-life']}"
+                        )
+                        continue
                     if to_track not in release_to:
                         release_to[str(to_track)] = {"risks": [to_risk]}
                     else:
                         release_to[to_track]["risks"].append(to_risk)
-                    release_to[to_track]["end-of-life"] = releases[to_track][
+                    release_to[to_track]["end-of-life"] = release_data[to_track][
                         "end-of-life"
                     ]
-            else:
-                logging.warning(f"Track {to_track} is missing its end-of-" "life field")
+                else:
+                    logging.warning(
+                        f"Track {to_track} is missing its end-of-" "life field"
+                    )
 
-        if not tags_matched:
-            logging.warning(
-                f"Unable to find a tag for {image} revision {revision} in ECR"
-            )
-            continue
+            if not tags_matched:
+                logging.warning(
+                    f"Unable to find a tag for {image} revision {revision} in ECR"
+                )
+                continue
 
         triplet = trigger_triplet(build_and_upload_data)
+        if pro:
+            triplet = f"{triplet}_{','.join(services)}"
 
         if triplet in uploads:
             # Since img_objs is sorted by revision number, we can safely
@@ -208,14 +297,18 @@ def trigger_image_rebuild():
     uber_img_trigger["upload"] = [trigger for trigger in uploads.values()]
 
     if not uber_img_trigger["upload"]:
-        logging.info(f"{image}: skipping revision {revision}, nothing to rebuild")
+        logging.info(f"{image}: nothing to rebuild")
         # Nothing to rebuild here
         return
 
     uber_img_trigger_yaml = yaml.safe_dump(
         uber_img_trigger, default_style=None, default_flow_style=False
     )
-    logging.info(f"About to rebuild {image} with the trigger:\n{uber_img_trigger_yaml}")
+    release_type = "Pro " if pro else ""
+    logging.info(
+        f"About to rebuild {release_type}{image} with the trigger:\n"
+        f"{uber_img_trigger_yaml}"
+    )
 
     uber_img_trigger_b64 = base64.b64encode(uber_img_trigger_yaml.encode())
 
@@ -231,7 +324,10 @@ def trigger_image_rebuild():
             "oci-image-name": image,
             "b64-image-trigger": uber_img_trigger_b64.decode(),
             "upload": True,
-            "external_ref_id": f"{external_ref_id_prefix}-{image}-{int(time.time())}",
+            "external_ref_id": (
+                f"{external_ref_id_prefix}-"
+                f"{'pro-' if pro else ''}{image}-{int(time.time())}"
+            ),
         },
     }
     wf_dispatch_url = str(
@@ -327,12 +423,13 @@ if __name__ == "__main__":
             logging.info(
                 f"#### Checking if {image} depends on release {ubuntu_release}"
             )
-            try:
-                # Check what is currently released for this image
-                with open(f"{oci_imgs_path}/{image}/_releases.json") as rel:
-                    releases = json.load(rel)
-            except FileNotFoundError:
-                logging.info(f"{image} has not been released yet. Continuing...")
-                continue
-
-            trigger_image_rebuild()
+            for release_file, pro in (
+                ("_releases.json", False),
+                ("_pro_releases.json", True),
+            ):
+                try:
+                    with open(f"{oci_imgs_path}/{image}/{release_file}") as rel:
+                        trigger_image_rebuild(json.load(rel), pro=pro)
+                except FileNotFoundError:
+                    release_type = "Pro " if pro else "public "
+                    logging.info(f"{image} has no {release_type}releases")

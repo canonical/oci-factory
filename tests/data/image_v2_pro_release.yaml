@@ -1,0 +1,9 @@
+version: 2
+
+pro-release:
+  1.2-22.04:
+    end-of-life: "2030-05-01T00:00:00Z"
+    services:
+      - esm-apps
+      - esm-infra
+    beta: "42"
