@@ -313,9 +313,14 @@ when the file cannot be retrieved.
   Only state a default when it is real.
 - **Field placement:** run flags belong in `parameters`, not `run_cmd`.
 - **No template duplication:** remove content already provided by the template.
-- **Completeness:** include all env/config the rock declares (cross-check the
-  rock's `rockcraft.yaml` `environment:`), and provide concrete examples in env
-  descriptions.
+- **Completeness:** document user-configurable runtime environment and
+  configuration, with concrete examples. Cross-check `rockcraft.yaml`
+  `environment:`, Pebble service configuration, and service or entrypoint
+  scripts. Do not require documentation for implementation details fixed by
+  `services.<name>.environment`: Pebble service values override same-named
+  environment values supplied to the container. Document a variable when a
+  `docker run -e` value can reach and influence the user-facing service,
+  including variables consumed by entrypoint scripts.
 - **Runnable:** the documented `docker run ...` must actually work; verify it
   before approving.
 - **Migrations (v1 -> v2) must not regress.** Approve a migration only when it
