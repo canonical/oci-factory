@@ -19,7 +19,7 @@ docker:
     The authentik LDAP service is disabled at startup by default. Start it using Pebble:
 
     ```bash
-    docker exec <container> pebble start ldap
+    docker exec authentik-ldap-outpost-container pebble start ldap
     ```
 
     Once started, the authentik LDAP outpost serves LDAP on port `3389` and LDAPS on port `6636`. Access the LDAP outpost server at `ldap://localhost:3389`.
