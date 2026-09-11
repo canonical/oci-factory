@@ -1,18 +1,14 @@
-version: 1
+version: 2
 upload:
-  - source: canonical/kiali-rock
-    commit: 1659ef765b3e21dd1938a9d97df73cdab3b678ee
-    directory: 2.3.0
+  - source: canonical/service-mesh
+    commit: c0aecab2f998053479640816999d454bb16a04ce
+    directory: '2.31'
     release:
-      2-24.04:
-        end-of-life: '2026-01-22T00:00:00Z'
+      2-26.04:
+        end-of-life: '2026-12-11T00:00:00Z'
         risks:
           - stable
-      2.3-24.04:
-        end-of-life: '2026-01-22T00:00:00Z'
-        risks:
-          - stable
-      2.3.0-24.04:
-        end-of-life: '2026-01-22T00:00:00Z'
+      2.31-26.04:
+        end-of-life: '2026-12-11T00:00:00Z'
         risks:
           - stable
