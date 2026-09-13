@@ -1,31 +1,14 @@
 version: 2
 upload:
   - source: canonical/git-sync-rock
-    commit: bcda97c64b299d14dd0dde572230d216feec5221
-    directory: 4.7.0
+    commit: 1cc1ed4e1c223259ac533778d12f52476599d121
+    directory: 4.7.1
     release:
       4-26.04:
-        end-of-life: '2026-09-07T00:00:00Z'
+        end-of-life: '2026-11-09T00:00:00Z'
         risks:
-          - edge
+          - stable
       4.7-26.04:
-        end-of-life: '2026-09-07T00:00:00Z'
+        end-of-life: '2026-11-09T00:00:00Z'
         risks:
-          - edge
-    ignored-vulnerabilities:
-      - CVE-2025-61726  # stdlib
-      - CVE-2025-61729  # stdlib
-      - CVE-2026-25679  # stdlib
-      - CVE-2026-32280  # stdlib
-      - CVE-2026-32281  # stdlib
-      - CVE-2026-32283  # stdlib
-      - CVE-2026-33811  # stdlib
-      - CVE-2026-33814  # stdlib
-      - CVE-2026-39820  # stdlib
-      - CVE-2026-39823  # stdlib
-      - CVE-2026-39825  # stdlib
-      - CVE-2026-39826  # stdlib
-      - CVE-2026-39836  # stdlib
-      - CVE-2026-42499  # stdlib
-      - CVE-2026-42504  # stdlib
-      - CVE-2025-68121  # stdlib
+          - stable
