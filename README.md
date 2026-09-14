@@ -582,7 +582,7 @@ needed.
 |`test-efficiency`| False | bool | Enable Dive image efficiency test. Enabled by default. |
 |`test-vulnerabilities`| False | bool | Enable Trivy vulnerability test. Enabled by default. |
 |`vulnerability-report-artifact-name`| False | str | Custom filename for Trivy vulnerability report. |
-|`trivyignore-path`| False | str | Deprecated compatibility input for an optional `.trivyignore` path. When specifying this input, `ignored-vulnerabilities` must be empty. |
+|`trivyignore-path`| False | str | **Deprecated** Optional path to `.trivyignore`. When specifying this input, `ignored-vulnerabilities` must be empty. |
 |`ignored-vulnerabilities`| False | str | Space-separated list of Trivy finding IDs to ignore during vulnerability scanning. When specifying this input, `trivyignore-path` must be empty. |
 |`test-malware`| False | bool | Enable ClamAV malware test. Enabled by default. |
 

@@ -416,7 +416,7 @@ uses three families:
   [section 3](#3-release-policy-risk-tracks-eol-versioning)).
 
 **Priority labels** — `priority/critical`, `priority/high`, `priority/medium`,
-`priority/low` communicate urgency for triage and scheduling; set at most one.
+`priority/low` communicate urgency for triage and scheduling; Set by maintainers, only one must be set at a time.
 
 ### 9. Approve vs. request-changes criteria
 
