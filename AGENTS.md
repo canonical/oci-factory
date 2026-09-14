@@ -1,10 +1,10 @@
 # OCI Factory — Agent Guide
 
 The OCI Factory is the centralized gateway for Ubuntu OCI images published to
-Docker Hub, ECR, and other registries under the ROCKS Team-maintained `ubuntu`
-namespace. This file is the entry point for agents (and humans) working in the
-repository: it explains the layout and conventions, then encodes the maintainer
-review standard.
+Docker Hub and ECR under the ROCKS Team-maintained `ubuntu` namespace, and to
+ACR under the `ubuntu-pro` namespace. This file is the entry point for agents
+(and humans) working in the repository: it explains the layout and conventions,
+then encodes the maintainer review standard.
 
 ## Repository overview
 
@@ -69,9 +69,8 @@ this guide.
   *"Review my staged changes as an OCI Factory PR reviewer."*
 - The harness scopes the diff (`git diff --merge-base origin/main`, or
   `git diff --cached` for staged-only), lists the touched files, and **triages
-  by file path** — the `rock/*` labels don't exist yet, so use the fallback path
-  column in [Triage](#1-triage-the-pr-first), as labels are only applied to
-  actual PRs.
+  by file path**. Local diffs do not carry PR labels, so use the fallback path
+  column in [Triage](#1-triage-the-pr-first).
 - It then applies the matching checklists ([§2](#2-security--vulnerability-gating-hard-gate)–[§7](#7-evidence--process-hygiene)).
   The vulnerability scan itself is **CI-only** and does not affect a local
   dry-run verdict. Locally, the harness checks the static requirements: trigger
@@ -219,15 +218,25 @@ verdicts as described above.
 - **EOL cap for upstream-sourced rocks.** If the main application is built from
   a directly-pulled upstream source **without a stated support plan**, cap the
   `end-of-life` at *merge day + 3 months* and ask the team to describe their
-  support plan. Example:
+  support plan. Do not assess the plan's sufficiency yourself: it must be
+  explicitly accepted by a human listed in [`CODEOWNERS`](/CODEOWNERS). Until
+  then, treat the rock as having no approved support plan and apply the cap.
+  Example:
 
   > Since this rock is built from upstream source without a support plan, please
-  > reduce the EOL to "today + 3 months" at most.
+  > reduce the EOL to "today + 3 months" at most, or describe the support plan
+  > and ask an OCI Factory code owner to confirm it is acceptable.
 
 - **Conservative stable promotion.** Be cautious bumping a rock to `stable`,
   especially when a known upstream/tooling issue affects the build. Because risk
   promotion is **not automated**, require an issue/Jira ticket to track any
   intended future promotion.
+
+- **Suspected-regression risk (MUST).** When a source bump may have introduced a
+  recipe regression as defined in [§4](#4-source-recipe-rockcraftyaml-review),
+  its first build and release must be restricted to `- edge`. Do not release the
+  revision directly to `candidate` or `stable` while the regression is being
+  ruled out.
 
 - **Canonical track naming (MUST).** New or modified image track keys use
   `<version>-<base>` (for example, `1.27-26.04`). Here, `<version>` is the
@@ -257,15 +266,20 @@ repository web UI — and apply the caveats below. This fetch is external: in a
 local dry-run it may be unavailable, so state that and skip the recipe checks
 when the file cannot be retrieved.
 
-- **deb security manifest (MUST).** If any part declares `stage-packages` — i.e.
-  the rock layers additional `.deb` packages on top of the Ubuntu base — the
-  recipe MUST include a security-manifest part whose `source` is
+- **deb security manifest (MUST).** Every rock that adds `.deb` package content
+  beyond what it inherits unchanged from its base MUST include a
+  security-manifest part whose `source` is
   `https://github.com/canonical/rocks-security-manifest`, wired exactly as that
   repository's README documents. The part name may differ, but the source and
-  usage must match. This enforces the maintainer obligation in
+  usage must match. Do not rely only on `stage-packages` to detect this: inspect
+  build and overlay scripts for `apt`, `apt-get`, `dpkg`, or equivalent commands
+  that place package content in the final rock. The sole exception is a
+  bare-based rock containing only purely statically linked binaries and no deb
+  package content; using even `base-files` to construct its filesystem means the
+  manifest is required. This enforces the maintainer obligation in
   [`IMAGE_MAINTAINER_AGREEMENT.md`](/IMAGE_MAINTAINER_AGREEMENT.md#enable-security-monitoring).
-  If a `stage-packages` rock is missing this part, or wires it differently,
-  request changes:
+  If a non-exempt rock is missing this part, or wires it differently, request
+  changes:
 
   ```yaml
   parts:
@@ -277,10 +291,10 @@ when the file cannot be retrieved.
       override-prime: gen_manifest
   ```
 
-  > This rock stages `.deb` packages but the recipe does not include the
-  > standardized security manifest. Please add the `deb-security-manifest` part
-  > from `https://github.com/canonical/rocks-security-manifest`, wired per its
-  > README.
+  > This rock adds `.deb` package content but the recipe does not include the
+  > standardized security manifest. Please add the
+  > `deb-security-manifest` part from
+  > `https://github.com/canonical/rocks-security-manifest`, wired per its README.
 
 - **External-source detection → EOL cap.** If any part is pulled and built
   directly from an external repository — e.g. a `source:` pointing at
@@ -297,11 +311,13 @@ when the file cannot be retrieved.
   request changes as a **[blocker]**. Hold until the removed part/service is
   restored, or the author confirms the removal is intentional and not a
   regression (see [§9](#9-approve-vs-request-changes-criteria), "regressions are
-  ruled out"). Example:
+  ruled out"). While this is unresolved, also enforce the suspected-regression
+  risk rule in [§3](#3-release-policy-risk-tracks-eol-versioning). Example:
 
   > This source bump removes the `<name>` <part|service> that the previous
   > revision shipped. Is this intentional? If so, please confirm it is not a
-  > regression; otherwise restore it. Marking as a blocker until then.
+  > regression; otherwise restore it. Until this is resolved, keep the new
+  > revision at `edge` only. Marking as a blocker until then.
 
 ### 5. Documentation (`documentation.yaml`) checklist
 
@@ -352,6 +368,10 @@ when the file cannot be retrieved.
   fully-capable reusable workflow must grant the required permissions in the
   caller job; the called workflow keeps default permissions when none are
   specified. Understand this before requesting permission changes.
+- **Pin external actions (MUST).** Never reference a reusable external action or
+  workflow by a mutable tag or branch such as `@v4` or `@main`. Pin every
+  external `uses:` reference to a full commit SHA; a comment may record the
+  corresponding release tag for readability.
 - **Cite the docs.** Justify workflow-permission and token decisions with links
   to the relevant GitHub documentation.
 - **Respect established patterns.** Avoid unnecessary changes to established,
@@ -374,7 +394,11 @@ when the file cannot be retrieved.
 ### 8. PR labels
 
 Apply labels to make review state visible and to drive housekeeping. The repo
-uses three families:
+uses three families. Add a missing label only when the rules below require it.
+Never overwrite an existing label choice: if an existing label conflicts with
+the inferred state or type, leave it in place and ask a human code owner to
+resolve the mismatch. Only remove a review-state label when its rule below
+explicitly requires removal.
 
 **Type labels** — set the review path (see [Triage](#1-triage-the-pr-first)):
 
@@ -412,7 +436,8 @@ uses three families:
   [section 3](#3-release-policy-risk-tracks-eol-versioning)).
 
 **Priority labels** — `priority/critical`, `priority/high`, `priority/medium`,
-`priority/low` communicate urgency for triage and scheduling; Set by maintainers, only one must be set at a time.
+and `priority/low` communicate urgency for triage and scheduling. They are set
+by maintainers, not review agents, and only one may be set at a time.
 
 ### 9. Approve vs. request-changes criteria
 
@@ -426,14 +451,18 @@ Request changes when any of the following holds:
 - The PR changes files below more than one distinct `oci/<name>/` directory.
 - A new rock/track/base first release is not restricted to `edge`.
 - The `end-of-life` exceeds the cap for an unsupported upstream-sourced rock.
-- A rock stages `.deb` packages but its recipe omits the `rocks-security-manifest`
-  part, or wires it differently (see [§4](#4-source-recipe-rockcraftyaml-review)).
+- A non-exempt rock adds `.deb` package content beyond its base but its recipe
+  omits the `rocks-security-manifest` part, or wires it differently (see
+  [§4](#4-source-recipe-rockcraftyaml-review)).
 - A source bump drops a `parts:` or `services:` entry the previous recipe defined,
-  without the author confirming it is intentional (see
+  without the author confirming it is intentional, or the potentially regressed
+  revision is not restricted to `edge` while that question is unresolved (see
   [§4](#4-source-recipe-rockcraftyaml-review)).
 - A documented default is unverified or wrong, or the documented run does not work.
 - A workflow grants more token/permission scope than necessary, or uses a PAT
   where `GITHUB_TOKEN` suffices.
+- A workflow references an external action or reusable workflow by a mutable tag
+  or branch instead of a full commit SHA.
 - Concurrent PRs conflict on the same track.
 
 Never approve or merge while a `do-not-merge` or `blocked` label is set, even
