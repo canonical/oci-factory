@@ -16,3 +16,35 @@ upload:
         end-of-life: '2025-08-07T00:00:00Z'
         risks:
           - edge
+      1.24-26.04:
+        end-of-life: '2026-09-30T00:00:00Z'
+        risks:
+          - edge
+      1.25-26.04:
+        end-of-life: '2026-09-30T00:00:00Z'
+        risks:
+          - edge
+      1.26-26.04:
+        end-of-life: '2026-09-30T00:00:00Z'
+        risks:
+          - edge
+      1.27-26.04:
+        end-of-life: '2026-09-30T00:00:00Z'
+        risks:
+          - edge
+      1.28-26.04:
+        end-of-life: '2026-09-30T00:00:00Z'
+        risks:
+          - edge
+      1.29-26.04:
+        end-of-life: '2026-09-30T00:00:00Z'
+        risks:
+          - edge
+      1.30-26.04:
+        end-of-life: '2026-09-30T00:00:00Z'
+        risks:
+          - edge
+      1.31-26.04:
+        end-of-life: '2026-09-30T00:00:00Z'
+        risks:
+          - edge
