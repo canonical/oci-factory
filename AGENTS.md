@@ -368,10 +368,6 @@ when the file cannot be retrieved.
   unaddressed — e.g., "too few spaces before comment".
 - **Track deferred work.** File a follow-up issue (e.g., `ROCKS-####`) for items
   intentionally deferred, and reference it in the thread.
-- **Close housekeeping PRs** that are stale (no activity for more than a month),
-  outdated, or superseded by another PR — state the reason on close. Apply the
-  `decaying` label after 2 weeks of no activity as an early warning (see
-  [section 8](#8-pr-labels)) before closing.
 - **Request a second reviewer** when the change is outside your area or warrants
   another set of eyes.
 
