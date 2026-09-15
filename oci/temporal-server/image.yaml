@@ -16,34 +16,66 @@ upload:
         end-of-life: '2025-08-07T00:00:00Z'
         risks:
           - edge
+  - source: canonical/temporal-rocks
+    commit: 5c2e6ffce0f2508b6f2ec4c94c00afa50b64572b
+    directory: temporal-server/1.24
+    release:
       1.24-26.04:
         end-of-life: '2026-09-30T00:00:00Z'
         risks:
           - edge
+  - source: canonical/temporal-rocks
+    commit: 5c2e6ffce0f2508b6f2ec4c94c00afa50b64572b
+    directory: temporal-server/1.25
+    release:
       1.25-26.04:
         end-of-life: '2026-09-30T00:00:00Z'
         risks:
           - edge
+  - source: canonical/temporal-rocks
+    commit: 5c2e6ffce0f2508b6f2ec4c94c00afa50b64572b
+    directory: temporal-server/1.26
+    release:
       1.26-26.04:
         end-of-life: '2026-09-30T00:00:00Z'
         risks:
           - edge
+  - source: canonical/temporal-rocks
+    commit: 5c2e6ffce0f2508b6f2ec4c94c00afa50b64572b
+    directory: temporal-server/1.27
+    release:
       1.27-26.04:
         end-of-life: '2026-09-30T00:00:00Z'
         risks:
           - edge
+  - source: canonical/temporal-rocks
+    commit: 5c2e6ffce0f2508b6f2ec4c94c00afa50b64572b
+    directory: temporal-server/1.28
+    release:
       1.28-26.04:
         end-of-life: '2026-09-30T00:00:00Z'
         risks:
           - edge
+  - source: canonical/temporal-rocks
+    commit: 5c2e6ffce0f2508b6f2ec4c94c00afa50b64572b
+    directory: temporal-server/1.29
+    release:
       1.29-26.04:
         end-of-life: '2026-09-30T00:00:00Z'
         risks:
           - edge
+  - source: canonical/temporal-rocks
+    commit: 5c2e6ffce0f2508b6f2ec4c94c00afa50b64572b
+    directory: temporal-server/1.30
+    release:
       1.30-26.04:
         end-of-life: '2026-09-30T00:00:00Z'
         risks:
           - edge
+  - source: canonical/temporal-rocks
+    commit: 5c2e6ffce0f2508b6f2ec4c94c00afa50b64572b
+    directory: temporal-server/1.31
+    release:
       1.31-26.04:
         end-of-life: '2026-09-30T00:00:00Z'
         risks:
