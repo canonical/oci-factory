@@ -10,6 +10,7 @@ jobs:
     name: Prepare released image revisions to be tested
     outputs:
       released-revisions-matrix: ${{ steps.prepare-test-matrix.outputs.released-revisions-matrix }}
+      last-scan: ${{ steps.last-scan.outputs.date }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -36,6 +37,18 @@ jobs:
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: python3 -m src.tests.get_released_revisions --oci-images-path "$PWD/oci" --acr-registry "${ACR_REGISTRY}"
 
+      - name: Infer date of last scan
+        id: last-scan
+        run: |
+          # This is scheduled to run every day, so let's look at the previous
+          # 26 hours, roughly
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
+          last_scan="$(date --date='26 hours ago' +'%Y-%m-%dT%H:%M:00Z')"
+          echo "date=$last_scan" >> "$GITHUB_OUTPUT"
+
   run-tests:
     name: Run tests for released images
     needs: [prepare-test-matrix]
@@ -48,6 +61,7 @@ jobs:
       oci-image-path: "oci/${{ matrix.name }}"
       trivyignore-path: ${{ matrix.ignored-vulnerabilities == '' && format('oci/{0}/.trivyignore', matrix.name) || '' }}
       ignored-vulnerabilities: ${{ matrix.ignored-vulnerabilities }}
+      date-last-scan: ${{ needs.prepare-test-matrix.outputs.last-scan }}
       create-issue: true
       pro: ${{ matrix.pro }}
       released-tags: ${{ join(matrix.released-tags, ',') }}

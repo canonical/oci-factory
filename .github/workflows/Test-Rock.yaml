@@ -296,7 +296,7 @@ jobs:
 
 
   test-vulnerabilities:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: "test-vulnerabilities ${{ inputs.oci-archive-name != '' && format('| {0}', inputs.oci-archive-name) || ' '}}"
     needs: [configure-tests]
     if: inputs.test-vulnerabilities

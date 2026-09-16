@@ -210,21 +210,31 @@ def test_vulnerability_scan_uses_acr_credentials_only_for_pro() -> None:
 
 
 @pytest.mark.parametrize(
-    "issue_exists, operation", [("false", "create"), ("true", "edit")]
+    "issue_exists, notify, operation",
+    [
+        ("false", "true", "create"),
+        ("false", "false", "create"),
+        ("true", "true", "edit"),
+        ("true", "false", "nop"),
+    ],
 )
 def test_vulnerability_findings_create_or_update_issue(
-    issue_exists: str, operation: str
+    issue_exists: str, notify: str, operation: str
 ) -> None:
     workflow = load_yaml(".github/workflows/Vulnerability-Scan.yaml")
     step = step_named(workflow, "issue", "Notify via GitHub issue")
     assert step["if"] == (
         "${{ steps.create-markdown.outputs.vulnerability-exists == 'true' && inputs.create-issue }}"
     )
+    assert step["env"]["NEEDS_PARSE_RESULTS_OUTPUTS_NOTIFY"] == (
+        "${{ needs.parse-results.outputs.notify }}"
+    )
     result = subprocess.run(
         ["bash", "-e", "-c", 'gh() { printf "%s\\n" "$@"; };\n' + step["run"]],
         env={
             **os.environ,
             "RUNNER_DEBUG": "0",
+            "NEEDS_PARSE_RESULTS_OUTPUTS_NOTIFY": notify,
             "STEPS_ISSUE_EXISTS_OUTPUTS_ISSUE_EXISTS": issue_exists,
             "STEPS_ISSUE_EXISTS_OUTPUTS_ISSUE_NUMBER": "42",
             "STEPS_GET_IMAGE_REPO_OUTPUTS_IMG_REPO": "canonical/image",
@@ -235,17 +245,22 @@ def test_vulnerability_findings_create_or_update_issue(
         capture_output=True,
         text=True,
     )
-    assert result.stdout.splitlines() == [
-        "issue",
-        operation,
-        *(["42"] if issue_exists == "true" else []),
-        "--repo",
-        "canonical/image",
-        "--title",
-        "Vulnerabilities found",
-        "--body-file",
-        "issue.md",
-    ]
+    expected = (
+        []
+        if operation == "nop"
+        else [
+            "issue",
+            operation,
+            *(["42"] if issue_exists == "true" else []),
+            "--repo",
+            "canonical/image",
+            "--title",
+            "Vulnerabilities found",
+            "--body-file",
+            "issue.md",
+        ]
+    )
+    assert result.stdout.splitlines() == expected
 
 
 def test_continuous_testing_forwards_pro_matrix_fields() -> None:
