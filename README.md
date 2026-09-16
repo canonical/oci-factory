@@ -540,39 +540,6 @@ Vulnerabilities (KEV) catalog at any severity, regardless of fix availability
 or modification date.
 An additional all-severity SARIF report is enriched with the KEV classification
 and supplies the five-column GitHub summary and downstream issue content.
-Only SARIF runs identifying their scanner as `Trivy` are accepted; missing or
-unsupported scanner names cause an error before the report is rewritten.
-KEV matching uses CVE IDs from Trivy SARIF vulnerability identifiers and the
-associated rule's `helpUri`, not arbitrary alias properties or CVE mentions in
-descriptions. Vulnerabilities suppressed through `.trivyignore` remain excluded.
-The `cosign-vuln` report continues to be generated and uploaded for provenance,
-including unfixed HIGH and CRITICAL findings, and provides `LastModifiedDate`
-values for ordinary notification decisions.
-
-The [Vulnerability-Scan workflow](.github/workflows/Vulnerability-Scan.yaml)
-uses the enriched SARIF report as the source of all policy findings. Every
-unsuppressed KEV notifies on every scan, regardless of severity, modification
-date, or fix availability: known exploitation merits an every-scan reminder.
-Ordinary (non-KEV) HIGH and CRITICAL findings notify only when their
-`LastModifiedDate` is strictly later than the `date-last-scan` cutoff. These
-dates describe updated CVE records, not when a vulnerability was newly seen in
-an image. Comparisons use UTC; timestamps without a timezone are interpreted
-as UTC. The optional input defaults to `9999-12-31T23:59:59`, suppressing
-ordinary notifications only, not KEV reminders.
-Notification timestamp parsing requires Python 3.11 or newer; the report jobs
-run on Ubuntu 24.04.
-Missing modification dates do not trigger ordinary notifications. Invalid
-cutoffs or missing/malformed supplied cosign reports fail explicitly rather
-than silently producing a notification decision.
-
-Continuous testing passes UTC now minus 26 hours as the cutoff. This is a
-rolling window with no stored scan state, not the actual previous scan time.
-Reports, summaries, and issue bodies include all policy findings, not just
-those that trigger notifications. Subject to the existing repository, PR, and
-issue-creation safeguards, any policy finding creates a missing issue, while
-an existing issue is edited only when a finding warrants notification. Issue
-closing still requires a successful clean scan. Blocking is never gated by
-age or fix availability; the cutoff affects notifications only.
 
 **Samples:**
 - [Build and Test EICAR Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/oci-factory_build_and_test_eicar_rock.yaml) 
