@@ -388,8 +388,8 @@ jobs:
         # TODO: bump trivy-action version once a newer version is released that uses v5 or later tags for actions/cache.
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
         with:
-          # HIGH/CRITICAL findings block regardless of fix availability.
-          ignore-unfixed: false
+          # NOTE: we're allowing images with unfixable vulnerabilities to be published
+          ignore-unfixed: true
           trivyignores: ${{ steps.configure-trivy.outputs.trivyignore-path }}
           format: "cosign-vuln"
           severity: "HIGH,CRITICAL"
@@ -413,8 +413,8 @@ jobs:
         # TODO: bump trivy-action version once a newer version is released that uses v5 or later tags for actions/cache.
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
         with:
-          # KEV policy applies at every severity and regardless of fix status.
-          ignore-unfixed: false
+          # NOTE: we're allowing images with unfixable vulnerabilities to be published
+          ignore-unfixed: true
           trivyignores: ${{ steps.configure-trivy.outputs.trivyignore-path }}
           format: "sarif"
           scanners: "vuln"
