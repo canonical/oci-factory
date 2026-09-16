@@ -1,13 +1,17 @@
+import os
 import re
+import subprocess
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 CHANGED_WORKFLOW_AND_ACTION_FILES = (
     ".github/workflows/Build-Rock.yaml",
+    ".github/workflows/Continuous-Testing.yaml",
     ".github/workflows/Image.yaml",
     ".github/workflows/Release.yaml",
     ".github/workflows/Test-Rock.yaml",
@@ -34,7 +38,9 @@ def iter_uses(value: Any) -> Iterator[str]:
             yield from iter_uses(child)
 
 
-def step_named(workflow: dict[str, Any], job_name: str, step_name: str) -> dict[str, Any]:
+def step_named(
+    workflow: dict[str, Any], job_name: str, step_name: str
+) -> dict[str, Any]:
     steps = workflow["jobs"][job_name]["steps"]
     return next(step for step in steps if step.get("name") == step_name)
 
@@ -68,9 +74,10 @@ def test_image_uses_fixed_pro_secret_names() -> None:
         "secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE"
         in build_secrets["pro-artifact-passphrase"]
     )
-    assert "secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE" in test_secrets[
-        "pro-artifact-passphrase"
-    ]
+    assert (
+        "secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE"
+        in test_secrets["pro-artifact-passphrase"]
+    )
 
     secret_values = "\n".join(
         value
@@ -86,23 +93,29 @@ def test_release_steps_keep_public_and_pro_release_files_separate() -> None:
     pro_publish = step_named(
         workflow, "do-releases", "Do Pro releases from ${{ inputs.oci-image-name }}"
     )["run"]
-    pro_update = step_named(workflow, "do-releases", "Update _pro_releases.json")[
-        "run"
-    ]
+    pro_update = step_named(workflow, "do-releases", "Update _pro_releases.json")["run"]
     public_publish = step_named(
         workflow, "do-releases", "Do releases from ${{ inputs.oci-image-name }}"
     )["run"]
-    public_update = step_named(workflow, "do-releases", "Update _releases.json")[
-        "run"
-    ]
+    public_update = step_named(workflow, "do-releases", "Update _releases.json")["run"]
 
     for command in (pro_publish, pro_update):
-        assert "--all-releases oci/${INPUTS_OCI_IMAGE_NAME}/_pro_releases.json" in command
+        assert (
+            "--all-releases oci/${INPUTS_OCI_IMAGE_NAME}/_pro_releases.json" in command
+        )
         assert "--pro" in command
 
     for command in (public_publish, public_update):
         assert "--all-releases oci/${INPUTS_OCI_IMAGE_NAME}/_releases.json" in command
         assert "_pro_releases.json" not in command
+
+
+def test_image_publishing_depends_on_successful_tests() -> None:
+    jobs = load_yaml(".github/workflows/Image.yaml")["jobs"]
+
+    assert jobs["test-rock"]["uses"] == "./.github/workflows/Test-Rock.yaml"
+    assert "test-rock" in jobs["prepare-upload"]["needs"]
+    assert "prepare-upload" in jobs["upload"]["needs"]
 
 
 def test_test_rock_caches_encrypted_archive_and_decrypts_per_job() -> None:
@@ -148,7 +161,9 @@ def test_test_rock_caches_encrypted_archive_and_decrypts_per_job() -> None:
 def test_commit_release_action_handles_public_and_pro_state_independently() -> None:
     action = load_yaml(".github/actions/commit-releases-json/action.yaml")
     commit_step = next(
-        step for step in action["runs"]["steps"] if step.get("name") == "commit _releases.json"
+        step
+        for step in action["runs"]["steps"]
+        if step.get("name") == "commit _releases.json"
     )
     script = commit_step["run"]
 
@@ -169,8 +184,15 @@ def test_vulnerability_scan_pro_inputs_are_optional_and_backward_compatible() ->
 
     # Pre-existing inputs must remain untouched (no removed/newly-required ones).
     assert inputs["oci-image-name"]["required"] == "true"
-    for name in ("oci-image-path", "trivyignore-path", "date-last-scan", "create-issue"):
+    for name in (
+        "oci-image-path",
+        "trivyignore-path",
+        "date-last-scan",
+        "create-issue",
+    ):
         assert inputs[name]["required"] == "false"
+    assert inputs["date-last-scan"]["type"] == "string"
+    assert inputs["date-last-scan"]["default"] == "9999-12-31T23:59:59"
 
 
 def test_vulnerability_scan_uses_acr_credentials_only_for_pro() -> None:
@@ -196,7 +218,7 @@ def test_test_rock_preserves_cosign_report_and_enriches_separate_sarif() -> None
     )
     assert cosign_scan["with"]["format"] == "cosign-vuln"
     assert cosign_scan["with"]["severity"] == "HIGH,CRITICAL"
-    assert cosign_scan["with"]["ignore-unfixed"] == "true"
+    assert cosign_scan["with"]["ignore-unfixed"] == "false"
     assert cosign_scan["with"]["exit-code"] == "1"
 
     cosign_upload = next(
@@ -221,6 +243,14 @@ def test_test_rock_preserves_cosign_report_and_enriches_separate_sarif() -> None
     assert sarif_scan["with"]["exit-code"] == "0"
     assert sarif_scan["with"]["skip-setup-trivy"] == "true"
     assert sarif_scan["with"]["scanners"] == "vuln"
+    assert sarif_scan["if"] == "${{ !cancelled() }}"
+    for scan in (cosign_scan, sarif_scan):
+        assert scan["with"]["trivyignores"] == (
+            "${{ steps.configure-trivy.outputs.trivyignore-path }}"
+        )
+        assert scan["with"]["image-ref"] == (
+            "${{ steps.configure-trivy.outputs.docker-image }}"
+        )
 
     collect = step_named(workflow, "test-vulnerabilities", "Collect CVE IDs from SARIF")
     check = step_named(
@@ -238,8 +268,28 @@ def test_test_rock_preserves_cosign_report_and_enriches_separate_sarif() -> None
     assert check["with"]["cve-ids"] == ("${{ steps.collect-cve-ids.outputs.cve-ids }}")
     assert "src.tests.vulnerability_report cve-ids" in collect["run"]
     assert "src.tests.vulnerability_report process" in process["run"]
-    assert "sarif-report-name" in collect["env"]["VULNERABILITY_REPORT"]
-    assert "sarif-report-name" in process["env"]["VULNERABILITY_REPORT"]
+    for step, predecessor in (
+        (collect, sarif_scan),
+        (check, collect),
+        (process, check),
+        (upload, process),
+    ):
+        assert step["if"] == (
+            "${{ !cancelled() && steps."
+            + predecessor["id"]
+            + ".outcome == 'success' }}"
+        )
+    assert collect["env"]["VULNERABILITY_REPORT"] == (
+        "${{ steps.configure-trivy.outputs.sarif-report-name }}"
+    )
+    assert process["env"] == {
+        "VULNERABILITY_REPORT": "${{ steps.configure-trivy.outputs.sarif-report-name }}",
+        "KEV_RESULTS": "${{ steps.check-kev.outputs.kev-results }}",
+        "KEV_CATALOG_SOURCE": "${{ steps.check-kev.outputs.catalog-source }}",
+        "KEV_CATALOG_VERSION": "${{ steps.check-kev.outputs.catalog-version }}",
+        "KEV_CATALOG_RELEASE_DATE": "${{ steps.check-kev.outputs.catalog-release-date }}",
+        "IMAGE_NAME": "${{ inputs.oci-archive-name }}",
+    }
     assert upload["with"]["path"] == (
         "${{ steps.configure-trivy.outputs.sarif-report-name }}"
     )
@@ -252,71 +302,129 @@ def test_test_rock_preserves_cosign_report_and_enriches_separate_sarif() -> None
         "${{ !cancelled() && "
         "steps.process-sarif-report.outputs.blocking-found == 'true' }}"
     )
-    assert not any(step.get("name") == "Create markdown content" for step in steps)
 
 
 def test_check_kev_action_has_expected_interface() -> None:
     action = load_yaml(".github/actions/check-kev/action.yaml")
 
     assert set(action["inputs"]) == {"cve-ids"}
+    assert action["inputs"]["cve-ids"]["required"] == "true"
     assert set(action["outputs"]) == {
         "kev-results",
         "catalog-source",
         "catalog-version",
         "catalog-release-date",
     }
-    script = action["runs"]["steps"][0]["run"]
-    assert "python3" in script
-    assert "check_kev.py" in script
-    assert "check-kev.sh" not in script
-    assert "jq" not in script
-    assert "--cve-ids" in script
-    assert "KEV_CATALOG_SOURCE" not in str(action)
-    assert "vulnerability-report" not in str(action)
-    assert "image-name" not in str(action)
-
-    classifier = (ROOT / ".github/actions/check-kev/check_kev.py").read_text()
-    assert "argparse.ArgumentParser" in classifier
-    assert "DEFAULT_KEV_CATALOG_SOURCE" in classifier
-    assert "https://raw.githubusercontent.com/cisagov/kev-data/" in classifier
-    assert "User-Agent" not in classifier
+    step = action["runs"]["steps"][0]
+    assert step["env"]["INPUT_CVE_IDS"] == "${{ inputs.cve-ids }}"
+    for name, output in action["outputs"].items():
+        assert output["value"] == "${{ steps." + step["id"] + ".outputs." + name + " }}"
 
 
-def test_vulnerability_scan_consumes_sarif_for_issue_markdown() -> None:
+def test_vulnerability_scan_uses_sarif_for_notifications() -> None:
     workflow = load_yaml(".github/workflows/Vulnerability-Scan.yaml")
 
     configure_outputs = workflow["jobs"]["configure-scan"]["outputs"]
-    cosign_download = step_named(
-        workflow, "parse-results", "Download Vulnerability Report"
-    )
     download = step_named(
         workflow, "parse-results", "Download SARIF Vulnerability Report"
     )
     process = step_named(workflow, "parse-results", "Process report")
     markdown = step_named(workflow, "issue", "Create markdown content")["run"]
 
-    assert "vulnerability-report" in configure_outputs
-    assert "vulnerability-sarif-report" in configure_outputs
-    assert cosign_download["with"]["name"] == (
-        "${{ needs.configure-scan.outputs.vulnerability-report }}"
+    assert configure_outputs == {
+        "oci-image": "${{ steps.configure.outputs.oci-filename }}",
+        "vulnerability-sarif-report": "${{ steps.configure.outputs.sarif-report-filename }}",
+    }
+    parse = workflow["jobs"]["parse-results"]
+    assert parse["needs"] == ["configure-scan", "test-vulnerabilities"]
+    assert parse["if"] == "${{ !cancelled() }}"
+    assert parse["outputs"] == {
+        "notify": "${{ steps.check-report.outputs.notify }}",
+        "vulnerabilities": "${{ steps.check-report.outputs.vulnerabilities }}",
+    }
+    assert [
+        step
+        for step in parse["steps"]
+        if step.get("uses", "").startswith("actions/download-artifact@")
+    ] == [download]
+    assert process["if"] == "${{ !cancelled() }}"
+    assert process["env"] == {
+        "VULNERABILITY_SARIF_REPORT": "${{ needs.configure-scan.outputs.vulnerability-sarif-report }}",
+    }
+    assert (
+        'src.tests.vulnerability_report findings "$VULNERABILITY_SARIF_REPORT"'
+        in process["run"]
     )
     assert download["with"]["name"] == (
         "${{ needs.configure-scan.outputs.vulnerability-sarif-report }}"
     )
-    assert "src.tests.vulnerability_report findings" in process["run"]
-    assert "--notification-report" in process["run"]
-    assert "VULNERABILITY_SARIF_REPORT" in process["env"]
-    assert ".scanner.result.Results" not in process["run"]
-    assert "| ID | Target | Severity | Package | KEV |" in markdown
-    assert 'if .KnownExploited then \\"Yes\\" else \\"No\\" end' in markdown
+    assert "src.tests.vulnerability_report markdown" in markdown
+    assert '--findings "$NEEDS_PARSE_RESULTS_OUTPUTS_VULNERABILITIES"' in markdown
+    assert "--output issue.md" in markdown
+    assert (
+        step_named(workflow, "issue", "Create markdown content")["env"][
+            "NEEDS_PARSE_RESULTS_OUTPUTS_VULNERABILITIES"
+        ]
+        == "${{ needs.parse-results.outputs.vulnerabilities }}"
+    )
+    assert workflow["jobs"]["notify"]["if"] == (
+        "${{ !cancelled() && github.repository == 'canonical/oci-factory' && "
+        "needs.parse-results.outputs.notify == 'true' }}"
+    )
+    assert workflow["jobs"]["issue"]["if"] == (
+        "${{ !cancelled() && github.event_name != 'pull_request' }}"
+    )
+    close = step_named(workflow, "issue", "Close issue")
+    assert "needs.test-vulnerabilities.result == 'success'" in close["if"]
+    assert (
+        "steps.create-markdown.outputs.vulnerability-exists == 'false'" in close["if"]
+    )
+    assert "inputs.create-issue" in close["if"]
+
+
+@pytest.mark.parametrize(
+    "issue_exists, operation", [("false", "create"), ("true", "edit")]
+)
+def test_vulnerability_findings_create_or_update_issue(
+    issue_exists: str, operation: str
+) -> None:
+    workflow = load_yaml(".github/workflows/Vulnerability-Scan.yaml")
+    step = step_named(workflow, "issue", "Notify via GitHub issue")
+    assert step["if"] == (
+        "${{ steps.create-markdown.outputs.vulnerability-exists == 'true' && inputs.create-issue }}"
+    )
+    result = subprocess.run(
+        ["bash", "-e", "-c", 'gh() { printf "%s\\n" "$@"; };\n' + step["run"]],
+        env={
+            **os.environ,
+            "RUNNER_DEBUG": "0",
+            "STEPS_ISSUE_EXISTS_OUTPUTS_ISSUE_EXISTS": issue_exists,
+            "STEPS_ISSUE_EXISTS_OUTPUTS_ISSUE_NUMBER": "42",
+            "STEPS_GET_IMAGE_REPO_OUTPUTS_IMG_REPO": "canonical/image",
+            "STEPS_CREATE_MARKDOWN_OUTPUTS_ISSUE_TITLE": "Vulnerabilities found",
+            "STEPS_CREATE_MARKDOWN_OUTPUTS_ISSUE_BODY_FILE": "issue.md",
+        },
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert result.stdout.splitlines() == [
+        "issue",
+        operation,
+        *(["42"] if issue_exists == "true" else []),
+        "--repo",
+        "canonical/image",
+        "--title",
+        "Vulnerabilities found",
+        "--body-file",
+        "issue.md",
+    ]
 
 
 def test_continuous_testing_forwards_pro_matrix_fields() -> None:
     workflow = load_yaml(".github/workflows/Continuous-Testing.yaml")
 
-    prepare = step_named(
-        workflow, "prepare-test-matrix", "Prepare test matrix"
-    )
+    prepare = step_named(workflow, "prepare-test-matrix", "Prepare test matrix")
     assert "--acr-registry" in prepare["run"]
     assert prepare["env"]["ACR_REGISTRY"] == "${{ secrets.ACR_REGISTRY }}"
 
@@ -325,3 +433,8 @@ def test_continuous_testing_forwards_pro_matrix_fields() -> None:
     assert run_tests_with["released-tags"] == "${{ join(matrix.released-tags, ',') }}"
     # Pro images are pulled with an explicit tag; public keep the bare source.
     assert "matrix.released-tags[0]" in run_tests_with["oci-image-name"]
+    assert (
+        workflow["jobs"]["run-tests"]["uses"]
+        == "./.github/workflows/Vulnerability-Scan.yaml"
+    )
+    assert workflow["jobs"]["run-tests"]["secrets"] == "inherit"

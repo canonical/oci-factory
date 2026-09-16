@@ -24,25 +24,15 @@
               "properties": {"tags": ["vulnerability", "security", "MEDIUM"]}
             },
             {
-              "id": "GHSA-vend-orid-test",
-              "properties": {
-                "tags": ["vulnerability", "security", "LOW"],
-                "aliases": ["CVE-2024-2001"]
-              }
-            },
-            {
               "id": "GHSA-prim-aryu-rl00",
               "helpUri": "https://example.test/CVE-2024-2002",
               "properties": {"tags": ["vulnerability", "security", "UNKNOWN"]}
             },
             {
-              "id": "GHSA-refe-renc-e000",
-              "properties": {
-                "tags": ["vulnerability", "security", "LOW"],
-                "references": ["https://example.test/advisories/cve-2024-2003"]
-              },
+              "id": "GO-2024-1234",
+              "properties": {"tags": ["vulnerability", "security", "HIGH"]},
               "fullDescription": {
-                "text": "An unrelated description"
+                "text": "Unlike CVE-2024-2003, this vulnerability is not known exploited."
               }
             },
             {
@@ -101,19 +91,8 @@
           ]
         },
         {
-          "ruleId": "GHSA-vend-orid-test",
-          "ruleIndex": 4,
-          "level": "note",
-          "message": {
-            "text": "Package: vendor-id-kev\nInstalled Version: 1.0\nVulnerability GHSA-vend-orid-test\nSeverity: LOW\nFixed Version: \nLink: [GHSA-vend-orid-test](https://example.test/GHSA-vend-orid-test)"
-          },
-          "locations": [
-            {"physicalLocation": {"artifactLocation": {"uri": "example"}}}
-          ]
-        },
-        {
           "ruleId": "GHSA-prim-aryu-rl00",
-          "ruleIndex": 5,
+          "ruleIndex": 4,
           "level": "note",
           "message": {
             "text": "Package: primary-url-kev\nInstalled Version: 1.0\nVulnerability GHSA-prim-aryu-rl00\nSeverity: UNKNOWN\nFixed Version: \nLink: [GHSA-prim-aryu-rl00](https://example.test/GHSA-prim-aryu-rl00)"
@@ -123,11 +102,11 @@
           ]
         },
         {
-          "ruleId": "GHSA-refe-renc-e000",
-          "ruleIndex": 6,
-          "level": "note",
+          "ruleId": "GO-2024-1234",
+          "ruleIndex": 5,
+          "level": "error",
           "message": {
-            "text": "Package: reference-kev\nInstalled Version: 1.0\nVulnerability GHSA-refe-renc-e000\nSeverity: LOW\nFixed Version: \nLink: [GHSA-refe-renc-e000](https://example.test/GHSA-refe-renc-e000)"
+            "text": "Package: go-package\nInstalled Version: 1.0\nVulnerability GO-2024-1234\nSeverity: HIGH\nFixed Version: \nDescription: Unlike CVE-2024-2003, this vulnerability is not known exploited."
           },
           "locations": [
             {"physicalLocation": {"artifactLocation": {"uri": "example"}}}
@@ -146,7 +125,7 @@
         },
         {
           "ruleId": "CVE-2024-2004",
-          "ruleIndex": 7,
+          "ruleIndex": 6,
           "level": "error",
           "message": {
             "text": "Package: ignored-kev\nInstalled Version: 1.0\nVulnerability CVE-2024-2004\nSeverity: CRITICAL\nFixed Version: 1.1\nLink: [CVE-2024-2004](https://example.test/CVE-2024-2004)"

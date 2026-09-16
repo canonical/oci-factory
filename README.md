@@ -534,13 +534,24 @@ needed.
 - Scanning for vulnerabilities using [Trivy](https://trivy.dev/)
 - Scanning for malware using [ClamAV](https://www.clamav.net/)
 
-The vulnerability test blocks fixable HIGH and CRITICAL findings, as well as
-any non-ignored vulnerability listed in the CISA Known Exploited
-Vulnerabilities (KEV) catalog regardless of its severity or fix availability.
+The vulnerability test blocks every unsuppressed HIGH or CRITICAL finding, as
+well as any unsuppressed vulnerability listed in the CISA Known Exploited
+Vulnerabilities (KEV) catalog at any severity, regardless of fix availability
+or modification date.
 An additional all-severity SARIF report is enriched with the KEV classification
 and supplies the five-column GitHub summary and downstream issue content.
-Vulnerabilities suppressed through `.trivyignore` remain excluded. The existing
-`cosign-vuln` report continues to be generated and attached unchanged.
+KEV matching uses CVE IDs from Trivy SARIF vulnerability identifiers and the
+associated rule's `helpUri`, not arbitrary alias properties or CVE mentions in
+descriptions. Vulnerabilities suppressed through `.trivyignore` remain excluded.
+The `cosign-vuln` report continues to be generated and uploaded for provenance,
+including unfixed HIGH and CRITICAL findings.
+
+The [Vulnerability-Scan workflow](.github/workflows/Vulnerability-Scan.yaml)
+uses the enriched SARIF report to notify for every policy finding, regardless
+of fix availability or modification date, subject to the existing repository,
+PR, and issue-creation safeguards. Its optional `date-last-scan` input is
+deprecated and ignored; external callers may omit it. Continuous testing does
+not apply a notification date cutoff.
 
 **Samples:**
 - [Build and Test EICAR Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/oci-factory_build_and_test_eicar_rock.yaml) 
