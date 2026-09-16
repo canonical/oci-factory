@@ -534,6 +534,14 @@ needed.
 - Scanning for vulnerabilities using [Trivy](https://trivy.dev/)
 - Scanning for malware using [ClamAV](https://www.clamav.net/)
 
+Both Trivy scans ignore vulnerabilities without a known fix, including those
+listed in the CISA Known Exploited Vulnerabilities (KEV) catalog. Among the
+remaining unsuppressed findings, the vulnerability test blocks HIGH or CRITICAL
+findings and KEVs at any severity, regardless of modification date.
+An additional SARIF report covers all severities after this unfixed filtering,
+is enriched with the KEV classification, and supplies the five-column GitHub
+summary and downstream issue content.
+
 **Samples:**
 - [Build and Test EICAR Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/oci-factory_build_and_test_eicar_rock.yaml) 
   - Build a Rock that includes the

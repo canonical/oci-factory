@@ -1,0 +1,141 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Trivy",
+          "rules": [
+            {
+              "id": "CVE-2024-1000",
+              "properties": {"tags": ["vulnerability", "security", "HIGH"]}
+            },
+            {
+              "id": "CVE-2024-1001",
+              "properties": {"tags": ["vulnerability", "security", "HIGH"]}
+            },
+            {
+              "id": "CVE-2024-1002",
+              "properties": {"tags": ["vulnerability", "security", "MEDIUM"]}
+            },
+            {
+              "id": "CVE-2024-2000",
+              "properties": {"tags": ["vulnerability", "security", "MEDIUM"]}
+            },
+            {
+              "id": "GHSA-prim-aryu-rl00",
+              "helpUri": "https://example.test/CVE-2024-2002",
+              "properties": {"tags": ["vulnerability", "security", "UNKNOWN"]}
+            },
+            {
+              "id": "GO-2024-1234",
+              "properties": {"tags": ["vulnerability", "security", "HIGH"]},
+              "fullDescription": {
+                "text": "Unlike CVE-2024-2003, this vulnerability is not known exploited."
+              }
+            },
+            {
+              "id": "CVE-2024-2004",
+              "properties": {"tags": ["vulnerability", "security", "CRITICAL"]}
+            }
+          ]
+        }
+      },
+      "properties": {
+        "imageName": "example-image"
+      },
+      "results": [
+        {
+          "ruleId": "CVE-2024-1000",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "Package: fixed-high\nInstalled Version: 1.0\nVulnerability CVE-2024-1000\nSeverity: HIGH\nFixed Version: 1.1\nLink: [CVE-2024-1000](https://example.test/CVE-2024-1000)"
+          },
+          "locations": [
+            {"physicalLocation": {"artifactLocation": {"uri": "example"}}}
+          ]
+        },
+        {
+          "ruleId": "CVE-2024-1001",
+          "ruleIndex": 1,
+          "level": "error",
+          "message": {
+            "text": "Package: unfixed-high\nInstalled Version: 1.0\nVulnerability CVE-2024-1001\nSeverity: HIGH\nFixed Version: \nLink: [CVE-2024-1001](https://example.test/CVE-2024-1001)"
+          },
+          "locations": [
+            {"physicalLocation": {"artifactLocation": {"uri": "example"}}}
+          ]
+        },
+        {
+          "ruleId": "CVE-2024-1002",
+          "ruleIndex": 2,
+          "level": "warning",
+          "message": {
+            "text": "Package: ordinary-medium\nInstalled Version: 1.0\nVulnerability CVE-2024-1002\nSeverity: MEDIUM\nFixed Version: 1.1\nLink: [CVE-2024-1002](https://example.test/CVE-2024-1002)"
+          },
+          "locations": [
+            {"physicalLocation": {"artifactLocation": {"uri": "example"}}}
+          ]
+        },
+        {
+          "ruleId": "CVE-2024-2000",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Package: direct-kev\nInstalled Version: 1.0\nVulnerability CVE-2024-2000\nSeverity: MEDIUM\nFixed Version: \nLink: [CVE-2024-2000](https://example.test/CVE-2024-2000)"
+          },
+          "locations": [
+            {"physicalLocation": {"artifactLocation": {"uri": "example"}}}
+          ]
+        },
+        {
+          "ruleId": "GHSA-prim-aryu-rl00",
+          "ruleIndex": 4,
+          "level": "note",
+          "message": {
+            "text": "Package: primary-url-kev\nInstalled Version: 1.0\nVulnerability GHSA-prim-aryu-rl00\nSeverity: UNKNOWN\nFixed Version: \nLink: [GHSA-prim-aryu-rl00](https://example.test/GHSA-prim-aryu-rl00)"
+          },
+          "locations": [
+            {"physicalLocation": {"artifactLocation": {"uri": "example"}}}
+          ]
+        },
+        {
+          "ruleId": "GO-2024-1234",
+          "ruleIndex": 5,
+          "level": "error",
+          "message": {
+            "text": "Package: go-package\nInstalled Version: 1.0\nVulnerability GO-2024-1234\nSeverity: HIGH\nFixed Version: \nDescription: Unlike CVE-2024-2003, this vulnerability is not known exploited."
+          },
+          "locations": [
+            {"physicalLocation": {"artifactLocation": {"uri": "example"}}}
+          ]
+        },
+        {
+          "ruleId": "CVE-2024-2000",
+          "ruleIndex": 3,
+          "level": "error",
+          "message": {
+            "text": "Package: duplicate-kev\nInstalled Version: 1.0\nVulnerability CVE-2024-2000\nSeverity: CRITICAL\nFixed Version: 1.1\nLink: [CVE-2024-2000](https://example.test/CVE-2024-2000)"
+          },
+          "locations": [
+            {"physicalLocation": {"artifactLocation": {"uri": "usr/bin/example"}}}
+          ]
+        },
+        {
+          "ruleId": "CVE-2024-2004",
+          "ruleIndex": 6,
+          "level": "error",
+          "message": {
+            "text": "Package: ignored-kev\nInstalled Version: 1.0\nVulnerability CVE-2024-2004\nSeverity: CRITICAL\nFixed Version: 1.1\nLink: [CVE-2024-2004](https://example.test/CVE-2024-2004)"
+          },
+          "locations": [
+            {"physicalLocation": {"artifactLocation": {"uri": "example"}}}
+          ],
+          "suppressions": [{"kind": "external", "status": "accepted"}]
+        }
+      ]
+    }
+  ]
+}
