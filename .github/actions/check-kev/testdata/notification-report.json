@@ -1,0 +1,16 @@
+{
+  "scanner": {
+    "result": {
+      "Results": [
+        {
+          "Vulnerabilities": [
+            {
+              "VulnerabilityID": "CVE-2024-1000",
+              "LastModifiedDate": "2026-09-14T00:00:00Z"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

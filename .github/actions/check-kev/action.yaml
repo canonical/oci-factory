@@ -1,0 +1,33 @@
+name: Check KEV
+description: Classify CVE IDs using the CISA Known Exploited Vulnerabilities catalog
+
+inputs:
+  cve-ids:
+    description: JSON array of CVE IDs to classify
+    required: true
+
+outputs:
+  kev-results:
+    description: JSON object mapping each normalized CVE ID to its KEV status
+    value: ${{ steps.check-kev.outputs.kev-results }}
+  catalog-source:
+    description: URL of the CISA KEV catalog used for classification
+    value: ${{ steps.check-kev.outputs.catalog-source }}
+  catalog-version:
+    description: Version of the CISA KEV catalog used for classification
+    value: ${{ steps.check-kev.outputs.catalog-version }}
+  catalog-release-date:
+    description: Release date of the CISA KEV catalog used for classification
+    value: ${{ steps.check-kev.outputs.catalog-release-date }}
+
+runs:
+  using: composite
+  steps:
+    - name: Classify CVE IDs
+      id: check-kev
+      shell: bash
+      env:
+        INPUT_CVE_IDS: ${{ inputs.cve-ids }}
+      run: |
+        python3 "${{ github.action_path }}/check_kev.py" \
+          --cve-ids "$INPUT_CVE_IDS"

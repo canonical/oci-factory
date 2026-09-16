@@ -1,0 +1,22 @@
+{
+  "catalogVersion": "2026.09.14",
+  "dateReleased": "2026-09-14T00:00:00Z",
+  "count": 5,
+  "vulnerabilities": [
+    {
+      "cveID": "CVE-2024-2000"
+    },
+    {
+      "cveID": "CVE-2024-2001"
+    },
+    {
+      "cveID": "CVE-2024-2002"
+    },
+    {
+      "cveID": "CVE-2024-2003"
+    },
+    {
+      "cveID": "CVE-2024-2004"
+    }
+  ]
+}
