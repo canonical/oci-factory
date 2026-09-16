@@ -540,6 +540,8 @@ Vulnerabilities (KEV) catalog at any severity, regardless of fix availability
 or modification date.
 An additional all-severity SARIF report is enriched with the KEV classification
 and supplies the five-column GitHub summary and downstream issue content.
+Only SARIF runs identifying their scanner as `Trivy` are accepted; missing or
+unsupported scanner names cause an error before the report is rewritten.
 KEV matching uses CVE IDs from Trivy SARIF vulnerability identifiers and the
 associated rule's `helpUri`, not arbitrary alias properties or CVE mentions in
 descriptions. Vulnerabilities suppressed through `.trivyignore` remain excluded.
