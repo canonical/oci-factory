@@ -9,8 +9,8 @@ Public images are resolved against GHCR in their canonical format, i.e.:
 
 Pro images are private and only published to ACR. Since _pro_releases.json is
 tightly tracked with the images in ACR, the released tags can be assembled
-directly from the keys in that file (<track>_<risk>), so the unique image is
-located as ${ACR_REGISTRY}/<img-name> together with its released tags.
+directly from the keys in that file (<track>_<risk>). The ACR registry is added
+later by the scan workflow so no secret-derived value enters the job matrix.
 """
 
 import argparse
@@ -200,7 +200,6 @@ def _normalize_tag(tag: str) -> str:
 def get_released_pro_images(
     img_name: str,
     releases: dict,
-    acr_registry: str,
     swift_conn: swiftclient.client.Connection,
     swift_objs: list,
 ) -> list:
@@ -231,7 +230,7 @@ def get_released_pro_images(
         images.append(
             {
                 "name": img_name,
-                "source-image": f"{acr_registry}/{img_name}",
+                "source-image": img_name,
                 "revision": revision,
                 "released-tags": released_tags,
                 "pro": True,
@@ -256,12 +255,6 @@ def main(argv: list = None) -> None:
         required=True,
         help="absolute path to the OCI folder where all images are",
     )
-    parser.add_argument(
-        "--acr-registry",
-        default="",
-        help="ACR registry hosting the private Pro images",
-    )
-
     args = parser.parse_args(argv)
 
     logger.info(f"Looping through OCI images in {args.oci_images_path}")
@@ -284,7 +277,7 @@ def main(argv: list = None) -> None:
         if os.path.isfile(pro_file):
             with open(pro_file) as rf:
                 matrix_include += get_released_pro_images(
-                    img, json.load(rf), args.acr_registry, swift_conn, swift_objs
+                    img, json.load(rf), swift_conn, swift_objs
                 )
 
     logger.info(f"Released revisions to scan: {json.dumps(matrix_include, indent=2)}")

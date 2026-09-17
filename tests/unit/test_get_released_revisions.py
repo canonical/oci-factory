@@ -25,11 +25,11 @@ def test_get_released_pro_images_groups_tags_by_revision_and_skips_eol():
     }
 
     assert get_released_revisions.get_released_pro_images(
-        "example", releases, "ubuntu.azurecr.io", None, []
+        "example", releases, None, []
     ) == [
         {
             "name": "example",
-            "source-image": "ubuntu.azurecr.io/example",
+            "source-image": "example",
             "revision": 42,
             "released-tags": ["1.2-22.04_beta", "1.2-22.04_edge"],
             "pro": True,
@@ -50,7 +50,7 @@ def test_get_released_pro_images_normalizes_latest_tags():
     }
 
     images = get_released_revisions.get_released_pro_images(
-        "example", releases, "ubuntu.azurecr.io", None, []
+        "example", releases, None, []
     )
 
     assert images[0]["released-tags"] == ["beta", "edge"]
@@ -144,8 +144,6 @@ def test_main_builds_combined_public_and_pro_matrix(tmp_path, monkeypatch):
         [
             "--oci-images-path",
             str(tmp_path / "oci"),
-            "--acr-registry",
-            "ubuntu.azurecr.io",
         ]
     )
 
@@ -165,7 +163,7 @@ def test_main_builds_combined_public_and_pro_matrix(tmp_path, monkeypatch):
             },
             {
                 "name": "example",
-                "source-image": "ubuntu.azurecr.io/example",
+                "source-image": "example",
                 "revision": 42,
                 "released-tags": ["1.0-22.04_beta"],
                 "pro": True,

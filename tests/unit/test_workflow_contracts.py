@@ -181,6 +181,11 @@ def test_vulnerability_scan_uses_acr_credentials_only_for_pro() -> None:
     script = configure_step["run"]
 
     assert 'if [ "${INPUTS_PRO}" = "true" ]' in script
+    assert ': "${ACR_REGISTRY:?ACR_REGISTRY secret is required for Pro images}"' in script
+    assert 'source_image="${ACR_REGISTRY}/${INPUTS_OCI_IMAGE_NAME}"' in script
+    assert 'source_image="${INPUTS_OCI_IMAGE_NAME}"' in script
+    assert 'copy "docker://${source_image}"' in script
+    assert configure_step["env"]["ACR_REGISTRY"] == "${{ secrets.ACR_REGISTRY }}"
     assert configure_step["env"]["ACR_CREDS_USR"] == "${{ secrets.ACR_CREDS_USR }}"
     assert configure_step["env"]["ACR_CREDS_PSW"] == "${{ secrets.ACR_CREDS_PSW }}"
 
@@ -191,12 +196,11 @@ def test_continuous_testing_forwards_pro_matrix_fields() -> None:
     prepare = step_named(
         workflow, "prepare-test-matrix", "Prepare test matrix"
     )
-    assert "--acr-registry" in prepare["run"]
-    assert prepare["env"]["ACR_REGISTRY"] == "${{ secrets.ACR_REGISTRY }}"
+    assert "--acr-registry" not in prepare["run"]
+    assert "ACR_REGISTRY" not in prepare["env"]
 
     run_tests_with = workflow["jobs"]["run-tests"]["with"]
     assert run_tests_with["pro"] == "${{ matrix.pro }}"
     assert run_tests_with["released-tags"] == "${{ join(matrix.released-tags, ',') }}"
     # Pro images are pulled with an explicit tag; public keep the bare source.
     assert "matrix.released-tags[0]" in run_tests_with["oci-image-name"]
-
