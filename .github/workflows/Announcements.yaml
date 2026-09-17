@@ -19,17 +19,21 @@ jobs:
       oci-img-name: ${{ steps.get-image-name.outputs.img-name }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
 
       - name: Get image name
         id: get-image-name
         run: |
-          all_images=`ls oci/`
-          for img in $all_images
+          for img in oci/*/
           do
-            if [[ "${{ env.NAME }}" == "${img}_"* ]] || [[ "${{ env.NAME }}" == "oci-factory/${img}"* ]]
+            img="${img%/}"   # strip trailing slash
+            img_name="${img#oci/}"  # strip leading oci/
+            # shellcheck disable=SC2193
+            if [[ "${NAME}" == "${img_name}_"* ]] || [[ "${NAME}" == "oci-factory/${img_name}"* ]]
             then
-              echo "Image name: ${img}" >> "$GITHUB_STEP_SUMMARY"
-              echo "img-name=${img}" >> "$GITHUB_OUTPUT"
+              echo "Image name: ${img_name}" >> "$GITHUB_STEP_SUMMARY"
+              echo "img-name=${img_name}" >> "$GITHUB_OUTPUT"
             fi
           done
 
@@ -56,14 +60,19 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
 
       - name: Build release summary
         id: get-summary
         run: |
-          summary=":rocket: **${{ needs.get-contacts.outputs.oci-img-name }}** released to"
-          summary="${summary} [${{ env.NAME }}](${{ github.event.release.html_url }})"
+          summary=":rocket: **${NEEDS_GET_CONTACTS_OUTPUTS_OCI_IMG_NAME}** released to"
+          summary="${summary} [${NAME}](${GITHUB_EVENT_RELEASE_HTML_URL})"
 
           echo "summary=${summary}" >> "$GITHUB_OUTPUT"
+        env:
+          NEEDS_GET_CONTACTS_OUTPUTS_OCI_IMG_NAME: ${{ needs.get-contacts.outputs.oci-img-name }}
+          GITHUB_EVENT_RELEASE_HTML_URL: ${{ github.event.release.html_url }}
 
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
@@ -80,8 +89,9 @@ jobs:
           SUMMARY: "${{ steps.get-summary.outputs.summary }}"
           FOOTER: ''
           TITLE: ''
+          NEEDS_GET_CONTACTS_OUTPUTS_MATTERMOST_CHANNELS: ${{ needs.get-contacts.outputs.mattermost-channels }}
         run: |
-          for channel in $(echo ${{ needs.get-contacts.outputs.mattermost-channels }} | tr ',' ' ')
+          for channel in $(echo ${NEEDS_GET_CONTACTS_OUTPUTS_MATTERMOST_CHANNELS} | tr ',' ' ')
           do
             MM_CHANNEL_ID="${channel}" python3 -m src.notifications.mattermost_notifier send
           done
@@ -94,15 +104,22 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
 
       - name: Build package summary
         id: get-summary
         run: |
-          summary=":package: **${{ needs.get-contacts.outputs.oci-img-name }}** built and uploaded to"
-          summary="${summary} GHCR on [${{ github.event.registry_package.package_version.package_url }}](${{ github.event.registry_package.package_version.html_url }})"
-          summary="${summary}\n"'```\n${{ github.event.registry_package.package_version.installation_command }}\n```'
+          summary=":package: **${NEEDS_GET_CONTACTS_OUTPUTS_OCI_IMG_NAME}** built and uploaded to"
+          summary="${summary} GHCR on [${GITHUB_EVENT_REGISTRY_PACKAGE_PACKAGE_VERSION_PACKAGE_URL}](${GITHUB_EVENT_REGISTRY_PACKAGE_PACKAGE_VERSION_HTML_URL})"
+          summary="${summary}\n\`\`\`\n${GITHUB_EVENT_REGISTRY_PACKAGE_PACKAGE_VERSION_INSTALLATION_COMMAND}\n\`\`\`"
 
           echo "summary=${summary}" >> "$GITHUB_OUTPUT"
+        env:
+          NEEDS_GET_CONTACTS_OUTPUTS_OCI_IMG_NAME: ${{ needs.get-contacts.outputs.oci-img-name }}
+          GITHUB_EVENT_REGISTRY_PACKAGE_PACKAGE_VERSION_PACKAGE_URL: ${{ github.event.registry_package.package_version.package_url }}
+          GITHUB_EVENT_REGISTRY_PACKAGE_PACKAGE_VERSION_HTML_URL: ${{ github.event.registry_package.package_version.html_url }}
+          GITHUB_EVENT_REGISTRY_PACKAGE_PACKAGE_VERSION_INSTALLATION_COMMAND: ${{ github.event.registry_package.package_version.installation_command }}
 
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
@@ -119,8 +136,9 @@ jobs:
           SUMMARY: '${{ steps.get-summary.outputs.summary }}'
           FOOTER: ''
           TITLE: ''
+          NEEDS_GET_CONTACTS_OUTPUTS_MATTERMOST_CHANNELS: ${{ needs.get-contacts.outputs.mattermost-channels }}
         run: |
-          for channel in $(echo ${{ needs.get-contacts.outputs.mattermost-channels }} | tr ',' ' ')
+          for channel in $(echo ${NEEDS_GET_CONTACTS_OUTPUTS_MATTERMOST_CHANNELS} | tr ',' ' ')
           do
             MM_CHANNEL_ID="${channel}" python3 -m src.notifications.mattermost_notifier send
           done

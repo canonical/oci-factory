@@ -9,7 +9,10 @@ from pathlib import Path
 
 import pytest
 
-from src.image.prepare_single_image_build_matrix import main as prepare_build_matrix
+from src.image.prepare_single_image_build_matrix import (
+    InvalidSchemaError,
+    main as prepare_build_matrix,
+)
 
 from .. import DATA_DIR
 
@@ -115,3 +118,45 @@ def test_ignored_vulnerabilities(prep_execution):
         github_output_content,
         re.M,
     )
+
+
+@pytest.mark.parametrize(
+    "prep_execution",
+    [DATA_DIR / "image_v2_pro.yaml"],
+    indirect=["prep_execution"],
+)
+def test_pro_matrix_and_revision_data(prep_execution):
+    revision_data_dir, github_output, _ = prep_execution
+
+    prepare_build_matrix()
+
+    output = github_output.read_text("utf8")
+    matrix = json.loads(re.search(r"^build-matrix=(.*)$", output, re.M).group(1))
+    public, pro = matrix["include"]
+
+    assert public["pro-services"] == ""
+    assert "pro" not in public
+    assert pro["pro-services"] == "esm-apps,esm-infra"
+    assert pro["dir_identifier"].endswith("_esm-apps-esm-infra")
+    assert "pro" not in pro
+
+    revisions = {
+        revision["revision"]: revision
+        for path in Path(revision_data_dir).glob("*")
+        if (revision := json.loads(path.read_text()))
+    }
+    assert revisions[1]["pro"] is None
+    assert revisions[2]["pro"]["services"] == ["esm-infra", "esm-apps"]
+
+
+@pytest.mark.parametrize(
+    "prep_execution",
+    [DATA_DIR / "image_v2_pro_release.yaml"],
+    indirect=["prep_execution"],
+)
+def test_existing_pro_revision_release_is_rejected(prep_execution):
+    with pytest.raises(
+        InvalidSchemaError,
+        match="Releasing an existing Pro revision is not supported",
+    ):
+        prepare_build_matrix()

@@ -35,9 +35,13 @@ jobs:
       oci-image-name: ${{ steps.get-image-name.outputs.img-name }}
     steps:
       - name: ${{ inputs.external_ref_id }}  # (2)
-        run: echo 'Started by ${{ inputs.external_ref_id }}' >> "$GITHUB_STEP_SUMMARY"
+        run: echo "Started by ${INPUTS_EXTERNAL_REF_ID}" >> "$GITHUB_STEP_SUMMARY"
+        env:
+          INPUTS_EXTERNAL_REF_ID: ${{ inputs.external_ref_id }}
         
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
 
       - name: Validate access to triggered image
         uses: ./.github/actions/validate-actor
@@ -63,7 +67,7 @@ jobs:
             set -x
           fi
           source src/shared/logs.sh
-          img_dir="${{ steps.changed-files.outputs.all_changed_files }}"
+          img_dir="${STEPS_CHANGED_FILES_OUTPUTS_ALL_CHANGED_FILES}"
           occurrences="${img_dir//[^,]}"
           if [ ${#occurrences} -ne 0 ]
           then
@@ -71,20 +75,30 @@ jobs:
             exit 1
           fi
           echo "img-name=$(basename ${img_dir})" >> "$GITHUB_OUTPUT"
+        env:
+          STEPS_CHANGED_FILES_OUTPUTS_ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
 
   
   do-releases:
-    runs-on: ubuntu-24.04
+    runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
     name: Release
     needs: [validate-push-release-request]
+    concurrency:
+      group: release-${{ inputs.oci-image-name }}
+      cancel-in-progress: false
     outputs:
-      gh-releases-matrix: ${{ steps.release-image.outputs.gh-releases-matrix }}
+      gh-releases-matrix: ${{ steps.release-image.outputs.gh-releases-matrix || '{"include":[]}' }}
+      has-github-releases: ${{ steps.release-image.outputs.has-github-releases }}
+      is-public-release: ${{ steps.release-type.outputs.is-public-release }}
+      is-pro-release: ${{ steps.release-type.outputs.is-pro-release }}
     env:
       IS_PROD: ${{ ! startsWith(inputs.oci-image-name, 'mock-') }}
       RELEASES_BRANCH: _releases
       RELEASE_REPO_DIR: oci-factory-releases
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
 
       - name: Fetch _releases.json
         uses: ./.github/actions/fetch-releases-json
@@ -100,6 +114,79 @@ jobs:
           key: ${{ inputs.image-trigger-cache-key }}
           fail-on-cache-miss: true
 
+
+      # Use yq to find out if `pro-release` is present and non-empty in the image trigger.
+      - name: Release type
+        id: release-type
+        run: |
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
+          source src/shared/logs.sh
+          image_trigger_file="oci/${INPUTS_OCI_IMAGE_NAME}/image.yaml"
+          yq eval '.["pro-release"] | length > 0' "$image_trigger_file" > is_pro_release.txt
+          yq eval '.["release"] | length > 0' "$image_trigger_file" > is_public_release.txt
+          is_pro_release=$(cat is_pro_release.txt)
+          echo "is-pro-release=$is_pro_release" >> "$GITHUB_OUTPUT"
+          is_public_release=$(cat is_public_release.txt)
+          echo "is-public-release=$is_public_release" >> "$GITHUB_OUTPUT"
+          if [[ "$is_pro_release" == "true" && -z "${INPUTS_IMAGE_TRIGGER_CACHE_KEY}" ]]; then
+            log_error "Releasing an existing Pro revision is not supported. Use upload[*].release during the build instead."
+            exit 1
+          fi
+          # Error out if passphrase is not set for Pro release
+          if [[ "$is_pro_release" == "true" && -z "${ROCKS_PRO_ARTIFACT_PASSPHRASE}" ]]; then
+            log_error "ROCKS_PRO_ARTIFACT_PASSPHRASE is required for a Pro release."
+            exit 1
+          fi
+        env:
+          INPUTS_IMAGE_TRIGGER_CACHE_KEY: ${{ inputs.image-trigger-cache-key }}
+          INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
+          ROCKS_PRO_ARTIFACT_PASSPHRASE: ${{ secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE }}
+
+      # Download the image if `pro-release` is present and non-empty in the image trigger.
+      # pattern should match <image_name>_<version>-<base>_*, e.g., mock-rock_1.2-22.04_*
+      - name: Download image artifact
+        id: download-image-artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        if: ${{ steps.release-type.outputs.is-pro-release == 'true' }}
+        env:
+          INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
+        with:
+          pattern: ${{ inputs.oci-image-name }}_*
+          merge-multiple: true
+
+      # Decrypt the Pro image artifact being downloaded.
+      # They are encrypted with GPG, and has the same name as the downloaded artifact, but with .gpg extension.
+      # put a for loop to use the script ./.github/action/crypt-artifact/crypt-artifact.sh to decrypt the artifact,
+      - name: Decrypt Pro image artifact
+        id: decrypt-pro-image-artifact
+        if: ${{ steps.release-type.outputs.is-pro-release == 'true' }}
+        env:
+          ARTIFACT_PASSPHRASE: ${{ secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE }}
+          ARTIFACT_PATH: ${{ steps.download-image-artifact.outputs.download-path }}
+        run: |
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
+          source src/shared/logs.sh
+
+          shopt -s nullglob
+          artifacts=("${ARTIFACT_PATH}"/*.gpg)
+          if [[ ${#artifacts[@]} -eq 0 ]]; then
+            log_error "No encrypted Pro artifacts were downloaded."
+            exit 1
+          fi
+
+          for artifact in "${artifacts[@]}"; do
+            log_info "Decrypting artifact: $artifact"
+            ./.github/actions/crypt-artifact/crypt-artifact.sh decrypt \
+              -i "$artifact" \
+              -p "$ARTIFACT_PASSPHRASE"
+          done
+
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: "3.x"
@@ -109,28 +196,65 @@ jobs:
           ROCKS_DEV_LP_USERNAME: ${{ secrets.ROCKS_DEV_LP_USERNAME }}
           CPC_BUILD_TOOLS_REPO: git.launchpad.net/~cloudware/cloudware/+git/cpc_build_tools
           # CPC_BUILD_TOOLS_REPO_REF: 9b716ed8a8ba728d036b54b1bb17a8f49dbda434
-          SKOPEO_BRANCH: 'v1.20.0'
-          SKOPEO_URL: 'https://github.com/containers/skopeo'
         run: | 
           ./src/image/requirements.sh
           pip install -r src/image/requirements.txt
       - name: Get all revisions per track
         id: get-all-canonical-tags
         env:
-          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
-          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME }}
-          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
-          OS_REGION_NAME: ${{ secrets.SWIFT_OS_REGION_NAME }}
-          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL }}
+          OS_AUTH_URL: ${{ secrets.SWIFT_OS_AUTH_URL_PS7 }}
+          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME_PS7 }}
+          OS_TENANT_NAME: ${{ secrets.SWIFT_OS_TENANT_NAME_PS7 }}
+          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD_PS7 }}
+          OS_STORAGE_URL: ${{ secrets.SWIFT_OS_STORAGE_URL_PS7 }}
           IMAGE_NAME: ${{ inputs.oci-image-name }}
           SWIFT_CONTAINER_NAME: ${{ vars.SWIFT_CONTAINER_NAME }}
         run: ./src/image/get_canonical_tags_from_swift.sh
+
+      - name: Validate release requests
+        env:
+          ACR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_USR || secrets.ACR_CREDS_USR_DEV }}
+          ACR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_PSW || secrets.ACR_CREDS_PSW_DEV }}
+          ACR_REGISTRY: ${{ env.IS_PROD == 'true' && 'ubuntu.azurecr.io' || secrets.ACR_REGISTRY_DEV }}
+          INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
+          IS_PRO_RELEASE: ${{ steps.release-type.outputs.is-pro-release }}
+          IS_PUBLIC_RELEASE: ${{ steps.release-type.outputs.is-public-release }}
+          PYTHONUNBUFFERED: 1
+          REVISION_TAGS_FILE: ${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}
+        run: |
+          set -e
+          source src/shared/logs.sh
+
+          if [[ "$IS_PRO_RELEASE" == "true" ]]; then
+            if [[ -z "${ACR_CREDS_USR:-}" || -z "${ACR_CREDS_PSW:-}" || -z "${ACR_REGISTRY:-}" ]]; then
+              log_error "ACR registry and credentials are required for a Pro release."
+              exit 1
+            fi
+            python3 -m src.image.release \
+              --image-trigger "oci/${INPUTS_OCI_IMAGE_NAME}/image.yaml" \
+              --image-name "$INPUTS_OCI_IMAGE_NAME" \
+              --all-releases "oci/${INPUTS_OCI_IMAGE_NAME}/_pro_releases.json" \
+              --all-revision-tags "$REVISION_TAGS_FILE" \
+              --pro \
+              --validate-only
+          fi
+
+          if [[ "$IS_PUBLIC_RELEASE" == "true" ]]; then
+            python3 -m src.image.release \
+              --image-trigger "oci/${INPUTS_OCI_IMAGE_NAME}/image.yaml" \
+              --image-name "$INPUTS_OCI_IMAGE_NAME" \
+              --all-releases "oci/${INPUTS_OCI_IMAGE_NAME}/_releases.json" \
+              --all-revision-tags "$REVISION_TAGS_FILE" \
+              --ghcr-repo "${{ github.repository_owner }}/oci-factory" \
+              --validate-only
+          fi
       
       # Pull the latest changes to prevent conflicts merging _releases.json
       - run: pushd ${{ env.RELEASE_REPO_DIR }} && git pull --quiet && popd
 
       - name: Do releases from ${{ inputs.oci-image-name }}
         id: release-image
+        if: ${{ steps.release-type.outputs.is-public-release == 'true' }}
         env:
           # GH has issues with boolean expressions
           # https://github.com/actions/runner/issues/1483
@@ -149,34 +273,94 @@ jobs:
           # ECR_LTS_NAMESPACE: ${{ env.IS_PROD == 'true' && 'lts' || secrets.ECR_LTS_NAMESPACE_DEV }}
 
           PYTHONUNBUFFERED: 1
+          INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
+          STEPS_GET_ALL_CANONICAL_TAGS_OUTPUTS_CANONICAL_TAGS_FILE: ${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}
         run: |
           set -e
           if [[ "$RUNNER_DEBUG" == "1" ]]; then
             set -x
           fi
           source src/shared/logs.sh
-          log_info "Running in production?  ${{ env.IS_PROD == 'true' && 'YES' || 'NO' }}"
-          
+          log_info "Running in production? $([[ "$IS_PROD" == "true" ]] && echo YES || echo NO)"
           python3 -m src.image.release \
-            --image-trigger oci/${{ inputs.oci-image-name }}/image.yaml \
-            --image-name ${{ inputs.oci-image-name }} \
-            --all-releases oci/${{ inputs.oci-image-name }}/_releases.json \
-            --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
+            --image-trigger oci/${INPUTS_OCI_IMAGE_NAME}/image.yaml \
+            --image-name ${INPUTS_OCI_IMAGE_NAME} \
+            --all-releases oci/${INPUTS_OCI_IMAGE_NAME}/_releases.json \
+            --all-revision-tags "${STEPS_GET_ALL_CANONICAL_TAGS_OUTPUTS_CANONICAL_TAGS_FILE}" \
             --ghcr-repo "${{ github.repository_owner }}/oci-factory"
 
+      - name: Do Pro releases from ${{ inputs.oci-image-name }}
+        if: ${{ steps.release-type.outputs.is-pro-release == 'true' }}
+        id: release-pro-image
+        env:
+          # GH has issues with boolean expressions
+          ACR_CREDS_USR: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_USR || secrets.ACR_CREDS_USR_DEV }}
+          ACR_CREDS_PSW: ${{ env.IS_PROD == 'true' && secrets.ACR_CREDS_PSW || secrets.ACR_CREDS_PSW_DEV }}
+          ACR_REGISTRY: ${{ env.IS_PROD == 'true' && 'ubuntu.azurecr.io' || secrets.ACR_REGISTRY_DEV }}
+          PYTHONUNBUFFERED: 1
+          INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
+          STEPS_GET_ALL_CANONICAL_TAGS_OUTPUTS_CANONICAL_TAGS_FILE: ${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}
+        run: |
+          set -e
+          if [[ "$RUNNER_DEBUG" == "1" ]]; then
+            set -x
+          fi
+          source src/shared/logs.sh
+          log_info "Running in production? $([[ "$IS_PROD" == "true" ]] && echo YES || echo NO)"
+          if [[ -z "${ACR_CREDS_USR:-}" || -z "${ACR_CREDS_PSW:-}" || -z "${ACR_REGISTRY:-}" ]]; then
+            log_error "ACR registry and credentials are required for a Pro release."
+            exit 1
+          fi
+
+          python3 -m src.image.release \
+            --image-trigger oci/${INPUTS_OCI_IMAGE_NAME}/image.yaml \
+            --image-name ${INPUTS_OCI_IMAGE_NAME} \
+            --all-releases oci/${INPUTS_OCI_IMAGE_NAME}/_pro_releases.json \
+            --all-revision-tags "${STEPS_GET_ALL_CANONICAL_TAGS_OUTPUTS_CANONICAL_TAGS_FILE}" \
+            --pro
+
       - name: Update _releases.json
+        if: ${{ steps.release-type.outputs.is-public-release == 'true' }}
         run: |
           python3 -m src.image.release \
-            --image-trigger oci/${{ inputs.oci-image-name }}/image.yaml \
-            --image-name ${{ inputs.oci-image-name }} \
-            --all-releases oci/${{ inputs.oci-image-name }}/_releases.json \
-            --all-revision-tags "${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}" \
+            --image-trigger oci/${INPUTS_OCI_IMAGE_NAME}/image.yaml \
+            --image-name ${INPUTS_OCI_IMAGE_NAME} \
+            --all-releases oci/${INPUTS_OCI_IMAGE_NAME}/_releases.json \
+            --all-revision-tags "${STEPS_GET_ALL_CANONICAL_TAGS_OUTPUTS_CANONICAL_TAGS_FILE}" \
             --update-releases-json
+        env:
+          INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
+          STEPS_GET_ALL_CANONICAL_TAGS_OUTPUTS_CANONICAL_TAGS_FILE: ${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}
+
+      - name: Update _pro_releases.json
+        if: ${{ steps.release-type.outputs.is-pro-release == 'true' }}
+        run: |
+          python3 -m src.image.release \
+            --image-trigger oci/${INPUTS_OCI_IMAGE_NAME}/image.yaml \
+            --image-name ${INPUTS_OCI_IMAGE_NAME} \
+            --all-releases oci/${INPUTS_OCI_IMAGE_NAME}/_pro_releases.json \
+            --all-revision-tags "${STEPS_GET_ALL_CANONICAL_TAGS_OUTPUTS_CANONICAL_TAGS_FILE}" \
+            --update-releases-json \
+            --pro
+        env:
+          INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
+          STEPS_GET_ALL_CANONICAL_TAGS_OUTPUTS_CANONICAL_TAGS_FILE: ${{ steps.get-all-canonical-tags.outputs.canonical-tags-file }}
 
       - name: Overwrite _releases.json
+        if: ${{ steps.release-type.outputs.is-public-release == 'true' }}
         run: |
-          mkdir -p ${{ env.RELEASE_REPO_DIR }}/oci/${{ inputs.oci-image-name }}
-          cp oci/${{ inputs.oci-image-name }}/_releases.json ${{ env.RELEASE_REPO_DIR }}/oci/${{ inputs.oci-image-name }}/_releases.json
+          mkdir -p ${{ env.RELEASE_REPO_DIR }}/oci/${INPUTS_OCI_IMAGE_NAME}
+          cp oci/${INPUTS_OCI_IMAGE_NAME}/_releases.json ${{ env.RELEASE_REPO_DIR }}/oci/${INPUTS_OCI_IMAGE_NAME}/_releases.json
+        env:
+          INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
+
+      - name: Overwrite _pro_releases.json
+        if: ${{ steps.release-type.outputs.is-pro-release == 'true' }}
+        run: |
+          mkdir -p ${{ env.RELEASE_REPO_DIR }}/oci/${INPUTS_OCI_IMAGE_NAME}
+          cp oci/${INPUTS_OCI_IMAGE_NAME}/_pro_releases.json ${{ env.RELEASE_REPO_DIR }}/oci/${INPUTS_OCI_IMAGE_NAME}/_pro_releases.json
+        env:
+          INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
 
       # Commit with actor's GitHub noreply email to pass CLA and keep the privacy of the actor
       # Use force push, to bypass the branch protection rules
@@ -185,13 +369,16 @@ jobs:
         with:
           directory: ${{ env.RELEASE_REPO_DIR }}
           image-name: ${{ inputs.oci-image-name }}
-          message: 'ci: automatically update oci/${{ inputs.oci-image-name }}/_releases.json, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          message: 'ci: automatically update releases in oci/${{ inputs.oci-image-name }}/, from ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           email: '${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com'
 
 
   update-documentation:
     name: Update documentation
     needs: [do-releases]
+    # Documentation should only be updated for public releases, not for pro releases.
+    # As ACR does not have a Web UI.
+    if: ${{ needs.do-releases.outputs.is-public-release == 'true' }}
     uses: ./.github/workflows/Documentation.yaml
     with:
       oci-image-name: "${{ inputs.oci-image-name }}"
@@ -202,6 +389,7 @@ jobs:
     runs-on: ubuntu-22.04
     name: Github-Release
     needs: [do-releases]
+    if: ${{ needs.do-releases.outputs.has-github-releases == 'true' }}
     permissions:
       contents: write
     strategy:
@@ -212,10 +400,11 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ matrix.canonical-tag }}
+          persist-credentials: false
 
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          pattern: '*.sbom_preview.spdx.zip'
+          pattern: '${{ matrix.canonical-tag }}.sbom_preview.spdx.zip'
           path: sbom
       
       - name: Unzip SBOM artifacts
@@ -224,22 +413,23 @@ jobs:
             set -x
           fi
           sbom_target_dir="$(pwd)/sbom"
-          find sbom -type f -name '*.spdx.zip' -exec unzip {} -d ${sbom_target_dir} \;
+          find sbom -type f -name '*.spdx.zip' -exec unzip {} -d "${sbom_target_dir}" \;
 
       # We force delete an existing tag because otherwise we won't get
       # an email notification and the GH release will have the date from when
       # it was created the first time (i.e. force-push won't update the date)
-      - run: gh release delete ${{ matrix.release-name }} --yes --cleanup-tag
+      - run: gh release delete ${MATRIX_RELEASE_NAME} --yes --cleanup-tag
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MATRIX_RELEASE_NAME: ${{ matrix.release-name }}
           
       - name: Create Git tag
         uses: rickstaa/action-create-tag@a1c7777fcb2fee4f19b0f283ba888afa11678b72
         with:
           tag: "${{ matrix.release-name }}"
           message: "release(${{ matrix.name }}): Release image revision ${{ matrix.revision }} to ${{ matrix.channel }}"
-          github_token: ${{ secrets.ROCKSBOT_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           commit_sha: ${{ matrix.canonical-tag }}
           force_push_tag: true
 
@@ -247,5 +437,5 @@ jobs:
         with:
           name: "${{ matrix.release-name }}"
           tag_name: "${{ matrix.release-name }}"
-          token: "${{ secrets.ROCKSBOT_TOKEN }}"
+          token: "${{ secrets.GITHUB_TOKEN }}"
           files: "sbom/*.sbom_preview.spdx.json"

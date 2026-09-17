@@ -12,6 +12,7 @@ from subprocess import check_call
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from shared.logs import get_logger
+from shared.skopeo import DEFAULT_SKOPEO_IMAGE
 
 logger = get_logger()
 
@@ -30,16 +31,33 @@ def parse_args():
 
 def main():
     args = parse_args()
-    base_cmd = ["skopeo", "copy", "--preserve-digests", args.source_uri]
 
     with tempfile.TemporaryDirectory() as tmp_dir:
+        # --insecure-policy is required on private-endpoint runners.
+        base_cmd = [
+            "docker",
+            "run",
+            "--rm",
+            "-v",
+            f"{tmp_dir}:/skopeo-auth:ro",
+        ]
+        # Local OCI archives must be bind-mounted into the skopeo container.
+        if args.source_uri.startswith("oci-archive:"):
+            base_cmd += ["-v", f"{os.getcwd()}:/workspace:ro", "-w", "/workspace"]
+        base_cmd += [
+            os.environ.get("SKOPEO_IMAGE", DEFAULT_SKOPEO_IMAGE),
+            "--insecure-policy",
+            "copy",
+            "--preserve-digests",
+            args.source_uri,
+        ]
         if args.registry_auth:
             auth_config = {"auths": {args.target_name: {"auth": args.registry_auth}}}
             auth_file = os.path.join(tmp_dir, "auth.json")
             with open(auth_file, "w") as f:
                 os.fchmod(f.fileno(), 0o600)
                 json.dump(auth_config, f)
-            base_cmd += ["--authfile", auth_file]
+            base_cmd += ["--authfile", "/skopeo-auth/auth.json"]
 
         target_uri = "docker://" + args.target_name + ":" + args.target_tags[0]
         cmd = base_cmd + ["--multi-arch", "all", target_uri]

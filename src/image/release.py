@@ -63,6 +63,18 @@ parser.add_argument(
     action="store_true",
     default=False,
 )
+parser.add_argument(
+    "--pro",
+    help="Release the Pro rocks to ACR.",
+    action="store_true",
+    default=False,
+)
+parser.add_argument(
+    "--validate-only",
+    help="Validate the release request without publishing or updating release state.",
+    action="store_true",
+    default=False,
+)
 
 
 def remove_eol_tags(tag_to_revision, all_releases):
@@ -136,10 +148,12 @@ def find_tracks_has_eol_exceeding_base_eol(all_releases):
 
 def main():
     args = parser.parse_args()
-    if not args.update_releases_json and not args.ghcr_repo:
+    if not args.update_releases_json and not args.pro and not args.ghcr_repo:
         parser.error(
-            "If not updating the releases JSON, --ghcr-repo must be specified."
+            "If not updating the releases JSON, either --pro or --ghcr-repo must be specified."
         )
+    if args.pro and args.ghcr_repo:
+        parser.error("Cannot specify both --pro and --ghcr-repo.")
     img_name = (
         args.image_name
         if args.image_name
@@ -168,11 +182,23 @@ def main():
 
     _ = ImageSchema(**image_trigger)
 
+    release = "pro-release" if args.pro else "release"
+
     tag_mapping_from_trigger = {}
-    for track, risks in image_trigger["release"].items():
+    for track, risks in image_trigger[release].items():
         if track not in all_releases:
             logger.info(f"Track {track} will be created for the 1st time")
             all_releases[track] = {}
+
+        if args.pro:
+            requested_services = sorted(risks["services"])
+            existing_services = sorted(all_releases[track].get("services", []))
+            if existing_services and existing_services != requested_services:
+                raise shared.BadChannel(
+                    f"Pro track {track} already uses services {existing_services}, "
+                    f"not {requested_services}."
+                )
+            all_releases[track]["services"] = requested_services
 
         for risk, value in risks.items():
             if value is None:
@@ -180,6 +206,9 @@ def main():
 
             if risk in ["end-of-life", "end_of_life"]:
                 all_releases[track]["end-of-life"] = value
+                continue
+
+            if risk == "services":
                 continue
 
             if risk not in KNOWN_RISKS_ORDERED:
@@ -191,18 +220,24 @@ def main():
             logger.info(f"Channel {tag} points to {value}")
             tag_mapping_from_trigger[tag] = value
 
-    # update EOL dates from upload dictionary
-    for upload in image_trigger["upload"] or []:
-        for track, upload_release_dict in upload.get("release", {}).items():
-            if track not in all_releases:
-                logger.info(f"Track {track} will be created for the 1st time")
-                all_releases[track] = {}
+    # Preserve EOL metadata supplied by immediate public upload requests.
+    if not args.pro:
+        # update EOL dates from upload dictionary
+        for upload in image_trigger["upload"] or []:
+            if upload.get("pro"):
+                continue
+            for track, upload_release_dict in upload.get("release", {}).items():
+                if track not in all_releases:
+                    logger.info(f"Track {track} will be created for the 1st time")
+                    all_releases[track] = {}
 
-            if (
-                isinstance(upload_release_dict, dict)
-                and "end-of-life" in upload_release_dict
-            ):
-                all_releases[track]["end-of-life"] = upload_release_dict["end-of-life"]
+                if (
+                    isinstance(upload_release_dict, dict)
+                    and "end-of-life" in upload_release_dict
+                ):
+                    all_releases[track]["end-of-life"] = upload_release_dict[
+                        "end-of-life"
+                    ]
 
     logger.info(
         "Going to update channels according to the following:\n"
@@ -294,6 +329,10 @@ def main():
     for tag, revision in sorted(release_tags.items()):
         group_by_revision[revision].append(tag)
 
+    if args.validate_only:
+        logger.info("Release request validation completed successfully.")
+        return
+
     if not args.update_releases_json:
         logger.info(
             "Processed tag aliases and ready to release the following revisions:\n"
@@ -303,14 +342,20 @@ def main():
         github_tags = []
         for revision, tags in group_by_revision.items():
             revision_track = revision_to_track[revision]
-            source_img = (
-                "docker://ghcr.io/"
-                f"{args.ghcr_repo}/{img_name}:{revision_track}_{revision}"
-            )
+            if not args.pro:
+                source_img = (
+                    "docker://ghcr.io/"
+                    f"{args.ghcr_repo}/{img_name}:{revision_track}_{revision}"
+                )
+            else:
+                source_img = "oci-archive:" f"{img_name}_{revision_track}_{revision}"
             this_dir = os.path.dirname(__file__)
             logger.info(f"Releasing {source_img} with tags:\n{tags}")
+            pro_flag = ["--pro"] if args.pro else []
             subprocess.check_call(
-                [f"{this_dir}/tag_and_publish.sh", source_img, img_name] + tags
+                [f"{this_dir}/tag_and_publish.sh", source_img, img_name]
+                + pro_flag
+                + tags
             )
 
             for tag in tags:
@@ -324,16 +369,25 @@ def main():
                 gh_release_info["channel"] = f"{tag}"
                 github_tags.append(gh_release_info)
 
-        matrix = {"include": github_tags}
+        if not args.pro:
+            matrix = {"include": github_tags}
 
-        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="UTF-8") as gh_out:
-            print(f"gh-releases-matrix={matrix}", file=gh_out)
+            with open(os.environ["GITHUB_OUTPUT"], "a", encoding="UTF-8") as gh_out:
+                print(f"gh-releases-matrix={json.dumps(matrix)}", file=gh_out)
+                print(
+                    f"has-github-releases={'true' if github_tags else 'false'}",
+                    file=gh_out,
+                )
 
     else:
         # Write warnings to the summary
-        tracks_eol_exceeding_base_eol = find_tracks_has_eol_exceeding_base_eol(all_releases)
+        tracks_eol_exceeding_base_eol = find_tracks_has_eol_exceeding_base_eol(
+            all_releases
+        )
         if tracks_eol_exceeding_base_eol:
-            title, text = generate_base_eol_exceed_warning(tracks_eol_exceeding_base_eol)
+            title, text = generate_base_eol_exceed_warning(
+                tracks_eol_exceeding_base_eol
+            )
             title = f"## Release: {title}"
             with GithubStepSummary() as summary:
                 summary.write(title, text)

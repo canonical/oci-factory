@@ -1,0 +1,13 @@
+version: 1
+upload:
+  - source: "canonical/authentik-server-rock"
+    commit: 40b63132daca5bc457056c513b4c7018cb050739
+    directory: .
+    release:
+      # Upstream does not follow semver; a new version is released every 3 months.
+      # Upstream versions have a patch version digit, which we are dropping (upstream
+      # follows the same convention on Docker Hub).
+      2026.5-26.04:
+        risks:
+          - edge
+        end-of-life: "2026-09-29T00:00:00Z"

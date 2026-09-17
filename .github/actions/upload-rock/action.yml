@@ -4,19 +4,15 @@ inputs:
   artifact_name:
     description: "The name of the artifact to download"
     required: true
-    type: string
   name:
     description: "The name of the image to upload. This should include the namespace if applicable."
     required: true
-    type: string
   tags:
     description: "The tags to use for the image"
     required: true
-    type: string
   registry:
     description: "The container registry URL"
     required: true
-    type: string
   username:
     description: "The username for the container registry"
     required: true
@@ -29,6 +25,11 @@ inputs:
     description: "The github token needed for downloading the artifact from a different repository or workflow run."
   decrypt-passphrase:
     description: "The passphrase for the artifact if it is encrypted."
+  skopeo-image:
+    description: "Skopeo image used to inspect and upload the artifact."
+    required: false
+    # Skopeo v1.22.2 (immutable tag; mutable digests get GC'd by quay).
+    default: "quay.io/skopeo/stable@sha256:4a16d57b37617a04b3d643079a477a2848efe892dffcdf0ce56df4262b65f810"
 outputs:
   digest:
     description: "The digest of the uploaded image"
@@ -57,10 +58,12 @@ runs:
     - name: Get Metadata
       id: meta
       shell: bash
+      env:
+        SKOPEO_IMAGE: ${{ inputs.skopeo-image }}
       run: |
         docker run --rm \
           -v $PWD:/workdir -w /workdir \
-          "quay.io/skopeo/stable:v1.20.0" \
+          "${SKOPEO_IMAGE}" \
           inspect oci-archive:${{ inputs.artifact_name }} > metadata.json
 
         digest="$(cat metadata.json | jq -r .Digest)"
@@ -68,11 +71,13 @@ runs:
 
     - name: Upload Rock to Registry
       shell: bash
+      env:
+        SKOPEO_IMAGE: ${{ inputs.skopeo-image }}
       run: |
         for tag in ${{ inputs.tags }}; do
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+          docker run --rm \
           -v $PWD:/workdir -w /workdir \
-          "quay.io/skopeo/stable:v1.20.0" \
+          "${SKOPEO_IMAGE}" \
           copy \
           --dest-username "${{ inputs.username }}" \
           --dest-password "${{ inputs.password }}" \

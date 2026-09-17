@@ -1,4 +1,5 @@
-version: 1
+version: 2
+
 upload:
   - source: "canonical/hydra-rock"
     commit: 3c27fb428fad0a339c39355b2f8cd5a477d32014
@@ -10,3 +11,16 @@ upload:
           - candidate
           - edge
         end-of-life: "2025-05-01T00:00:00Z"
+    ignored-vulnerabilities:
+      - CVE-2026-32286  # Denial of Service via malicious PostgreSQL server (jackc/pgproto3/v2). No upstream fix. https://github.com/advisories/GHSA-jqcq-xjh3-6g23
+      - CVE-2026-33818  # encoding/asn1: DoS via excessive recursion in Unmarshal (Go stdlib). Fixed in Go 1.26.6+. https://avd.aquasec.com/nvd/cve-2026-33818
+      - CVE-2026-33997  # moby/docker: Privilege validation bypass during plugin installation. Breaking API in v29+. https://avd.aquasec.com/nvd/cve-2026-33997
+      - CVE-2026-34040  # moby/docker: Authorization bypass vulnerability. Breaking API in v29+. https://avd.aquasec.com/nvd/cve-2026-34040
+      - CVE-2026-39821  # golang.org/x/net/idna: Privilege escalation via incorrect Punycode label processing (Go stdlib). Fixed in Go 1.26.6+. https://avd.aquasec.com/nvd/cve-2026-39821
+      - CVE-2026-46600  # golang.org/x/net/dns/dnsmessage: DoS via invalid DNS record parsing (Go stdlib). Fixed in Go 1.26.6+. https://avd.aquasec.com/nvd/cve-2026-46600
+      - CVE-2026-56853  # net/http: Unencrypted HTTP/2 connections vulnerable to DoS (Go stdlib). Fixed in Go 1.26.6+. https://avd.aquasec.com/nvd/cve-2026-56853
+      - CVE-2026-56858  # html/template: Cross-Site Scripting via pathological input (Go stdlib). Fixed in Go 1.26.6+. https://avd.aquasec.com/nvd/cve-2026-56858
+      - CVE-2026-56859  # encoding/xml: DoS via XML decoding recursion depth issue (Go stdlib). Fixed in Go 1.26.6+. https://avd.aquasec.com/nvd/cve-2026-56859
+      - CVE-2026-56860  # net/url: DoS from quadratic complexity in path resolution (Go stdlib). Fixed in Go 1.26.6+. https://avd.aquasec.com/nvd/cve-2026-56860
+      - CVE-2026-56862  # crypto/tls: DoS via indefinite KeyUpdate messages (Go stdlib). Fixed in Go 1.26.6+. https://avd.aquasec.com/nvd/cve-2026-56862
+      - GO-2026-5932    # golang.org/x/crypto/openpgp: Package is unmaintained/deprecated. https://pkg.go.dev/vuln/GO-2026-5932

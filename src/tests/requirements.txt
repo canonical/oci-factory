@@ -1,3 +1,5 @@
 docker
 pydantic==2.12.3
+python-keystoneclient==5.2.0
+python-swiftclient==4.4.0
 requests==2.31

@@ -8,6 +8,7 @@ import docker
 from pydantic import BaseModel, PrivateAttr
 
 from ..shared.logs import get_logger
+from ..shared.skopeo import DEFAULT_SKOPEO_IMAGE
 
 logger = get_logger()
 
@@ -63,7 +64,7 @@ class Test(BaseModel):
                 f"copy {origin_format}:{mounted_origin} {dest_format}:{mounted_dest}"
             )
             skopeo = self._docker_client.containers.run(
-                "quay.io/skopeo/stable:v1.8",
+                DEFAULT_SKOPEO_IMAGE,
                 working_dir="/rock",
                 volumes={
                     "/": {"bind": "/rootfs"},
