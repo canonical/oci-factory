@@ -1,13 +1,53 @@
-# Upstream CVEs
-
-# github.com/golang-jwt/jwt/v4 - jwt-go allows excessive memory allocation during header parsing
-CVE-2025-30204
-# golang.org/x/crypto - Vulnerable to Denial of Service (DoS) via Slow or Incomplete Key Exchange. Resolved in Temporal v1.27.2
-CVE-2025-22869
-# golang.org/x/oauth2 - Improper Validation of Syntactic Correctness of Input vulnerability
-CVE-2025-22868
-# golang.org/x/crypto - Misuse of ServerConfig.PublicKeyCallback may cause authorization bypass. Resolved in Temporal v1.27.2
-CVE-2024-45337
+# Upstream CVEs — only vulnerabilities that have NO upstream fix AND are not
+# reachable/applicable in the temporal-server rock are ignored here. Anything
+# with a fixed version is resolved by bumping the Go toolchain / module deps in
+# the rockcraft.yaml build parts and must NOT be added here.
 
 # CVE pending review: https://github.com/advisories/GHSA-crqm-pwhx-j97f
 CVE-2024-34156
+
+# --- No-fix OS / tooling CVEs (temporal-server 1.24-1.31 scans) ---
+
+# shadow-utils (login.defs) - subuid/subgid collision only affects multi-user hosts;
+# the rock runs a single service user in a container. Not reachable.
+CVE-2024-56433
+# glibc (libc-bin) - overflow requires an attacker-controlled fopen() mode string;
+# temporal-server never passes untrusted input as a mode string. Not reachable.
+CVE-2026-18374
+# tar - TOCTOU / hardlink escape only triggers when extracting attacker-crafted
+# archives; temporal-server does not run tar on untrusted input. Not reachable.
+CVE-2026-18477
+CVE-2026-18508
+# systemd (libsystemd0) - journald terminal-output flaw; the rock logs via pebble,
+# not journald, and ships no interactive user terminals. Not reachable.
+CVE-2026-40228
+# zlib1g - heap overflow in a rarely-used zlib path; Ubuntu fix deferred and
+# temporal-server does not exercise the affected API. Not practically exploitable.
+CVE-2026-85091
+# golang.org/x/crypto/openpgp - unmaintained OpenPGP package; temporal-server does
+# not import or use x/crypto/openpgp. Not reachable.
+GO-2026-5932
+
+# rust-coreutils (uutils) - local TOCTOU / logic flaws in coreutils utilities that
+# require local shell access; the rock ships no interactive shell and runs a single
+# service user. Not reachable in this workload. No fixed version published yet.
+CVE-2026-35341
+CVE-2026-35344
+CVE-2026-35345
+CVE-2026-35348
+CVE-2026-35350
+CVE-2026-35351
+CVE-2026-35352
+CVE-2026-35354
+CVE-2026-35357
+CVE-2026-35359
+CVE-2026-35360
+CVE-2026-35363
+CVE-2026-35364
+CVE-2026-35367
+CVE-2026-35368
+CVE-2026-35370
+CVE-2026-35371
+CVE-2026-35373
+CVE-2026-35374
+CVE-2026-35377
