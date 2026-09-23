@@ -17,16 +17,16 @@
     "3.12-24.04": {
         "end-of-life": "2029-05-31T00:00:00Z",
         "edge": {
-            "target": "437"
+            "target": "439"
         },
         "stable": {
-            "target": "437"
+            "target": "439"
         },
         "candidate": {
-            "target": "437"
+            "target": "439"
         },
         "beta": {
-            "target": "437"
+            "target": "439"
         }
     },
     "3.10-22.04": {
@@ -77,16 +77,16 @@
     "3.14-26.04": {
         "end-of-life": "2031-05-29T00:00:00Z",
         "edge": {
-            "target": "438"
+            "target": "440"
         },
         "stable": {
-            "target": "438"
+            "target": "440"
         },
         "candidate": {
-            "target": "438"
+            "target": "440"
         },
         "beta": {
-            "target": "438"
+            "target": "440"
         }
     }
 }
