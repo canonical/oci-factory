@@ -32,16 +32,16 @@
     "25-26.04": {
         "end-of-life": "2031-05-29T00:00:00Z",
         "edge": {
-            "target": "206"
+            "target": "207"
         },
         "stable": {
-            "target": "206"
+            "target": "207"
         },
         "candidate": {
-            "target": "206"
+            "target": "207"
         },
         "beta": {
-            "target": "206"
+            "target": "207"
         }
     }
 }
