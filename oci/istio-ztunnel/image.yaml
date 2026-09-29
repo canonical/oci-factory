@@ -1,10 +1,10 @@
 version: 2
 upload:
-  - source: canonical/istio-ztunnel-rock
-    commit: b6fe05503e02cbe6189ef7d56400ad46083e0374
-    directory: 1.29.0
+  - source: canonical/service-mesh
+    commit: 2b98a0a30d12fe19102a3577cf8c8b2af35a4e2f
+    directory: rocks/istio-ztunnel-rock/1.30
     release:
-      1.29-24.04:
-        end-of-life: '2026-09-10T00:00:00Z'
+      1.30-26.04:
+        end-of-life: '2026-12-29T00:00:00Z'
         risks:
           - stable
