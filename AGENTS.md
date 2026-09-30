@@ -1,485 +1,165 @@
 # OCI Factory — Agent Guide
 
-The OCI Factory is the centralized gateway for Ubuntu OCI images published to
-Docker Hub and ECR under the ROCKS Team-maintained `ubuntu` namespace, and to
-ACR under the `ubuntu-pro` namespace. This file is the entry point for agents
-(and humans) working in the repository: it explains the layout and conventions,
-then encodes the maintainer review standard.
-
-## Repository overview
-
-- `oci/<name>/` — per-image maintainer files (the trigger surface most PRs
-  touch):
-  - `image.yaml` — image trigger: build/release definition, tracks, risks,
-    `end-of-life`, and (v2) `ignored-vulnerabilities`.
-  - `documentation.yaml` — documentation trigger consumed to render the image's
-    published docs.
-  - `contacts.yaml` — maintainer contacts.
-- `src/` — the factory source (build/test/release automation) invoked by CI.
-- `.github/workflows/` — reusable and top-level GitHub Actions workflows
-  (e.g. `Build-Rock.yaml`, `Test-Rock.yaml`).
-- `.github/ISSUE_TEMPLATE/` — issue intake, including the `onboarding` request
-  form.
-- `tools/` — helper scripts and utilities.
-- `tests/` — factory test suites.
+OCI Factory publishes Ubuntu OCI images (rocks) to Docker Hub and ECR under the
+`ubuntu` namespace, and to ACR under `ubuntu-pro`. Each image has maintainer
+files in `oci/<name>/`: `image.yaml` (the image trigger: builds and releases),
+`documentation.yaml` and `contacts.yaml`. Factory code lives in `src/`, CI in
+`.github/workflows/`.
 
 ## Working conventions
 
-- Commit messages follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
-  spec; squash commits by functional value.
-- In-progress PRs must be marked **Draft**; non-trivial changes should open an
-  issue first.
-- A PR that changes files below `oci/` must affect only one `oci/<name>/`
-  directory. It may update multiple versions, tracks, or maintainer files for
-  that image, but changes for multiple images must be split into separate PRs.
-- See [`CONTRIBUTING.md`](/CONTRIBUTING.md) and [`README.md`](/README.md) for the
-  full authoring and project reference, and
-  [`IMAGE_MAINTAINER_AGREEMENT.md`](/IMAGE_MAINTAINER_AGREEMENT.md) for
-  maintainer obligations.
+- Conventional Commits; squash commits by functional value; mark in-progress PRs
+  as Draft.
+- A PR that changes files below `oci/` must touch only one `oci/<name>/`
+  directory (several versions or tracks of that image are fine).
 
-## Reviewing Pull Requests in OCI Factory
+## Reviewing pull requests
 
-This section encodes the maintainer review standard for the OCI Factory
-repository. It is derived from established review practice and is meant to guide
-both human reviewers and AI review agents to a consistent bar.
+- Pick the checklist by what the diff touches: `oci/<name>/image.yaml` ->
+  §1-§3; `oci/<name>/documentation.yaml` -> §4; `.github/`, `src/` or `tools/`
+  -> §5.
+- Request changes when a MUST in this guide is violated, or the PR touches more
+  than one `oci/<name>/` directory. Approve only when none is. Any `[blocker]`
+  means `Request changes`, even when the problem predates the diff (e.g. a
+  missing manifest in a touched `upload[]` item); `Comment` is for nits only.
+- Ground every request-changes on evidence (CI run, upstream source, docs).
+  Never approve on intent alone.
+- Tag every inline note `[blocker]` or `[nit]`, optional ones included
+  (`[nit] Not a blocker, but ...`). Keep comments short and use GitHub
+  `suggestion` blocks for concrete fixes.
 
-### How to use this guide
+### Local dry run
 
-- Apply the checklist that matches the PR type (see [Triage](#1-triage-the-pr-first)).
-- Ground every request-changes on **evidence**: link the exact CI run, the
-  upstream source, or the relevant documentation. Never approve on intent alone.
-- Distinguish **blockers** from **non-blockers** explicitly. Prefix optional
-  feedback with `Not a blocker, but ...`.
-- Keep comments concise: state the finding and only the reasoning needed to act
-  on it. Link evidence instead of restating it, and don't repeat unchanged
-  context or the diff back to the author.
-- Prefer GitHub *suggestions* for concrete wording/format fixes so authors can
-  apply them in one click.
+Authors can run this review on their working changes before pushing, e.g.
+*"Review my staged changes as an OCI Factory PR reviewer, following the
+guidelines in AGENTS.md."* Diff against the branch point with upstream main:
+`git diff --merge-base <remote>/main`, where `<remote>` tracks
+`canonical/oci-factory` (often `upstream` in a fork, not `origin`), or
+`git diff --cached` for staged-only changes. The vulnerability scan is CI-only
+and stays out of the local verdict; the static §1 rules still apply. Fetch
+recipes (§3) when the network allows, otherwise mark the recipe gates
+*not assessed*. A local `Approve` only means the locally-checkable gates passed.
 
-### Running a local review before you push
+Output:
 
-Authors can dry-run this exact review locally, before pushing or opening the PR,
-to catch blockers ahead of CI and reviewers. Run it on demand — no git hook
-required — by asking an AI agent harness to review your working changes against
-this guide.
+- **Verdict:** `Request changes` / `Comment` / `Approve`, plus one sentence.
+- **Inline comments:** `` `path:line` — [blocker] note (§N) `` or `[nit]`, with
+  a `suggestion` block where useful.
+- **Gates:** one line, each gate pass / ⚠ / ❌ and reporting only its own rule:
+  `**Gates:** one-image ✅ · edge-first ✅ · EOL cap n/a · track naming ✅ ·
+  docs n/a · CVE justification ✅ · .trivyignore ✅ · deb-manifest ✅ ·
+  recipe-regression ✅ · vuln scan -> not assessed locally; verify in CI`
 
-**How to run it**
+### 1. Security & vulnerability gating
 
-- Stage or commit your changes, then prompt the harness, e.g.
-  *"Review my staged changes as an OCI Factory PR reviewer."*
-- The harness scopes the diff (`git diff --merge-base origin/main`, or
-  `git diff --cached` for staged-only), lists the touched files, and **triages
-  by file path**. Local diffs do not carry PR labels, so use the fallback path
-  column in [Triage](#1-triage-the-pr-first).
-- It then applies the matching checklists ([§2](#2-security--vulnerability-gating-hard-gate)–[§7](#7-evidence--process-hygiene)).
-  The vulnerability scan itself is **CI-only** and does not affect a local
-  dry-run verdict. Locally, the harness checks the static requirements: trigger
-  `version: 2` where `ignored-vulnerabilities` is used, sufficient comments on
-  new or modified ignored entries, and `.trivyignore` deprecation (see
-  [§2](#2-security--vulnerability-gating-hard-gate)). It also fetches each
-  `upload[]` item's `rockcraft.yaml` (network permitting) to run the
-  [§4](#4-source-recipe-rockcraftyaml-review) recipe checks, and marks them *not
-  assessed* when the recipe cannot be retrieved. A local `Approve` means only
-  that the locally-checkable gates passed; it is not an approval of a real PR and
-  does not imply that its vulnerability scan is clean.
-
-**Output format (mimics a GitHub PR review — keep it concise)**
-
-- **Verdict** — one of `Request changes` / `Comment` / `Approve`, plus a
-  one-sentence summary.
-- **Inline comments** — one per finding, each `` `oci/<name>/image.yaml:line` ``
-  followed by a one-line note prefixed `[blocker]` or `[nit]`, with a `(§N)`
-  pointer to the governing section. Use GitHub ```` ```suggestion ```` blocks for
-  concrete fixes.
-- **Gate summary** — a compact pass / ⚠ / blocker checklist for the
-  locally-checkable gates: one-image scope, edge-first, EOL cap, track naming,
-  docs checklist, `ignored-vulnerabilities` justification, `.trivyignore`
-  deprecation, deb security manifest, and recipe regression. Mark the
-  deb-manifest and recipe-regression gates *not assessed* when the recipe cannot
-  be fetched, and the vulnerability scan itself as *not assessed locally; verify
-  in CI*.
-
-**Example**
-
-> **Request changes** — new track must start at `edge`, and the ignored CVE
-> lacks a justification.
->
-> `oci/foo/image.yaml:12` — [blocker] First release of a new track must be
-> `- edge` only, not `stable`. (§3)
-> ````suggestion
->         risks:
->           - edge
-> ````
->
-> `oci/foo/image.yaml:20` — [blocker] This new `ignored-vulnerabilities` entry
-> lacks a sufficient justification; identify the affected package/source and
-> state the image-specific reason the risk can be accepted. (§2)
->
-> `oci/foo/image.yaml:5` — [blocker] The new track `1.2.3-24.04` includes a
-> SemVer patch component; use `1.2-24.04`. (§3)
->
-> **Gates:** one-image ✅ · edge-first ❌ · EOL cap ✅ · track naming ❌ · docs
-> n/a · CVE justification ❌ · `.trivyignore` ✅ · deb-manifest ✅ ·
-> recipe-regression ✅ · vuln scan → not assessed locally; verify in CI
-
-### 1. Triage the PR first
-
-Classify the PR before reviewing, then jump to the matching sections. Triage
-primarily on the **type label** (`rock/*`, `onboarding`) — see
-[section 8](#8-pr-labels) — falling back to the touched file path when the label
-is missing (the `rock/*` labels are applied by maintainers, not auto-labeled):
-
-| Label (fallback path) | PR / issue type | Primary sections |
-| --- | --- | --- |
-| `rock/update` (`oci/<name>/image.yaml`) | Existing image-trigger update | [2](#2-security--vulnerability-gating-hard-gate), [3](#3-release-policy-risk-tracks-eol-versioning), [4](#4-source-recipe-rockcraftyaml-review) |
-| `rock/new` (new `oci/<name>/`, new track/base) | New rock / new track / new base | [2](#2-security--vulnerability-gating-hard-gate), [3](#3-release-policy-risk-tracks-eol-versioning), [4](#4-source-recipe-rockcraftyaml-review), [5](#5-documentation-documentationyaml-checklist) |
-| `rock/docs` (`oci/<name>/documentation.yaml`) | Documentation change | [5](#5-documentation-documentationyaml-checklist) |
-| `onboarding` (issue) | Image onboarding request (intake) | [3](#3-release-policy-risk-tracks-eol-versioning), [5](#5-documentation-documentationyaml-checklist) |
-| no `rock/*` label (`.github/`, `src/`, `tools/`) | Factory source / CI workflow | [6](#6-ci--github-actions-review), [7](#7-evidence--process-hygiene) |
-
-### 2. Security & vulnerability gating (hard gate)
-
-For an actual GitHub PR review of an image change, the vulnerability scan is a
-**blocking** gate. Inspect the latest relevant CI run and do not approve until
-it succeeds. If the scan is pending or unavailable, withhold approval and
-re-review when it completes. This CI-only result is excluded from local dry-run
-verdicts as described above.
-
-- If the scan reports findings, request changes and link the exact run. Use the
-  canonical phrasing:
-
-  > Please observe the CVE findings:
-  > `https://github.com/canonical/oci-factory/actions/runs/<run-id>/attempts/<n>#summary-<summary-id>`
-
-- Findings are addressed in the `ignored-vulnerabilities:` field of the image
-  trigger. Every new or modified vulnerability entry must identify the affected
-  package/source and ecosystem; entries for other Trivy finding types must
-  instead identify the affected file/component and rule category. Every entry
-  must state the maintainer's actual risk disposition with an image-specific
-  reason the finding may be ignored. Existing untouched entries do not need to
-  be updated solely to meet this comment format.
-
-  A package name, description, CVSS score, Ubuntu priority, or status such as
-  `Needs evaluation` is useful supporting context, but is not by itself a risk
-  disposition or justification. For deb packages, link the Ubuntu Security
-  tracker at `https://ubuntu.com/security/<CVE-ID>` instead of creating an
-  internal ROCKS ticket. CVEs in language packages are not currently tracked
-  internally; state the upstream fix status and link an upstream advisory when
-  one is available.
+- In a real PR review the vulnerability scan blocks: don't approve until the
+  latest run passes. If it reports findings, request changes, link the run and
+  apply the `pending cve` label.
+- Findings are ignored via `upload[].ignored-vulnerabilities`, which requires a
+  `version: 2` trigger; a `version: 1` trigger that adds the field MUST switch.
+- The comment of every new or modified entry MUST name the affected
+  package/source and ecosystem (for other Trivy finding types: the
+  file/component and rule category) AND the maintainer's risk disposition: an
+  image-specific reason the finding can be accepted. Description, CVSS, Ubuntu
+  priority or a status such as `Needs evaluation` are context, not a
+  disposition. For deb packages link `https://ubuntu.com/security/<CVE-ID>`; for
+  language packages state the upstream fix status and link an advisory if one
+  exists. Untouched existing entries need no rewrite.
 
   ```yaml
-  upload:
-    - source: canonical/foo-rock
-      commit: "<full-commit-sha>"
-      directory: .
-      ignored-vulnerabilities:
-        - CVE-XXXX-XXXXX  # libfoo (deb): temporarily accepted pending an Ubuntu fix | Ubuntu tracker: https://ubuntu.com/security/CVE-XXXX-XXXXX
-        - CVE-YYYY-YYYYY  # google.golang.org/grpc (Go): temporarily accepted; no fixed upstream release is available
+  ignored-vulnerabilities:
+    - CVE-XXXX-XXXXX  # libfoo (deb): temporarily accepted pending an Ubuntu fix | Ubuntu tracker: https://ubuntu.com/security/CVE-XXXX-XXXXX
+    - CVE-YYYY-YYYYY  # google.golang.org/grpc (Go): temporarily accepted; no fixed upstream release is available
   ```
 
-  Prefer also including a short description, `CVSS: <score> (<severity>)`,
-  `Ubuntu priority: <priority>`, `Status (<series>): <triage>`, and relevant
-  upstream evidence. This metadata supplements, but does not replace, the risk
-  disposition.
+- `.trivyignore` is deprecated: reject new files and new rules. A non-empty
+  `ignored-vulnerabilities` list replaces `.trivyignore` for that build (an
+  empty or omitted list still falls back to it), so a migration MUST move every
+  still-applicable rule, not only the changed ones: when a build gains a
+  non-empty list, open its `oci/<name>/.trivyignore` and require every rule that
+  still applies to move over. The old file may stay for previously released
+  revisions.
 
-- When requesting changes for scan findings, apply the `pending cve` label (see
-  [section 8](#8-pr-labels)); remove it once every finding is fixed or justified.
+### 2. Release policy
 
-- Ask maintainers to add ignored entries **with proper justifications in the
-  comment**, not to silence findings blindly.
+- **Edge-first (MUST).** The first release of a new rock, a new track or a new
+  base is `- edge` only, never `candidate` or `stable`.
+- **EOL cap (MUST).** If the main application is built from a directly-pulled
+  upstream source (a part's own `source:` repository, §3) and no support plan
+  has been accepted by a human in `CODEOWNERS`, `end-of-life` is at most today +
+  3 months. Ask for a support plan; don't judge it yourself.
+- **Track naming (MUST).** New or modified track keys are `<version>-<base>`
+  (e.g. `1.27-26.04`), where `<version>` is the application's version. SemVer
+  applications omit the patch: `1.27.3` -> `1.27-26.04`, not `1.27.3-26.04`.
+  Non-SemVer versions follow the application's own scheme. Don't ask to rename
+  unchanged legacy patch-level tracks. A major-only alias track (e.g. `8-26.04`
+  next to `8.18-26.04`) is a valid key, and still a new track: edge-first
+  applies.
+- **Suspected regression (MUST).** While a recipe regression (§3) is
+  unresolved, the new revision is released to `edge` only.
+- Be cautious promoting to `stable`; require a tracking ticket for any intended
+  later promotion. Flag concurrent PRs that write the same track.
 
-- The `.trivyignore` file is **deprecated**. Do not accept new `.trivyignore`
-  files. When migrating an affected build to `ignored-vulnerabilities`, require
-  every still-applicable rule to move, not only the changed rules. A non-empty
-  `ignored-vulnerabilities` list takes precedence over `.trivyignore`; an empty
-  or omitted list still falls back to the legacy file. The legacy file may
-  remain temporarily because previously released revisions can still depend on
-  it.
-  Example wording:
+### 3. Source recipe (`rockcraft.yaml`)
 
-  > Let's move every still-applicable rule to `ignored-vulnerabilities`; a
-  > non-empty list takes precedence over `.trivyignore`, while an empty or
-  > omitted list still falls back to the legacy file. The file may remain for
-  > previously released revisions that still depend on it.
+Review the recipe behind every image-trigger change, not just the trigger:
+whatever the diff touches, fetch the `rockcraft.yaml` of each `upload[]` item at
+its `source` + `commit` (under `directory`), plus the previous one for a source
+bump. If it can't be fetched, say so and skip these checks.
 
-- `ignored-vulnerabilities` requires a `version: 2` trigger. A `version: 1`
-  trigger may stay as-is only until it needs this field; then it MUST switch to
-  `version: 2`.
-
-### 3. Release policy: risk, tracks, EOL, versioning
-
-- **Edge-first rule (MUST).** A new rock, a new track, or a new base image's
-  *first* release must include only `- edge`. Do not land a first release
-  directly at `candidate` or `stable`. Example:
-
-  > `1.27-26.04` is a new track for this rock (and also a new base). Let's start
-  > with risk edge.
-
-- **EOL cap for upstream-sourced rocks.** If the main application is built from
-  a directly-pulled upstream source **without a stated support plan**, cap the
-  `end-of-life` at *merge day + 3 months* and ask the team to describe their
-  support plan. Do not assess the plan's sufficiency yourself: it must be
-  explicitly accepted by a human listed in [`CODEOWNERS`](/CODEOWNERS). Until
-  then, treat the rock as having no approved support plan and apply the cap.
-  Example:
-
-  > Since this rock is built from upstream source without a support plan, please
-  > reduce the EOL to "today + 3 months" at most, or describe the support plan
-  > and ask an OCI Factory code owner to confirm it is acceptable.
-
-- **Conservative stable promotion.** Be cautious bumping a rock to `stable`,
-  especially when a known upstream/tooling issue affects the build. Because risk
-  promotion is **not automated**, require an issue/Jira ticket to track any
-  intended future promotion.
-
-- **Suspected-regression risk (MUST).** When a source bump may have introduced a
-  recipe regression as defined in [§4](#4-source-recipe-rockcraftyaml-review),
-  its first build and release must be restricted to `- edge`. Do not release the
-  revision directly to `candidate` or `stable` while the regression is being
-  ruled out.
-
-- **Canonical track naming (MUST).** New or modified image track keys use
-  `<version>-<base>` (for example, `1.27-26.04`). Here, `<version>` is the
-  application's track version, not the image trigger's top-level schema
-  `version:` field. When the application follows SemVer, the track MUST omit
-  the patch component: upstream `1.27.3` belongs to `1.27-26.04`, not
-  `1.27.3-26.04`. Non-SemVer `<version>` values are exempt from the SemVer shape
-  but must remain aligned with the application's versioning scheme. Do not
-  require cleanup of unchanged legacy patch-level tracks in an otherwise
-  unrelated update.
-
-- **Track-conflict detection.** Flag concurrent PRs that write the same track;
-  they cause the track to oscillate/overwrite between values. Mark the
-  conflicting PRs invalid and coordinate which one proceeds. Example:
-
-  > The image trigger file conflicts with #NNNN on the track `X-YY.MM`. Please
-  > update either this one or the other so they won't overwrite each other.
-  > Marking this PR and #NNNN as invalid for now.
-
-### 4. Source recipe (`rockcraft.yaml`) review
-
-For image-trigger changes (`rock/update`, `rock/new`), review the
-build recipe behind the release, not just the trigger. For **each** `upload[]`
-item, fetch the `rockcraft.yaml` at that item's pinned `source` repository and
-`commit` (under the item's `directory` subpath when set) — via `gh`/`git` or the
-repository web UI — and apply the caveats below. This fetch is external: in a
-local dry-run it may be unavailable, so state that and skip the recipe checks
-when the file cannot be retrieved.
-
-- **deb security manifest (MUST).** Every rock that adds `.deb` package content
-  beyond what it inherits unchanged from its base MUST include a
-  security-manifest part whose `source` is
-  `https://github.com/canonical/rocks-security-manifest`, wired exactly as that
-  repository's README documents. The part name may differ, but the source and
-  usage must match. Do not rely only on `stage-packages` to detect this: inspect
-  build and overlay scripts for `apt`, `apt-get`, `dpkg`, or equivalent commands
-  that place package content in the final rock. The sole exception is a
-  bare-based rock containing only purely statically linked binaries and no deb
-  package content; using even `base-files` to construct its filesystem means the
-  manifest is required. This enforces the maintainer obligation in
-  [`IMAGE_MAINTAINER_AGREEMENT.md`](/IMAGE_MAINTAINER_AGREEMENT.md#enable-security-monitoring).
-  If a non-exempt rock is missing this part, or wires it differently, request
-  changes:
+- **Deb security manifest (MUST).** A rock that adds `.deb` content beyond its
+  base (via `stage-packages`, or `apt` / `apt-get` / `dpkg` in build or overlay
+  scripts) must include a part sourced from
+  `https://github.com/canonical/rocks-security-manifest`, wired as its README
+  documents (the part name may differ):
 
   ```yaml
-  parts:
-    deb-security-manifest:
-      plugin: make
-      source: https://github.com/canonical/rocks-security-manifest
-      source-type: git
-      source-branch: main
-      override-prime: gen_manifest
+  deb-security-manifest:
+    plugin: make
+    source: https://github.com/canonical/rocks-security-manifest
+    source-type: git
+    source-branch: main
+    override-prime: gen_manifest
   ```
 
-  > This rock adds `.deb` package content but the recipe does not include the
-  > standardized security manifest. Please add the
-  > `deb-security-manifest` part from
-  > `https://github.com/canonical/rocks-security-manifest`, wired per its README.
+  The only exemption is a bare-based rock with purely static binaries and no deb
+  content at all; using even `base-files` requires the manifest.
+- **Upstream-sourced.** A part built from an external repository (`source:` on
+  GitHub/Launchpad with `source-type: git`, or a plugin compiling upstream code)
+  makes the rock upstream-sourced for the §2 EOL cap, even under the `canonical`
+  org. The security-manifest part doesn't count.
+- **Recipe regression (blocker).** If a source bump (new `commit` or
+  `directory`) drops a `parts:` or `services:` entry the previous recipe had,
+  request changes until it is restored or the author confirms in the PR that the
+  removal is intentional (an upstream commit message is not that confirmation);
+  meanwhile keep the revision at `edge` (§2).
 
-- **External-source detection → EOL cap.** If any part is pulled and built
-  directly from an external repository — e.g. a `source:` pointing at
-  GitHub/Launchpad with `source-type: git`, or a plugin that compiles upstream
-  code — treat the rock as upstream-sourced **even when the repository lives
-  under the `canonical` org**. The sole exemption is a part sourced from
-  `https://github.com/canonical/rocks-security-manifest`. Otherwise, apply the
-  `end-of-life` cap from [§3](#3-release-policy-risk-tracks-eol-versioning); do
-  not restate the rule here.
+### 4. Documentation (`documentation.yaml`)
 
-- **Recipe regression (blocker).** When the source is bumped (a new `commit` or
-  `directory`) and the new recipe drops a `parts:` entry or a `services:` entry
-  that the previously referenced recipe defined, treat it as a regression and
-  request changes as a **[blocker]**. Hold until the removed part/service is
-  restored, or the author confirms the removal is intentional and not a
-  regression (see [§9](#9-approve-vs-request-changes-criteria), "regressions are
-  ruled out"). While this is unresolved, also enforce the suspected-regression
-  risk rule in [§3](#3-release-policy-risk-tracks-eol-versioning). Example:
+- US English spelling, correct product capitalization, no informal phrasing;
+  service configuration headings are h2 (`##`). Spelling-only issues are nits.
+- Document a default only when the program really sets it; verify it against
+  upstream and link the source. An unverified or wrong default is a blocker.
+- Run flags belong in `parameters`, not `run_cmd` (`run-cmd` in v2 docs).
+- Don't duplicate content the template already provides.
+- Document every user-configurable runtime setting a `docker run -e` value can
+  reach (check `rockcraft.yaml` `environment:`, Pebble services and entrypoint
+  scripts), with examples; skip values fixed by `services.<name>.environment`.
+- The documented `docker run ...` must actually work; a broken one is a blocker.
+- A v1 -> v2 migration must not lose anything the v1 doc had.
 
-  > This source bump removes the `<name>` <part|service> that the previous
-  > revision shipped. Is this intentional? If so, please confirm it is not a
-  > regression; otherwise restore it. Until this is resolved, keep the new
-  > revision at `edge` only. Marking as a blocker until then.
+### 5. CI / GitHub Actions
 
-### 5. Documentation (`documentation.yaml`) checklist
-
-- **Language:** US English spelling throughout; correct product capitalization
-  (e.g., do not write an uncapitalized product name); no informal phrasing.
-- **Headings:** correct level — service configuration headings are h2 (`##`).
-- **Verify defaults against upstream.** Do not document a default value that the
-  program does not actually set. Confirm against upstream source and link it.
-  Only state a default when it is real.
-- **Field placement:** run flags belong in `parameters`, not `run_cmd`.
-- **No template duplication:** remove content already provided by the template.
-- **Completeness:** document user-configurable runtime environment and
-  configuration, with concrete examples. Cross-check `rockcraft.yaml`
-  `environment:`, Pebble service configuration, and service or entrypoint
-  scripts. Do not require documentation for implementation details fixed by
-  `services.<name>.environment`: Pebble service values override same-named
-  environment values supplied to the container. Document a variable when a
-  `docker run -e` value can reach and influence the user-facing service,
-  including variables consumed by entrypoint scripts.
-- **Runnable:** the documented `docker run ...` must actually work; verify it
-  before approving.
-- **Migrations (v1 -> v2) must not regress.** Approve a migration only when it
-  is at least equivalent to the v1 doc and nothing is undermined. Example
-  approval language:
-
-  > It seems there are no regressions or undermines from this change to the
-  > original documentation. Happy to move forward.
-
-- Note: the GitHub web UI can mangle multi-line suggestions. If a suggestion is
-  not applied correctly, ask the author to commit it manually.
-
-### 6. CI / GitHub Actions review
-
-- **Least privilege for `GITHUB_TOKEN`.** OCI Factory inherits the read-only
-  default configured by Canonical's organizational workflow-permission
-  controls. When no applicable `permissions` block is declared, do not add one
-  solely to restate that inherited default. Once a `permissions` block is
-  declared at workflow or job level, it is exhaustive: every omitted scope is
-  set to `none`. List every read or write scope the job actually needs and no
-  others; `write` already includes `read` for the same scope.
-- **Prefer `GITHUB_TOKEN` over broad PATs.** Do not use `ROCKSBOT_TOKEN` where
-  `GITHUB_TOKEN` suffices — the bot token carries far wider scope.
-- **PAT-tag anti-pattern.** Pushing tags/commits with a PAT/bot identity
-  bypasses GitHub's protection against triggering infinite downstream workflow
-  runs. GitHub suppresses triggers for pushes made by `GITHUB_TOKEN` because it
-  treats them as CI actions; a PAT push voids that protection. Flag this.
-- **Reusable-workflow permission propagation.** A caller invoking a
-  fully-capable reusable workflow must grant the required permissions in the
-  caller job; the called workflow keeps default permissions when none are
-  specified. Understand this before requesting permission changes.
-- **Pin external actions (MUST).** Never reference a reusable external action or
-  workflow by a mutable tag or branch such as `@v4` or `@main`. Pin every
-  external `uses:` reference to a full commit SHA; a comment may record the
-  corresponding release tag for readability.
-- **Cite the docs.** Justify workflow-permission and token decisions with links
-  to the relevant GitHub documentation.
-- **Respect established patterns.** Avoid unnecessary changes to established,
-  working workflows; remove genuinely dead code (e.g., retired build paths).
-
-### 7. Evidence & process hygiene
-
-- **Prove fixes.** Back a "fixed" or "works" claim with a link to a successful
-  CI/test run or to upstream source. Example:
-
-  > Test workflow succeeds after applying this patch: `<actions run link>`
-
-- **Resolve linter warnings.** Do not leave yamllint (or other linter) warnings
-  unaddressed — e.g., "too few spaces before comment".
-- **Track deferred work.** File a follow-up issue (e.g., `ROCKS-####`) for items
-  intentionally deferred, and reference it in the thread.
-- **Request a second reviewer** when the change is outside your area or warrants
-  another set of eyes.
-
-### 8. PR labels
-
-Apply labels to make review state visible and to drive housekeeping. The repo
-uses three families. Add a missing label only when the rules below require it.
-Never overwrite an existing label choice: if an existing label conflicts with
-the inferred state or type, leave it in place and ask a human code owner to
-resolve the mismatch. Only remove a review-state label when its rule below
-explicitly requires removal.
-
-**Type labels** — set the review path (see [Triage](#1-triage-the-pr-first)):
-
-- **`rock/new`** — a new rock, or a new track/base for an existing rock.
-- **`rock/update`** — an existing rock's image trigger is modified (release or
-  track change).
-- **`rock/chore`** — maintainer contact changes in `contacts.yaml`.
-- **`rock/docs`** — a rock's `documentation.yaml` change.
-- **`onboarding`** — image onboarding request; auto-applied by the onboarding
-  issue template.
-- **`bug`** / **`duplicate`** — standard issue triage (`bug` also auto-applied
-  by the bug-report template; `duplicate` when the item already exists).
-
-  Note: `rock/*` labels are applied by maintainers, not auto-labeled; fall back
-  to the touched file path when they are missing.
-
-**Review-state labels** — track blockers and housekeeping:
-
-- **`pending cve`** — apply to any PR whose vulnerability scan reports
-  unresolved findings (see [section 2](#2-security--vulnerability-gating-hard-gate)).
-  Keep it until every finding is either fixed or justified in
-  `ignored-vulnerabilities`; remove it once the scan is clean.
-- **`blocked`** — apply when the PR cannot make progress until an external or
-  upstream dependency is resolved (e.g. a vuln fix pending in the base, an
-  upstream/tooling bug). Do not merge while set; record what it is blocked on.
-- **`do-not-merge`** — an explicit merge hold even if checks are green (e.g. a
-  proposal/spike, or work that must land in a specific order). Never merge while
-  set.
-- **`decaying`** — apply to any PR with no update for **more than 2 weeks**. It
-  is the early-warning step before closing: a `decaying` PR that stays inactive
-  for more than a month should be closed as stale (see
-  [section 7](#7-evidence--process-hygiene)).
-- **`invalid`** — apply to PRs that cannot proceed as-is, e.g. conflicting
-  concurrent PRs on the same track (see
-  [section 3](#3-release-policy-risk-tracks-eol-versioning)).
-
-**Priority labels** — `priority/critical`, `priority/high`, `priority/medium`,
-and `priority/low` communicate urgency for triage and scheduling. They are set
-by maintainers, not review agents, and only one may be set at a time.
-
-### 9. Approve vs. request-changes criteria
-
-The following criteria govern actual GitHub PR reviews. For a local dry-run,
-exclude the CI-only vulnerability-scan result from the verdict while retaining
-all locally-checkable security requirements.
-
-Request changes when any of the following holds:
-
-- The vulnerability scan reports unresolved findings.
-- The PR changes files below more than one distinct `oci/<name>/` directory.
-- A new rock/track/base first release is not restricted to `edge`.
-- The `end-of-life` exceeds the cap for an unsupported upstream-sourced rock.
-- A non-exempt rock adds `.deb` package content beyond its base but its recipe
-  omits the `rocks-security-manifest` part, or wires it differently (see
-  [§4](#4-source-recipe-rockcraftyaml-review)).
-- A source bump drops a `parts:` or `services:` entry the previous recipe defined,
-  without the author confirming it is intentional, or the potentially regressed
-  revision is not restricted to `edge` while that question is unresolved (see
-  [§4](#4-source-recipe-rockcraftyaml-review)).
-- A documented default is unverified or wrong, or the documented run does not work.
-- A workflow grants more token/permission scope than necessary, or uses a PAT
-  where `GITHUB_TOKEN` suffices.
-- A workflow references an external action or reusable workflow by a mutable tag
-  or branch instead of a full commit SHA.
-- Concurrent PRs conflict on the same track.
-
-Never approve or merge while a `do-not-merge` or `blocked` label is set, even
-when all checks are green. Approve only when the security gate is clean, the
-release policy is satisfied, and regressions are ruled out. Keep approvals
-concise and, where relevant, note that no regressions/undermines were
-introduced.
-
-### 10. Related project conventions
-
-See [`CONTRIBUTING.md`](/CONTRIBUTING.md) for authoring rules the review should
-enforce:
-
-- Commit messages follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) spec.
-- Squash commits by functional value; no multiple commits fixing one issue in
-  the same code block.
-- In-progress PRs must be marked **Draft**.
-- Non-trivial changes should open an issue for discussion before the PR.
-- **Maintainers** must acknowledge the
-  [Image Maintainer Agreement](/IMAGE_MAINTAINER_AGREEMENT.md).
+- **Pin external actions (MUST).** Every external `uses:` reference is a full
+  commit SHA (a tag comment is fine), never a mutable ref such as `@v4` or
+  `@main`.
+- **Least privilege (MUST).** The inherited `GITHUB_TOKEN` default is read-only;
+  don't add a `permissions` block only to restate it. A declared block is
+  exhaustive (omitted scopes become `none`), so it lists every scope the job
+  needs and nothing more; `write` implies `read`.
+- **Tokens (MUST).** Use `GITHUB_TOKEN` instead of `ROCKSBOT_TOKEN` whenever it
+  suffices. Flag tags or commits pushed with a PAT: that bypasses GitHub's
+  protection against recursive workflow runs.
+- A caller job must grant a reusable workflow the permissions it needs.
+- Cite GitHub docs for permission and token decisions; don't churn working
+  workflows.
