@@ -61,7 +61,7 @@ upload:
       - CVE-2026-56860  # Needs evaluation. https://ubuntu.com/security/CVE-2026-56860
       - CVE-2026-56862  # Needs evaluation. https://ubuntu.com/security/CVE-2026-56862
       - CVE-2025-61729  # Needs evaluation. https://ubuntu.com/security/CVE-2025-61729
-      - CVE-2025-61729  # Affects some golang packages and not in release for others. https://ubuntu.com/security/CVE-2025-61729
+      - CVE-2025-68121  # Affects some golang packages and not in release for others. https://ubuntu.com/security/CVE-2025-68121
       - CVE-2026-84304  # Needs evaluation. https://ubuntu.com/security/CVE-2026-84304
       - CVE-2026-84445  # Not in release. https://ubuntu.com/security/CVE-2026-84445
       - GHSA-hrxh-6v49-42gf
