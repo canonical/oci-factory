@@ -1,14 +1,67 @@
 version: 2
 upload:
   - source: canonical/opentelemetry-collector-rock
-    commit: 272c88c52417bcbe3ea00db2b26ce53903889a00
-    directory: 0.156.0
+    commit: a52dfa0d58e103cedf2354addbe01a409c30a902
+    directory: '0.130'
     release:
-      0-24.04:
-        end-of-life: '2026-10-19T00:00:00Z'
+      0-26.04:
+        end-of-life: '2026-12-31T00:00:00Z'
         risks:
           - stable
-      0.156-24.04:
-        end-of-life: '2026-10-19T00:00:00Z'
+      0.130-26.04:
+        end-of-life: '2026-12-31T00:00:00Z'
         risks:
           - stable
+    ignored-vulnerabilities:
+      - CVE-2025-47913  # Needs evaluation (snapd). https://ubuntu.com/security/CVE-2025-47913
+      - CVE-2025-61726  # Needs evaluation. https://ubuntu.com/security/CVE-2025-61726
+      - CVE-2025-68156  # Does not apply to Ubuntu software. https://ubuntu.com/security/CVE-2025-68156
+      - CVE-2026-24051  # Not affected (macOS only). https://ubuntu.com/security/CVE-2026-24051
+      - CVE-2026-25679  # Needs evaluation. https://ubuntu.com/security/CVE-2026-25679
+      - CVE-2026-25681  # Not in release. https://ubuntu.com/security/CVE-2026-25681
+      - CVE-2026-27136  # Not in release. https://ubuntu.com/security/CVE-2026-27136
+      - CVE-2026-27145  # Needs evaluation. https://ubuntu.com/security/CVE-2026-27145
+      - CVE-2026-29181  # Needs evaluation. https://ubuntu.com/security/CVE-2026-29181
+      - CVE-2026-32280  # Vulnerable. https://ubuntu.com/security/CVE-2026-32280
+      - CVE-2026-32281  # Needs evaluation. https://ubuntu.com/security/CVE-2026-32281
+      - CVE-2026-32283  # Needs evaluation. https://ubuntu.com/security/CVE-2026-32283
+      - CVE-2026-32285  # Needs evaluation. https://ubuntu.com/security/CVE-2026-32285
+      - CVE-2026-32287  # Needs evaluation. https://ubuntu.com/security/CVE-2026-32287
+      - CVE-2026-33186  # Needs evaluation. https://ubuntu.com/security/CVE-2026-33186
+      - CVE-2026-33811  # Needs evaluation. https://ubuntu.com/security/CVE-2026-33811
+      - CVE-2026-33814  # Vulnerable (golang-golang-x-net). https://ubuntu.com/security/CVE-2026-33814
+      - CVE-2026-33818  # Needs evaluation. https://ubuntu.com/security/CVE-2026-33818
+      - CVE-2026-34040  # Needs evaluation. https://ubuntu.com/security/CVE-2026-34040
+      - CVE-2026-39820  # Needs evaluation. https://ubuntu.com/security/CVE-2026-39820
+      - CVE-2026-39821  # Needs evaluation. https://ubuntu.com/security/CVE-2026-39821
+      - CVE-2026-39822  # Not in release. https://ubuntu.com/security/CVE-2026-39822
+      - CVE-2026-39828  # Needs evaluation. https://ubuntu.com/security/CVE-2026-39828
+      - CVE-2026-39829  # Needs evaluation. https://ubuntu.com/security/CVE-2026-39829
+      - CVE-2026-39830  # Fixed (Ubuntu Pro). https://ubuntu.com/security/CVE-2026-39830
+      - CVE-2026-39831  # Fixed (Ubuntu Pro). https://ubuntu.com/security/CVE-2026-39831
+      - CVE-2026-39832  # Fixed (Ubuntu Pro). https://ubuntu.com/security/CVE-2026-39832
+      - CVE-2026-39835  # Needs evaluation. https://ubuntu.com/security/CVE-2026-39835
+      - CVE-2026-39836  # Not affected (Windows only). https://ubuntu.com/security/CVE-2026-39836
+      - CVE-2026-39883  # Needs evaluation. https://ubuntu.com/security/CVE-2026-39883
+      - CVE-2026-41602  # Needs evaluation. https://ubuntu.com/security/CVE-2026-41602
+      - CVE-2026-42151  # Needs evaluation. https://ubuntu.com/security/CVE-2026-42151
+      - CVE-2026-42154  # Needs evaluation. https://ubuntu.com/security/CVE-2026-42154
+      - CVE-2026-42499  # Needs evaluation. https://ubuntu.com/security/CVE-2026-42499
+      - CVE-2026-42504  # Needs evaluation. https://ubuntu.com/security/CVE-2026-42504
+      - CVE-2026-42508  # Fixed (Ubuntu Pro). https://ubuntu.com/security/CVE-2026-42508
+      - CVE-2026-43871  # Needs evaluation. https://ubuntu.com/security/CVE-2026-43871
+      - CVE-2026-46595  # Fixed (Ubuntu Pro). https://ubuntu.com/security/CVE-2026-46595
+      - CVE-2026-46597  # Needs evaluation. https://ubuntu.com/security/CVE-2026-46597
+      - CVE-2026-46600  # Needs evaluation. https://ubuntu.com/security/CVE-2026-46600
+      - CVE-2026-56852  # Needs evaluation. https://ubuntu.com/security/CVE-2026-56852
+      - CVE-2026-56853  # Needs evaluation. https://ubuntu.com/security/CVE-2026-56853
+      - CVE-2026-56854  # Needs evaluation. https://ubuntu.com/security/CVE-2026-56854
+      - CVE-2026-56858  # Needs evaluation. https://ubuntu.com/security/CVE-2026-56858
+      - CVE-2026-56859  # Needs evaluation. https://ubuntu.com/security/CVE-2026-56859
+      - CVE-2026-56860  # Needs evaluation. https://ubuntu.com/security/CVE-2026-56860
+      - CVE-2026-56862  # Needs evaluation. https://ubuntu.com/security/CVE-2026-56862
+      - CVE-2025-61729  # Needs evaluation. https://ubuntu.com/security/CVE-2025-61729
+      - CVE-2025-68121  # Affects some golang packages and not in release for others. https://ubuntu.com/security/CVE-2025-68121
+      - CVE-2026-84304  # Needs evaluation. https://ubuntu.com/security/CVE-2026-84304
+      - CVE-2026-84445  # Not in release. https://ubuntu.com/security/CVE-2026-84445
+      - GHSA-hrxh-6v49-42gf
