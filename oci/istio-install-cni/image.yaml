@@ -1,10 +1,14 @@
 version: 2
 upload:
-  - source: canonical/istio-install-cni-rock
-    commit: 5b7cb1306a577a4a890741866d452c322ef133f6
-    directory: 1.28.8
+  - source: canonical/service-mesh
+    commit: 0ed600a4d20431ef80cc3f48d346bb8443bb7ee6
+    directory: rocks/istio-install-cni-rock/1.31
     release:
-      1.28-24.04:
-        end-of-life: '2026-09-14T00:00:00Z'
+      1-26.04:
+        end-of-life: '2027-01-01T00:00:00Z'
+        risks:
+          - stable
+      1.31-26.04:
+        end-of-life: '2027-01-01T00:00:00Z'
         risks:
           - stable
