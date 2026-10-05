@@ -19,5 +19,20 @@
         "edge": {
             "target": "2026-22.04_beta"
         }
+    },
+    "2026-26.04": {
+        "end-of-life": "2027-01-05T00:00:00Z",
+        "stable": {
+            "target": "25"
+        },
+        "candidate": {
+            "target": "2026-26.04_stable"
+        },
+        "beta": {
+            "target": "2026-26.04_candidate"
+        },
+        "edge": {
+            "target": "2026-26.04_beta"
+        }
     }
 }
