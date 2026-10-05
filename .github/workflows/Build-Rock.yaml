@@ -69,7 +69,7 @@ env:
   ROCK_REPO_DIR: rock-repo  # path where the image repo is cloned into
   ROCK_CI_FOLDER: ci-rocks  # path of uploaded/downloaded artifacts
   DEFAULT_ARCH_MAP: '{
-      "amd64": ["self-hosted-linux-amd64-noble-large"],
+      "amd64": ["ubuntu-24.04"],
       "arm64": ["self-hosted-linux-arm64-noble-medium"],
       "s390x": ["self-hosted-linux-s390x-noble-medium"],
       "ppc64el": ["self-hosted-linux-ppc64el-noble-edge"]
