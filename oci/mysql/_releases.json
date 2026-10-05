@@ -12,18 +12,18 @@
         }
     },
     "8.4-26.04": {
-        "end-of-life": "2031-09-14T00:00:00Z",
+        "end-of-life": "2031-10-05T00:00:00Z",
         "edge": {
-            "target": "191"
+            "target": "8.4-26.04_beta"
         },
         "beta": {
-            "target": "189"
+            "target": "8.4-26.04_candidate"
         },
         "candidate": {
-            "target": "189"
+            "target": "8.4-26.04_stable"
         },
         "stable": {
-            "target": "189"
+            "target": "193"
         }
     }
 }
