@@ -2,76 +2,76 @@
     "3.12-24.04": {
         "end-of-life": "2029-05-31T00:00:00Z",
         "edge": {
-            "target": "401"
+            "target": "407"
         },
         "beta": {
-            "target": "400"
+            "target": "406"
         },
         "candidate": {
-            "target": "400"
+            "target": "406"
         },
         "stable": {
-            "target": "400"
+            "target": "406"
         }
     },
     "3-22.04": {
         "end-of-life": "2027-06-01T00:00:00Z",
         "edge": {
-            "target": "403"
+            "target": "409"
         },
         "beta": {
-            "target": "402"
+            "target": "408"
         },
         "candidate": {
-            "target": "402"
+            "target": "408"
         },
         "stable": {
-            "target": "402"
+            "target": "408"
         }
     },
     "3-24.04": {
         "end-of-life": "2029-05-31T00:00:00Z",
         "edge": {
-            "target": "401"
+            "target": "407"
         },
         "beta": {
-            "target": "400"
+            "target": "406"
         },
         "candidate": {
-            "target": "400"
+            "target": "406"
         },
         "stable": {
-            "target": "400"
+            "target": "406"
         }
     },
     "3.9-22.04": {
         "end-of-life": "2027-06-01T00:00:00Z",
         "edge": {
-            "target": "403"
+            "target": "409"
         },
         "beta": {
-            "target": "402"
+            "target": "408"
         },
         "candidate": {
-            "target": "402"
+            "target": "408"
         },
         "stable": {
-            "target": "402"
+            "target": "408"
         }
     },
     "4.0-26.04": {
         "end-of-life": "2031-05-27T00:00:00Z",
         "edge": {
-            "target": "405"
+            "target": "411"
         },
         "beta": {
-            "target": "404"
+            "target": "410"
         },
         "candidate": {
-            "target": "404"
+            "target": "410"
         },
         "stable": {
-            "target": "404"
+            "target": "410"
         }
     }
 }
