@@ -437,5 +437,6 @@ jobs:
         with:
           name: "${{ matrix.release-name }}"
           tag_name: "${{ matrix.release-name }}"
-          token: "${{ secrets.GITHUB_TOKEN }}"
+          # GITHUB_TOKEN suppresses the release event that triggers Announcements.
+          token: "${{ secrets.ROCKSBOT_TOKEN }}"
           files: "sbom/*.sbom_preview.spdx.json"
