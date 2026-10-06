@@ -209,6 +209,65 @@ def test_vulnerability_scan_uses_acr_credentials_only_for_pro() -> None:
     assert configure_step["env"]["ACR_CREDS_PSW"] == "${{ secrets.ACR_CREDS_PSW }}"
 
 
+def test_vulnerability_workflow_scans_once_and_uploads_enriched_predicate() -> None:
+    workflow = load_yaml(".github/workflows/Test-Rock.yaml")
+    steps = workflow["jobs"]["test-vulnerabilities"]["steps"]
+    scan = step_named(workflow, "test-vulnerabilities", "Scan for vulnerabilities")
+    scans = [
+        step
+        for step in steps
+        if step.get("uses", "").startswith("aquasecurity/trivy-action@")
+    ]
+    assert scans == [scan]
+    assert not any(
+        step.get("uses") == "./.github/actions/check-trivyignore" for step in steps
+    )
+    assert scan["with"]["format"] == "json"
+    assert scan["with"]["ignore-unfixed"] == "false"
+    assert scan["with"]["list-all-pkgs"] == "true"
+    assert "trivyignores" not in scan["with"]
+    assert "skip-files" not in scan["with"]
+    assert "severity" not in scan["with"]
+    assert scan["with"]["exit-code"] == "0"
+    assert scan["env"]["TRIVY_IGNOREFILE"] == "/dev/null"
+    convert = step_named(
+        workflow, "test-vulnerabilities", "Convert vulnerability reports"
+    )
+    assert "trivy convert --format cosign-vuln" in convert["run"]
+    assert "trivy convert --format sarif" in convert["run"]
+    assert 'embed "$SARIF_REPORT" "$COSIGN_REPORT"' in convert["run"]
+    assert convert["env"]["TRIVY_IGNOREFILE"] == "/dev/null"
+
+    process = step_named(
+        workflow, "test-vulnerabilities", "Process SARIF vulnerability report"
+    )
+    assert '--trivyignore "$TRIVYIGNORE_PATH"' in process["run"]
+    assert process["env"]["TRIVYIGNORE_PATH"] == (
+        "${{ steps.configure-trivy.outputs.trivyignore-path }}"
+    )
+    upload = step_named(
+        workflow, "test-vulnerabilities", "Upload enriched vulnerability report"
+    )
+    gate = step_named(workflow, "test-vulnerabilities", "Enforce vulnerability policy")
+    assert steps.index(process) < steps.index(upload) < steps.index(gate)
+    assert upload["with"]["path"] == "${{ steps.configure-trivy.outputs.report-name }}"
+    assert "steps.process-sarif-report.outcome == 'success'" in upload["if"]
+    assert "steps.process-sarif-report.outputs.blocking-found == 'true'" in gate["if"]
+
+
+def test_daily_scan_consumes_the_embedded_sarif_artifact() -> None:
+    workflow = load_yaml(".github/workflows/Vulnerability-Scan.yaml")
+    downloads = [
+        step
+        for step in workflow["jobs"]["parse-results"]["steps"]
+        if step.get("uses", "").startswith("actions/download-artifact@")
+    ]
+    assert len(downloads) == 1
+    process = step_named(workflow, "parse-results", "Process report")
+    assert 'findings "$VULNERABILITY_REPORT"' in process["run"]
+    assert "--notification-report" not in process["run"]
+
+
 @pytest.mark.parametrize(
     "issue_exists, notify, operation",
     [

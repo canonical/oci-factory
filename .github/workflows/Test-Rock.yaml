@@ -378,6 +378,7 @@ jobs:
           echo "trivyignore-path=$trivyignore_path" >> "$GITHUB_OUTPUT"
 
           echo "report-name=${INPUTS_OCI_ARCHIVE_NAME}${{ env.VULNERABILITY_REPORT_SUFFIX }}" >> "$GITHUB_OUTPUT"
+          echo "scan-report-name=${INPUTS_OCI_ARCHIVE_NAME}.trivy.json" >> "$GITHUB_OUTPUT"
           echo "sarif-report-name=${INPUTS_OCI_ARCHIVE_NAME}${{ env.VULNERABILITY_SARIF_SUFFIX }}" >> "$GITHUB_OUTPUT"
         env:
           INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
@@ -385,50 +386,39 @@ jobs:
           INPUTS_IGNORED_VULNERABILITIES: ${{ inputs.ignored-vulnerabilities }}
 
       - name: Scan for vulnerabilities
+        id: scan-vulnerabilities
         # TODO: bump trivy-action version once a newer version is released that uses v5 or later tags for actions/cache.
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
+        env:
+          # Trivy reads .trivyignore by default; apply ignores only during processing.
+          TRIVY_IGNOREFILE: /dev/null
         with:
-          # NOTE: we're allowing images with unfixable vulnerabilities to be published
-          ignore-unfixed: true
-          trivyignores: ${{ steps.configure-trivy.outputs.trivyignore-path }}
-          format: "cosign-vuln"
-          severity: "HIGH,CRITICAL"
-          exit-code: "1"
-          # NOTE: pebble is flagged with a HIGH vuln because of golang.org/x/crypto and encoding/gob
-          # CVE-2021-43565, CVE-2022-27191, CVE-2024-34156
-          skip-files: "/bin/pebble,/usr/bin/pebble"
-          # missing ${{ runner.arch }}
-          output: "${{ steps.configure-trivy.outputs.report-name }}"
-          image-ref: "${{ steps.configure-trivy.outputs.docker-image }}"
-
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
-        if: ${{ !cancelled() }}
-        with:
-          name: ${{ inputs.vulnerability-report-artifact-name || steps.configure-trivy.outputs.report-name }}
-          path: ${{ steps.configure-trivy.outputs.report-name }}
-
-      - name: Scan for vulnerabilities (SARIF)
-        id: scan-sarif
-        if: ${{ !cancelled() }}
-        # TODO: bump trivy-action version once a newer version is released that uses v5 or later tags for actions/cache.
-        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
-        with:
-          # NOTE: we're allowing images with unfixable vulnerabilities to be published
-          ignore-unfixed: true
-          trivyignores: ${{ steps.configure-trivy.outputs.trivyignore-path }}
-          format: "sarif"
+          ignore-unfixed: false
+          format: "json"
           scanners: "vuln"
+          list-all-pkgs: true
           exit-code: "0"
-          skip-setup-trivy: true
-          skip-files: "/bin/pebble,/usr/bin/pebble"
-          output: "${{ steps.configure-trivy.outputs.sarif-report-name }}"
+          output: "${{ steps.configure-trivy.outputs.scan-report-name }}"
           image-ref: "${{ steps.configure-trivy.outputs.docker-image }}"
+
+      - name: Convert vulnerability reports
+        id: convert-reports
+        if: ${{ !cancelled() && steps.scan-vulnerabilities.outcome == 'success' }}
+        env:
+          TRIVY_IGNOREFILE: /dev/null
+          SCAN_REPORT: ${{ steps.configure-trivy.outputs.scan-report-name }}
+          COSIGN_REPORT: ${{ steps.configure-trivy.outputs.report-name }}
+          SARIF_REPORT: ${{ steps.configure-trivy.outputs.sarif-report-name }}
+        run: |
+          trivy convert --format cosign-vuln --exit-code 0 --output "$COSIGN_REPORT" "$SCAN_REPORT"
+          trivy convert --format sarif --exit-code 0 --output "$SARIF_REPORT" "$SCAN_REPORT"
+          python3 -m src.tests.vulnerability_report embed "$SARIF_REPORT" "$COSIGN_REPORT"
 
       - name: Collect CVE IDs from SARIF
         id: collect-cve-ids
-        if: ${{ !cancelled() && steps.scan-sarif.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.convert-reports.outcome == 'success' }}
         env:
-          VULNERABILITY_REPORT: ${{ steps.configure-trivy.outputs.sarif-report-name }}
+          VULNERABILITY_REPORT: ${{ steps.configure-trivy.outputs.report-name }}
         run: |
           cve_ids="$(python3 -m src.tests.vulnerability_report cve-ids "$VULNERABILITY_REPORT")"
           echo "cve-ids=$cve_ids" >> "$GITHUB_OUTPUT"
@@ -444,12 +434,13 @@ jobs:
         id: process-sarif-report
         if: ${{ !cancelled() && steps.check-kev.outcome == 'success' }}
         env:
-          VULNERABILITY_REPORT: ${{ steps.configure-trivy.outputs.sarif-report-name }}
+          VULNERABILITY_REPORT: ${{ steps.configure-trivy.outputs.report-name }}
           KEV_RESULTS: ${{ steps.check-kev.outputs.kev-results }}
           KEV_CATALOG_SOURCE: ${{ steps.check-kev.outputs.catalog-source }}
           KEV_CATALOG_VERSION: ${{ steps.check-kev.outputs.catalog-version }}
           KEV_CATALOG_RELEASE_DATE: ${{ steps.check-kev.outputs.catalog-release-date }}
           IMAGE_NAME: ${{ inputs.oci-archive-name }}
+          TRIVYIGNORE_PATH: ${{ steps.configure-trivy.outputs.trivyignore-path }}
         run: |
           python3 -m src.tests.vulnerability_report process \
             "$VULNERABILITY_REPORT" \
@@ -457,27 +448,21 @@ jobs:
             "$KEV_CATALOG_SOURCE" \
             "$KEV_CATALOG_VERSION" \
             "$KEV_CATALOG_RELEASE_DATE" \
-            "$IMAGE_NAME"
+            "$IMAGE_NAME" \
+            --trivyignore "$TRIVYIGNORE_PATH"
 
-      - name: Upload SARIF vulnerability report
+      - name: Upload enriched vulnerability report
         if: ${{ !cancelled() && steps.process-sarif-report.outcome == 'success' }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
-          name: ${{ steps.configure-trivy.outputs.sarif-report-name }}
-          path: ${{ steps.configure-trivy.outputs.sarif-report-name }}
+          name: ${{ inputs.vulnerability-report-artifact-name || steps.configure-trivy.outputs.report-name }}
+          path: ${{ steps.configure-trivy.outputs.report-name }}
 
       - name: Enforce vulnerability policy
         if: ${{ !cancelled() && steps.process-sarif-report.outputs.blocking-found == 'true' }}
         run: |
           echo "Unsuppressed HIGH/CRITICAL or CISA KEV vulnerabilities found."
           exit 1
-
-      - name: Identify unnecessary trivyignore entries
-        if: ${{ !cancelled() }}
-        uses: ./.github/actions/check-trivyignore
-        with:
-          image-ref: "${{ steps.configure-trivy.outputs.docker-image }}"
-          trivyignores: ${{ steps.configure-trivy.outputs.trivyignore-path }}
 
   test-malware:
     runs-on: ubuntu-22.04

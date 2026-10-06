@@ -534,13 +534,32 @@ needed.
 - Scanning for vulnerabilities using [Trivy](https://trivy.dev/)
 - Scanning for malware using [ClamAV](https://www.clamav.net/)
 
-Both Trivy scans ignore vulnerabilities without a known fix, including those
-listed in the CISA Known Exploited Vulnerabilities (KEV) catalog. Among the
-remaining unsuppressed findings, the vulnerability test blocks HIGH or CRITICAL
-findings and KEVs at any severity, regardless of modification date.
-An additional SARIF report covers all severities after this unfixed filtering,
-is enriched with the KEV classification, and supplies the five-column GitHub
-summary and downstream issue content.
+Trivy scans the image once to JSON, including fixed and unfixed vulnerabilities
+at every severity. Its `convert` command generates cosign-vuln and SARIF reports
+from that JSON without rescanning. The final `.vulnerability-report.json`
+artifact keeps the cosign predicate envelope and replaces `scanner.result` with
+the enriched SARIF object. KEV classifications, normalized policy fields, native
+vulnerability details, CVE aliases, and modification dates are stored in SARIF
+`properties` bags. Daily scans and issue reporting consume this same artifact.
+
+The scan does not apply `.trivyignore`, so ignored CVEs remain available for analysis.
+The `process --trivyignore PATH` command applies the configured plain-text
+ignore file (including comments and `exp:YYYY-MM-DD` expiration dates) as SARIF
+suppressions. These findings keep their scanner details and KEV classification
+in the artifact but are excluded from the gate, summary, and issue notifications.
+YAML ignore files are not supported by this processor.
+
+The vulnerability test blocks when an active finding is HIGH or CRITICAL, or is
+listed in KEV at any severity. Only those policy findings appear in the
+five-column GitHub summary and downstream issue content.
+
+The normalized `ociFactory/vulnerability` properties contract is independent of
+Trivy's presentation. Future scanner adapters can supply those fields and
+`ociFactory/scannerKnownExploited` / `ociFactory/scannerKevIds` from native KEV
+data; scanner-provided positives are preserved during catalog enrichment.
+Grype exposes `knownExploited` in its JSON report, but its current SARIF writer
+does not export it, so a Grype migration must map that native data into these
+properties. The workflow currently uses Trivy and the CISA catalog action.
 
 **Samples:**
 - [Build and Test EICAR Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/oci-factory_build_and_test_eicar_rock.yaml) 
