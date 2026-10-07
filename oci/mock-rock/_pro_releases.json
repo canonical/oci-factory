@@ -2,10 +2,10 @@
     "1.2-22.04": {
         "end-of-life": "2030-05-01T00:00:00Z",
         "beta": {
-            "target": "3370"
+            "target": "3371"
         },
         "edge": {
-            "target": "1.2-22.04_beta"
+            "target": "3371"
         },
         "services": [
             "esm-apps",
