@@ -12,3 +12,5 @@ upload:
         end-of-life: '2027-01-11T00:00:00Z'
         risks:
           - stable
+    ignored-vulnerabilities:
+      - CVE-2025-22868  # golang.org/x/oauth2
