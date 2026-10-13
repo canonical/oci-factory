@@ -7,10 +7,10 @@ upload:
       0-26.04:
         end-of-life: '2027-01-11T00:00:00Z'
         risks:
-          - stable
+          - edge
       0.1-26.04:
         end-of-life: '2027-01-11T00:00:00Z'
         risks:
-          - stable
+          - edge
     ignored-vulnerabilities:
       - CVE-2025-22868  # golang.org/x/oauth2
