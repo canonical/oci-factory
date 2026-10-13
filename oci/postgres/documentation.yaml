@@ -19,7 +19,22 @@ docker:
     --volume mypgdata:/var/lib/postgresql/
     --mount type=bind,source="$PWD/postgres_password.txt",destination=/run/secrets/postgres_password,readonly
   run_conclusion: |
-    Access your PostgreSQL server at `localhost:5432`.
+    The command above assumes that a postgres_password.txt file exists. To create this file, run:
+    ```
+    # Generate password
+    tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 24 | tee postgres_password.txt
+    sudo chown 584792:584792 postgres_password.txt
+    sudo chmod 400 postgres_password.txt
+    ```
+
+    Access your PostgreSQL server at `localhost:5432`. To allow access from outside of the container, edit pg_hba.conf. For example:
+    ```
+    # (Optional) Allow remote users to log in
+    # See https://www.postgresql.org/docs/current/auth-pg-hba-conf.html for more information
+    # Consider restricting to specific IP addresses instead of allowing all IP addresses
+    docker exec mypostgres sh -c 'echo "host all all all scram-sha-256" >> "$PGDATA/pg_hba.conf"'
+    docker restart mypostgres
+    ```
 
 config:
   '`-v <path>:/var/lib/postgresql`':
