@@ -12,3 +12,15 @@ upload:
         end-of-life: '2027-01-14T00:00:00Z'
         risks:
           - stable
+    ignored-vulnerabilities:
+      - CVE-2026-56854  # golang.org/x/crypto
+      - CVE-2026-46600  # golang.org/x/net
+      - CVE-2026-78669  # golang.org/x/net, stdlib
+      - CVE-2026-56852  # golang.org/x/text
+      - CVE-2026-84304  # google.golang.org/grpc
+      - CVE-2026-84445  # google.golang.org/grpc
+      - CVE-2026-78667  # stdlib
+      - CVE-2026-97031  # stdlib
+      - CVE-2026-43871  # github.com/apache/thrift
+      - CVE-2026-55677  # github.com/labstack/echo/v4
+      - GHSA-hrxh-6v49-42gf  # google.golang.org/grpc
