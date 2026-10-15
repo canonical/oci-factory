@@ -2,7 +2,7 @@ version: 1
 
 upload:
   - source: "canonical/kafka-artifacts"
-    commit: 3e275f42f128ec8ce3befe67a14269f22b224e53
+    commit: 201dfff2ea93b16aaadf355e5b4ff07c5ed9eb53
     directory: rock
     release:
       4.3-26.04:
