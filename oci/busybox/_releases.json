@@ -2,16 +2,16 @@
     "1.37-26.04": {
         "end-of-life": "2031-05-29T00:00:00Z",
         "edge": {
-            "target": "105"
+            "target": "107"
         },
         "stable": {
-            "target": "104"
+            "target": "106"
         },
         "candidate": {
-            "target": "104"
+            "target": "106"
         },
         "beta": {
-            "target": "104"
+            "target": "106"
         }
     }
 }
