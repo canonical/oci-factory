@@ -7,11 +7,11 @@ upload:
       1-26.04:
         end-of-life: '2027-01-14T00:00:00Z'
         risks:
-          - stable
+          - edge
       1.31-26.04:
         end-of-life: '2027-01-14T00:00:00Z'
         risks:
-          - stable
+          - edge
     ignored-vulnerabilities:
       - CVE-2026-56854  # golang.org/x/crypto
       - CVE-2026-46600  # golang.org/x/net
