@@ -1,18 +1,26 @@
-version: 1
+version: 2
 upload:
   - source: canonical/temporal-rocks
-    commit: cf5d44b407e3e3c7b530f064960eb0eb01bbd1fd
-    directory: temporal-server/1.23.1
+    commit: 58022714d9c969e4f0604351e9404cdc7fe2461f
+    directory: temporal-server/1.31
     release:
-      1-24.04:
-        end-of-life: '2025-08-07T00:00:00Z'
+      1-26.04:
+        end-of-life: '2027-01-14T00:00:00Z'
         risks:
           - edge
-      1.23-24.04:
-        end-of-life: '2025-08-07T00:00:00Z'
+      1.31-26.04:
+        end-of-life: '2027-01-14T00:00:00Z'
         risks:
           - edge
-      1.23.1-24.04:
-        end-of-life: '2025-08-07T00:00:00Z'
-        risks:
-          - edge
+    ignored-vulnerabilities:
+      - CVE-2026-56854  # golang.org/x/crypto
+      - CVE-2026-46600  # golang.org/x/net
+      - CVE-2026-78669  # golang.org/x/net, stdlib
+      - CVE-2026-56852  # golang.org/x/text
+      - CVE-2026-84304  # google.golang.org/grpc
+      - CVE-2026-84445  # google.golang.org/grpc
+      - CVE-2026-78667  # stdlib
+      - CVE-2026-97031  # stdlib
+      - CVE-2026-43871  # github.com/apache/thrift
+      - CVE-2026-55677  # github.com/labstack/echo/v4
+      - GHSA-hrxh-6v49-42gf  # google.golang.org/grpc
