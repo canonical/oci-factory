@@ -11,18 +11,16 @@ description: >-
   §1-§3; `oci/<name>/documentation.yaml` -> §4; `.github/`, `src/` or `tools/`
   -> §5.
 - Request changes when a MUST in this guide is violated, or the PR touches more
-  than one `oci/<name>/` directory. Approve only when none is. Any `[blocker]`
-  means `Request changes`, even when the problem predates the diff (e.g. a
-  missing manifest in a touched `upload[]` item); `Comment` is for nits only.
+  than one `oci/<name>/` directory. Any `[blocker]` means `Request changes`, even
+  if it predates the diff (e.g. a missing manifest in a touched `upload[]` item).
+  Otherwise use `Comment` for advisory findings, or `Approve` with no findings,
+  subject to applicable gates.
 - Ground every request-changes on evidence (CI run, upstream source, docs).
   Never approve on intent alone. Cite existing lines in the reviewed files;
   for a deletion, cite the previous file rather than inventing a new-file line.
-- Tag every inline note `[blocker]` or `[nit]`, optional ones included
-  (`[nit] Not a blocker, but ...`). Keep comments short and use GitHub
-  `suggestion` blocks for concrete fixes.
-- Findings are actionable concerns, not summaries of correct changes. With only
-  advisory findings use `Comment`; with no findings use `Approve`, subject to
-  the applicable gates. Report inapplicable gates as `n/a`, not passed.
+- Write one short finding per distinct concern, tagged `[blocker]` or `[nit]`;
+  use GitHub `suggestion` blocks for fixes. Correct changes belong in summaries,
+  not findings. Advisory verification is not a merge prerequisite.
 
 ## Local dry run
 
@@ -43,7 +41,8 @@ Output:
 - **Verdict:** `Request changes` / `Comment` / `Approve`, plus one sentence.
 - **Inline comments:** `` `path:line` — [blocker] note (§N) `` or `[nit]`, with
   a `suggestion` block where useful.
-- **Gates:** one line, each gate pass / ⚠ / ❌ and reporting only its own rule:
+- **Gates:** one line; established violation = fail, insufficient evidence =
+  not assessed, established inapplicability = n/a, assessed compliance = pass:
   `**Gates:** one-image ✅ · edge-first ✅ · EOL cap n/a · track naming ✅ ·
   docs n/a · CVE justification ✅ · .trivyignore ✅ · deb-manifest ✅ ·
   recipe-regression ✅ · vuln scan -> not assessed locally; verify in CI`
@@ -82,18 +81,16 @@ Output:
 
 - **Edge-first (MUST).** The first release of a new rock, a new track or a new
   base is `- edge` only, never `candidate` or `stable`.
-- **EOL cap (MUST).** If the main application is built from a directly-pulled
-  upstream source (a part's own `source:` repository, §3) and no support plan
-  has been accepted by a human listed in `CODEOWNERS`, `end-of-life` is at most
-  today + 3 calendar months. Establish applicability BEFORE comparing dates:
-  cite the main application's build part and its directly-pulled source.
-  An application staged from Ubuntu archive debs is `n/a` for this cap; the
-  trigger repository, security-manifest source, PPA declaration or absence of a
-  support plan alone cannot make the cap apply. If provenance is unavailable,
-  mark it *not assessed*, not failed. Only when applicable, calculate the cutoff
-  from the review date and compare the full dates. Block only an EOL after that
-  cutoff without an accepted plan. Ask for human acceptance of a support plan;
-  don't judge it yourself or ask to store the plan in `CODEOWNERS`.
+- **EOL cap (MUST).** First establish whether the main application is built from
+  a directly-pulled upstream source (§3), citing its build part and source.
+  Evidence of inapplicability, such as an archive-staged application, means
+  `n/a`; unavailable provenance means *not assessed*, never assumed archive
+  sourcing. A trigger repository, manifest source, PPA declaration or missing
+  support plan alone does not establish applicability. ONLY when applicable,
+  calculate review date + 3 calendar months. This is a maximum, not a minimum:
+  an `end-of-life` on/before the cutoff passes; a later date blocks unless a
+  human listed in `CODEOWNERS` has accepted a support plan. Do not assess it
+  yourself.
 - **Track naming (MUST).** New or modified track keys are `<version>-<base>`
   (e.g. `1.27-26.04`), where `<version>` is the application's version. SemVer
   applications omit the patch: `1.27.3` -> `1.27-26.04`, not `1.27.3-26.04`.
@@ -131,20 +128,18 @@ bump. If it can't be fetched, say so and skip these checks.
   The only exemption is a bare-based rock with purely static binaries and no deb
   content at all; using even `base-files` requires the manifest.
 - **Upstream-sourced.** The main application built from an external repository
-  (`source:` on GitHub/Launchpad with `source-type: git`, or a plugin compiling upstream code)
-  makes the rock upstream-sourced for the §2 EOL cap, even under the `canonical`
-  org. Identify the application part, not merely any Git-sourced part. The
-  security-manifest part doesn't count.
+  (`source:` on GitHub/Launchpad with `source-type: git`, or a plugin compiling
+  upstream code) triggers the §2 EOL cap, even under `canonical`. Helper parts
+  such as the security manifest do not count as the main application.
 - **Additional package repositories (advisory).** If the recipe declares
   `package-repositories`, flag it as potentially upstream-sourced and ask which
   shipped packages, if any, come from those repositories. The declaration alone
   does not establish package provenance and MUST NOT trigger the §2 EOL cap.
-- **Recipe change summary.** For each source bump, summarize the differences
-  between the previous and proposed recipes, including changes to parts,
-  services, packages/slices, and `override-*` scripts, especially permissions
-  and ownership. Distinguish version-only changes from changes to image contents
-  or runtime behavior. A trigger commit bump alone is not a recipe version
-  change. If either recipe is unavailable, mark the comparison not assessed.
+- **Recipe change summary.** Compare both recipes for each source bump: summarize
+  changes to parts/services, packages/slices and scripts, including permissions
+  and ownership; distinguish version-only from content/runtime changes. A trigger
+  commit bump alone proves no recipe delta. If either recipe is unavailable,
+  mark the comparison *not assessed*; infer no changes.
 - **Part/service removal (blocker).** If a source bump (new `commit` or
   `directory`) drops a `parts:` or `services:` entry the previous recipe had,
   request changes until it is restored or the author confirms in the PR that the
@@ -154,14 +149,14 @@ bump. If it can't be fetched, say so and skip these checks.
   This confirmation rule applies to removal of a whole `parts:` or `services:`
   entry, NOT a package/slice within an existing part or an edit to a script.
 - **Other recipe changes.** Inspect package/slice removals and script changes,
-  including permissions and ownership. A blocker requires evidence connecting
-  the change to a concrete broken behavior. An unresolved evidenced regression
-  stays at `edge` (§2); author confirmation of intent alone does not fix it.
-  If runtime impact is unknown, ask for verification as a `[nit]` and mark the
-  regression gate *not assessed*. Do NOT demand proof of non-use as a condition
-  of approval or apply the whole-part/service confirmation rule to it. With
-  only this uncertainty, the verdict is `Comment`, not `Request changes`.
-  A proven behavior-preserving change belongs in the summary, not findings.
+  including permissions and ownership. Block only with evidence connecting the
+  change to concrete broken behavior; keep the revision at `edge` until a fix
+  or counterevidence resolves it. Author intent or a promised future fix does
+  not resolve demonstrated breakage. Unknown impact warrants a non-blocking
+  `[nit]` suggesting verification and a *not assessed* regression gate, not a
+  merge prerequisite or demand for proof of non-use. With only this uncertainty,
+  use `Comment`, not `Request changes`. Proven harmless changes belong in the
+  summary.
 
 ## 4. Documentation (`documentation.yaml`)
 
