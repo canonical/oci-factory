@@ -124,11 +124,23 @@ bump. If it can't be fetched, say so and skip these checks.
   `package-repositories`, flag it as potentially upstream-sourced and ask which
   shipped packages, if any, come from those repositories. The declaration alone
   does not establish package provenance and MUST NOT trigger the §2 EOL cap.
+- **Recipe change summary.** For each source bump, summarize the differences
+  between the previous and proposed recipes, including changes to parts,
+  services, packages/slices, and `override-*` scripts, especially permissions
+  and ownership. Distinguish version-only changes from changes to image contents
+  or runtime behavior. If either recipe is unavailable, mark the comparison
+  not assessed.
 - **Recipe regression (blocker).** If a source bump (new `commit` or
   `directory`) drops a `parts:` or `services:` entry the previous recipe had,
   request changes until it is restored or the author confirms in the PR that the
   removal is intentional (an upstream commit message is not that confirmation);
   meanwhile keep the revision at `edge` (§2).
+
+  Also inspect package/slice removals and script changes for regressions.
+  Beyond the explicit removal rule above, raise a regression blocker only
+  when you can identify a concrete affected behavior and cite evidence;
+  otherwise report the uncertainty as a non-blocking note. A non-version
+  change alone is not evidence of a regression.
 
 ## 4. Documentation (`documentation.yaml`)
 
