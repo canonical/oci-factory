@@ -7,11 +7,11 @@ upload:
       2-26.04:
         end-of-life: '2027-01-14T00:00:00Z'
         risks:
-          - stable
+          - edge
       2.52-26.04:
         end-of-life: '2027-01-14T00:00:00Z'
         risks:
-          - stable
+          - edge
     ignored-vulnerabilities:
       - CVE-2026-55677  # github.com/labstack/echo/v4
       - CVE-2026-39828  # golang.org/x/crypto
