@@ -120,6 +120,10 @@ bump. If it can't be fetched, say so and skip these checks.
   GitHub/Launchpad with `source-type: git`, or a plugin compiling upstream code)
   makes the rock upstream-sourced for the §2 EOL cap, even under the `canonical`
   org. The security-manifest part doesn't count.
+- **Additional package repositories (advisory).** If the recipe declares
+  `package-repositories`, flag it as potentially upstream-sourced and ask which
+  shipped packages, if any, come from those repositories. The declaration alone
+  does not establish package provenance and MUST NOT trigger the §2 EOL cap.
 - **Recipe regression (blocker).** If a source bump (new `commit` or
   `directory`) drops a `parts:` or `services:` entry the previous recipe had,
   request changes until it is restored or the author confirms in the PR that the
