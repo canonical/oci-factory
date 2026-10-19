@@ -60,12 +60,36 @@ description: |
 
   docker exec kafka chown -R kafka:kafka /tmp/kraft-combined-logs/
   ````
-  
+
+  # Apache Kafka 4.3+ Quickstart (KRaft rock)
+  From `4.3-26.04` onward the image ships a working single-node broker. A bare
+  run generates a cluster id, formats the KRaft storage and starts the broker
+  on `9092`, with no manual format step:
+
+  ```
+  docker run --detach --name kafka -p 9092:9092 ubuntu/kafka:4.3-26.04_edge
+  ```
+
+  Configure the broker by passing `KAFKA_*` environment variables. Each maps to
+  the matching `server.properties` key, upper-snake-case to lower-dotted, so
+  `KAFKA_NUM_PARTITIONS` sets `num.partitions`:
+
+  ```
+  docker run --detach --name kafka -p 9092:9092 \
+    -e KAFKA_NUM_PARTITIONS=3 \
+    -e KAFKA_AUTO_CREATE_TOPICS_ENABLE=false \
+    ubuntu/kafka:4.3-26.04_edge
+  ```
+
+  The broker runs as an idiomatic Pebble service with a readiness check on the
+  configured listener port. See the `KAFKA_*` config options below for the full
+  configuration interface, and the source repository for clustering.
+
   Please note that the images tagged up to 3.1 are Dockerfile-base images,
   whereas from version 3.6.1 onward the images are now rocks.
 website: https://kafka.apache.org
-issues: https://github.com/canonical/kafka-rock/issues
-source-code: https://github.com/canonical/kafka-rock
+issues: https://github.com/canonical/kafka-artifacts/issues
+source-code: https://github.com/canonical/kafka-artifacts
 
 docker:
   parameters: >-
@@ -106,3 +130,53 @@ config:
   '`-p <port>:9092`':
     type: port
     description: Expose the container's port `9092` on the host's `<port>`.
+  '`KAFKA_<PROPERTY>`':
+    type: env
+    description: >-
+      Any variable of this form is folded into `server.properties`, mapping
+      upper-snake-case to the lower-dotted key (`KAFKA_NUM_PARTITIONS` sets
+      `num.partitions`). Only used in the Apache Kafka 4.3+ rock.
+  '`CLUSTER_ID`':
+    type: env
+    description: >-
+      KRaft cluster id used to format the storage on first start.
+      Only used in the Apache Kafka 4.3+ rock.
+    default: 'a generated random UUID'
+  '`KAFKA_PROCESS_ROLES`':
+    type: env
+    description: >-
+      KRaft roles for the node, e.g. `broker,controller` or `controller` for a
+      controller-only node. Only used in the Apache Kafka 4.3+ rock.
+  '`KAFKA_LISTENERS`':
+    type: env
+    description: >-
+      Listeners the broker binds. Derived from `KAFKA_ADVERTISED_LISTENERS` when
+      only the latter is set. Only used in the Apache Kafka 4.3+ rock.
+  '`KAFKA_ADVERTISED_LISTENERS`':
+    type: env
+    description: Listeners advertised to clients. Only used in the Apache Kafka 4.3+ rock.
+  '`TRACE`':
+    type: env
+    description: >-
+      Set to `true` to trace the start script. May expose credentials in the
+      logs. Only used in the Apache Kafka 4.3+ rock.
+    default: 'false'
+  '`-v <path>:/mnt/shared/config`':
+    type: mount
+    description: >-
+      Config files folded into the rendered `server.properties` at start-up.
+      Only used in the Apache Kafka 4.3+ rock.
+  '`-v <path>:/var/lib/kafka/data`':
+    type: mount
+    description: >-
+      Persist the KRaft data directory (`log.dirs`).
+      Only used in the Apache Kafka 4.3+ rock.
+  '`-v <path>:/var/lib/kafka/plugins/broker`':
+    type: mount
+    description: >-
+      Side-load jars (authorizers, metric reporters, etc.) onto the broker
+      classpath. Only used in the Apache Kafka 4.3+ rock.
+  '`-v <path>:/etc/kafka/secrets`':
+    type: mount
+    description: >-
+      TLS keystores and truststores. Only used in the Apache Kafka 4.3+ rock.
