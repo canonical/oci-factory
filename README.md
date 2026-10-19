@@ -33,6 +33,7 @@
   - [📦 Reusable workflows](#-reusable-workflows)
     - [Build-Rock Workflow](#build-rock-workflow)
     - [Test-Rock Workflow](#test-rock-workflow)
+  - [Download SBOMs](#download-sboms)
 
 
 ## 🍿 **Before you get started**
@@ -567,3 +568,28 @@ _See Note on Private Repositories._
 |---|---|---|
 | `host-github-token` | False  | (Deprecated) GitHub token from repository executing this workflow. |
 | `pro-artifact-passphrase` | False* | Passphrase required when testing an encrypted artifact. Omit it for plaintext artifacts. |
+
+## Download SBOMs
+
+`tools/download_sboms.py` downloads SBOMs for currently released, non-EOL rocks.
+From the repository root, install the Python dependencies and use GitHub CLI
+(`gh`) authentication to download public-rock SPDX JSON files:
+
+```sh
+python3 -m pip install -r src/tests/requirements.txt
+gh auth login
+python3 tools/download_sboms.py --output-dir ./sboms
+```
+
+To download public and Ubuntu Pro SBOM ZIP archives from Swift instead, source
+your novarc credentials in the same shell:
+
+```sh
+set -a
+source /path/to/swift.novarc
+set +a
+python3 tools/download_sboms.py --swift --output-dir ./sboms
+```
+
+Swift uses `SWIFT_CONTAINER_NAME` (default: `oci-factory`), overridable with
+`--container NAME`. Run with `--help` for other options.
