@@ -77,16 +77,16 @@
     "26-26.04": {
         "end-of-life": "2027-01-15T00:00:00Z",
         "stable": {
-            "target": "115"
+            "target": "116"
         },
         "candidate": {
-            "target": "115"
+            "target": "116"
         },
         "beta": {
-            "target": "115"
+            "target": "116"
         },
         "edge": {
-            "target": "115"
+            "target": "116"
         }
     }
 }
