@@ -29,7 +29,7 @@ AVAILABLE_ARCHS="$(yq -r '.releases[].architectures[]' < "${image_doc_folder}"/"
 
 # get the documentation templates
 docs_dir_git=templates
-git clone --depth 1 -b main "${DOCS_GIT_URL}" ${docs_dir_git}
+git clone --depth 1 -b ROCKS-3076/improve-docs-for-hybrid-rocks "${DOCS_GIT_URL}" ${docs_dir_git}
 # get the RenderDown tool used to generate the docs
 git clone --depth 1 -b master https://github.com/valentinviennot/RenderDown
 # install the dependencies for the RenderDown tool  
