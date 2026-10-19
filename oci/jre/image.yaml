@@ -3,7 +3,7 @@ version: 1
 upload:
   - source: canonical/jre-rock
     commit: adb4a67e69da59febf13ed3ac3cd7611ab844235
-    directory: jre/ubuntu-24.04-headless
+    directory: jre/21-jre-24.04
     release:
       21-24.04:
         end-of-life: "2029-05-31T00:00:00Z"
@@ -14,7 +14,7 @@ upload:
           - edge
   - source: canonical/jre-rock
     commit: adb4a67e69da59febf13ed3ac3cd7611ab844235
-    directory: jre/ubuntu-24.04-headless
+    directory: jre/11-jre-24.04
     release:
       11-24.04:
         end-of-life: "2029-05-31T00:00:00Z"
