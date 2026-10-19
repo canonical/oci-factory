@@ -10,11 +10,11 @@ description: >-
 - Pick the checklist by what the diff touches: `oci/<name>/image.yaml` ->
   §1-§3; `oci/<name>/documentation.yaml` -> §4; `.github/`, `src/` or `tools/`
   -> §5.
-- Request changes when a MUST in this guide is violated, or the PR touches more
-  than one `oci/<name>/` directory. Any `[blocker]` means `Request changes`, even
-  if it predates the diff (e.g. a missing manifest in a touched `upload[]` item).
-  Otherwise use `Comment` for advisory findings, or `Approve` with no findings,
-  subject to applicable gates.
+- A violated MUST in this guide, or a PR touching more than one `oci/<name>/`
+  directory, is a `[blocker]`, even if it predates the diff (e.g. a missing
+  manifest in a touched `upload[]` item). Derive the verdict from findings
+  alone: any `[blocker]` -> `Request changes`; else any `[nit]` -> `Comment`;
+  else `Approve` (a real PR also needs a passing scan, §1).
 - Ground every request-changes on evidence (CI run, upstream source, docs).
   Never approve on intent alone. Cite existing lines in the reviewed files;
   for a deletion, cite the previous file rather than inventing a new-file line.
@@ -32,9 +32,9 @@ code-review skill."* Diff against the branch point with upstream main:
 `git diff --cached` for staged-only changes. The vulnerability scan is CI-only
 and stays out of the local verdict; the static §1 rules still apply. Fetch
 recipes (§3) when the network allows, otherwise mark the recipe gates
-*not assessed*. A local `Approve` only means the locally-checkable gates passed.
-Unassessed recipe checks remain outstanding for a reviewer; do not claim that
-CI will perform them or treat missing evidence alone as a policy violation.
+*not assessed*. An unavailable recipe limits scope; it is not a finding: infer
+no provenance or recipe changes. A local `Approve` covers only what was
+assessed. Outstanding recipe checks need a reviewer; do not assign them to CI.
 
 Output:
 
@@ -87,10 +87,11 @@ Output:
   `n/a`; unavailable provenance means *not assessed*, never assumed archive
   sourcing. A trigger repository, manifest source, PPA declaration or missing
   support plan alone does not establish applicability. ONLY when applicable,
-  calculate review date + 3 calendar months. This is a maximum, not a minimum:
-  an `end-of-life` on/before the cutoff passes; a later date blocks unless a
-  human listed in `CODEOWNERS` has accepted a support plan. Do not assess it
-  yourself.
+  run `python3 .agents/skills/code-review/scripts/eol_cap.py --review-date
+  <YYYY-MM-DD> <end-of-life>...` and quote its output; never compute dates by
+  hand. The cutoff is a maximum, not a minimum: an `end-of-life` within the cap
+  passes; a later date blocks unless a human listed in `CODEOWNERS` has
+  accepted a support plan. Do not assess it yourself.
 - **Track naming (MUST).** New or modified track keys are `<version>-<base>`
   (e.g. `1.27-26.04`), where `<version>` is the application's version. SemVer
   applications omit the patch: `1.27.3` -> `1.27-26.04`, not `1.27.3-26.04`.
