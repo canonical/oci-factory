@@ -91,6 +91,18 @@ class ConfigOption(BaseModel):
 #
 # Main Schema
 #
+class TrackOverride(EndOfLifeInfo):
+    """Track metadata for v2; every override must include an EOL date."""
+
+    legacy: bool | None = Field(
+        default=None,
+        description=(
+            "Whether this track contains legacy Dockerfile images. Mark every legacy track true; "
+            "once any flag is set, unmarked tracks are treated as rocks. Missing flags cannot be detected."
+        ),
+    )
+
+
 class DocSchema(BaseModel):
     """Schema of the documentation.yaml file, and also validation of the schema"""
 
@@ -119,10 +131,10 @@ class DocSchema(BaseModel):
         default=None,
         description="Specific information for Kubernetes deployments."
     )
-    override_tracks: dict[str, EndOfLifeInfo] | None = Field(
+    override_tracks: dict[str, TrackOverride] | None = Field(
         default=None,
         alias="override-tracks",
-        description="Override end-of-life tracks for the rock, if applicable."
+        description="Override track EOL dates and optionally identify legacy Dockerfile tracks."
     )
 
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
@@ -130,3 +142,10 @@ class DocSchema(BaseModel):
     @field_serializer("website", "issues", "source_code")
     def serialize_url(self, url: AnyUrl | None) -> str | None:
         return str(url) if url else url
+
+    @field_serializer("override_tracks")
+    def serialize_override_tracks(self, tracks: dict[str, TrackOverride] | None) -> dict | None:
+        # Omitted flags must not enable the new template behavior.
+        if tracks is None:
+            return None
+        return {track: info.model_dump(exclude_none=True) for track, info in tracks.items()}

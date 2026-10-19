@@ -312,9 +312,56 @@ for the "ubuntu" namespace, as is as follows:
 | microk8s.deploy | True | Dict[str, str] | Link to the YAML manifest and additional access message. |
 | microk8s.deploy.link | True | str | Link to the raw manifest file. |
 | microk8s.deploy.access | True | str | Post-deployment access message. |
-| override_tracks | False | Dict[Dict[str, str]] | Override the EOL dates of the tracks from non-OCI-Factory releases or the track names inconsistent with the build-base. |
-| override_tracks.\<track\> | True | Dict[str, str] | Track to be overridden. |
+| override_tracks | False | Dict[str, Dict] | Override the EOL dates of the tracks from non-OCI-Factory releases or the track names inconsistent with the build-base. |
+| override_tracks.\<track\> | True | Dict | Track to be overridden. |
 | override_tracks.\<track\>.end_of_life | True | str | Date (ISO8601) after which the support for this track ends. |
+| override_tracks.\<track\>.legacy | False | bool | Schema v2 only. Set `true` for a legacy Dockerfile track or `false` for a rock. An explicit flag enables separate command-example selection. |
+
+For a repository containing both rocks and legacy Dockerfile images, mark every
+legacy track in `override-tracks`, alongside its required EOL date:
+
+```yaml
+override-tracks:
+  "8.0-22.04":
+    end-of-life: "2027-04-01"
+    legacy: true
+  "8.0.2-24.04":
+    end-of-life: "2029-04-01"
+    legacy: true
+```
+
+Every override requires a valid `end-of-life` date, including entries added to
+identify legacy tracks. OCI Factory validates this metadata and passes it through
+as `override_tracks` (using the normalized field name `end_of_life`), leaving
+release records unchanged. The template matches each release's exact
+`<track>-<base>`, using its existing representative channel tag. Risk and revision suffixes are not part of
+the override key, and no version comparison is performed.
+
+Setting `legacy` explicitly on any track enables separate command-example
+selection. Tracks marked `legacy: true` are legacy images; tracks with `false`,
+an omitted flag, or no override are treated as rocks. Mark every legacy track.
+An explicit `legacy: false` can enable selection for a repository with no legacy
+tracks. When no override sets `legacy`, existing rendering is preserved.
+
+**Classification assumes every legacy track is marked `legacy: true`.** Once
+separate selection is enabled, an unmarked legacy track with an eligible supported
+release is treated as a rock and may be selected for Pebble commands that it cannot
+run. If all correctly marked legacy tracks are EOL, legacy sections are hidden
+even when an unmarked supported legacy track exists. Neither OCI Factory nor the
+template detects missing legacy flags; maintainers must keep them complete.
+
+The templates select published releases with known support dates that are not
+marked deprecated. They retain the existing risk/base preference and do not
+require the latest application version. Missing or EOL tracks cannot supply an
+example tag. Rock documentation is always shown, using `<rock-tag>` as a placeholder
+when no eligible tag is available. Legacy sections require `docker.legacy` and,
+when selection is enabled, an eligible non-EOL legacy release. OCI Factory still
+determines deprecation from release records and override dates; `docker.legacy`
+supplies legacy run instructions.
+
+The introduction and release tables remain unchanged. Deploy the corresponding
+registry templates before enabling legacy flags in image triggers. This field is
+available only in schema v2; v1 behavior is unchanged.
 
 ##### Example: *documentation.yaml*
 
