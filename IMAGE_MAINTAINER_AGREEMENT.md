@@ -157,13 +157,11 @@ and stating:
     ```yaml
     parts:
       deb-security-manifest:
-        plugin: nil
-        after:
-          - # make this run after all other parts that install overlay packages
-        override-prime: |
-          set -x
-          mkdir -p $CRAFT_PRIME/usr/share/rocks/
-          (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && dpkg-query --admindir=$CRAFT_PRIME/var/lib/dpkg/ -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) > $CRAFT_PRIME/usr/share/rocks/dpkg.query
+        plugin: make
+        source: https://github.com/canonical/rocks-security-manifest
+        source-type: git
+        source-branch: main
+        override-prime: gen_manifest
     ```
 
   - if this deb-based security manifest is not present, the Maintainer **acknowledges** that it *might* be automatically added by the Build system, consequently adding a new OCI layer to the Ubuntu Rock.

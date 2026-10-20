@@ -58,6 +58,12 @@ specification](https://www.conventionalcommits.org/en/v1.0.0/). Example:
 functional value, e.g. you shouldn't have multiple commits for fixing a single
 bug within the same code block,
 - if a PR is still being worked on, make sure to set it to "Draft",
+- before raising your PR, it's recommended to run a self-review with an AI agent
+using the [code-review skill](/.agents/skills/code-review/SKILL.md), which
+encodes the maintainer review standard. See [Local dry
+run](/.agents/skills/code-review/SKILL.md#local-dry-run) for guidance. For
+example: *"Review my staged changes as an OCI Factory PR reviewer using the
+code-review skill."*,
 - unless it's a trivial fix/improvement, it's generally worth [opening an
 issue](https://github.com/canonical/oci-factory/issues) (making sure a similar
 one doesn't exist already) to discuss the item before submitting a PR,
