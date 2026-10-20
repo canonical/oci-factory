@@ -1,0 +1,82 @@
+name: Documentation previews
+
+on:
+  pull_request:
+    paths:
+      - 'src/docs/**'
+      - 'tests/data/documentation/**'
+      - 'tests/integration/test_documentation_preview.py'
+      - '.github/workflows/Documentation-Preview.yaml'
+      - '.github/workflows/Documentation.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    name: Preview - ${{ matrix.scenario }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario: [mixed, eol-legacy, unmarked]
+    env:
+      SCENARIO: ${{ matrix.scenario }}
+      DRY_RUN: 'true'
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.14'
+      - name: Install dependencies
+        run: pip install -r src/image/requirements.txt -r src/docs/requirements.txt pytest
+      - name: Generate fixture documentation data
+        run: |
+          python3 -m src.docs.generate_oci_doc_yaml \
+            --oci-image-path "tests/data/documentation/${SCENARIO}" \
+            --releases-file "tests/data/documentation/${SCENARIO}/releases.yaml" \
+            --doc-data-dir preview --dry-run
+          cp "tests/data/documentation/${SCENARIO}/documentation.yaml" preview/input-documentation.yaml
+          cp "tests/data/documentation/${SCENARIO}/releases.yaml" preview/input-releases.yaml
+      - name: Render both registries and serialize payloads
+        run: ./src/docs/publish_docs.sh "$SCENARIO" "${SCENARIO}_doc_data.yaml" preview
+      - name: Compare unmarked rendering with deployed templates
+        if: ${{ matrix.scenario == 'unmarked' }}
+        run: |
+          git clone --depth 1 -b main https://git.launchpad.net/~ubuntu-docker-images/ubuntu-docker-images/+git/templates templates-baseline
+          mkdir baseline-data
+          cp "preview/${SCENARIO}_doc_data.yaml" baseline-data/
+          make -C templates-baseline DATADIR="$PWD/baseline-data" dockerhub-docs ecr-docs
+      - name: Verify examples and lossless JSON encoding
+        env:
+          DOCS_PREVIEW_DIR: preview
+          DOCS_BASELINE_DIR: templates-baseline/docs
+          DOCS_PREVIEW_SCENARIO: ${{ matrix.scenario }}
+        run: python3 -m pytest -q tests/integration/test_documentation_preview.py
+      - name: Upload preview inputs, Markdown, and JSON
+        if: ${{ always() }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        with:
+          name: documentation-preview-${{ matrix.scenario }}
+          path: preview/
+          if-no-files-found: error
+      - name: Summarize command examples
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write(f"# Documentation preview: {os.environ['SCENARIO']}\n\n")
+              summary.write('Full inputs, Markdown, and JSON payloads are in the preview artifact.\n\n')
+              for name, filename in [('Docker Hub', 'doc-preview.md'), ('ECR', 'ecr-usage-preview.md')]:
+                  summary.write(f'## {name}\n\n')
+                  text = (Path('preview') / filename).read_text()
+                  for block in re.findall(r'```sh\n(.*?)```', text, re.S):
+                      if block.startswith(('docker run', 'docker inspect')):
+                          summary.write(f'```sh\n{block}```\n\n')
+          PY

@@ -363,6 +363,48 @@ The introduction and release tables remain unchanged. Deploy the corresponding
 registry templates before enabling legacy flags in image triggers. This field is
 available only in schema v2; v1 behavior is unchanged.
 
+##### Previewing documentation without publishing
+
+The Documentation workflow accepts `dry-run: true` for manual and reusable runs;
+PR runs are always dry-runs. An optional `releases-file` path selects a YAML list
+of release records instead of the shared mock data. Fixture records have the same
+shape as generated `releases` entries, including `track`, `base`, `risk`, `tags`,
+`architectures`, and optional `support` and `deprecated` metadata. They represent
+the result of release discovery; fixture support dates and deprecation markers
+must be supplied explicitly. Overrides still identify legacy tracks, but do not
+create additional fixture releases or recompute their EOL status.
+
+For a local preview, with the Python requirements in `src/image/requirements.txt`
+and `src/docs/requirements.txt`, plus `git`, `make`, `jq` and `yq` installed:
+
+```bash
+export GITHUB_OUTPUT=$(mktemp)
+python3 -m src.docs.generate_oci_doc_yaml \
+  --oci-image-path tests/data/documentation/mixed \
+  --releases-file tests/data/documentation/mixed/releases.yaml \
+  --doc-data-dir preview --dry-run
+DRY_RUN=true ./src/docs/publish_docs.sh mixed mixed_doc_data.yaml preview
+```
+
+The publisher downloads the templates and RenderDown and installs their Python
+requirements, so run this in a virtual environment and a directory without existing
+`templates` or `RenderDown` checkouts. It writes `doc-preview.md`,
+`ecr-about-preview.md`, `ecr-usage-preview.md`, `dockerhub-docs.json`, and
+`ecr-docs.json` alongside the generated YAML. Both dry-run and live publishing use
+the same renderer and JSON encoding. Generated data requests `raw_markdown: true`
+so the templates leave JSON escaping to the publisher; deploy this template support
+before the publisher update. Dry-run stops before registry login or writes.
+The generator rejects `--releases-file` without `--dry-run`, and the publisher
+rejects generated dry-run data unless `DRY_RUN=true`.
+
+The **Documentation previews** workflow exercises `mixed`, `eol-legacy`, and
+`unmarked` fixtures on documentation-code PRs. Each job uploads its input fixtures,
+generated YAML, rendered Markdown, and JSON payloads, and shows command examples
+in its summary. Checks verify the expected example tags, exact Markdown preservation
+through JSON, and unchanged published content against deployed templates when no
+legacy flags are set (after decoding the old publisher's JSON escaping). These artifacts can demonstrate the change in a PR without modifying
+registry documentation.
+
 ##### Example: *documentation.yaml*
 
 ```yaml

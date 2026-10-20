@@ -54,10 +54,25 @@ MOCK_RELEASE: List[Dict[str, Any]] = [
     },
 ]
 
+
+class PreviewRelease(pydantic.BaseModel):
+    """Validate fixture records using the fields consumed by the templates."""
+
+    track: str = pydantic.Field(min_length=1)
+    base: str = pydantic.Field(pattern=r"^\d{2}\.\d{2}$")
+    risk: str = pydantic.Field(pattern=r"^(stable|candidate|beta|edge)$")
+    tags: list[str]
+    architectures: list[str]
+    support: dict[str, str] | None = None
+    deprecated: dict[str, str] | None = None
+
+    model_config = pydantic.ConfigDict(extra="allow", strict=True)
+
+
 logger = get_logger()
 
 
-def cli_args() -> argparse.ArgumentParser:
+def cli_args() -> argparse.Namespace:
     """Arguments parser"""
     parser = argparse.ArgumentParser(description="""
         Generate documentation of OCI images in OCI Factory.
@@ -102,7 +117,14 @@ def cli_args() -> argparse.ArgumentParser:
         " and instead uses mock data, for testing purposes",
     )
 
-    return parser.parse_args()
+    parser.add_argument(
+        "--releases-file",
+        help="YAML list of generated release records to use instead of mocks (requires --dry-run)",
+    )
+    args = parser.parse_args()
+    if args.releases_file and not args.dry_run:
+        parser.error("--releases-file requires --dry-run")
+    return args
 
 
 class OCIDocumentationData:
@@ -119,7 +141,11 @@ class OCIDocumentationData:
         image_path,
         repository,
         dry_run=False,
+        releases_file=None,
     ):
+        if releases_file and not dry_run:
+            raise ValueError("--releases-file requires --dry-run")
+        self.releases_file = releases_file
         self.username = username
         self.image_path = image_path
         self.image_name = image_path.rstrip("/").split("/")[-1]
@@ -431,8 +457,18 @@ class OCIDocumentationData:
 
             releases = self.build_releases_data(all_tracks, all_ecr_tags)
         else:
-            releases = MOCK_RELEASE
+            if self.releases_file:
+                with open(self.releases_file, encoding="utf-8") as stream:
+                    fixture = yaml.safe_load(stream)
+                releases = pydantic.TypeAdapter(list[PreviewRelease]).validate_python(fixture)
+                releases = [release.model_dump(exclude_unset=True) for release in releases]
+            else:
+                releases = MOCK_RELEASE
+            # The publisher rejects this data unless it is also in dry-run mode.
+            base_doc_yaml["dry_run"] = True
 
+        # Templates must leave JSON escaping to the publisher.
+        base_doc_yaml["raw_markdown"] = True
         base_doc_yaml["repo"] = self.image_name
         base_doc_yaml["releases"] = releases
 
@@ -449,12 +485,13 @@ class OCIDocumentationData:
 if __name__ == "__main__":
     args = cli_args()
     if args.dry_run:
-        logger.warning("Running in dry-run mode: mock release data is used.")
+        logger.warning("Running in dry-run mode: fixture or mock release data is used.")
     runner = OCIDocumentationData(
         args.username,
         args.password,
         args.image_path,
         args.repository,
         args.dry_run,
+        args.releases_file,
     )
     runner.main(args.doc_data_dir)
