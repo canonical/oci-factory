@@ -311,40 +311,37 @@ def test_dry_run_does_not_contaminate_later_generation(documentation_file, monke
     assert MOCK_RELEASE == original
 
 
-def test_release_fixture_requires_dry_run(documentation_file, monkeypatch):
-    def no_connection(*args):
-        pytest.fail("Fixture validation must happen before registry authentication")
-
-    monkeypatch.setattr(OCIDocumentationData, "_ecr_connect", no_connection)
-    with pytest.raises(ValueError, match="requires --dry-run"):
-        OCIDocumentationData("", "", str(documentation_file.parent), "ubuntu", releases_file="fixture.yaml")
-
-
-@pytest.mark.parametrize("records", [[], [{
-    "track": "8.0.10", "base": "24.04", "risk": "stable", "tags": ["latest"],
-    "architectures": ["amd64"], "support": {"until": "04/2099"},
-}]])
-def test_release_fixture_is_used_and_marked_dry_run(documentation_file, monkeypatch, records):
-    path = documentation_file.parent / "releases.yaml"
-    path.write_text(yaml.safe_dump(records))
+@pytest.mark.parametrize("legacy", [None, False, True])
+@pytest.mark.parametrize("eol,deprecated", [
+    ("2099-04-01", False),
+    ("2000-04-01T00:00:00Z", True),
+])
+def test_dry_run_injects_legacy_overrides(documentation_file, monkeypatch, legacy, eol, deprecated):
+    original = deepcopy(MOCK_RELEASE)
+    override = {"end-of-life": eol}
+    if legacy is not None:
+        override["legacy"] = legacy
+    with documentation_file.open("a") as stream:
+        stream.write(yaml.safe_dump({"override-tracks": {"8.0.2-22.04": override}}))
     monkeypatch.setenv("GITHUB_OUTPUT", str(documentation_file.parent / "github-output"))
-    runner = OCIDocumentationData("", "", str(documentation_file.parent), "ubuntu",
-                                  dry_run=True, releases_file=str(path))
-    runner.main(str(documentation_file.parent / "output"))
-    data = yaml.safe_load((documentation_file.parent / "output/example_doc_data.yaml").read_text())
-    assert data["releases"] == records
+    runner = OCIDocumentationData("", "", str(documentation_file.parent), "ubuntu", dry_run=True)
+    output = documentation_file.parent / "output"
+    runner.main(str(output))
+    generated = output / "example_doc_data.yaml"
+    first = generated.read_text()
+    data = yaml.safe_load(first)
+    expected = deepcopy(original)
+    if legacy is True:
+        release = {
+            "track": "8.0.2", "base": "22.04", "risk": "stable", "tags": [],
+            "architectures": ["amd64", "arm64"],
+            "support": {"until": "04/2000" if deprecated else "04/2099"},
+        }
+        if deprecated:
+            release["deprecated"] = {"date": "04/2000"}
+        expected.append(release)
+    assert data["releases"] == expected
     assert data["dry_run"] is True
-
-
-@pytest.mark.parametrize("records", [None, {}, ["invalid"], [{"track": "8.0"}], [{
-    "track": "8.0", "base": "invalid", "risk": "stable", "tags": [], "architectures": [],
-}]])
-def test_invalid_release_fixture(documentation_file, records):
-    from pydantic import ValidationError
-
-    path = documentation_file.parent / "releases.yaml"
-    path.write_text(yaml.safe_dump(records))
-    runner = OCIDocumentationData("", "", str(documentation_file.parent), "ubuntu",
-                                  dry_run=True, releases_file=str(path))
-    with pytest.raises(ValidationError):
-        runner.main(str(documentation_file.parent / "output"))
+    runner.main(str(output))
+    assert generated.read_text() == first
+    assert MOCK_RELEASE == original

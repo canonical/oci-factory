@@ -10,6 +10,7 @@ import os
 import re
 import subprocess
 import tempfile
+from copy import deepcopy
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 
@@ -53,20 +54,6 @@ MOCK_RELEASE: List[Dict[str, Any]] = [
         "deprecated": {"date": "12/2023"},
     },
 ]
-
-
-class PreviewRelease(pydantic.BaseModel):
-    """Validate fixture records using the fields consumed by the templates."""
-
-    track: str = pydantic.Field(min_length=1)
-    base: str = pydantic.Field(pattern=r"^\d{2}\.\d{2}$")
-    risk: str = pydantic.Field(pattern=r"^(stable|candidate|beta|edge)$")
-    tags: list[str]
-    architectures: list[str]
-    support: dict[str, str] | None = None
-    deprecated: dict[str, str] | None = None
-
-    model_config = pydantic.ConfigDict(extra="allow", strict=True)
 
 
 logger = get_logger()
@@ -117,14 +104,7 @@ def cli_args() -> argparse.Namespace:
         " and instead uses mock data, for testing purposes",
     )
 
-    parser.add_argument(
-        "--releases-file",
-        help="YAML list of generated release records to use instead of mocks (requires --dry-run)",
-    )
-    args = parser.parse_args()
-    if args.releases_file and not args.dry_run:
-        parser.error("--releases-file requires --dry-run")
-    return args
+    return parser.parse_args()
 
 
 class OCIDocumentationData:
@@ -141,11 +121,7 @@ class OCIDocumentationData:
         image_path,
         repository,
         dry_run=False,
-        releases_file=None,
     ):
-        if releases_file and not dry_run:
-            raise ValueError("--releases-file requires --dry-run")
-        self.releases_file = releases_file
         self.username = username
         self.image_path = image_path
         self.image_name = image_path.rstrip("/").split("/")[-1]
@@ -457,13 +433,28 @@ class OCIDocumentationData:
 
             releases = self.build_releases_data(all_tracks, all_ecr_tags)
         else:
-            if self.releases_file:
-                with open(self.releases_file, encoding="utf-8") as stream:
-                    fixture = yaml.safe_load(stream)
-                releases = pydantic.TypeAdapter(list[PreviewRelease]).validate_python(fixture)
-                releases = [release.model_dump(exclude_unset=True) for release in releases]
-            else:
-                releases = MOCK_RELEASE
+            releases = deepcopy(MOCK_RELEASE)
+            # Simulate legacy tracks from the trigger only in dry-run mode.
+            # Live generation still requires tags actually present in ECR.
+            mock_tracks = {f"{r['track']}-{r['base']}" for r in releases}
+            for track, override in (base_doc_yaml.get("override_tracks") or {}).items():
+                if override.get("legacy") is not True or track in mock_tracks:
+                    continue
+                version, base = track.rsplit("-", 1)
+                eol = parser.parse(override["end_of_life"])
+                if eol.tzinfo is None:
+                    eol = eol.replace(tzinfo=timezone.utc)
+                release = {
+                    "track": version,
+                    "base": base,
+                    "risk": "stable",
+                    "tags": [],
+                    "architectures": ["amd64", "arm64"],
+                    "support": {"until": eol.strftime("%m/%Y")},
+                }
+                if eol < datetime.now(timezone.utc):
+                    release["deprecated"] = {"date": eol.strftime("%m/%Y")}
+                releases.append(release)
             # The publisher rejects this data unless it is also in dry-run mode.
             base_doc_yaml["dry_run"] = True
 
@@ -485,13 +476,12 @@ class OCIDocumentationData:
 if __name__ == "__main__":
     args = cli_args()
     if args.dry_run:
-        logger.warning("Running in dry-run mode: fixture or mock release data is used.")
+        logger.warning("Running in dry-run mode: mock release data is used.")
     runner = OCIDocumentationData(
         args.username,
         args.password,
         args.image_path,
         args.repository,
         args.dry_run,
-        args.releases_file,
     )
     runner.main(args.doc_data_dir)
