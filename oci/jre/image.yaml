@@ -2,46 +2,34 @@ version: 1
 
 upload:
   - source: canonical/jre-rock
-    commit: 780f339ce89bc764d439acfb3b71d3f57bdfe14b
-    directory: jre/ubuntu-24.04-headless
+    commit: 21752476bf0c9f4e51596c97e2535534509d7bbb
+    directory: jre/21-jre-24.04
     release:
       21-24.04:
         end-of-life: "2029-05-31T00:00:00Z"
         risks:
-          - stable
-          - candidate
-          - beta
           - edge
   - source: canonical/jre-rock
-    commit: 6e5b3ee98a7e6991c1913ac8f74596f7c7fbdda9
-    directory: jre/ubuntu-24.04-headless
+    commit: 21752476bf0c9f4e51596c97e2535534509d7bbb
+    directory: jre/11-jre-24.04
     release:
       11-24.04:
         end-of-life: "2029-05-31T00:00:00Z"
         risks:
-          - stable
-          - candidate
-          - beta
           - edge
   - source: canonical/jre-rock
-    commit: 3b97f723013467356e2ebbfc778c9891c5ddb9c0
+    commit: 21752476bf0c9f4e51596c97e2535534509d7bbb
     directory: jre/17-jre-24.04
     release:
       17-24.04:
         end-of-life: "2029-05-31T00:00:00Z"
         risks:
-          - stable
-          - candidate
-          - beta
           - edge
   - source: canonical/jre-rock
-    commit: 1575335eae6ae353360802ca716b78618de14dc5
+    commit: 21752476bf0c9f4e51596c97e2535534509d7bbb
     directory: jre/25-jre-26.04
     release:
       25-26.04:
         end-of-life: "2031-05-29T00:00:00Z"
         risks:
-          - stable
-          - candidate
-          - beta
           - edge
