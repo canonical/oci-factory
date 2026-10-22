@@ -122,3 +122,37 @@ def test_locate_trigger_yaml(tmpdir):
     image_yaml_path.unlink()
     found_path = prep_matrix.locate_trigger_yaml(tmpdir_path)
     assert found_path == image_yml_path
+
+
+def test_pro_directory_identifier_is_deterministic():
+    first = {
+        "directory": "mock_rock/1.2/",
+        "pro": {"services": ["esm-infra", "esm-apps"]},
+    }
+    second = {
+        "directory": "mock_rock/1.2",
+        "pro": {"services": ["esm-apps", "esm-infra"]},
+    }
+
+    assert prep_matrix._get_dir_identifier(first) == (
+        "mock_rock_1.2_esm-apps-esm-infra"
+    )
+    assert prep_matrix._get_dir_identifier(first) == prep_matrix._get_dir_identifier(
+        second
+    )
+
+
+def test_inject_pro_metadata_is_matrix_friendly():
+    builds = [
+        {"directory": "public"},
+        {
+            "directory": "pro",
+            "pro": {"services": ["ros-updates", "esm-infra"]},
+        },
+    ]
+
+    result = prep_matrix.inject_pro_metadata(builds)
+
+    assert result[0]["pro-services"] == ""
+    assert result[1]["pro-services"] == "esm-infra,ros-updates"
+    assert "pro-services" not in builds[0]

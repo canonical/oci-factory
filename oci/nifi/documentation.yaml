@@ -1,0 +1,38 @@
+version: 2
+
+application: nifi
+description: >
+  Apache NiFi 2.x packaged on Ubuntu with a Java 21 runtime, a pruned NAR set
+  (23 of 119 bundles), a non-root runtime user, and Pebble as the entrypoint.
+  Built from source and used as the workload image for the Charmed NiFi operator.
+website: https://nifi.apache.org/
+issues: https://github.com/canonical/nifi-rocks/issues
+source-code: https://github.com/canonical/nifi-rocks
+
+docker:
+  parameters: >-
+    -p 8080:8080
+  run_conclusion: |
+    Pebble (PID 1) launches the `nifi` service (`nifi.sh run`). The rock is configured
+    for HTTP on port 8080 with anonymous access; NiFi self-bootstraps its
+    sensitive-properties key on first start. Access the UI at http://localhost:8080/nifi.
+    (TLS termination and single-user authentication are added by the Charmed NiFi
+    operator, not the standalone rock.)
+
+config:
+  '`-p 8080:8080`':
+    type: port
+    description: NiFi web UI/API (HTTP).
+  '`-v <path>:/var/lib/nifi/data`':
+    type: mount
+    description: Persist database/flowfile repositories, flow.json.gz, and local state.
+  '`-v <path>:/var/lib/nifi/content_repository`':
+    type: mount
+    description: Persist the content repository.
+  '`-v <path>:/var/lib/nifi/provenance_repository`':
+    type: mount
+    description: Persist the provenance repository.
+
+override_tracks:
+  2-26.04:
+    end-of-life: "2031-05-31T00:00:00Z"

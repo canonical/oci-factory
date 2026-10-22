@@ -1,11 +1,11 @@
 version: 2
 upload:
   - source: canonical/traefik-rock
-    commit: db61bd3c7e7a3cc2996998dd58ec686755f81bb3
-    directory: 2.11.54
+    commit: 8141621bad4cffbc0a3f4d78db09d7d59ddf037d
+    directory: 2.11.57
     release:
       2.11-26.04:
-        end-of-life: "2026-11-14T00:00:00Z"
+        end-of-life: "2026-11-18T00:00:00Z"
         risks:
           - edge
     ignored-vulnerabilities:

@@ -20,8 +20,19 @@ trace_suspend() {
 source_img="${1}"
 image_name="${2}"
 shift 2
+# pro_flag controls if the images should be released to the ACR registry
+pro_flag=false
+if [[ "$1" == "--pro" ]]; then
+    pro_flag=true
+    shift
+fi
 # The tag names are handled by the CI
 tag_names=("$@")
+
+if [[ ${#tag_names[@]} -eq 0 ]]; then
+    log_error "At least one tag is required."
+    exit 1
+fi
 
 publish_with_auth_token()
 {
@@ -91,33 +102,43 @@ publish_to_aws_ecr_public()
 # From env
 ghcr_repo_name="${GHCR_REPO}/${image_name}"
 docker_hub_repo_name="${DOCKER_HUB_NAMESPACE}/${image_name}"
-acr_repo_name="${ACR_NAMESPACE}/${image_name}"
+acr_repo_name="${ACR_REGISTRY}/${image_name}"
 ecr_repo_name="${ECR_NAMESPACE}/${image_name}"
 # ecr_lts_repo_name="${ECR_LTS_NAMESPACE}/${image_name}"
 
 log_info "Publishing ${image_name} to registries with tags: ${tag_names[*]}"
 
 trace_suspend
-if [ ! -z $GHCR_REPO ]; then
+if [[ "$pro_flag" == true && -n "${GHCR_REPO:-}" ]]; then
+    log_error "Pro images cannot be published to GHCR."
+    exit 1
+fi
+
+if [[ -n "${GHCR_REPO:-}" ]]; then
     # When this env variable is set we only upload to GHCR and stop
     ## DOCKER HUB
     publish_with_username_password \
         "$GHCR_USERNAME" \
         "$GHCR_PASSWORD" \
-        ${ghcr_repo_name} \
+        "${ghcr_repo_name}" \
         "${tag_names[@]}"
     
     exit 0
 fi
 
-docker login -u $DOCKER_HUB_CREDS_USR -p $DOCKER_HUB_CREDS_PSW
-## DOCKER HUB
-publish_with_username_password \
-    "$DOCKER_HUB_CREDS_USR" \
-    "$DOCKER_HUB_CREDS_PSW" \
-    ${docker_hub_repo_name} \
-    "${tag_names[@]}"
 
+# Only publish to Docker and ECR if not pro
+
+if [ "$pro_flag" = false ]; then
+    log_info "Publishing to Docker"
+    docker login -u "$DOCKER_HUB_CREDS_USR" -p "$DOCKER_HUB_CREDS_PSW"
+    ## DOCKER HUB
+    publish_with_username_password \
+        "$DOCKER_HUB_CREDS_USR" \
+        "$DOCKER_HUB_CREDS_PSW" \
+        "${docker_hub_repo_name}" \
+        "${tag_names[@]}"
+fi
 # # publish the docs for Docker Hub
 # # 1) generate the ubuntu.yaml data file
 # $docs_dir_git/generate_ubuntu_yaml.py --provider docker \
@@ -148,12 +169,15 @@ publish_with_username_password \
 #     -H "Content-Type: application/json" \
 #     -d @dockerhub-docs.json
 
-### ECR
-publish_to_aws_ecr_public \
-    "$ECR_CREDS_USR" \
-    "$ECR_CREDS_PSW" \
-    ${ecr_repo_name} \
-    "${tag_names[@]}"
+if [ "$pro_flag" = false ]; then
+    log_info "Publishing to AWS ECR"
+    ## ECR
+    publish_to_aws_ecr_public \
+        "$ECR_CREDS_USR" \
+        "$ECR_CREDS_PSW" \
+        "${ecr_repo_name}" \
+        "${tag_names[@]}"
+fi
 
 # # publish the docs for ECR
 # # 1) generate the ubuntu.yaml data file
@@ -189,12 +213,15 @@ publish_to_aws_ecr_public \
 #     aws --region us-east-1 ecr-public put-repository-catalog-data \
 #         --registry-id="099720109477" --repository-name ubuntu --catalog-data "$(cat ecr-docs.json)"
 
-### ACR
-# publish_with_username_password \
-#     "$ACR_CREDS_USR" \
-#     "$ACR_CREDS_PSW" \
-#     ${acr_repo_name} \
-#     "${tag_names[@]}"
+if [ "$pro_flag" = true ]; then
+    log_info "Publishing to ACR"
+    ## ACR
+    publish_with_username_password \
+        "$ACR_CREDS_USR" \
+        "$ACR_CREDS_PSW" \
+        "${acr_repo_name}" \
+        "${tag_names[@]}"
+fi
 
 # ### OCIR
 # publish_with_username_password \
@@ -242,7 +269,7 @@ publish_to_aws_ecr_public \
 
 # trace_resume
 
-# # We need to stored this artifacts to get the digest for the OCI-Attach-artefacts jobs
+# # We need to stored this artifacts to get the digest for the OCI-Attach-artifacts jobs
 # # in order to attach sbom to the oci images.
 
 # skopeo inspect --raw oci:${oci_images} > manifest_list.json

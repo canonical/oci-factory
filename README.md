@@ -22,13 +22,15 @@
     - [Trigger files](#trigger-files)
       - [Image trigger file](#image-trigger-file)
         - [Example: *image.yaml*](#example-imageyaml)
+        - [Ubuntu Pro images](#ubuntu-pro-images)
       - [Documentation trigger file](#documentation-trigger-file)
         - [Example: *documentation.yaml*](#example-documentationyaml)
     - [Other files](#other-files)
       - [Contacts](#contacts)
         - [Example: *contacts.yaml*](#example-contactsyaml)
       - [Vulnerability Filtering](#vulnerability-filtering)
-        - [Example: *.trivyignore*](#example-trivyignore)
+        - [Example: *ignored-vulnerabilities*](#example-ignored-vulnerabilities)
+        - [Legacy *.trivyignore* files](#legacy-trivyignore-files)
   - [📦 Reusable workflows](#-reusable-workflows)
     - [Build-Rock Workflow](#build-rock-workflow)
     - [Test-Rock Workflow](#test-rock-workflow)
@@ -163,6 +165,7 @@ oci/my-oci-image/
 ├── contacts.yaml
 ├── documentation.yaml
 ├── _releases.json (on branch `_releases`)
+├── _pro_releases.json (on branch `_releases`)
 └── image.yaml
 ```
 
@@ -182,11 +185,13 @@ The `image.yaml` file will trigger builds and releases for a given OCI image.
 This file's schema depicts the following workflow:
 
 - the same OCI image can be built for multiple versions and bases,
-- each build will result in a new image artefact,
-- each image artefact is uploaded to GHCR as a new image **revision**,
+- each build will result in a new image artifact,
+- each public image artifact is uploaded to GHCR as a new image **revision**,
+- Ubuntu Pro image archives are encrypted and retained as workflow artifacts instead of being uploaded to GHCR,
 - an image revision can be released into one or more channels,
   - channels translate into OCI tags,
-- if released, an image is then published to Docker Hub and ECR.
+- if released, a public image is published to Docker Hub and ECR,
+- if released, an Ubuntu Pro image is published to the private ACR registry.
 
 Having said that this trigger's syntax is as follows:
 
@@ -204,6 +209,8 @@ Having said that this trigger's syntax is as follows:
 | upload[*].source | True | str | Git repository hosting the image's project. |
 | upload[*].commit | True | str | Specific reference in the source, where to run the build from. |
 | upload[*].directory | True | str | Path to the "rockcraft.yaml". Where the build will run from. |
+| upload[*].pro | False | Dict[str, Any] | Build an Ubuntu Pro image using the Pro credentials centrally managed by the OCI Factory. |
+| upload[*].pro.services | True* | conlist[str, unique_items=true, min_items=1] | Ubuntu Pro services to enable. Required when `upload[*].pro` is present. Supported services are `esm-apps`, `esm-infra`, `fips`, `fips-updates`, `fips-preview`, `ros`, and `ros-updates`. |
 | upload[*].ignored-vulnerabilities | False | conlist[str, unique_items=true] | List of vulnerability IDs (CVE or GHSA) to ignore during vulnerability scanning. These IDs will be added to the image's build metadata for future reference. When specifying this field, the `.trivyignore` file will be ignored. |
 | upload[*].release | False | Dict[Dict[str, Any]] | Immediately release this (yet unknown) revision to the given channels. Same as using `--release <channels>` with `rockcraft upload`. |
 | upload[*].release.\<track\> | True | Dict[str, Any] | Track to release this revision to. Canonical track `<version>-<base>` MUST be explicit, always! |
@@ -213,7 +220,7 @@ Having said that this trigger's syntax is as follows:
 ##### Example: *image.yaml*
 
 ```yaml
-version: 1
+version: 2
 
 release:
   1:
@@ -230,14 +237,43 @@ upload:
        end-of-life: "2024-05-01T00:00:00Z"
        risks:
          - edge
+
+ # A Pro build can use the same source as a public build. Its service set
+ # gives it a distinct build and artifact identity.
+ - source: canonical/foo-bar
+   commit: 24125d66dd60288fd2a0d68eb0e368ca384fcdcd
+   directory: .
+   pro:
+     services:
+       - esm-apps
+       - esm-infra
+   release:
+     1.2-22.04:
+       end-of-life: "2027-05-01T00:00:00Z"
+       risks:
+         - beta
 ```
+
+##### Ubuntu Pro images
+
+Ubuntu Pro image credentials are centrally managed by OCI Factory. Maintainers
+only select the services to enable through `upload[*].pro.services`.
+
+Pro image archives are encrypted while being exchanged and retained as GitHub
+workflow artifacts. SBOMs, vulnerability reports, and build metadata are not
+encrypted.
+
+Pro support is currently a preview with these limitations:
+
+- promotion of an existing Pro revision is not supported.
 
 #### Documentation trigger file
 
 The `documentation.yaml` file is the Documentation trigger file.
 
-Registry documentation is always updated upon an image release, based on the
-existing documentation trigger file, at the time of release.
+Registry documentation is updated upon a public image release, based on the
+existing documentation trigger file, at the time of release. Pro-only ACR
+releases do not update registry documentation.
 Additionally, if the documentation trigger is modified, the registry
 documentation will also be updated for the already published OCI image.
 
@@ -364,14 +400,18 @@ There are other (non-trigger) files that are relevant for the Maintainer:
 It is automatically generated by the OCI Factory's CI and its purpose is to
 provide an overview of all the releases for a given OCI image (a sort of
 text dashboard).
+- `_pro_releases.json`: this file **should not** be changed by the Maintainer.
+It is generated by CI on the `_releases` branch and records Ubuntu Pro channels
+and their enabled service combinations separately from public releases.
 - `contacts.yaml`: this file is required for each OCI image. Although it won't
 trigger new builds/releases when updated by the Maintainer, it is used by the
 OCI Factory's CI to notify the Maintainer when an event of interest occurs.
-- `.trivyignore`: the vulnerability tests **should not be bypassed**!
-*However*, certain OCI images might have unfixed CVEs and/or vulnerabilities
-that come directly from the source upstream software that is being packaged. In
-these cases, it is acceptable to ignore specific CVEs, provided that the risks
-are acknowledged and proper justifications are provided.
+- `.trivyignore`: this legacy vulnerability-filtering file is deprecated and
+must not be added for new filtering rules. Existing files remain temporarily
+supported because released image revisions may still depend on them. Use
+`upload[*].ignored-vulnerabilities` for new filtering rules. When migrating an
+affected build, copy every still-applicable rule because that build no longer
+uses `.trivyignore` once `ignored-vulnerabilities` is present.
 
 #### Contacts
 
@@ -400,19 +440,43 @@ maintainers:
 
 #### Vulnerability Filtering
 
-The `.trivyignore` file follows [Trivy's upstream
-syntax](<https://aquasecurity.github.io/trivy/v0.19.2/vulnerability/examples/filter/#by-vulnerability-ids>).
+Vulnerability tests **should not be bypassed**. Certain images may nevertheless
+contain unfixed findings inherited from upstream software. Add new or modified
+filtering rules to `upload[*].ignored-vulnerabilities` in a `version: 2` image
+trigger only when the risk is acknowledged and justified.
 
-##### Example: *.trivyignore*
+Each new or modified vulnerability entry must identify the affected
+package/source and ecosystem; entries for other Trivy finding types must instead
+identify the affected file/component and rule category. Every entry must state
+the maintainer's risk disposition with an image-specific reason the finding may
+be ignored. For deb packages, link the Ubuntu Security tracker at
+`https://ubuntu.com/security/<CVE-ID>`. CVEs in language packages are not
+currently tracked internally; state the upstream fix status and link an
+upstream advisory when one is available.
 
-```text
-# <justifications>
-CVE-2024-0000
+##### Example: *ignored-vulnerabilities*
 
-# Trivy-specific rules
-# <justification>
-private-key
+```yaml
+version: 2
+upload:
+  - source: canonical/foo-rock
+    commit: "<full-commit-sha>"
+    directory: .
+    ignored-vulnerabilities:
+      - CVE-XXXX-XXXXX  # libfoo (deb): temporarily accepted pending an Ubuntu fix | Ubuntu tracker: https://ubuntu.com/security/CVE-XXXX-XXXXX
+      - CVE-YYYY-YYYYY  # google.golang.org/grpc (Go): temporarily accepted; no fixed upstream release is available
 ```
+
+##### Legacy *.trivyignore* files
+
+Existing `.trivyignore` files follow [Trivy's upstream
+syntax](<https://trivy.dev/docs/latest/configuration/filtering/#by-finding-ids>)
+and remain supported temporarily for released revisions. Do not add new files
+or rules. When migrating an affected build to `ignored-vulnerabilities`, copy
+every still-applicable rule, not only the changed rules. Once
+`ignored-vulnerabilities` is present, that build no longer uses `.trivyignore`.
+The reusable workflow's `trivyignore-path` input remains available as a
+deprecated compatibility interface.
 
 ## 📦 Reusable workflows
 
@@ -475,8 +539,8 @@ _See Note on Private Repositories._
 |---|---|---|
 | `source-github-token` | False | GitHub token for pulling a Rockcraft project from a private repository. |
 | `host-github-token` | False | (Deprecated) GitHub token from repository executing this workflow. |
-| `pro-token` | False | Pro token required to enable Pro services during the build. |
-| `pro-artifact-passphrase` | False | Passphrase used to encrypt artifacts when Pro builds are enabled. If not given, a random passphrase will be used, deeming the CI artifacts only accessible by the CI itself. |
+| `pro-token` | False* | Pro token required when `pro-services` is non-empty. OCI Factory callers use the centrally managed `ROCKS_PRO_TOKEN`. |
+| `pro-artifact-passphrase` | False* | Passphrase required when `pro-services` is non-empty. OCI Factory callers use the centrally managed `ROCKS_PRO_ARTIFACT_PASSPHRASE`. |
 
 ### Test-Rock Workflow
 
@@ -518,8 +582,8 @@ needed.
 |`test-efficiency`| False | bool | Enable Dive image efficiency test. Enabled by default. |
 |`test-vulnerabilities`| False | bool | Enable Trivy vulnerability test. Enabled by default. |
 |`vulnerability-report-artifact-name`| False | str | Custom filename for Trivy vulnerability report. |
-|`trivyignore-path`| False | str | Optional path to `.trivyignore` file used in vulnerability scan. When specifying this input, the `ignored-vulnerabilities` must be left empty. |
-|`ignored-vulnerabilities`| False | JSON str | Space separated list of vulnerability IDs (CVE or GHSA) to ignore during vulnerability scanning. When specifying this input, the `trivyignore-path` must be left empty. |
+|`trivyignore-path`| False | str | **Deprecated** Optional path to `.trivyignore`. When specifying this input, `ignored-vulnerabilities` must be empty. |
+|`ignored-vulnerabilities`| False | str | Space-separated list of Trivy finding IDs to ignore during vulnerability scanning. When specifying this input, `trivyignore-path` must be empty. |
 |`test-malware`| False | bool | Enable ClamAV malware test. Enabled by default. |
 
 **Workflow Secrets:**
@@ -528,4 +592,4 @@ _See Note on Private Repositories._
 | Property | Required | Description |
 |---|---|---|
 | `host-github-token` | False  | (Deprecated) GitHub token from repository executing this workflow. |
-| `pro-artifact-passphrase` | False | Passphrase required to decrypt artifacts built with pro services enabled. |
+| `pro-artifact-passphrase` | False* | Passphrase required when testing an encrypted artifact. Omit it for plaintext artifacts. |
