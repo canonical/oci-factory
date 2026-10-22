@@ -16,9 +16,6 @@ upload:
       11-24.04:
         end-of-life: "2029-05-31T00:00:00Z"
         risks:
-          - stable
-          - candidate
-          - beta
           - edge
   - source: canonical/jre-rock
     commit: 21752476bf0c9f4e51596c97e2535534509d7bbb
