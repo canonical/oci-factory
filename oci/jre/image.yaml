@@ -2,18 +2,15 @@ version: 1
 
 upload:
   - source: canonical/jre-rock
-    commit: adb4a67e69da59febf13ed3ac3cd7611ab844235
+    commit: 21752476bf0c9f4e51596c97e2535534509d7bbb
     directory: jre/21-jre-24.04
     release:
       21-24.04:
         end-of-life: "2029-05-31T00:00:00Z"
         risks:
-          - stable
-          - candidate
-          - beta
           - edge
   - source: canonical/jre-rock
-    commit: adb4a67e69da59febf13ed3ac3cd7611ab844235
+    commit: 21752476bf0c9f4e51596c97e2535534509d7bbb
     directory: jre/11-jre-24.04
     release:
       11-24.04:
@@ -24,24 +21,18 @@ upload:
           - beta
           - edge
   - source: canonical/jre-rock
-    commit: adb4a67e69da59febf13ed3ac3cd7611ab844235
+    commit: 21752476bf0c9f4e51596c97e2535534509d7bbb
     directory: jre/17-jre-24.04
     release:
       17-24.04:
         end-of-life: "2029-05-31T00:00:00Z"
         risks:
-          - stable
-          - candidate
-          - beta
           - edge
   - source: canonical/jre-rock
-    commit: adb4a67e69da59febf13ed3ac3cd7611ab844235
+    commit: 21752476bf0c9f4e51596c97e2535534509d7bbb
     directory: jre/25-jre-26.04
     release:
       25-26.04:
         end-of-life: "2031-05-29T00:00:00Z"
         risks:
-          - stable
-          - candidate
-          - beta
           - edge
