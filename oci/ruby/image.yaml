@@ -37,3 +37,21 @@ upload:
       - CVE-2026-27820  # Needs evaluation. CVSS: 5.9 (Medium), Ubuntu priority: Medium, Status (26.04 resolute). https://ubuntu.com/security/CVE-2026-27820
       - CVE-2026-42258  # net-imap 0.4.19 (Ruby gem): temporarily accepted for this core-runtime-only edge image pending a bundled-gem update; downstream applications passing untrusted Symbols to IMAP commands remain exposed. Upstream fixes: 0.4.24, 0.5.14, 0.6.4. https://github.com/ruby/net-imap/security/advisories/GHSA-75xq-5h9v-w6px
       - CVE-2026-80212  # resolv 0.3.1 (Ruby gem): temporarily accepted for this core-runtime-only edge image with no application configured, pending a bundled-gem update; downstream Resolv users processing attacker-controlled DNS responses remain exposed to memory exhaustion. Upstream fixes: 0.3.2, 0.7.2. https://www.ruby-lang.org/en/news/2026/08/27/multiple-vulnerabilities-in-resolv/
+
+  - source: canonical/ruby-rock
+    commit: 2d7b7ed44f7f15d338249937e7697a6d460e272b
+    directory: .
+    release:
+      3.3-26.10:
+        end-of-life: "2027-07-15T00:00:00Z"
+        risks:
+          - edge
+    ignored-vulnerabilities:
+      - CVE-2026-41316  # Needs evaluation. CVSS: 8.1 (High), Ubuntu priority: Medium, Status (26.10 stonking). https://ubuntu.com/security/CVE-2026-41316
+      - CVE-2026-42257  # Not affected. CVSS: 9.8 (Critical), Ubuntu priority: Medium, Status (26.10 stonking). https://ubuntu.com/security/CVE-2026-42257
+      - CVE-2026-42245  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium, Status (26.10 stonking). https://ubuntu.com/security/CVE-2026-42245
+      - CVE-2026-42246  # Not affected. CVSS: 7.4 (High), Ubuntu priority: Medium, Status (26.10 stonking). https://ubuntu.com/security/CVE-2026-42246
+      - CVE-2025-61594  # Vulnerable. CVSS: 7.5 (High), Ubuntu priority: Low, Status (26.10 stonking). https://ubuntu.com/security/CVE-2025-61594
+      - CVE-2026-27820  # Needs evaluation. CVSS: 9.8 (Critical), Ubuntu priority: Medium, Status (26.10 stonking). https://ubuntu.com/security/CVE-2026-27820
+      - CVE-2026-42258  # net-imap 0.4.19 (Ruby gem): temporarily accepted for this core-runtime-only edge image pending a bundled-gem update; downstream applications passing untrusted Symbols to IMAP commands remain exposed. Upstream fixes: 0.4.24, 0.5.14, 0.6.4. https://github.com/ruby/net-imap/security/advisories/GHSA-75xq-5h9v-w6px
+      - CVE-2026-80212  # resolv 0.3.1 (Ruby gem): temporarily accepted for this core-runtime-only edge image with no application configured, pending a bundled-gem update; downstream Resolv users processing attacker-controlled DNS responses remain exposed to memory exhaustion. Upstream fixes: 0.3.2, 0.7.2. https://www.ruby-lang.org/en/news/2026/08/27/multiple-vulnerabilities-in-resolv/
