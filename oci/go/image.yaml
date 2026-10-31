@@ -49,30 +49,6 @@ upload:
       - CVE-2026-42504  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-42504
 
   - source: canonical/golang-rock
-    directory: go-rock/1.25-26.04
-    commit: a0c404966bbb0fca59d6c128031c54aeb671aeaf
-    release:
-      1.25-26.04:
-        end-of-life: "2026-08-03T00:00:00Z"
-        risks:
-          - edge
-    ignored-vulnerabilities:
-      - CVE-2026-25679  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-25679
-      - CVE-2026-27145  # Needs evaluation. CVSS: 6.5 (Medium), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-27145
-      - CVE-2026-32280  # Vulnerable, but no fix available. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-32280
-      - CVE-2026-32281  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-32281
-      - CVE-2026-32283  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-32283
-      - CVE-2026-33811  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-33811
-      - CVE-2026-33814  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-33814
-      - CVE-2026-39820  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39820
-      - CVE-2026-39822  # Needs evaluation. CVSS: 7.8 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39822
-      - CVE-2026-39823  # Needs evaluation. CVSS: 6.1 (Medium), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39823
-      - CVE-2026-39825  # Needs evaluation. CVSS: 5.3 (Medium), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39825
-      - CVE-2026-39836  # Not affected. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39836
-      - CVE-2026-42499  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-42499
-      - CVE-2026-42504  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-42504
-
-  - source: canonical/golang-rock
     directory: go-rock/1.26-26.04
     commit: a0c404966bbb0fca59d6c128031c54aeb671aeaf
     release:
@@ -97,3 +73,11 @@ upload:
       - CVE-2026-39836  # Not affected. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-39836
       - CVE-2026-42499  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-42499
       - CVE-2026-42504  # Needs evaluation. CVSS: 7.5 (High), Ubuntu priority: Medium. https://ubuntu.com/security/CVE-2026-42504
+  - source: canonical/golang-rock
+    commit: 33b6e87dda55ed43fdeaa2a8d63d9b5ff7cdf378
+    directory: .
+    release:
+      1.27-26.10:
+        end-of-life: "2027-07-15T00:00:00Z"
+        risks:
+          - edge
