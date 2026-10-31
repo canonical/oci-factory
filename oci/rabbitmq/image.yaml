@@ -32,3 +32,11 @@ upload:
         end-of-life: '2027-06-01T00:00:00Z'
         risks:
           - edge
+  - source: canonical/rabbitmq-rock
+    commit: 0886fc7a01fefa463ff4311423dde91c2ad4a9ad
+    directory: .
+    release:
+      4.3-26.10:
+        end-of-life: "2027-07-15T00:00:00Z"
+        risks:
+          - edge
