@@ -8,3 +8,11 @@ upload:
         end-of-life: '2031-05-29T00:00:00Z'
         risks:
           - stable
+  - source: canonical/dotnet-deps-rock
+    commit: 8bfd0a991fdca27e0b5588f3e502106996e5225f
+    directory: .
+    release:
+      10.0-26.10:
+        end-of-life: "2027-07-15T00:00:00Z"
+        risks:
+          - edge
