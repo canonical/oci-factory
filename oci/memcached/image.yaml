@@ -8,3 +8,11 @@ upload:
         end-of-life: "2031-05-29T00:00:00Z"
         risks:
           - stable
+  - source: canonical/memcached-rock
+    commit: 52cdb475e1f56eb125224b0de518a6ebf3529a1e
+    directory: .
+    release:
+      1.6-26.10:
+        end-of-life: "2027-07-15T00:00:00Z"
+        risks:
+          - edge
