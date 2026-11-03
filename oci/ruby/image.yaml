@@ -33,3 +33,11 @@ upload:
       - CVE-2026-42246  # Vulnerable. CVSS: 7.6 (High), Ubuntu priority: Medium, Status (26.04 resolute). https://ubuntu.com/security/CVE-2026-42246
       - CVE-2025-61594  # Fixed. CVSS: 2.7 (Low), Ubuntu priority: Low, Status (26.04 resolute). https://ubuntu.com/security/CVE-2025-61594
       - CVE-2026-27820  # Needs evaluation. CVSS: 5.9 (Medium), Ubuntu priority: Medium, Status (26.04 resolute). https://ubuntu.com/security/CVE-2026-27820
+  - source: canonical/ruby-rock
+    commit: 2d7b7ed44f7f15d338249937e7697a6d460e272b
+    directory: .
+    release:
+      3.3-26.10:
+        end-of-life: "2027-07-15T00:00:00Z"
+        risks:
+          - edge
