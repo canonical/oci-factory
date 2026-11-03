@@ -378,9 +378,9 @@
         "end-of-life": "2026-04-12T00:00:00Z"
     },
     "3-26.04": {
-        "end-of-life": "2026-08-26T00:00:00Z",
+        "end-of-life": "2027-02-01T00:00:00Z",
         "stable": {
-            "target": "165"
+            "target": "167"
         },
         "candidate": {
             "target": "3-26.04_stable"
@@ -393,9 +393,9 @@
         }
     },
     "3.7-26.04": {
-        "end-of-life": "2026-08-26T00:00:00Z",
+        "end-of-life": "2027-02-01T00:00:00Z",
         "stable": {
-            "target": "165"
+            "target": "167"
         },
         "candidate": {
             "target": "3.7-26.04_stable"
