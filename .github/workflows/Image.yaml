@@ -408,11 +408,11 @@ jobs:
 
       - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c
         with:
-          go-version: '1.24'
+          go-version: '1.25'
     
       - name: Setup SSBOM
         run: |
-          go install github.com/canonical/ssbom/cmd/ssbom@latest
+          go install github.com/canonical/ssbom/cmd/ssbom@v0.0.0-20261023072327-8d9a0b449f10
 
       - name: Setup umoci
         uses: ./.github/actions/install-umoci
