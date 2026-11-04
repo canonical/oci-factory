@@ -1,0 +1,11 @@
+version: 2
+
+upload:
+  - source: "canonical/cassandra-artifacts"
+    commit: b2298751d43143131ef2221f01dcfd53c2bf25d3
+    directory: rock
+    release:
+      5.0-26.04:
+        end-of-life: "2031-05-31T00:00:00Z"
+        risks:
+          - edge
