@@ -348,10 +348,10 @@ separate selection is enabled, an unmarked legacy track with an eligible support
 release is treated as a rock and may be selected for Pebble commands that it cannot
 run. If all correctly marked legacy tracks are EOL, legacy sections are hidden
 even when an unmarked supported legacy track exists. Neither OCI Factory nor the
-template detects missing legacy flags; maintainers must keep them complete.
+template detect missing legacy flags; maintainers must keep them complete.
 
 The templates select published releases with known support dates that are not
-marked deprecated. They retain the existing risk/base preference and do not
+marked as deprecated. They retain the existing risk/base preference and do not
 require the latest application version. Missing or EOL tracks cannot supply an
 example tag. Rock documentation is always shown, using `<rock-tag>` as a placeholder
 when no eligible tag is available. Legacy sections require `docker.legacy` and,
@@ -385,7 +385,7 @@ python3 -m src.docs.generate_oci_doc_yaml \
 DRY_RUN=true ./src/docs/publish_docs.sh mock-rock mock-rock_doc_data.yaml preview
 ```
 
-The publisher downloads the templates and RenderDown and installs their Python
+The publisher downloads the templates and RenderDown, and installs their Python
 requirements, so run this in a virtual environment and a directory without existing
 `templates` or `RenderDown` checkouts. It writes `doc-preview.md`,
 `ecr-about-preview.md`, `ecr-usage-preview.md`, `dockerhub-docs.json`, and
