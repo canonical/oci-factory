@@ -9,3 +9,15 @@ docker:
   run_cmd: exec hello
   run_conclusion: |
     You'll see "Hello, world!" printed to STDOUT
+  legacy:
+    run_cmd: hello
+    run_conclusion: |
+      You'll see "Hello, world!" printed to STDOUT
+# For test purposes
+override_tracks:
+  0.1-20.04:
+    end-of-life: "2024-02-20"
+    legacy: true
+  0.2-22.04:
+    end-of-life: "2027-02-20"
+    legacy: true
