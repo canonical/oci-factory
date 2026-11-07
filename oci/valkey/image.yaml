@@ -1,11 +1,11 @@
 version: 1
 
 upload:
-  - source: "canonical/charmed-valkey-rock"
-    commit: 899267413125b680cc59b3c8bfcece9253368d4a
-    directory: .
+  - source: "canonical/valkey-artifacts"
+    commit: 58409aa18395aa14171f76240b6cced6769030cd
+    directory: ./valkey/rocks/standard
     release:
-      7.2.12-24.04:
+      7.2-24.04:
         end-of-life: "2029-04-01T00:00:00Z"
         risks:
           - stable
