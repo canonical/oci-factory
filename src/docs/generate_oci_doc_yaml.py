@@ -10,6 +10,7 @@ import os
 import re
 import subprocess
 import tempfile
+from copy import deepcopy
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 
@@ -54,10 +55,11 @@ MOCK_RELEASE: List[Dict[str, Any]] = [
     },
 ]
 
+
 logger = get_logger()
 
 
-def cli_args() -> argparse.ArgumentParser:
+def cli_args() -> argparse.Namespace:
     """Arguments parser"""
     parser = argparse.ArgumentParser(description="""
         Generate documentation of OCI images in OCI Factory.
@@ -431,8 +433,33 @@ class OCIDocumentationData:
 
             releases = self.build_releases_data(all_tracks, all_ecr_tags)
         else:
-            releases = MOCK_RELEASE
+            releases = deepcopy(MOCK_RELEASE)
+            # Simulate legacy tracks from the trigger only in dry-run mode.
+            # Live generation still requires tags actually present in ECR.
+            mock_tracks = {f"{r['track']}-{r['base']}" for r in releases}
+            for track, override in (base_doc_yaml.get("override_tracks") or {}).items():
+                if override.get("legacy") is not True or track in mock_tracks:
+                    continue
+                version, base = track.rsplit("-", 1)
+                eol = parser.parse(override["end_of_life"])
+                if eol.tzinfo is None:
+                    eol = eol.replace(tzinfo=timezone.utc)
+                release = {
+                    "track": version,
+                    "base": base,
+                    "risk": "stable",
+                    "tags": [],
+                    "architectures": ["amd64", "arm64"],
+                    "support": {"until": eol.strftime("%m/%Y")},
+                }
+                if eol < datetime.now(timezone.utc):
+                    release["deprecated"] = {"date": eol.strftime("%m/%Y")}
+                releases.append(release)
+            # The publisher rejects this data unless it is also in dry-run mode.
+            base_doc_yaml["dry_run"] = True
 
+        # Templates must leave JSON escaping to the publisher.
+        base_doc_yaml["raw_markdown"] = True
         base_doc_yaml["repo"] = self.image_name
         base_doc_yaml["releases"] = releases
 
