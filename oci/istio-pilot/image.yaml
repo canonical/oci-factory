@@ -15,4 +15,3 @@ upload:
         ignored-vulnerabilities:
           - CVE-2026-116587  # not reported by govulncheck
           - CVE-2026-78661  # not reported by govulncheck
-
