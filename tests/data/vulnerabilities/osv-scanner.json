@@ -1,0 +1,301 @@
+{
+  "results": [
+    {
+      "source": {
+        "path": "var/lib/chisel/manifest.wall",
+        "type": "os"
+      },
+      "packages": [
+        {
+          "package": {
+            "name": "package-0",
+            "version": "1.0",
+            "ecosystem": "Ubuntu:24.04:LTS"
+          },
+          "vulnerabilities": [
+            {
+              "id": "GHSA-example-0",
+              "modified": "2026-10-05T00:00:00Z",
+              "aliases": [],
+              "details": "Original advisory details",
+              "affected": [
+                {
+                  "package": {
+                    "name": "example"
+                  },
+                  "ranges": [
+                    {
+                      "type": "ECOSYSTEM",
+                      "events": [
+                        {
+                          "introduced": "0"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "groups": [
+            {
+              "ids": [
+                "GHSA-example-0"
+              ],
+              "aliases": [
+                "GHSA-example-0"
+              ],
+              "max_severity": "9.0"
+            }
+          ]
+        },
+        {
+          "package": {
+            "name": "package-1",
+            "version": "1.0",
+            "ecosystem": "Ubuntu:24.04:LTS"
+          },
+          "vulnerabilities": [
+            {
+              "id": "GHSA-example-1",
+              "modified": "2026-10-05T00:00:00Z",
+              "aliases": [],
+              "details": "Original advisory details",
+              "affected": [
+                {
+                  "package": {
+                    "name": "example"
+                  },
+                  "ranges": [
+                    {
+                      "type": "ECOSYSTEM",
+                      "events": [
+                        {
+                          "introduced": "0"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "groups": [
+            {
+              "ids": [
+                "GHSA-example-1"
+              ],
+              "aliases": [
+                "GHSA-example-1"
+              ],
+              "max_severity": "7.0"
+            }
+          ]
+        },
+        {
+          "package": {
+            "name": "package-2",
+            "version": "1.0",
+            "ecosystem": "Ubuntu:24.04:LTS"
+          },
+          "vulnerabilities": [
+            {
+              "id": "GHSA-example-2",
+              "modified": "2026-10-05T00:00:00Z",
+              "aliases": [],
+              "details": "Original advisory details",
+              "affected": [
+                {
+                  "package": {
+                    "name": "example"
+                  },
+                  "ranges": [
+                    {
+                      "type": "ECOSYSTEM",
+                      "events": [
+                        {
+                          "introduced": "0"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "groups": [
+            {
+              "ids": [
+                "GHSA-example-2"
+              ],
+              "aliases": [
+                "GHSA-example-2"
+              ],
+              "max_severity": "4.0"
+            }
+          ]
+        },
+        {
+          "package": {
+            "name": "package-3",
+            "version": "1.0",
+            "ecosystem": "Ubuntu:24.04:LTS"
+          },
+          "vulnerabilities": [
+            {
+              "id": "GHSA-example-3",
+              "modified": "2026-10-05T00:00:00Z",
+              "aliases": [],
+              "details": "Original advisory details",
+              "affected": [
+                {
+                  "package": {
+                    "name": "example"
+                  },
+                  "ranges": [
+                    {
+                      "type": "ECOSYSTEM",
+                      "events": [
+                        {
+                          "introduced": "0"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "groups": [
+            {
+              "ids": [
+                "GHSA-example-3"
+              ],
+              "aliases": [
+                "GHSA-example-3"
+              ],
+              "max_severity": "0.0"
+            }
+          ]
+        },
+        {
+          "package": {
+            "name": "package-4",
+            "version": "1.0",
+            "ecosystem": "Ubuntu:24.04:LTS"
+          },
+          "vulnerabilities": [
+            {
+              "id": "GHSA-example-4",
+              "modified": "2026-10-05T00:00:00Z",
+              "aliases": [
+                "CVE-2024-2000"
+              ],
+              "details": "Original advisory details",
+              "affected": [
+                {
+                  "package": {
+                    "name": "example"
+                  },
+                  "ranges": [
+                    {
+                      "type": "ECOSYSTEM",
+                      "events": [
+                        {
+                          "introduced": "0"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "groups": [
+            {
+              "ids": [
+                "GHSA-example-4"
+              ],
+              "aliases": [
+                "GHSA-example-4"
+              ],
+              "max_severity": ""
+            }
+          ]
+        },
+        {
+          "package": {
+            "name": "clean-package",
+            "version": "1.0",
+            "ecosystem": "Go"
+          }
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "go.mod",
+        "type": "lockfile"
+      },
+      "packages": [
+        {
+          "package": {
+            "name": "package-0",
+            "version": "1.0",
+            "ecosystem": "Go"
+          },
+          "vulnerabilities": [
+            {
+              "id": "GO-2024-1234",
+              "modified": "2026-10-05T00:00:00Z",
+              "aliases": [],
+              "details": "Original advisory details",
+              "affected": [
+                {
+                  "package": {
+                    "name": "example"
+                  },
+                  "ranges": [
+                    {
+                      "type": "ECOSYSTEM",
+                      "events": [
+                        {
+                          "introduced": "0"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "groups": [
+            {
+              "ids": [
+                "GO-2024-1234"
+              ],
+              "aliases": [
+                "GO-2024-1234",
+                "CVE-2024-2000"
+              ],
+              "max_severity": "3.9",
+              "experimental_analysis": {
+                "GO-2024-1234": {
+                  "called": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "package": {
+            "name": "clean-package",
+            "version": "1.0",
+            "ecosystem": "Go"
+          }
+        }
+      ]
+    }
+  ],
+  "experimental_config": {}
+}
