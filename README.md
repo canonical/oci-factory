@@ -603,18 +603,6 @@ a cosign-vuln predicate containing SARIF; native OSV-Scanner JSON becomes standa
 SARIF unless it was supplied inside a predicate. SARIF inputs stay SARIF.
 Unsupported native formats fail explicitly rather than silently omitting findings.
 
-The OSV-Scanner adapter accepts its `--format json` output, including reports
-from Chisel manifest scans. It preserves all source, package, and advisory data,
-uses advisory and group aliases for KEV matching, and carries advisory modification
-dates into notification filtering. Group `max_severity` CVSS scores map to CRITICAL
-(9+), HIGH (7+), MEDIUM (4+), or LOW (below 4); missing scores become UNKNOWN.
-The adapter retains all reported findings, including those marked uncalled by
-experimental analysis. Raw OSV-Scanner SARIF and Grype JSON require an adapter.
-Other normalized SARIF producers can supply `ociFactory/scannerKnownExploited` /
-`ociFactory/scannerKevIds`; native KEV positives remain true even if absent from
-the current catalog. The workflow continues to use Trivy. Trivy conversions
-require its installed binary; other supported inputs do not. CISA catalog download
-or validation failures prevent artifact upload.
 
 **Samples:**
 - [Build and Test EICAR Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/oci-factory_build_and_test_eicar_rock.yaml) 
