@@ -603,7 +603,6 @@ a cosign-vuln predicate containing SARIF; native OSV-Scanner JSON becomes standa
 SARIF unless it was supplied inside a predicate. SARIF inputs stay SARIF.
 Unsupported native formats fail explicitly rather than silently omitting findings.
 
-
 **Samples:**
 - [Build and Test EICAR Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/oci-factory_build_and_test_eicar_rock.yaml) 
   - Build a Rock that includes the
