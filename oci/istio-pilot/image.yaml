@@ -1,7 +1,7 @@
 version: 2
 upload:
   - source: canonical/service-mesh
-    commit: 820086e43add7fe411d7f8f19d7fc0e89b4c5709
+    commit: 7327ac69c70a556f6f21589ebce98f594e7302e4
     directory: rocks/istio-pilot-rock/1.31
     release:
       1-26.04:
