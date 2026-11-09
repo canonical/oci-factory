@@ -13,11 +13,11 @@ docker:
     run_cmd: hello
     run_conclusion: |
       You'll see "Hello, world!" printed to STDOUT
-# For test purposes
-override_tracks:
+# Dry-run demo: skip the expired legacy track and use the supported one.
+override-tracks:
   0.1-20.04:
     end-of-life: "2024-02-20"
     legacy: true
   0.2-22.04:
-    end-of-life: "2027-02-20"
+    end-of-life: "2030-05-01"
     legacy: true
