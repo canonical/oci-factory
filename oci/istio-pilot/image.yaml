@@ -12,6 +12,6 @@ upload:
         end-of-life: '2027-02-08T00:00:00Z'
         risks:
           - stable
-        ignored-vulnerabilities:
-          - CVE-2026-116587  # not reported by govulncheck
-          - CVE-2026-78661  # not reported by govulncheck
+    ignored-vulnerabilities:
+      - CVE-2026-116587  # not reported by govulncheck
+      - CVE-2026-78661  # not reported by govulncheck
