@@ -1,14 +1,10 @@
 version: 2
 upload:
   - source: canonical/service-mesh
-    commit: ad99df5874fbaf14efbb3a3a958c448f0c6f3297
-    directory: rocks/istio-pilot-rock/1.31
+    commit: 1b891fb5d54464b498eedb1a41f89c2c2097af2c
+    directory: rocks/istio-pilot-rock/1.29
     release:
-      1-26.04:
-        end-of-life: '2027-01-01T00:00:00Z'
-        risks:
-          - stable
-      1.31-26.04:
-        end-of-life: '2027-01-01T00:00:00Z'
+      1.29-24.04:
+        end-of-life: '2027-01-11T00:00:00Z'
         risks:
           - stable
