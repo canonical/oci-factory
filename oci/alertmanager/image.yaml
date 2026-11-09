@@ -1,20 +1,14 @@
 version: 2
 upload:
   - source: canonical/alertmanager-rock
-    commit: 11363fa1e66cf42a4650bca63f6f260ebdafb548
+    commit: f9766a39508f67136bb6f5ad40593a3f2cf9bd35
     directory: '0.34'
     release:
       0-26.04:
-        end-of-life: '2026-12-03T00:00:00Z'
+        end-of-life: '2027-02-08T00:00:00Z'
         risks:
           - stable
       0.34-26.04:
-        end-of-life: '2026-12-03T00:00:00Z'
+        end-of-life: '2027-02-08T00:00:00Z'
         risks:
           - stable
-    ignored-vulnerabilities:
-      - CVE-2026-56854
-      - CVE-2026-84304
-      - CVE-2026-56855
-      - CVE-2026-56864
-      - CVE-2026-56865
