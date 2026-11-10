@@ -198,6 +198,9 @@ jobs:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
           test: "${{ inputs.rockcraft-test }}"
           pro: "${{ inputs.pro-services }}"
+          # Pro builds target bases past standard support (covered by ESM),
+          # which rockcraft refuses to pack unless explicitly allowed.
+          ignore: "${{ inputs.pro-services != '' && 'unmaintained' || '' }}"
           verbosity: debug
       
       - name: Detaching Pro Token
