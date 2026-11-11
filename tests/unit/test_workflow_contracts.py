@@ -1,16 +1,22 @@
+import os
 import re
+import subprocess
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
+import pytest
 import yaml
-
 
 ROOT = Path(__file__).resolve().parents[2]
 CHANGED_WORKFLOW_AND_ACTION_FILES = (
     ".github/workflows/Build-Rock.yaml",
+    ".github/workflows/Continuous-Testing.yaml",
     ".github/workflows/Image.yaml",
     ".github/workflows/Release.yaml",
     ".github/workflows/Test-Rock.yaml",
+    ".github/workflows/Vulnerability-Scan.yaml",
+    ".github/actions/enrich-vulnerability-report/action.yaml",
     ".github/actions/commit-releases-json/action.yaml",
     ".github/actions/fetch-releases-json/action.yaml",
 )
@@ -32,7 +38,9 @@ def iter_uses(value: Any) -> Iterator[str]:
             yield from iter_uses(child)
 
 
-def step_named(workflow: dict[str, Any], job_name: str, step_name: str) -> dict[str, Any]:
+def step_named(
+    workflow: dict[str, Any], job_name: str, step_name: str
+) -> dict[str, Any]:
     steps = workflow["jobs"][job_name]["steps"]
     return next(step for step in steps if step.get("name") == step_name)
 
@@ -66,9 +74,10 @@ def test_image_uses_fixed_pro_secret_names() -> None:
         "secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE"
         in build_secrets["pro-artifact-passphrase"]
     )
-    assert "secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE" in test_secrets[
-        "pro-artifact-passphrase"
-    ]
+    assert (
+        "secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE"
+        in test_secrets["pro-artifact-passphrase"]
+    )
 
     secret_values = "\n".join(
         value
@@ -84,23 +93,29 @@ def test_release_steps_keep_public_and_pro_release_files_separate() -> None:
     pro_publish = step_named(
         workflow, "do-releases", "Do Pro releases from ${{ inputs.oci-image-name }}"
     )["run"]
-    pro_update = step_named(workflow, "do-releases", "Update _pro_releases.json")[
-        "run"
-    ]
+    pro_update = step_named(workflow, "do-releases", "Update _pro_releases.json")["run"]
     public_publish = step_named(
         workflow, "do-releases", "Do releases from ${{ inputs.oci-image-name }}"
     )["run"]
-    public_update = step_named(workflow, "do-releases", "Update _releases.json")[
-        "run"
-    ]
+    public_update = step_named(workflow, "do-releases", "Update _releases.json")["run"]
 
     for command in (pro_publish, pro_update):
-        assert "--all-releases oci/${INPUTS_OCI_IMAGE_NAME}/_pro_releases.json" in command
+        assert (
+            "--all-releases oci/${INPUTS_OCI_IMAGE_NAME}/_pro_releases.json" in command
+        )
         assert "--pro" in command
 
     for command in (public_publish, public_update):
         assert "--all-releases oci/${INPUTS_OCI_IMAGE_NAME}/_releases.json" in command
         assert "_pro_releases.json" not in command
+
+
+def test_image_publishing_depends_on_successful_tests() -> None:
+    jobs = load_yaml(".github/workflows/Image.yaml")["jobs"]
+
+    assert jobs["test-rock"]["uses"] == "./.github/workflows/Test-Rock.yaml"
+    assert "test-rock" in jobs["prepare-upload"]["needs"]
+    assert "prepare-upload" in jobs["upload"]["needs"]
 
 
 def test_test_rock_caches_encrypted_archive_and_decrypts_per_job() -> None:
@@ -146,7 +161,9 @@ def test_test_rock_caches_encrypted_archive_and_decrypts_per_job() -> None:
 def test_commit_release_action_handles_public_and_pro_state_independently() -> None:
     action = load_yaml(".github/actions/commit-releases-json/action.yaml")
     commit_step = next(
-        step for step in action["runs"]["steps"] if step.get("name") == "commit _releases.json"
+        step
+        for step in action["runs"]["steps"]
+        if step.get("name") == "commit _releases.json"
     )
     script = commit_step["run"]
 
@@ -167,8 +184,15 @@ def test_vulnerability_scan_pro_inputs_are_optional_and_backward_compatible() ->
 
     # Pre-existing inputs must remain untouched (no removed/newly-required ones).
     assert inputs["oci-image-name"]["required"] == "true"
-    for name in ("oci-image-path", "trivyignore-path", "date-last-scan", "create-issue"):
+    for name in (
+        "oci-image-path",
+        "trivyignore-path",
+        "date-last-scan",
+        "create-issue",
+    ):
         assert inputs[name]["required"] == "false"
+    assert inputs["date-last-scan"]["type"] == "string"
+    assert inputs["date-last-scan"]["default"] == "9999-12-31T23:59:59"
 
 
 def test_vulnerability_scan_uses_acr_credentials_only_for_pro() -> None:
@@ -181,7 +205,9 @@ def test_vulnerability_scan_uses_acr_credentials_only_for_pro() -> None:
     script = configure_step["run"]
 
     assert 'if [ "${INPUTS_PRO}" = "true" ]' in script
-    assert ': "${ACR_REGISTRY:?ACR_REGISTRY secret is required for Pro images}"' in script
+    assert (
+        ': "${ACR_REGISTRY:?ACR_REGISTRY secret is required for Pro images}"' in script
+    )
     assert 'source_image="${ACR_REGISTRY}/${INPUTS_OCI_IMAGE_NAME}"' in script
     assert 'source_image="${INPUTS_OCI_IMAGE_NAME}"' in script
     assert 'copy "docker://${source_image}"' in script
@@ -190,12 +216,146 @@ def test_vulnerability_scan_uses_acr_credentials_only_for_pro() -> None:
     assert configure_step["env"]["ACR_CREDS_PSW"] == "${{ secrets.ACR_CREDS_PSW }}"
 
 
+def test_vulnerability_workflow_scans_once_and_uploads_enriched_predicate() -> None:
+    workflow = load_yaml(".github/workflows/Test-Rock.yaml")
+    steps = workflow["jobs"]["test-vulnerabilities"]["steps"]
+    scan = step_named(workflow, "test-vulnerabilities", "Scan for vulnerabilities")
+    scans = [
+        step
+        for step in steps
+        if step.get("uses", "").startswith("aquasecurity/trivy-action@")
+    ]
+    assert scans == [scan]
+    assert not any(
+        step.get("uses") == "./.github/actions/check-trivyignore" for step in steps
+    )
+    assert scan["with"]["format"] == "json"
+    assert scan["with"]["ignore-unfixed"] == "false"
+    assert scan["with"]["list-all-pkgs"] == "true"
+    assert "trivyignores" not in scan["with"]
+    assert "skip-files" not in scan["with"]
+    assert "severity" not in scan["with"]
+    assert scan["with"]["exit-code"] == "0"
+    assert scan["env"]["TRIVY_IGNOREFILE"] == "/dev/null"
+    process = step_named(
+        workflow, "test-vulnerabilities", "Enrich vulnerability report"
+    )
+    assert process["uses"] == "./.github/actions/enrich-vulnerability-report"
+    assert process["with"]["vulnerability-report"] == (
+        "${{ steps.configure-trivy.outputs.scan-report-name }}"
+    )
+    assert process["with"]["output-report"] == (
+        "${{ steps.configure-trivy.outputs.report-name }}"
+    )
+    assert process["with"]["trivyignore"] == (
+        "${{ steps.configure-trivy.outputs.trivyignore-path }}"
+    )
+    assert not any(
+        step.get("id")
+        in {"convert-reports", "collect-cve-ids", "check-kev", "process-sarif-report"}
+        for step in steps
+    )
+    assert "steps.scan-vulnerabilities.outcome == 'success'" in process["if"]
+    upload = step_named(
+        workflow, "test-vulnerabilities", "Upload enriched vulnerability report"
+    )
+    gate = step_named(workflow, "test-vulnerabilities", "Enforce vulnerability policy")
+    assert steps.index(process) < steps.index(upload) < steps.index(gate)
+    assert upload["with"]["path"] == "${{ steps.configure-trivy.outputs.report-name }}"
+    assert "steps.enrich-report.outcome == 'success'" in upload["if"]
+    assert "steps.enrich-report.outputs.blocking-found == 'true'" in gate["if"]
+
+
+def test_enrichment_action_contract() -> None:
+    action = load_yaml(".github/actions/enrich-vulnerability-report/action.yaml")
+    assert action["inputs"]["scanner"]["default"] == "auto"
+    assert action["inputs"]["vulnerability-report"]["required"] == "true"
+    assert set(action["outputs"]) == {
+        "report-path",
+        "scanner",
+        "blocking-found",
+        "kev-found",
+        "kev-count",
+        "kev-ids",
+    }
+    assert len(action["runs"]["steps"]) == 1
+    assert (
+        "python3 -m src.tests.vulnerability_report"
+        in action["runs"]["steps"][0]["run"]
+    )
+
+
+def test_daily_scan_consumes_the_embedded_sarif_artifact() -> None:
+    workflow = load_yaml(".github/workflows/Vulnerability-Scan.yaml")
+    downloads = [
+        step
+        for step in workflow["jobs"]["parse-results"]["steps"]
+        if step.get("uses", "").startswith("actions/download-artifact@")
+    ]
+    assert len(downloads) == 1
+    process = step_named(workflow, "parse-results", "Process report")
+    assert 'findings "$VULNERABILITY_REPORT"' in process["run"]
+    assert "--notification-report" not in process["run"]
+
+
+@pytest.mark.parametrize(
+    "issue_exists, notify, operation",
+    [
+        ("false", "true", "create"),
+        ("false", "false", "create"),
+        ("true", "true", "edit"),
+        ("true", "false", "nop"),
+    ],
+)
+def test_vulnerability_findings_create_or_update_issue(
+    issue_exists: str, notify: str, operation: str
+) -> None:
+    workflow = load_yaml(".github/workflows/Vulnerability-Scan.yaml")
+    step = step_named(workflow, "issue", "Notify via GitHub issue")
+    assert step["if"] == (
+        "${{ steps.create-markdown.outputs.vulnerability-exists == 'true' && inputs.create-issue }}"
+    )
+    assert step["env"]["NEEDS_PARSE_RESULTS_OUTPUTS_NOTIFY"] == (
+        "${{ needs.parse-results.outputs.notify }}"
+    )
+    result = subprocess.run(
+        ["bash", "-e", "-c", 'gh() { printf "%s\\n" "$@"; };\n' + step["run"]],
+        env={
+            **os.environ,
+            "RUNNER_DEBUG": "0",
+            "NEEDS_PARSE_RESULTS_OUTPUTS_NOTIFY": notify,
+            "STEPS_ISSUE_EXISTS_OUTPUTS_ISSUE_EXISTS": issue_exists,
+            "STEPS_ISSUE_EXISTS_OUTPUTS_ISSUE_NUMBER": "42",
+            "STEPS_GET_IMAGE_REPO_OUTPUTS_IMG_REPO": "canonical/image",
+            "STEPS_CREATE_MARKDOWN_OUTPUTS_ISSUE_TITLE": "Vulnerabilities found",
+            "STEPS_CREATE_MARKDOWN_OUTPUTS_ISSUE_BODY_FILE": "issue.md",
+        },
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    expected = (
+        []
+        if operation == "nop"
+        else [
+            "issue",
+            operation,
+            *(["42"] if issue_exists == "true" else []),
+            "--repo",
+            "canonical/image",
+            "--title",
+            "Vulnerabilities found",
+            "--body-file",
+            "issue.md",
+        ]
+    )
+    assert result.stdout.splitlines() == expected
+
+
 def test_continuous_testing_forwards_pro_matrix_fields() -> None:
     workflow = load_yaml(".github/workflows/Continuous-Testing.yaml")
 
-    prepare = step_named(
-        workflow, "prepare-test-matrix", "Prepare test matrix"
-    )
+    prepare = step_named(workflow, "prepare-test-matrix", "Prepare test matrix")
     assert "--acr-registry" not in prepare["run"]
     assert "ACR_REGISTRY" not in prepare["env"]
 
@@ -204,3 +364,8 @@ def test_continuous_testing_forwards_pro_matrix_fields() -> None:
     assert run_tests_with["released-tags"] == "${{ join(matrix.released-tags, ',') }}"
     # Pro images are pulled with an explicit tag; public keep the bare source.
     assert "matrix.released-tags[0]" in run_tests_with["oci-image-name"]
+    assert (
+        workflow["jobs"]["run-tests"]["uses"]
+        == "./.github/workflows/Vulnerability-Scan.yaml"
+    )
+    assert workflow["jobs"]["run-tests"]["secrets"] == "inherit"

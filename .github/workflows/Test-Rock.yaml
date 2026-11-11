@@ -377,75 +377,50 @@ jobs:
           echo "trivyignore-path=$trivyignore_path" >> "$GITHUB_OUTPUT"
 
           echo "report-name=${INPUTS_OCI_ARCHIVE_NAME}${{ env.VULNERABILITY_REPORT_SUFFIX }}" >> "$GITHUB_OUTPUT"
+          echo "scan-report-name=${INPUTS_OCI_ARCHIVE_NAME}.trivy.json" >> "$GITHUB_OUTPUT"
         env:
           INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
           INPUTS_TRIVYIGNORE_PATH: ${{ inputs.trivyignore-path }}
           INPUTS_IGNORED_VULNERABILITIES: ${{ inputs.ignored-vulnerabilities }}
 
       - name: Scan for vulnerabilities
+        id: scan-vulnerabilities
         # TODO: bump trivy-action version once a newer version is released that uses v5 or later tags for actions/cache.
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
+        env:
+          # Trivy reads .trivyignore by default; apply ignores only during processing.
+          TRIVY_IGNOREFILE: /dev/null
         with:
-          # NOTE: we're allowing images with vulnerabilities to be published
-          ignore-unfixed: true
-          trivyignores: ${{ steps.configure-trivy.outputs.trivyignore-path }}
-          format: "cosign-vuln"
-          severity: "HIGH,CRITICAL"
-          exit-code: "1"
-          # NOTE: pebble is flagged with a HIGH vuln because of golang.org/x/crypto and encoding/gob
-          # CVE-2021-43565, CVE-2022-27191, CVE-2024-34156
-          skip-files: "/bin/pebble,/usr/bin/pebble"
-          # missing ${{ runner.arch }}
-          output: "${{ steps.configure-trivy.outputs.report-name }}"
+          ignore-unfixed: false
+          format: "json"
+          scanners: "vuln"
+          list-all-pkgs: true
+          exit-code: "0"
+          output: "${{ steps.configure-trivy.outputs.scan-report-name }}"
           image-ref: "${{ steps.configure-trivy.outputs.docker-image }}"
 
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
-        if: ${{ !cancelled() }}
+      - name: Enrich vulnerability report
+        id: enrich-report
+        if: ${{ !cancelled() && steps.scan-vulnerabilities.outcome == 'success' }}
+        uses: ./.github/actions/enrich-vulnerability-report
+        with:
+          vulnerability-report: ${{ steps.configure-trivy.outputs.scan-report-name }}
+          output-report: ${{ steps.configure-trivy.outputs.report-name }}
+          image-name: ${{ inputs.oci-archive-name }}
+          trivyignore: ${{ steps.configure-trivy.outputs.trivyignore-path }}
+
+      - name: Upload enriched vulnerability report
+        if: ${{ !cancelled() && steps.enrich-report.outcome == 'success' }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: ${{ inputs.vulnerability-report-artifact-name || steps.configure-trivy.outputs.report-name }}
           path: ${{ steps.configure-trivy.outputs.report-name }}
 
-
-      # We have to walk through the vulnerabilities since trivy does not support outputting the results as Markdown
-      - name: Create markdown content
-        id: create-markdown
-        if: ${{ !cancelled() }}
+      - name: Enforce vulnerability policy
+        if: ${{ !cancelled() && steps.enrich-report.outputs.blocking-found == 'true' }}
         run: |
-          if [[ "$RUNNER_DEBUG" == "1" ]]; then
-            set -x
-          fi
-
-          vulnerabilities="$(jq -r -c '[
-            try(.scanner.result.Results[])
-            | .Target as $target
-            | .Vulnerabilities
-            | select(. != null)
-            | .[]
-            | {Target: $target, LastModifiedDate: .LastModifiedDate, VulnerabilityID: .VulnerabilityID,
-              PkgName: .PkgName, Severity: .Severity}
-                  ]' < "${STEPS_CONFIGURE_TRIVY_OUTPUTS_REPORT_NAME}")"
-
-          num_vulns=$(echo "$vulnerabilities" | jq -r 'length')
-          
-          if [[ $num_vulns -gt 0 ]]; then
-            title="Vulnerabilities found for ${INPUTS_OCI_ARCHIVE_NAME}"
-            {
-              echo "## $title"
-              echo "| ID | Target | Severity | Package |"
-              echo "| -- | ----- | -------- | ------- |"
-              echo "$vulnerabilities" | jq -r '.[] | "| \(.VulnerabilityID) | /\(.Target) | \(.Severity) | \(.PkgName) |"'
-            } >> "$GITHUB_STEP_SUMMARY"
-          fi
-        env:
-          STEPS_CONFIGURE_TRIVY_OUTPUTS_REPORT_NAME: ${{ steps.configure-trivy.outputs.report-name }}
-          INPUTS_OCI_ARCHIVE_NAME: ${{ inputs.oci-archive-name }}
-          
-      - name: Identify unncessary trivyignore entries
-        if: ${{ !cancelled() }}
-        uses: ./.github/actions/check-trivyignore
-        with:
-          image-ref: "${{ steps.configure-trivy.outputs.docker-image }}"
-          trivyignores: ${{ steps.configure-trivy.outputs.trivyignore-path }}
+          echo "KEV or unsuppressed HIGH/CRITICAL vulnerabilities found."
+          exit 1
 
   test-malware:
     runs-on: ubuntu-22.04

@@ -1,0 +1,51 @@
+{
+  "SchemaVersion": 2,
+  "CreatedAt": "2026-10-06T00:00:00Z",
+  "ArtifactName": "example:latest",
+  "ArtifactType": "container_image",
+  "Metadata": {
+    "OS": {"Family": "ubuntu", "Name": "22.04"},
+    "ImageID": "sha256:example"
+  },
+  "Results": [
+    {
+      "Target": "example (ubuntu 22.04)",
+      "Class": "os-pkgs",
+      "Type": "ubuntu",
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "GHSA-example-alias",
+          "VendorIDs": ["CVE-2024-2000"],
+          "PkgName": "example",
+          "InstalledVersion": "1.0",
+          "Status": "affected",
+          "Severity": "LOW",
+          "PrimaryURL": "https://github.com/advisories/GHSA-example-alias",
+          "References": ["https://example.test/CVE-2024-2000"],
+          "Description": "A lower-severity KEV without a fix.",
+          "LastModifiedDate": "2026-10-05T01:00:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-1000",
+          "PkgName": "example",
+          "InstalledVersion": "1.0",
+          "Status": "affected",
+          "Severity": "HIGH",
+          "PrimaryURL": "https://example.test/CVE-2024-1000",
+          "Description": "An unfixed ordinary high vulnerability.",
+          "LastModifiedDate": "2026-10-05T01:00:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2024-3000",
+          "PkgName": "another",
+          "InstalledVersion": "2.0",
+          "FixedVersion": "2.1",
+          "Status": "fixed",
+          "Severity": "MEDIUM",
+          "PrimaryURL": "https://example.test/CVE-2024-3000",
+          "Description": "A non-blocking vulnerability retained in the artifact."
+        }
+      ]
+    }
+  ]
+}

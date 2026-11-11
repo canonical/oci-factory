@@ -639,6 +639,49 @@ needed.
 - Scanning for vulnerabilities using [Trivy](https://trivy.dev/)
 - Scanning for malware using [ClamAV](https://www.clamav.net/)
 
+Trivy scans the image once to JSON, including fixed and unfixed vulnerabilities
+at every severity. The `enrich-vulnerability-report` action converts that JSON
+to cosign-vuln and SARIF without rescanning, classifies KEVs, applies policy,
+and writes the Markdown summary. The final `.vulnerability-report.json`
+artifact keeps the cosign predicate envelope and replaces `scanner.result` with
+the enriched SARIF object. KEV classifications, normalized policy fields, native
+vulnerability details, CVE aliases, and modification dates are stored in SARIF
+`properties` bags. Daily scans and issue reporting consume this same artifact.
+
+The scan does not apply `.trivyignore`, so ignored CVEs remain available for analysis.
+The enrichment action applies the configured plain-text
+ignore file (including comments and `exp:YYYY-MM-DD` expiration dates) as SARIF
+suppressions for non-KEV findings. These findings keep their scanner details
+in the artifact but are excluded from the gate, summary, and issue notifications.
+KEVs always block, even when listed in the ignore file or suppressed by the scanner.
+YAML ignore files are not supported by this processor.
+
+The vulnerability test blocks when an unsuppressed finding is HIGH or CRITICAL, or is
+listed in KEV at any severity. Only those policy findings appear in the
+five-column GitHub summary and downstream issue content.
+
+The action accepts `vulnerability-report`, optional `output-report`, `image-name`,
+`trivyignore`, and `scanner` inputs. `scanner` defaults to `auto`: the producer is
+detected from the Trivy or OSV-Scanner JSON structure, or SARIF tool drivers. An
+explicit name must match the detected producer; it does not override the format.
+Outputs are `report-path`, `scanner`, `blocking-found`, `kev-found`, `kev-count`,
+and sorted JSON `kev-ids`. Artifacts are uploaded before the separate policy gate.
+
+The implementation is in `src/tests/vulnerability_report.py`: `enrich` converts
+and classifies a report, `findings` applies the shared reporting policy, and
+`markdown` renders the same table for summaries and issues. The complete native
+scan remains in run-level `ociFactory/scannerDetails`; normalized fields and KEV
+classifications live on each SARIF result.
+
+Supported inputs are native Trivy JSON, native OSV-Scanner JSON, Trivy SARIF, and
+SARIF from any scanner that supplies the normalized `ociFactory/vulnerability`
+properties contract (VulnerabilityID, Target, PkgName, Severity, optional CveIDs
+and LastModifiedDate). Native reports inside an existing cosign-vuln predicate
+are supported too; the predicate envelope is preserved. Native Trivy JSON becomes
+a cosign-vuln predicate containing SARIF; native OSV-Scanner JSON becomes standalone
+SARIF unless it was supplied inside a predicate. SARIF inputs stay SARIF.
+Unsupported native formats fail explicitly rather than silently omitting findings.
+
 **Samples:**
 - [Build and Test EICAR Rock](https://github.com/canonical/rocks-toolbox/blob/main/.github/workflows/oci-factory_build_and_test_eicar_rock.yaml) 
   - Build a Rock that includes the
