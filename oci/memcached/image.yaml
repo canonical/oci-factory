@@ -9,7 +9,7 @@ upload:
         risks:
           - stable
   - source: canonical/memcached-rock
-    commit: 52cdb475e1f56eb125224b0de518a6ebf3529a1e
+    commit: 4408069eafd3b193d323eb8d784e28609f04c45b
     directory: .
     release:
       1.6-26.10:
