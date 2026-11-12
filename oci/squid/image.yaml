@@ -9,7 +9,7 @@ upload:
         risks:
           - edge
   - source: canonical/squid-rock
-    commit: 60ab68c8c9fcdf658147bafe928bf7194a86c052
+    commit: 432d7d547a6e7a9b527607963fb7aa730232ae48
     directory: .
     release:
       7.7-26.10:
