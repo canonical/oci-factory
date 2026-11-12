@@ -9,7 +9,7 @@ upload:
         risks:
           - edge
   - source: canonical/apache2-rock
-    commit: a1b4a75d95af38786ac91ccb58e0dee135978ad5
+    commit: e5b953c304b096633fca26ddc35a4c3887837df5
     directory: .
     release:
       2.4-26.10:
