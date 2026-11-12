@@ -12,7 +12,7 @@ upload:
           - candidate
           - stable
   - source: canonical/bind9-rock
-    commit: 12e21812d3495f1d7dde641e958b3161babc5082
+    commit: a274d1d4a3b2d85233caf7d28a18ef30032d9d75
     directory: .
     release:
       9.20-26.10:
