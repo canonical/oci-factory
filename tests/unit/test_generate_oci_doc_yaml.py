@@ -6,7 +6,11 @@ from copy import deepcopy
 from textwrap import dedent
 from unittest.mock import Mock
 
-from src.docs.generate_oci_doc_yaml import MOCK_RELEASE, OCIDocumentationData
+from src.docs.generate_oci_doc_yaml import (
+    MOCK_RELEASE,
+    OCIDocumentationData,
+    sort_releases,
+)
 
 
 REVISION_TAGS = ["3.1.0-24.04_1", "3.1.0-24.04_2", "3.1.0-24.04_3"]
@@ -286,7 +290,7 @@ def test_legacy_flag_pass_through_preserves_releases(documentation_file, monkeyp
     if not dry_run:
         expected[1]["tags"].append("9-24.04_edge")
         assert runner.ecr_client.describe_image_tags.call_count == 2
-    assert data["releases"] == expected
+    assert data["releases"] == expected[::-1]
     assert mocked_releases == original
     if dry_run:
         first_output = output.read_text()
@@ -345,3 +349,33 @@ def test_dry_run_injects_legacy_overrides(documentation_file, monkeypatch, legac
     runner.main(str(output))
     assert generated.read_text() == first
     assert MOCK_RELEASE == original
+
+
+def test_sort_releases_newest_first():
+    releases = [
+        {"track": t, "base": b, "risk": r}
+        for t, b, r in [
+            ("14", "22.04", "stable"),
+            ("13", "22.04", "stable"),
+            ("12", "22.04", "stable"),
+            ("18", "24.04", "edge"),
+            ("18", "24.04", "stable"),
+            ("16", "22.04", "stable"),
+            ("16", "24.04", "stable"),
+            ("latest", "24.04", "stable"),
+            ("1.9", "24.04", "stable"),
+            ("1.10", "24.04", "stable"),
+        ]
+    ]
+    assert [(r["track"], r["base"], r["risk"]) for r in sort_releases(releases)] == [
+        ("18", "24.04", "stable"),
+        ("18", "24.04", "edge"),
+        ("16", "24.04", "stable"),
+        ("16", "22.04", "stable"),
+        ("14", "22.04", "stable"),
+        ("13", "22.04", "stable"),
+        ("12", "22.04", "stable"),
+        ("1.10", "24.04", "stable"),
+        ("1.9", "24.04", "stable"),
+        ("latest", "24.04", "stable"),
+    ]

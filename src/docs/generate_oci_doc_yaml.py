@@ -36,15 +36,6 @@ MOCK_RELEASE: List[Dict[str, Any]] = [
         "support": {"until": "12/2099"},
     },
     {
-        "track": "12.345",
-        "base": "22.04",
-        "risk": "edge",
-        "tags": ["12.1-22.04_edge"],
-        "architectures": ["amd64", "arm64"],
-        "support": {"until": "12/2025"},
-        "deprecated": {"date": "12/2025"},
-    },
-    {
         "track": "23.456",
         "base": "20.04",
         "risk": "beta",
@@ -53,7 +44,43 @@ MOCK_RELEASE: List[Dict[str, Any]] = [
         "support": {"until": "12/2023"},
         "deprecated": {"date": "12/2023"},
     },
+    {
+        "track": "12.345",
+        "base": "22.04",
+        "risk": "edge",
+        "tags": ["12.1-22.04_edge"],
+        "architectures": ["amd64", "arm64"],
+        "support": {"until": "12/2025"},
+        "deprecated": {"date": "12/2025"},
+    },
 ]
+
+RISK_ORDER = {"stable": 0, "candidate": 1, "beta": 2, "edge": 3}
+
+
+def _version_key(version: str) -> tuple:
+    """Order dotted versions numerically, e.g. "1.10" > "1.9" > "1".
+
+    Numeric components sort above non-numeric ones, so tracks like "latest"
+    end up after all numeric tracks when sorting in descending order.
+    """
+    return tuple(
+        (1, int(part), "") if part.isdigit() else (0, 0, part)
+        for part in version.split(".")
+    )
+
+
+def sort_releases(releases: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Sort releases newest first: by track, then base, then most stable risk"""
+    return sorted(
+        releases,
+        key=lambda r: (
+            _version_key(r["track"]),
+            _version_key(r["base"]),
+            -RISK_ORDER.get(r["risk"], len(RISK_ORDER)),
+        ),
+        reverse=True,
+    )
 
 
 logger = get_logger()
@@ -461,7 +488,7 @@ class OCIDocumentationData:
         # Templates must leave JSON escaping to the publisher.
         base_doc_yaml["raw_markdown"] = True
         base_doc_yaml["repo"] = self.image_name
-        base_doc_yaml["releases"] = releases
+        base_doc_yaml["releases"] = sort_releases(releases)
 
         self.create_data_dir(doc_data_dir)
 
