@@ -56,3 +56,42 @@ upload:
           - candidate
           - beta
           - edge
+
+  - source: canonical/python-rock
+    commit: 14e9646fa7322d3a8cb53c40cad997dd90620f76
+    directory: python/3.8-20.04/
+    pro:
+      services:
+        - esm-apps
+        - esm-infra
+    release:
+      3.8-20.04:
+        end-of-life: "2030-04-23T00:00:00Z"
+        risks:
+          - edge
+  - source: canonical/python-rock
+    commit: 14e9646fa7322d3a8cb53c40cad997dd90620f76
+    directory: python/3.11-22.04/
+    pro:
+      services:
+        - esm-apps
+        - esm-infra
+    release:
+      3.11-22.04:
+        end-of-life: "2032-04-21T00:00:00Z"
+        risks:
+          - edge
+
+# TODO: Enable this track once a Python 3.9 recipe is available.
+#   - source: canonical/python-rock
+#     commit: <commit containing the Python 3.9 recipe>
+#     directory: python/3.9-20.04/
+#     pro:
+#       services:
+#         - esm-apps
+#         - esm-infra
+#     release:
+#       3.9-20.04:
+#         end-of-life: "2030-04-23T00:00:00Z"
+#         risks:
+#           - edge
