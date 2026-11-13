@@ -1,0 +1,19 @@
+version: 2
+
+application: git
+website: https://git-scm.com/
+source-code: https://github.com/canonical/git-rock
+issues: https://github.com/canonical/git-rock/issues
+description: |
+  Git is a distributed version control system for tracking changes in source code.
+  It allows multiple developers to collaborate on a project efficiently.
+  It also supports features like branching, merging, and history tracking.
+
+  Git is widely used for source code management, collaboration, and version tracking.
+
+  This is a minimal rock containing **only** the Git command-line tool.
+
+docker:
+  run_cmd: exec git --version
+  run_conclusion: |
+    The container outputs the installed Git version.
