@@ -16,6 +16,6 @@ upload:
       - CVE-2026-116587  # Not affected. Not reported by govulncheck.
       - CVE-2026-78661  # Not affected. Not reported by govulncheck.
       - CVE-2019-14993  # Not affected. False positive.
-      - CVE-2021-39155 	# Not affected. False positive.
-      - CVE-2021-39156 	# Not affected. False positive.
-      - CVE-2022-23635 	# Not affected. False positive.
+      - CVE-2021-39155  # Not affected. False positive.
+      - CVE-2021-39156  # Not affected. False positive.
+      - CVE-2022-23635  # Not affected. False positive.
