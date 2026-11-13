@@ -5,8 +5,8 @@ description: |
   Valkey is an open source, flexible distributed key-value datastore that is
   optimized for caching and other realtime workloads.
 website: https://valkey.io/
-issues: https://github.com/canonical/charmed-valkey-rock/issues
-source-code: https://github.com/canonical/charmed-valkey-rock
+issues: https://github.com/canonical/valkey-artifacts/issues
+source-code: https://github.com/canonical/valkey-artifacts
 
 docker:
   parameters: >-
