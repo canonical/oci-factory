@@ -9,3 +9,11 @@ upload:
         end-of-life: "2031-05-29T00:00:00Z"
         risks:
           - edge
+  - source: canonical/git-rock
+    commit: b4086f8420484885e90e97d0e8f61320fd693159
+    directory: .
+    release:
+      2.55-26.10:
+        end-of-life: "2031-05-29T00:00:00Z"
+        risks:
+          - edge
