@@ -11,3 +11,11 @@ upload:
           - beta
           - candidate
           - stable
+  - source: canonical/bind9-rock
+    commit: a274d1d4a3b2d85233caf7d28a18ef30032d9d75
+    directory: .
+    release:
+      9.20-26.10:
+        end-of-life: "2027-07-15T00:00:00Z"
+        risks:
+          - edge
