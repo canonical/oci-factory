@@ -14,6 +14,6 @@ upload:
     directory: .
     release:
       2.55-26.10:
-        end-of-life: "2031-05-29T00:00:00Z"
+        end-of-life: "2027-07-15T00:00:00Z"
         risks:
           - edge
