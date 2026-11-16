@@ -1,0 +1,39 @@
+version: 2
+
+upload:
+  - source: canonical/chiselled-tomcat
+    commit: ccfcabb1a0890adbe91c0ced2b33f74dc71e8d83
+    directory: tomcat/10.1-jre-21-24.04
+    pro:
+      services:
+        - esm-apps
+        - esm-infra
+    release:
+      10.1-24.04:
+        end-of-life: "2034-04-25T00:00:00Z"
+        risks:
+          - edge
+  - source: canonical/chiselled-tomcat
+    commit: ccfcabb1a0890adbe91c0ced2b33f74dc71e8d83
+    directory: tomcat/10.1-jre-25-26.04
+    pro:
+      services:
+        - esm-apps
+        - esm-infra
+    release:
+      10.1-26.04:
+        end-of-life: "2036-04-23T00:00:00Z"
+        risks:
+          - edge
+  - source: canonical/chiselled-tomcat
+    commit: ccfcabb1a0890adbe91c0ced2b33f74dc71e8d83
+    directory: tomcat/11-jre-25-26.04
+    pro:
+      services:
+        - esm-apps
+        - esm-infra
+    release:
+      11-26.04:
+        end-of-life: "2036-04-23T00:00:00Z"
+        risks:
+          - edge
