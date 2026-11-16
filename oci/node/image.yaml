@@ -8,3 +8,16 @@ upload:
         end-of-life: "2025-09-10T00:00:00Z"
         risks:
           - edge
+
+  - source: canonical/node-rock
+    commit: 3758a424d68bd5936b29d8da59210979c74f169a
+    directory: node/18-24.04
+    pro:
+      services:
+        - esm-apps
+        - esm-infra
+    release:
+      18-24.04:
+        end-of-life: "2034-05-01T00:00:00Z"
+        risks:
+          - edge
