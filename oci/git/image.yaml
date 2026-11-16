@@ -1,0 +1,19 @@
+version: 1
+
+upload:
+  - source: canonical/git-rock
+    commit: 403c18339630393c970585e90d2c48996c58e04f
+    directory: .
+    release:
+      2.53-26.04:
+        end-of-life: "2031-05-29T00:00:00Z"
+        risks:
+          - edge
+  - source: canonical/git-rock
+    commit: b4086f8420484885e90e97d0e8f61320fd693159
+    directory: .
+    release:
+      2.55-26.10:
+        end-of-life: "2027-07-15T00:00:00Z"
+        risks:
+          - edge

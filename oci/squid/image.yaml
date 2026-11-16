@@ -8,3 +8,11 @@ upload:
         end-of-life: "2031-05-29T00:00:00Z"
         risks:
           - edge
+  - source: canonical/squid-rock
+    commit: 432d7d547a6e7a9b527607963fb7aa730232ae48
+    directory: .
+    release:
+      7.7-26.10:
+        end-of-life: "2027-07-15T00:00:00Z"
+        risks:
+          - edge
