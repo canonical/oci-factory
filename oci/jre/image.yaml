@@ -19,6 +19,18 @@ upload:
           - edge
   - source: canonical/jre-rock
     commit: 0b5f551eb7d5f4ac2c3fb4846d2637dea2593e43
+    directory: jre/11-jre-24.04
+    pro:
+      services:
+        - esm-apps
+        - esm-infra
+    release:
+      11-24.04:
+        end-of-life: "2029-05-31T00:00:00Z"
+        risks:
+          - edge
+  - source: canonical/jre-rock
+    commit: 0b5f551eb7d5f4ac2c3fb4846d2637dea2593e43
     directory: jre/17-jre-24.04
     release:
       17-24.04:
