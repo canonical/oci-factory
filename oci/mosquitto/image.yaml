@@ -1,0 +1,15 @@
+version: 2
+
+upload:
+  - source: canonical/mosquitto-rock
+    commit: 26df104990b58403561a339092f4d8fc4c672e74
+    directory: mosquitto/2.0-26.04
+    pro:
+      services:
+        - esm-apps
+        - esm-infra
+    release:
+      2.0-26.04:
+        end-of-life: "2036-04-23T00:00:00Z"
+        risks:
+          - edge
