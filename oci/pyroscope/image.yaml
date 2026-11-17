@@ -1,17 +1,14 @@
 version: 2
 upload:
   - source: canonical/pyroscope-rock
-    commit: 7964e86d471ddbc74e4833a304e6158898877fa2
-    directory: '2.2'
+    commit: a9575f31c5b358e78d2a6e96e3da1d87ebdd84c1
+    directory: '2.4'
     release:
       2-26.04:
-        end-of-life: '2026-11-23T00:00:00Z'
+        end-of-life: '2027-02-15T00:00:00Z'
         risks:
           - edge
-      2.2-26.04:
-        end-of-life: '2026-11-23T00:00:00Z'
+      2.4-26.04:
+        end-of-life: '2027-02-15T00:00:00Z'
         risks:
           - edge
-    ignored-vulnerabilities:
-      - CVE-2026-56864  # no actual code paths are affected, checked via govulncheck
-      - CVE-2026-56865  # no actual code paths are affected, checked via govulncheck
