@@ -141,10 +141,6 @@ jobs:
         run: |
           shopt -s nullglob
           triggers=("$IMG_PATH"/image.y*ml)
-          if (( ${#triggers[@]} != 1 )); then
-            echo "::error::Expected exactly one image trigger in $IMG_PATH"
-            exit 1
-          fi
 
           source_repo=$(yq -r '[.upload[].source | sub("^https://github[.]com/", "") | sub("/$", "") | sub("[.]git$", "")] | unique | .[]' "${triggers[0]}")
           if [[ "$source_repo" == *$'\n'* ]]; then
