@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 from src.build_rock.configure.generate_build_matrix import (
-    get_target_archs,
     configure_matrices,
     MissingArchSupport,
     set_build_config_outputs,
 )
+from src.shared.rockcraft_recipe_metadata import get_target_archs
 import pytest
 from ..fixtures.buffers import github_output
 from ..fixtures.sample_data import rockcraft_project
@@ -21,7 +21,7 @@ def test_get_target_archs(rockcraft_project):
     }
 
     arches = get_target_archs(rockcraft_project)
-    assert arches == {"arm64", "armhf", "amd64"}
+    assert arches == {"arm64", "armhf", "amd64", "s390x"}
 
 
 def test_configure_matrices():

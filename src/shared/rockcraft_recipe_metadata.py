@@ -1,38 +1,21 @@
+def _get_platform_archs(rockcraft: dict, key: str) -> set[str]:
+    archs = set()
+    for platform, values in rockcraft["platforms"].items():
+        platform_archs = (
+            values.get(key, platform) if isinstance(values, dict) else platform
+        )
+        if isinstance(platform_archs, str):
+            archs.add(platform_archs)
+        elif isinstance(platform_archs, list):
+            archs.update(platform_archs)
+    return archs
+
+
 def get_builder_archs(rockcraft: dict) -> set[str]:
-    """get list of builder architectures from rockcraft project definition"""
-
-    rock_platforms = rockcraft["platforms"]
-
-    target_archs = set()
-
-    for platf, values in rock_platforms.items():
-
-        if isinstance(values, dict) and "build-on" in values:
-            if isinstance(arches := values["build-on"], list):
-                target_archs.update(arches)
-            elif isinstance(arches, str):
-                target_archs.add(arches)
-        else:
-            target_archs.add(platf)
-
-    return target_archs
+    """Return the recipe's builder architectures."""
+    return _get_platform_archs(rockcraft, "build-on")
 
 
 def get_target_archs(rockcraft: dict) -> set[str]:
-    """get list of target architectures from rockcraft project definition"""
-
-    rock_platforms = rockcraft["platforms"]
-
-    target_archs = set()
-
-    for platf, values in rock_platforms.items():
-
-        if isinstance(values, dict) and "build-for" in values:
-            if isinstance(arches := values["build-for"], list):
-                target_archs.update(arches)
-            elif isinstance(arches, str):
-                target_archs.add(arches)
-        else:
-            target_archs.add(platf)
-
-    return target_archs
+    """Return the recipe's target architectures."""
+    return _get_platform_archs(rockcraft, "build-for")
