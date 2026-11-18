@@ -283,12 +283,13 @@ jobs:
             --oci-path "${NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_PATH}" \
             --revision-data-dir ${DATA_DIR} \
             --next-revision "${STEPS_GET_NEXT_REVISION_OUTPUTS_REVISION}" \
-            --infer-image-track
+            --prepared-matrix "${NEEDS_PREPARE_BUILD_OUTPUTS_BUILD_MATRIX}"
 
           echo "revision-data-cache-key=${{ github.run_id }}-${DATA_DIR}-$(date +%s)" >> "$GITHUB_OUTPUT"
         env:
           NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_PATH: ${{ needs.prepare-build.outputs.oci-img-path }}
           STEPS_GET_NEXT_REVISION_OUTPUTS_REVISION: ${{ steps.get-next-revision.outputs.revision }}
+          NEEDS_PREPARE_BUILD_OUTPUTS_BUILD_MATRIX: ${{ needs.prepare-build.outputs.build-matrix }}
 
       - name: Preempt Swift slot
         run: |

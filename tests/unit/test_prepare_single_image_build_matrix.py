@@ -1,3 +1,5 @@
+import io
+import json
 from glob import glob
 from pathlib import Path
 
@@ -6,6 +8,25 @@ import yaml
 
 import src.image.prepare_single_image_build_matrix as prep_matrix
 from src.image.utils.schema.triggers import ImageTriggerValidationError
+from src.uploads import infer_image_track
+
+
+@pytest.mark.parametrize("versions", [[], ["26.10", "27.04"], ["26.10", "26.10"]])
+def test_devel_track_requires_one_buildd_release(monkeypatch, versions):
+    products = {"stable": {"aliases": "24.04,noble", "version": "24.04"}}
+    for arch, version in zip(["amd64", "arm64"], versions):
+        products[arch] = {"aliases": f"{version},devel", "version": version}
+    feed = json.dumps({"products": products})
+    monkeypatch.setattr(infer_image_track, "urlopen", lambda url, timeout: io.StringIO(feed))
+    infer_image_track.get_devel_release.cache_clear()
+    recipe = {"base": "bare", "build-base": "devel", "version": "1.0"}
+
+    if versions == ["26.10", "26.10"]:
+        assert infer_image_track.get_base_and_track(recipe) == ("26.10", "1.0-26.10")
+    else:
+        with pytest.raises(ValueError, match="Expected one buildd devel release"):
+            infer_image_track.get_base_and_track(recipe)
+    infer_image_track.get_devel_release.cache_clear()
 
 
 def test_is_track_eol():

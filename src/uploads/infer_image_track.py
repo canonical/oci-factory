@@ -1,14 +1,38 @@
 #!/usr/bin/env python3
 
 import argparse
+import json
 import os
 import subprocess
+from functools import cache
+from urllib.request import urlopen
 
 import yaml
 
 from ..shared.logs import get_logger
 
 logger = get_logger()
+
+BUILDD_DAILY_FEED = (
+    "https://cloud-images.ubuntu.com/buildd/daily/streams/v1/"
+    "com.ubuntu.cloud:daily:download.json"
+)
+
+
+@cache
+def get_devel_release() -> str:
+    """Resolve Rockcraft's buildd daily devel alias across architectures."""
+    with urlopen(BUILDD_DAILY_FEED, timeout=30) as response:
+        products = json.load(response)["products"]
+
+    releases = {
+        product["version"]
+        for product in products.values()
+        if "devel" in product.get("aliases", "").split(",")
+    }
+    if len(releases) != 1:
+        raise ValueError(f"Expected one buildd devel release, found {sorted(releases)}")
+    return releases.pop()
 
 
 def get_release_from_codename(codename: str) -> str:
@@ -30,23 +54,7 @@ def get_base_and_track(rockcraft_yaml) -> tuple[str, str]:
     )
 
     if rock_base == "devel":
-        try:
-            distro_info = subprocess.check_output(
-                ["ubuntu-distro-info", "--devel", "--release"],
-                universal_newlines=True,
-                stderr=subprocess.STDOUT,
-            )
-        except subprocess.CalledProcessError as e:
-            if e.returncode == 1 and "Distribution data outdated" in e.output:
-                logger.warning(
-                    "devel is outdated. Using the latest release instead."
-                )
-                distro_info = subprocess.check_output(
-                    ["ubuntu-distro-info", "--latest", "--release"], universal_newlines=True
-                )
-            else:
-                raise e
-        rock_base = distro_info.split()[0]
+        rock_base = get_devel_release()
 
     try:
         base_release = float(rock_base.replace(":", "@").split("@")[-1])
