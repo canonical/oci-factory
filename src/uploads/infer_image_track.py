@@ -10,6 +10,7 @@ from urllib.request import urlopen
 import yaml
 
 from ..shared.logs import get_logger
+from ..shared.rockcraft_recipe_metadata import get_builder_archs
 
 logger = get_logger()
 
@@ -20,18 +21,21 @@ BUILDD_DAILY_FEED = (
 
 
 @cache
-def get_devel_release() -> str:
+def get_devel_release(arches: set[str]) -> str:
     """Resolve Rockcraft's buildd daily devel alias across architectures."""
     with urlopen(BUILDD_DAILY_FEED, timeout=30) as response:
         products = json.load(response)["products"]
 
+    # Filter products to find the devel release for the specified architectures
+    # We expect exactly one devel release for the given architectures
     releases = {
         product["version"]
         for product in products.values()
         if "devel" in product.get("aliases", "").split(",")
+        and product["arch"] in arches
     }
     if len(releases) != 1:
-        raise ValueError(f"Expected one buildd devel release, found {sorted(releases)}")
+        raise ValueError(f"buildd devel release has mixed versions: {sorted(releases)}")
     return releases.pop()
 
 
@@ -54,7 +58,8 @@ def get_base_and_track(rockcraft_yaml) -> tuple[str, str]:
     )
 
     if rock_base == "devel":
-        rock_base = get_devel_release()
+        target_arches = get_builder_archs(rockcraft_yaml)
+        rock_base = get_devel_release(target_arches)
 
     try:
         base_release = float(rock_base.replace(":", "@").split("@")[-1])
