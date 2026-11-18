@@ -150,6 +150,34 @@ def test_pro_matrix_and_revision_data(prep_execution):
 
 
 @pytest.mark.parametrize(
+    "prep_execution", [DATA_DIR / "image_v2_pro.yaml"], indirect=True
+)
+def test_upload_reuses_prepared_entry(prep_execution, monkeypatch):
+    revision_data_dir, github_output, _ = prep_execution
+    # Only the second trigger entry made it into the prepared matrix.
+    entry = {
+        "revision": 2,
+        "name": "mock-rock",
+        "path": "oci/mock-rock",
+        "dir_identifier": "mock_rock_1.2_esm-apps-esm-infra",
+        "base": "ubuntu:26.10",
+        "track": "1.2-26.10",
+    }
+    args = ["--next-revision", "100", "--prepared-matrix", json.dumps({"include": [entry]})]
+    monkeypatch.setattr(sys, "argv", sys.argv + args)
+    prepare_build_matrix()
+
+    matrix = re.search(r"^build-matrix=(.*)$", github_output.read_text("utf8"), re.M)
+    [build] = json.loads(matrix.group(1))["include"]
+    assert (build["revision"], build["base"], build["track"]) == (
+        101, "ubuntu:26.10", "1.2-26.10"
+    )
+    revision = json.loads((revision_data_dir / "101").read_text("utf8"))
+    assert revision["pro"]["services"] == ["esm-infra", "esm-apps"]
+    assert "1.2-22.04" in revision["release"]
+
+
+@pytest.mark.parametrize(
     "prep_execution",
     [DATA_DIR / "image_v2_pro_release.yaml"],
     indirect=["prep_execution"],
