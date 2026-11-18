@@ -51,11 +51,6 @@ parser.add_argument(
     default=1,
 )
 parser.add_argument(
-    "--prepared-matrix",
-    help="Build matrix from prepare-build, with resolved bases and tracks",
-    type=json.loads,
-)
-parser.add_argument(
     "--infer-image-track",
     help="Infer the track corresponding to the releases",
     action="store_true",
@@ -276,21 +271,10 @@ def main():
         )
 
     # extract builds to upload
-    uploads = image_trigger.get("upload", [])
+    builds = image_trigger.get("upload", [])
 
     # inject additional meta data into builds
-    if args.prepared_matrix is None:
-        builds = inject_metadata(uploads, args.next_revision, args.oci_path)
-    else:
-        builds = []
-        for entry in args.prepared_matrix["include"]:
-            # prepare-build assigns revisions starting at 1 before filtering EOL entries.
-            index = entry["revision"] - 1
-            build = uploads[index].copy()
-            for field in ("name", "path", "dir_identifier", "base", "track"):
-                build[field] = entry[field]
-            build["revision"] = args.next_revision + index
-            builds.append(build)
+    builds = inject_metadata(builds, args.next_revision, args.oci_path)
 
     # convert the Pro field into matrix-friendly fields
     builds = inject_pro_metadata(builds)
