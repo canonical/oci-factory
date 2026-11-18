@@ -11,21 +11,42 @@ from src.image.utils.schema.triggers import ImageTriggerValidationError
 from src.uploads import infer_image_track
 
 
-@pytest.mark.parametrize("versions", [[], ["26.10", "27.04"], ["26.10", "26.10"]])
-def test_devel_track_requires_one_buildd_release(monkeypatch, versions):
-    products = {"stable": {"aliases": "24.04,noble", "version": "24.04"}}
+@pytest.mark.parametrize(
+    "builders,versions,expected_error",
+    [
+        (["amd64", "arm64"], [], True),
+        (["amd64", "arm64"], ["26.10", "27.04"], True),
+        (["amd64", "arm64"], ["26.10", "26.10"], False),
+        ("amd64", ["26.10", "27.04"], False),
+    ],
+)
+def test_devel_track_requires_one_buildd_release(
+    monkeypatch, builders, versions, expected_error
+):
+    products = {
+        "stable": {"arch": "amd64", "aliases": "24.04,noble", "version": "24.04"}
+    }
     for arch, version in zip(["amd64", "arm64"], versions):
-        products[arch] = {"aliases": f"{version},devel", "version": version}
+        products[arch] = {
+            "arch": arch,
+            "aliases": f"{version},devel",
+            "version": version,
+        }
     feed = json.dumps({"products": products})
     monkeypatch.setattr(infer_image_track, "urlopen", lambda url, timeout: io.StringIO(feed))
     infer_image_track.get_devel_release.cache_clear()
-    recipe = {"base": "bare", "build-base": "devel", "version": "1.0"}
+    recipe = {
+        "base": "bare",
+        "build-base": "devel",
+        "version": "1.0",
+        "platforms": {"arm64": {"build-on": builders, "build-for": "arm64"}},
+    }
 
-    if versions == ["26.10", "26.10"]:
-        assert infer_image_track.get_base_and_track(recipe) == ("26.10", "1.0-26.10")
-    else:
-        with pytest.raises(ValueError, match="Expected one buildd devel release"):
+    if expected_error:
+        with pytest.raises(ValueError, match="buildd devel release has mixed versions"):
             infer_image_track.get_base_and_track(recipe)
+    else:
+        assert infer_image_track.get_base_and_track(recipe) == ("26.10", "1.0-26.10")
     infer_image_track.get_devel_release.cache_clear()
 
 

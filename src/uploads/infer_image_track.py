@@ -21,7 +21,7 @@ BUILDD_DAILY_FEED = (
 
 
 @cache
-def get_devel_release(arches: set[str]) -> str:
+def get_devel_release(arches: frozenset[str]) -> str:
     """Resolve Rockcraft's buildd daily devel alias across architectures."""
     with urlopen(BUILDD_DAILY_FEED, timeout=30) as response:
         products = json.load(response)["products"]
@@ -58,8 +58,8 @@ def get_base_and_track(rockcraft_yaml) -> tuple[str, str]:
     )
 
     if rock_base == "devel":
-        target_arches = get_builder_archs(rockcraft_yaml)
-        rock_base = get_devel_release(target_arches)
+        builder_arches = frozenset(get_builder_archs(rockcraft_yaml))
+        rock_base = get_devel_release(builder_arches)
 
     try:
         base_release = float(rock_base.replace(":", "@").split("@")[-1])
