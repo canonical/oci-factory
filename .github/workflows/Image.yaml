@@ -107,10 +107,22 @@ jobs:
           fi
           test -d "${img_path}"
 
+          if [[ -n "$INPUTS_B64_IMAGE_TRIGGER" ]]; then
+            printf '%s' "$INPUTS_B64_IMAGE_TRIGGER" | base64 -d > "$img_path/image.yaml"
+          fi
+
+          source_repo=$(yq -r '[.upload[].source | sub("^https://github[.]com/", "") | sub("/$", "") | sub("[.]git$", "")] | unique | .[]' "$img_path"/image.y*ml)
+          if [[ "$source_repo" == *$'\n'* ]]; then
+            log_error "All uploads for an image must use the same source repository"
+            exit 1
+          fi
+
           echo "img-name=$(basename ${img_path})" >> "$GITHUB_OUTPUT"
           echo "img-path=${img_path}" >> "$GITHUB_OUTPUT"
+          echo "source-repo=$source_repo" >> "$GITHUB_OUTPUT"
         env:
           INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
+          INPUTS_B64_IMAGE_TRIGGER: ${{ inputs.b64-image-trigger }}
           STEPS_CHANGED_FILES_OUTPUTS_ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
 
       - name: Validate access to triggered image
@@ -121,13 +133,6 @@ jobs:
           image-path: ${{ steps.validate-image.outputs.img-path }}
           github-token: ${{ secrets.ROCKSBOT_TOKEN }}
 
-      - name: Use custom image trigger
-        if: ${{ inputs.b64-image-trigger != '' }}
-        run: echo ${INPUTS_B64_IMAGE_TRIGGER} | base64 -d > ${STEPS_VALIDATE_IMAGE_OUTPUTS_IMG_PATH}/image.yaml
-        env:
-          INPUTS_B64_IMAGE_TRIGGER: ${{ inputs.b64-image-trigger }}
-          STEPS_VALIDATE_IMAGE_OUTPUTS_IMG_PATH: ${{ steps.validate-image.outputs.img-path }}
-
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: "3.14"
@@ -137,16 +142,9 @@ jobs:
       - name: Check source repository visibility
         id: source-visibility
         env:
-          IMG_PATH: ${{ steps.validate-image.outputs.img-path }}
+          SOURCE_REPOSITORY: ${{ steps.validate-image.outputs.source-repo }}
         run: |
-          shopt -s nullglob
-          triggers=("$IMG_PATH"/image.y*ml)
-
-          source_repo=$(yq -r '[.upload[].source | sub("^https://github[.]com/", "") | sub("/$", "") | sub("[.]git$", "")] | unique | .[]' "${triggers[0]}")
-          if [[ "$source_repo" == *$'\n'* ]]; then
-            echo "::error::All uploads for an image must use the same source repository"
-            exit 1
-          fi
+          source_repo="$SOURCE_REPOSITORY"
           if [[ ! "$source_repo" =~ ^[a-zA-Z0-9-]+/[a-zA-Z0-9_.-]+$ ||
                 "$source_repo" == */. || "$source_repo" == */.. ]]; then
             exit 0
