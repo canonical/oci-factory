@@ -24,6 +24,7 @@
         - [Example: *image.yaml*](#example-imageyaml)
         - [Ubuntu Pro images](#ubuntu-pro-images)
       - [Documentation trigger file](#documentation-trigger-file)
+        - [Previewing documentation without publishing](#previewing-documentation-without-publishing)
         - [Example: *documentation.yaml*](#example-documentationyaml)
     - [Other files](#other-files)
       - [Contacts](#contacts)
