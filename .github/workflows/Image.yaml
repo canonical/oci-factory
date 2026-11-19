@@ -292,6 +292,10 @@ jobs:
 
           echo "revision-data-cache-key=${{ github.run_id }}-${DATA_DIR}-$(date +%s)" >> "$GITHUB_OUTPUT"
         env:
+          GH_TOKEN: ${{ secrets.ROCKS_REPO_CLONER_TOKEN }}
+          GIT_CONFIG_COUNT: "1"
+          GIT_CONFIG_KEY_0: credential.https://github.com.helper
+          GIT_CONFIG_VALUE_0: "!gh auth git-credential"
           NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_PATH: ${{ needs.prepare-build.outputs.oci-img-path }}
           STEPS_GET_NEXT_REVISION_OUTPUTS_REVISION: ${{ steps.get-next-revision.outputs.revision }}
 

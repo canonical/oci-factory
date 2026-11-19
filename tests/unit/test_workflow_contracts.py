@@ -87,6 +87,22 @@ def test_image_uses_fixed_pro_secret_names() -> None:
     assert not re.search(r"secrets\s*\[\s*matrix\.", secret_values)
 
 
+@pytest.mark.parametrize("job_name", ["prepare-build", "prepare-upload"])
+def test_matrix_preparation_authenticates_source_access(job_name) -> None:
+    workflow = load_yaml(".github/workflows/Image.yaml")
+    step = next(
+        step
+        for step in workflow["jobs"][job_name]["steps"]
+        if "src.image.prepare_single_image_build_matrix" in step.get("run", "")
+    )
+    env = step["env"]
+
+    assert env["GH_TOKEN"] == "${{ secrets.ROCKS_REPO_CLONER_TOKEN }}"
+    assert env["GIT_CONFIG_COUNT"] == "1"
+    assert env["GIT_CONFIG_KEY_0"] == "credential.https://github.com.helper"
+    assert env["GIT_CONFIG_VALUE_0"] == "!gh auth git-credential"
+
+
 def test_release_steps_keep_public_and_pro_release_files_separate() -> None:
     workflow = load_yaml(".github/workflows/Release.yaml")
 
