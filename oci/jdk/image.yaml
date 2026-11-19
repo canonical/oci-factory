@@ -1,4 +1,4 @@
-version: 1
+version: 2
 
 upload:
   - source: canonical/jdk-rock
@@ -12,6 +12,8 @@ upload:
           - candidate
           - beta
           - edge
+    ignored-vulnerabilities:
+      - CVE-2026-97054  # stdlib (Go, pebble): not affected, pebble does not use net/http MaxBytesReader/MaxBytesHandler; no fixed pebble release yet | Go advisory: https://pkg.go.dev/vuln/GO-2026-6859
   - source: canonical/jdk-rock
     commit: e299a073f4a7333abd7b3c8ada62e0885015e5a3
     directory: jdk/17-24.04
@@ -23,6 +25,8 @@ upload:
           - candidate
           - beta
           - edge
+    ignored-vulnerabilities:
+      - CVE-2026-97054  # stdlib (Go, pebble): not affected, pebble does not use net/http MaxBytesReader/MaxBytesHandler; no fixed pebble release yet | Go advisory: https://pkg.go.dev/vuln/GO-2026-6859
   - source: canonical/jdk-rock
     commit: e299a073f4a7333abd7b3c8ada62e0885015e5a3
     directory: jdk/25-26.04
@@ -34,3 +38,5 @@ upload:
           - candidate
           - beta
           - edge
+    ignored-vulnerabilities:
+      - CVE-2026-97054  # stdlib (Go, pebble): not affected, pebble does not use net/http MaxBytesReader/MaxBytesHandler; no fixed pebble release yet | Go advisory: https://pkg.go.dev/vuln/GO-2026-6859
