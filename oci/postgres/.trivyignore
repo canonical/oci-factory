@@ -17,5 +17,4 @@ CVE-2024-24790
 CVE-2024-34156
 
 # pebble - go stdlib net/http finding, code path not used by pebble.
-# pebble main is already on a fixed go, drop once a pebble release ships it.
 CVE-2026-97054
