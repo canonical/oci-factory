@@ -59,7 +59,6 @@ jobs:
       release-to: ${{ steps.prepare-matrix.outputs.release-to }}
       oci-img-path: ${{ steps.validate-image.outputs.img-path }}
       oci-img-name: ${{ steps.validate-image.outputs.img-name }}
-      source-auth-required: ${{ steps.restricted-source.outputs.auth-required }}
     steps:
       - name: ${{ inputs.external_ref_id }}  # (2)
         if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -107,22 +106,10 @@ jobs:
           fi
           test -d "${img_path}"
 
-          if [[ -n "$INPUTS_B64_IMAGE_TRIGGER" ]]; then
-            printf '%s' "$INPUTS_B64_IMAGE_TRIGGER" | base64 -d > "$img_path/image.yaml"
-          fi
-
-          source_repo=$(yq -r '[.upload[].source | sub("^https://github[.]com/", "") | sub("/$", "") | sub("[.]git$", "")] | unique | .[]' "$img_path"/image.y*ml)
-          if [[ "$source_repo" == *$'\n'* ]]; then
-            log_error "All uploads for an image must use the same source repository"
-            exit 1
-          fi
-
           echo "img-name=$(basename ${img_path})" >> "$GITHUB_OUTPUT"
           echo "img-path=${img_path}" >> "$GITHUB_OUTPUT"
-          echo "source-repo=$source_repo" >> "$GITHUB_OUTPUT"
         env:
           INPUTS_OCI_IMAGE_NAME: ${{ inputs.oci-image-name }}
-          INPUTS_B64_IMAGE_TRIGGER: ${{ inputs.b64-image-trigger }}
           STEPS_CHANGED_FILES_OUTPUTS_ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
 
       - name: Validate access to triggered image
@@ -133,49 +120,24 @@ jobs:
           image-path: ${{ steps.validate-image.outputs.img-path }}
           github-token: ${{ secrets.ROCKSBOT_TOKEN }}
 
+      - name: Use custom image trigger
+        if: ${{ inputs.b64-image-trigger != '' }}
+        run: echo ${INPUTS_B64_IMAGE_TRIGGER} | base64 -d > ${STEPS_VALIDATE_IMAGE_OUTPUTS_IMG_PATH}/image.yaml
+        env:
+          INPUTS_B64_IMAGE_TRIGGER: ${{ inputs.b64-image-trigger }}
+          STEPS_VALIDATE_IMAGE_OUTPUTS_IMG_PATH: ${{ steps.validate-image.outputs.img-path }}
+
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: "3.14"
 
       - run: pip install -r src/image/requirements.txt
 
-      - name: Check source repository visibility
-        id: source-visibility
-        env:
-          SOURCE_REPOSITORY: ${{ steps.validate-image.outputs.source-repo }}
-        run: |
-          source_repo="$SOURCE_REPOSITORY"
-          if [[ ! "$source_repo" =~ ^[a-zA-Z0-9-]+/[a-zA-Z0-9_.-]+$ ||
-                "$source_repo" == */. || "$source_repo" == */.. ]]; then
-            exit 0
-          fi
-
-          status=$(curl -sS -L --max-time 15 -o /dev/null -w '%{http_code}' "https://api.github.com/repos/$source_repo")
-          case "$status" in
-            200) ;;
-            404) printf 'repository=%s\n' "$source_repo" >> "$GITHUB_OUTPUT" ;;
-            *) echo "::error::GitHub visibility check for $source_repo returned HTTP $status"; exit 1 ;;
-          esac
-
-      - name: Confirm restricted source repository
-        id: restricted-source
-        if: steps.source-visibility.outputs.repository != ''
-        env:
-          GH_TOKEN: ${{ secrets.ROCKS_REPO_CLONER_TOKEN }}
-          SOURCE_REPOSITORY: ${{ steps.source-visibility.outputs.repository }}
-        run: |
-          : "${GH_TOKEN:?ROCKS_REPO_CLONER_TOKEN is required to check this source}"
-          visibility=$(gh api "repos/$SOURCE_REPOSITORY" --jq .visibility)
-          case "$visibility" in
-            internal|private) echo "auth-required=true" >> "$GITHUB_OUTPUT" ;;
-            *) echo "::error::Unexpected visibility for $SOURCE_REPOSITORY: $visibility"; exit 1 ;;
-          esac
-
       - name: Validate and prepare builds matrix
         id: prepare-matrix
         env:
-          GH_TOKEN: ${{ steps.restricted-source.outputs.auth-required == 'true' && secrets.ROCKS_REPO_CLONER_TOKEN || '' }}
-          GIT_CONFIG_COUNT: ${{ steps.restricted-source.outputs.auth-required == 'true' && '1' || '0' }}
+          GH_TOKEN: ${{ secrets.ROCKS_REPO_CLONER_TOKEN }}
+          GIT_CONFIG_COUNT: "1"
           GIT_CONFIG_KEY_0: credential.https://github.com.helper
           GIT_CONFIG_VALUE_0: "!gh auth git-credential"
           DATA_DIR: "revision-data"
@@ -208,7 +170,7 @@ jobs:
         with:
           repository: ${{ matrix.source }}
           ref: ${{ matrix.commit }}
-          token: ${{ needs.prepare-build.outputs.source-auth-required == 'true' && secrets.ROCKS_REPO_CLONER_TOKEN || '' }}
+          token: ${{ (matrix.source-visibility == 'internal' || matrix.source-visibility == 'private') && secrets.ROCKS_REPO_CLONER_TOKEN || '' }}
           submodules: "recursive"
           path: ${{ env.ROCK_REPO_DIR }}
 
@@ -244,7 +206,7 @@ jobs:
       lpci-fallback: true
       pro-services: ${{ matrix.pro-services }}
     secrets:
-      source-github-token: ${{ needs.prepare-build.outputs.source-auth-required == 'true' && secrets.ROCKS_REPO_CLONER_TOKEN || '' }}
+      source-github-token: ${{ (matrix.source-visibility == 'internal' || matrix.source-visibility == 'private') && secrets.ROCKS_REPO_CLONER_TOKEN || '' }}
       pro-token: ${{ matrix.pro-services != '' && secrets.ROCKS_PRO_TOKEN || '' }}
       pro-artifact-passphrase: ${{ matrix.pro-services != '' && secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE || '' }}
 

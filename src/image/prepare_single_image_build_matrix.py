@@ -3,11 +3,13 @@
 import argparse
 import glob
 import json
+import subprocess
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 from tempfile import TemporaryDirectory as tempdir
 from typing import Any
+from urllib.parse import urlsplit
 
 import pydantic
 import yaml
@@ -184,11 +186,25 @@ def _get_dir_identifier(build: dict[str, Any]) -> str:
     return dir_identifier
 
 
+def get_source_visibility(url: str) -> str:
+    """Read GitHub repository visibility using the workflow's GitHub token."""
+    source = urlsplit(url)
+    if source.hostname != "github.com":
+        return ""
+
+    repository = source.path.strip("/").removesuffix(".git")
+    return subprocess.check_output(
+        ["gh", "api", f"repos/{repository}", "--jq", ".visibility"],
+        text=True,
+    ).strip()
+
+
 def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: Path):
     """Inject additional metadata (name, path, revision, directory, dir_identifier,
     track, base) into build dicts.
     """
     _builds = deepcopy(builds)
+    source_visibility = {}
 
     # inject some extra metadata into the matrix data
     for img_number, build in enumerate(_builds):
@@ -204,6 +220,9 @@ def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: 
 
         with tempdir() as d:
             url = get_source_url(build["source"])
+            if url not in source_visibility:
+                source_visibility[url] = get_source_visibility(url)
+            build["source-visibility"] = source_visibility[url]
             repo = Repo.clone_from(url, d)
             repo.git.checkout(build["commit"])
             # get the base image from the rockcraft.yaml file

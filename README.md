@@ -206,7 +206,7 @@ Having said that this trigger's syntax is as follows:
 | release.\<track\>.beta | False | str | Risks to be updated. Can point to a revision or another channel. |
 | release.\<track\>.edge | False | str | Risks to be updated. Can point to a revision or another channel. |
 | upload | False | conlist[Dict[str, Any], min_items=1] | List of image builds. Equivalent to `rockcraft pack && rockcraft upload` |
-| upload[*].source | True | str | Git repository hosting the image's project. All uploads in one image trigger must use the same source repository. Commits and directories may differ. |
+| upload[*].source | True | str | Git repository hosting the image's project. Tracks in the same trigger may use different source repositories. |
 | upload[*].commit | True | str | Specific reference in the source, where to run the build from. |
 | upload[*].directory | True | str | Path to the "rockcraft.yaml". Where the build will run from. |
 | upload[*].pro | False | Dict[str, Any] | Build an Ubuntu Pro image using the Pro credentials centrally managed by the OCI Factory. |

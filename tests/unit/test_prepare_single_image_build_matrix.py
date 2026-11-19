@@ -1,5 +1,9 @@
+import json
+import subprocess
+import sys
 from glob import glob
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -156,3 +160,78 @@ def test_inject_pro_metadata_is_matrix_friendly():
     assert result[0]["pro-services"] == ""
     assert result[1]["pro-services"] == "esm-infra,ros-updates"
     assert "pro-services" not in builds[0]
+
+
+def test_matrix_supports_sources_with_different_visibility(tmp_path, monkeypatch):
+    oci_path = tmp_path / "example"
+    oci_path.mkdir()
+    uploads = [
+        {"source": "canonical/public", "commit": "first", "directory": "."},
+        {"source": "canonical/internal", "commit": "second", "directory": "."},
+        {"source": "canonical/private", "commit": "third", "directory": "."},
+        {"source": "canonical/public", "commit": "fourth", "directory": "."},
+    ]
+    (oci_path / "image.yaml").write_text(
+        yaml.safe_dump({"version": 1, "upload": uploads})
+    )
+    revision_dir = tmp_path / "revisions"
+    revision_dir.mkdir()
+    output_path = tmp_path / "output"
+    monkeypatch.setenv("GITHUB_OUTPUT", str(output_path))
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "prepare",
+            "--oci-path",
+            str(oci_path),
+            "--revision-data-dir",
+            str(revision_dir),
+        ],
+    )
+    lookups = []
+
+    def lookup_visibility(command, text):
+        lookups.append(command)
+        return command[2].rsplit("/", 1)[-1] + "\n"
+
+    def clone_source(url, destination):
+        (Path(destination) / "rockcraft.yaml").write_text(
+            "name: example\nversion: '1.0'\nbase: bare\nbuild-base: ubuntu@24.04\n"
+        )
+        return SimpleNamespace(git=SimpleNamespace(checkout=lambda commit: None))
+
+    monkeypatch.setattr(prep_matrix.subprocess, "check_output", lookup_visibility)
+    monkeypatch.setattr(prep_matrix.Repo, "clone_from", clone_source)
+    prep_matrix.main()
+
+    outputs = dict(line.split("=", 1) for line in output_path.read_text().splitlines())
+    builds = json.loads(outputs["build-matrix"])["include"]
+    assert [build["source-visibility"] for build in builds] == [
+        "public",
+        "internal",
+        "private",
+        "public",
+    ]
+    assert [build["source"] for build in builds] == [
+        upload["source"] for upload in uploads
+    ]
+    assert len(lookups) == 3
+    assert all(command[:2] == ["gh", "api"] for command in lookups)
+
+
+def test_source_visibility_preserves_external_sources(monkeypatch):
+    def unexpected_lookup(*args, **kwargs):
+        pytest.fail("External sources must not use the GitHub API")
+
+    monkeypatch.setattr(prep_matrix.subprocess, "check_output", unexpected_lookup)
+    assert prep_matrix.get_source_visibility("https://git.launchpad.net/example") == ""
+
+
+def test_source_visibility_lookup_failure_stops_preparation(monkeypatch):
+    def failed_lookup(command, **kwargs):
+        raise subprocess.CalledProcessError(1, command)
+
+    monkeypatch.setattr(prep_matrix.subprocess, "check_output", failed_lookup)
+    with pytest.raises(subprocess.CalledProcessError):
+        prep_matrix.get_source_visibility("https://github.com/canonical/internal.git")
