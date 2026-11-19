@@ -8,6 +8,9 @@ upload:
       21-24.04:
         end-of-life: "2029-05-31T00:00:00Z"
         risks:
+          - stable
+          - candidate
+          - beta
           - edge
   - source: canonical/jre-rock
     commit: 0b5f551eb7d5f4ac2c3fb4846d2637dea2593e43
@@ -16,6 +19,9 @@ upload:
       11-24.04:
         end-of-life: "2029-05-31T00:00:00Z"
         risks:
+          - stable
+          - candidate
+          - beta
           - edge
   - source: canonical/jre-rock
     commit: 0b5f551eb7d5f4ac2c3fb4846d2637dea2593e43
@@ -24,6 +30,9 @@ upload:
       17-24.04:
         end-of-life: "2029-05-31T00:00:00Z"
         risks:
+          - stable
+          - candidate
+          - beta
           - edge
   - source: canonical/jre-rock
     commit: 0b5f551eb7d5f4ac2c3fb4846d2637dea2593e43
@@ -32,4 +41,7 @@ upload:
       25-26.04:
         end-of-life: "2031-05-29T00:00:00Z"
         risks:
+          - stable
+          - candidate
+          - beta
           - edge
