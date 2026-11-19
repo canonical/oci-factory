@@ -9,3 +9,11 @@ upload:
         end-of-life: "2031-05-29T00:00:00Z"
         risks:
           - stable
+  - source: canonical/curl-rock
+    commit: b446892eb46dbe0f1c7f9468a2672206d0f8af71
+    directory: .
+    release:
+      8.20-26.10:
+        end-of-life: "2027-07-15T00:00:00Z"
+        risks:
+          - edge
