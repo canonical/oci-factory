@@ -55,6 +55,7 @@ upload:
     ignored-vulnerabilities:
       - "CVE-2023-1234"
       - "CVE-2023-5678"
+      - "CVE-2026-97054"
   - source: "canonical/rocks-toolbox"
     commit: eee5f5ebeff62848903156fb3fe93c5d37174085
     directory: mock_rock/1.2
@@ -70,6 +71,7 @@ upload:
     ignored-vulnerabilities:
       - "CVE-2023-1234"
       - "CVE-2023-5678"
+      - "CVE-2026-97054"
 
   # TODO: Restore the devel release once the https://github.com/canonical/rockcraft/issues/1262 is resolved.
   # - source: "canonical/rocks-toolbox"
