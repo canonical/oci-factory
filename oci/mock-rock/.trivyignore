@@ -1,4 +1,5 @@
 CVE-2025-30204
 
 # pebble - go stdlib net/http finding, code path not used by pebble.
+# https://pkg.go.dev/vuln/GO-2026-6859
 CVE-2026-97054
