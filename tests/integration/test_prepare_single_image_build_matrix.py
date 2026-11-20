@@ -21,6 +21,10 @@ from .. import DATA_DIR
 def prep_execution(tmpdir, monkeypatch, request):
 
     image_trigger_sample = getattr(request, "param", None)
+    monkeypatch.setattr(
+        "src.image.prepare_single_image_build_matrix.get_source_visibility",
+        lambda url: "public",
+    )
 
     # configure files/env requried for the test
     github_output = tmpdir / "github_output"
@@ -134,6 +138,8 @@ def test_pro_matrix_and_revision_data(prep_execution):
     matrix = json.loads(re.search(r"^build-matrix=(.*)$", output, re.M).group(1))
     public, pro = matrix["include"]
 
+    assert public["source-visibility"] == "public"
+    assert pro["source-visibility"] == "public"
     assert public["pro-services"] == ""
     assert "pro" not in public
     assert pro["pro-services"] == "esm-apps,esm-infra"

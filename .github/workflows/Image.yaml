@@ -136,6 +136,10 @@ jobs:
       - name: Validate and prepare builds matrix
         id: prepare-matrix
         env:
+          GH_TOKEN: ${{ secrets.ROCKS_REPO_CLONER_TOKEN }}
+          GIT_CONFIG_COUNT: "1"
+          GIT_CONFIG_KEY_0: credential.https://github.com.helper
+          GIT_CONFIG_VALUE_0: "!gh auth git-credential"
           DATA_DIR: "revision-data"
           STEPS_VALIDATE_IMAGE_OUTPUTS_IMG_PATH: ${{ steps.validate-image.outputs.img-path }}
         run: |
@@ -166,6 +170,7 @@ jobs:
         with:
           repository: ${{ matrix.source }}
           ref: ${{ matrix.commit }}
+          token: ${{ (matrix.source-visibility == 'internal' || matrix.source-visibility == 'private') && secrets.ROCKS_REPO_CLONER_TOKEN || '' }}
           submodules: "recursive"
           path: ${{ env.ROCK_REPO_DIR }}
 
@@ -201,7 +206,7 @@ jobs:
       lpci-fallback: true
       pro-services: ${{ matrix.pro-services }}
     secrets:
-      source-github-token: ${{ secrets.ROCKSBOT_TOKEN }}
+      source-github-token: ${{ (matrix.source-visibility == 'internal' || matrix.source-visibility == 'private') && secrets.ROCKS_REPO_CLONER_TOKEN || '' }}
       pro-token: ${{ matrix.pro-services != '' && secrets.ROCKS_PRO_TOKEN || '' }}
       pro-artifact-passphrase: ${{ matrix.pro-services != '' && secrets.ROCKS_PRO_ARTIFACT_PASSPHRASE || '' }}
 
@@ -287,6 +292,10 @@ jobs:
 
           echo "revision-data-cache-key=${{ github.run_id }}-${DATA_DIR}-$(date +%s)" >> "$GITHUB_OUTPUT"
         env:
+          GH_TOKEN: ${{ secrets.ROCKS_REPO_CLONER_TOKEN }}
+          GIT_CONFIG_COUNT: "1"
+          GIT_CONFIG_KEY_0: credential.https://github.com.helper
+          GIT_CONFIG_VALUE_0: "!gh auth git-credential"
           NEEDS_PREPARE_BUILD_OUTPUTS_OCI_IMG_PATH: ${{ needs.prepare-build.outputs.oci-img-path }}
           STEPS_GET_NEXT_REVISION_OUTPUTS_REVISION: ${{ steps.get-next-revision.outputs.revision }}
 
