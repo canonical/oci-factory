@@ -1,0 +1,155 @@
+version: 2
+application: cassandra
+description: |
+  Apache Cassandra is an open-source, highly scalable, high-performance
+  distributed NoSQL database, designed to handle large amounts of data across
+  many commodity servers with no single point of failure.
+
+  Receives security updates and tracks the newest combination of Apache
+  Cassandra and Ubuntu. **This repository is free to use and exempted from
+  per-user rate limits.**
+
+  This rock ships Apache Cassandra on top of a hardened Java runtime.
+  It is laid out like the official Cassandra image: the same paths
+  (`/opt/cassandra`, `/etc/cassandra`, `/var/lib/cassandra`,
+  `/var/log/cassandra`) and the same `CASSANDRA_*` configuration variables.
+  The upstream tools (`cqlsh`, `nodetool`, `sstable*`...) are on `PATH`.
+
+  Cassandra runs as the `_daemon_` user (uid and gid 584792) rather than the
+  official image's `cassandra` user, so a data volume written by the official
+  image (owned by uid 999) is not readable by this rock.
+
+  # Apache Cassandra 5 Quickstart
+  Start a single node, persisting its data in a named volume:
+
+  ```bash
+  docker run --detach --name cassandra \
+    -p 9042:9042 \
+    -v cassandra-data:/var/lib/cassandra \
+    ubuntu/cassandra:5.0-26.04_edge
+  ```
+
+  Once the node reports itself as `UN` (Up/Normal), open a CQL shell:
+
+  ```bash
+  docker exec cassandra nodetool status
+  docker exec -it cassandra cqlsh
+  ```
+
+  To run a cluster, put the containers on a network where they can resolve
+  each other by name, and point the other nodes at the first one as seed:
+
+  ```bash
+  docker network create cassandra-net
+
+  docker run --detach --name cassandra1 --network cassandra-net \
+    -e CASSANDRA_CLUSTER_NAME="Prod Cluster" \
+    ubuntu/cassandra:5.0-26.04_edge
+
+  docker run --detach --name cassandra2 --network cassandra-net \
+    -e CASSANDRA_CLUSTER_NAME="Prod Cluster" \
+    -e CASSANDRA_SEEDS=cassandra1 \
+    ubuntu/cassandra:5.0-26.04_edge
+
+  docker exec cassandra1 nodetool status
+  ```
+
+  Give the first node time to report itself `UN` before starting the second:
+  a node that joins while the seed is still initializing gives up rather
+  than retrying.
+
+  By default, Cassandra sizes its heap at slightly more than half of the
+  memory available to the container. Use `MAX_HEAP_SIZE` and `HEAP_NEWSIZE`
+  to limit it, e.g. when running several nodes on a single machine.
+
+website: https://cassandra.apache.org
+issues: https://github.com/canonical/cassandra-artifacts/issues
+source-code: https://github.com/canonical/cassandra-artifacts
+
+docker:
+  parameters: >-
+    -p 9042:9042
+  run_conclusion: |
+    Access the Apache Cassandra CQL interface at `localhost:9042`, or open a
+    CQL shell inside the container with:
+
+    ```bash
+    docker exec -it cassandra-container cqlsh
+    ```
+  legacy:
+    parameters: >-
+      -p 9042:9042
+    run_conclusion: |
+      Access the Apache Cassandra CQL interface at `localhost:9042`.
+
+config:
+  '`CASSANDRA_CLUSTER_NAME`':
+    type: env
+    description: Name of the cluster, written to `cluster_name` in `cassandra.yaml`. All nodes of a cluster must use the same name.
+    default: 'Test Cluster'
+  '`CASSANDRA_SEEDS`':
+    type: env
+    description: Comma-separated list of seed nodes, written to the seed provider in `cassandra.yaml`.
+    default: 'The value of `CASSANDRA_BROADCAST_ADDRESS`'
+  '`CASSANDRA_LISTEN_ADDRESS`':
+    type: env
+    description: Address to bind to for node-to-node communication (`listen_address`). `auto` resolves to the container's first non-loopback IP address.
+    default: 'auto'
+  '`CASSANDRA_BROADCAST_ADDRESS`':
+    type: env
+    description: Address to advertise to other nodes (`broadcast_address`). `auto` resolves to the container's first non-loopback IP address.
+    default: 'The value of `CASSANDRA_LISTEN_ADDRESS`'
+  '`CASSANDRA_RPC_ADDRESS`':
+    type: env
+    description: Address to bind to for client connections (`rpc_address`).
+    default: '0.0.0.0'
+  '`CASSANDRA_BROADCAST_RPC_ADDRESS`':
+    type: env
+    description: Address to advertise to clients (`broadcast_rpc_address`).
+    default: 'The value of `CASSANDRA_BROADCAST_ADDRESS`'
+  '`CASSANDRA_NUM_TOKENS`':
+    type: env
+    description: Number of tokens assigned to this node on the ring (`num_tokens`).
+    default: '16'
+  '`CASSANDRA_ENDPOINT_SNITCH`':
+    type: env
+    description: Snitch implementation used to locate nodes and route requests (`endpoint_snitch`).
+    default: 'SimpleSnitch'
+  '`CASSANDRA_DC`':
+    type: env
+    description: Datacenter name of this node, written to `cassandra-rackdc.properties`. Only used by datacenter-aware snitches.
+    default: 'dc1'
+  '`CASSANDRA_RACK`':
+    type: env
+    description: Rack name of this node, written to `cassandra-rackdc.properties`. Only used by datacenter-aware snitches.
+    default: 'rack1'
+  '`MAX_HEAP_SIZE`':
+    type: env
+    description: Maximum JVM heap size. Must be set together with `HEAP_NEWSIZE`. The official minimum is `1024M`.
+  '`HEAP_NEWSIZE`':
+    type: env
+    description: JVM young generation size, usually half of `MAX_HEAP_SIZE`. The official minimum is `512M`.
+  '`JVM_EXTRA_OPTS`':
+    type: env
+    description: Extra options appended to the JVM command line, e.g. `-Dcassandra.available_processors=2`.
+  '`-v <path>:/etc/cassandra/cassandra.yaml`':
+    type: mount
+    description: >-
+      Override the Cassandra configuration file, for keys not covered by the
+      `CASSANDRA_*` variables. The file is edited in place on startup, so it
+      must be writable by uid 584792.
+  '`-v <volume>:/var/lib/cassandra`':
+    type: mount
+    description: Persist the node's data. The volume must be writable by uid 584792.
+  '`-p <port>:9042`':
+    type: port
+    description: Expose the CQL native transport port `9042` on the host's `<port>`.
+  '`-p <port>:7000`':
+    type: port
+    description: Expose the node-to-node communication port `7000` on the host's `<port>`.
+  '`-p <port>:7001`':
+    type: port
+    description: Expose the node-to-node communication port over TLS `7001` on the host's `<port>`.
+  '`-p <port>:7199`':
+    type: port
+    description: Expose the JMX port `7199` on the host's `<port>`.
