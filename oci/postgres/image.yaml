@@ -1,3 +1,7 @@
+# This file is only used for upload[0].source, to report security scanning findings
+# (https://github.com/canonical/oci-factory/pull/1261#discussion_r4249868253)
+# Builds are triggered with the OCI Factory CLI Client
+
 version: 1
 
 upload:
