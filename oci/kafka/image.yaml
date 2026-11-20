@@ -10,7 +10,7 @@ upload:
         risks:
           - edge
   - source: "canonical/kafka-rock"
-    commit: ff319e1f8f967a47f9bef8de873b27a9609994a2
+    commit: 8615f0df859c69bed806c45cf1a82830b240e564
     directory: .
     release:
       3.9-22.04:
