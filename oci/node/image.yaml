@@ -1,4 +1,4 @@
-version: 1
+version: 2
 upload:
   - source: canonical/node-rock
     commit: 3758a424d68bd5936b29d8da59210979c74f169a
@@ -6,5 +6,37 @@ upload:
     release:
       18-24.04:
         end-of-life: "2025-09-10T00:00:00Z"
+        risks:
+          - edge
+
+  - source: canonical/node-rock
+    commit: 3758a424d68bd5936b29d8da59210979c74f169a
+    directory: node/18-24.04
+    pro:
+      services:
+        - esm-apps
+        - esm-infra
+    ignored-vulnerabilities:
+      - CVE-2026-109383  # undici (npm via node-undici deb): temporarily accepted for the edge-only Ubuntu 24.04 track pending an Ubuntu backport; upstream fixed in 6.29.1 | https://ubuntu.com/security/CVE-2026-109383 | https://github.com/nodejs/undici/security/advisories/GHSA-2m5v-pch6-74hx
+      - CVE-2026-12151  # undici (npm via node-undici deb): accepted for this track's 5.26.3 runtime; upstream describes affected releases starting at 6.17.0 and a fix in 6.27.0 | https://ubuntu.com/security/CVE-2026-12151 | https://github.com/nodejs/undici/security/advisories/GHSA-vxpw-j846-p89q
+      - CVE-2026-1526  # undici (npm via node-undici deb): temporarily accepted for the edge-only Ubuntu 24.04 track pending an Ubuntu backport; upstream fixed in 6.24.0 | https://ubuntu.com/security/CVE-2026-1526 | https://github.com/nodejs/undici/security/advisories/GHSA-vrm6-8vpv-qv8q
+      - CVE-2026-2229  # undici (npm via node-undici deb): temporarily accepted for the edge-only Ubuntu 24.04 track pending an Ubuntu backport; upstream fixed in 6.24.0 | https://ubuntu.com/security/CVE-2026-2229 | https://github.com/nodejs/undici/security/advisories/GHSA-v9p9-hfj2-hcw8
+      - CVE-2026-87018  # undici (npm via node-undici deb): temporarily accepted for the edge-only Ubuntu 24.04 track pending an Ubuntu backport; upstream fixed in 6.29.1 | https://ubuntu.com/security/CVE-2026-87018 | https://github.com/nodejs/undici/security/advisories/GHSA-qrxm-fqhp-jwvm
+    release:
+      18-24.04:
+        end-of-life: "2034-05-01T00:00:00Z"
+        risks:
+          - edge
+
+  - source: canonical/node-rock
+    commit: 4571556f911d9e08b709f8f8d3e40d72ed94d2c3
+    directory: .
+    pro:
+      services:
+        - esm-apps
+        - esm-infra
+    release:
+      22-26.04:
+        end-of-life: "2036-05-01T00:00:00Z"
         risks:
           - edge
