@@ -1,6 +1,14 @@
 version: 1
 
 upload:
+  - source: "canonical/kafka-artifacts"
+    commit: 2ec10071ef1be2c7c19f88e7566cf9f4e5f6a298
+    directory: rock
+    release:
+      4-26.04:
+        end-of-life: "2031-05-31T00:00:00Z"
+        risks:
+          - edge
   - source: "canonical/kafka-rock"
     commit: 8efeeb4639be3d4e812e63185fd41a4d7f65f999
     directory: .
