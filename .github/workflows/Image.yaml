@@ -136,7 +136,8 @@ jobs:
       - name: Validate and prepare builds matrix
         id: prepare-matrix
         env:
-          GH_TOKEN: ${{ secrets.ROCKS_REPO_CLONER_TOKEN }}
+          # Fork PRs have no cloner secret; their workflow token can read public metadata.
+          GH_TOKEN: ${{ secrets.ROCKS_REPO_CLONER_TOKEN || github.token }}
           GIT_CONFIG_COUNT: "1"
           GIT_CONFIG_KEY_0: credential.https://github.com.helper
           GIT_CONFIG_VALUE_0: "!gh auth git-credential"
@@ -292,7 +293,7 @@ jobs:
 
           echo "revision-data-cache-key=${{ github.run_id }}-${DATA_DIR}-$(date +%s)" >> "$GITHUB_OUTPUT"
         env:
-          GH_TOKEN: ${{ secrets.ROCKS_REPO_CLONER_TOKEN }}
+          GH_TOKEN: ${{ secrets.ROCKS_REPO_CLONER_TOKEN || github.token }}
           GIT_CONFIG_COUNT: "1"
           GIT_CONFIG_KEY_0: credential.https://github.com.helper
           GIT_CONFIG_VALUE_0: "!gh auth git-credential"
