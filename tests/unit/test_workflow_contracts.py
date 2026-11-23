@@ -97,7 +97,10 @@ def test_matrix_preparation_authenticates_source_access(job_name) -> None:
     )
     env = step["env"]
 
-    assert env["GH_TOKEN"] == "${{ secrets.ROCKS_REPO_CLONER_TOKEN }}"
+    # Fork PRs lack repository secrets but still need authenticated metadata reads.
+    assert env["GH_TOKEN"] == (
+        "${{ secrets.ROCKS_REPO_CLONER_TOKEN || github.token }}"
+    )
     assert env["GIT_CONFIG_COUNT"] == "1"
     assert env["GIT_CONFIG_KEY_0"] == "credential.https://github.com.helper"
     assert env["GIT_CONFIG_VALUE_0"] == "!gh auth git-credential"
