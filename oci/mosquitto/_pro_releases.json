@@ -1,0 +1,12 @@
+{
+    "2.0-26.04": {
+        "services": [
+            "esm-apps",
+            "esm-infra"
+        ],
+        "end-of-life": "2036-04-23T00:00:00Z",
+        "edge": {
+            "target": "1"
+        }
+    }
+}
