@@ -193,7 +193,7 @@ jobs:
 
       - name: Building Target
         id: rockcraft
-        uses: canonical/craft-actions/rockcraft/pack@acd2f2e61c7563b38ba89390ca0e910fa7d2784f  # v0.1.1
+        uses: canonical/craft-actions/rockcraft/pack@5d072661cd0e3a60ad1b79d6ba93db88344e2b5b  # v1
         with:
           path: "${{ env.ROCK_REPO_DIR }}/${{ inputs.rockfile-directory }}"
           test: "${{ inputs.rockcraft-test }}"
@@ -210,9 +210,17 @@ jobs:
 
       - name: Collecting Artifacts
         id: collect-artifacts
+        env:
+          ROCKS: ${{ steps.rockcraft.outputs.rocks }}
         run: |
-          mkdir -p "${{ env.ROCK_CI_FOLDER }}" && cp "${{ steps.rockcraft.outputs.rock }}" "$_"
-          echo "filename=$(basename "${{ steps.rockcraft.outputs.rock }}")" >> "$GITHUB_OUTPUT"
+          read -r -a rocks <<< "$ROCKS"
+          if [[ ${#rocks[@]} -ne 1 ]]; then
+            echo "::error::Expected exactly one rock per architecture job; got ${#rocks[@]}."
+            exit 1
+          fi
+          mkdir -p "$ROCK_CI_FOLDER"
+          cp -- "${rocks[0]}" "$ROCK_CI_FOLDER/"
+          echo "filename=$(basename -- "${rocks[0]}")" >> "$GITHUB_OUTPUT"
 
       - name: Encrypting Single Arch Rock Artifacts
         if: ${{ needs.configure-build.outputs.pro-build == 'true' }}
