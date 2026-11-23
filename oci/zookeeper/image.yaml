@@ -1,4 +1,4 @@
-version: 1
+version: 2
 
 upload:
   - source: "canonical/zookeeper-rock"
@@ -9,3 +9,26 @@ upload:
         end-of-life: "2027-06-01T00:00:00Z"
         risks:
           - edge
+    # upstream jar CVEs, tracked in https://github.com/canonical/zookeeper-rock/issues/11
+    ignored-vulnerabilities:
+      - CVE-2026-68494   # com.fasterxml.jackson.core:jackson-core
+      - CVE-2026-89407   # com.fasterxml.jackson.core:jackson-core
+      - CVE-2026-89425   # com.fasterxml.jackson.core:jackson-core
+      - CVE-2026-54512   # com.fasterxml.jackson.core:jackson-databind
+      - CVE-2026-54513   # com.fasterxml.jackson.core:jackson-databind
+      - CVE-2026-68497   # com.fasterxml.jackson.core:jackson-databind
+      - CVE-2026-91776   # com.fasterxml.jackson.core:jackson-databind
+      - CVE-2026-91777   # com.fasterxml.jackson.core:jackson-databind
+      - CVE-2026-42583   # io.netty:netty-codec
+      - CVE-2026-59901   # io.netty:netty-codec
+      - CVE-2026-44249   # io.netty:netty-handler
+      - CVE-2026-45416   # io.netty:netty-handler
+      - CVE-2026-50010   # io.netty:netty-handler
+      - CVE-2026-75595   # io.netty:netty-handler
+      - CVE-2026-2332    # org.eclipse.jetty:jetty-http
+      - CVE-2026-10050   # org.eclipse.jetty:jetty-security
+      - CVE-2026-77422   # org.jline:jline-builtins
+      - CVE-2026-56740   # org.jline:jline-remote-telnet
+      - CVE-2026-56741   # org.jline:jline-remote-telnet
+      - CVE-2026-108106  # org.xerial.snappy:snappy-java
+      - CVE-2026-93451   # org.xerial.snappy:snappy-java
