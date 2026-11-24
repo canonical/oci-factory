@@ -12,3 +12,11 @@ upload:
         end-of-life: '2027-02-23T00:00:00Z'
         risks:
           - stable
+  - source: canonical/temporal-rocks
+    commit: f37c891c701442c79e9acd26a07ab9eee93eea65
+    directory: temporal-server/1.23.1
+    release:
+      1.23-24.04:
+        end-of-life: '2027-02-23T00:00:00Z'
+        risks:
+          - stable
