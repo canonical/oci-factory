@@ -7,11 +7,23 @@ upload:
       1-26.04:
         end-of-life: '2027-02-23T00:00:00Z'
         risks:
-          - stable
+          - edge
       1.31-26.04:
         end-of-life: '2027-02-23T00:00:00Z'
         risks:
-          - stable
+          - edge
+    ignored-vulnerabilities:
+      - CVE-2026-56854  # golang.org/x/crypto
+      - CVE-2026-46600  # golang.org/x/net
+      - CVE-2026-78669  # golang.org/x/net, stdlib
+      - CVE-2026-56852  # golang.org/x/text
+      - CVE-2026-84304  # google.golang.org/grpc
+      - CVE-2026-84445  # google.golang.org/grpc
+      - CVE-2026-78667  # stdlib
+      - CVE-2026-97031  # stdlib
+      - CVE-2026-43871  # github.com/apache/thrift
+      - CVE-2026-55677  # github.com/labstack/echo/v4
+      - GHSA-hrxh-6v49-42gf  # google.golang.org/grpc
   - source: canonical/temporal-rocks
     commit: f37c891c701442c79e9acd26a07ab9eee93eea65
     directory: temporal-server/1.23.1
@@ -19,4 +31,16 @@ upload:
       1.23-24.04:
         end-of-life: '2027-02-23T00:00:00Z'
         risks:
-          - stable
+          - edge
+    ignored-vulnerabilities:
+      - CVE-2026-56854  # golang.org/x/crypto
+      - CVE-2026-46600  # golang.org/x/net
+      - CVE-2026-78669  # golang.org/x/net, stdlib
+      - CVE-2026-56852  # golang.org/x/text
+      - CVE-2026-84304  # google.golang.org/grpc
+      - CVE-2026-84445  # google.golang.org/grpc
+      - CVE-2026-78667  # stdlib
+      - CVE-2026-97031  # stdlib
+      - CVE-2026-43871  # github.com/apache/thrift
+      - CVE-2026-55677  # github.com/labstack/echo/v4
+      - GHSA-hrxh-6v49-42gf  # google.golang.org/grpc
