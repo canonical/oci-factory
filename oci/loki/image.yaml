@@ -1,14 +1,14 @@
 version: 2
 upload:
   - source: canonical/loki-rock
-    commit: 087e6458ca21eb3613d09b6ed336f580961cf74a
+    commit: 5934708758172f85064864d00d9b0ca339267450
     directory: '3.7'
     release:
       3-26.04:
-        end-of-life: '2027-02-01T00:00:00Z'
+        end-of-life: '2027-02-22T00:00:00Z'
         risks:
           - stable
       3.7-26.04:
-        end-of-life: '2027-02-01T00:00:00Z'
+        end-of-life: '2027-02-22T00:00:00Z'
         risks:
           - stable
