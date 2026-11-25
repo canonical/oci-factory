@@ -1,26 +1,109 @@
 version: 2
 upload:
   - source: canonical/temporal-rocks
-    commit: 58022714d9c969e4f0604351e9404cdc7fe2461f
+    commit: f37c891c701442c79e9acd26a07ab9eee93eea65
     directory: temporal-server/1.31
     release:
       1-26.04:
-        end-of-life: '2027-01-14T00:00:00Z'
+        end-of-life: '2027-02-23T00:00:00Z'
         risks:
           - edge
       1.31-26.04:
-        end-of-life: '2027-01-14T00:00:00Z'
+        end-of-life: '2027-02-23T00:00:00Z'
         risks:
           - edge
     ignored-vulnerabilities:
+      # Upstream CVEs in bundled Go dependencies; generally fixed by updating to newer upstream tags.
+      - CVE-2026-43871  # github.com/apache/thrift
+      - CVE-2026-116587  # github.com/go-jose/go-jose/v4
+      - CVE-2026-102941  # github.com/gomarkdown/markdown
+      - CVE-2026-63209  # github.com/klauspost/compress
+      - CVE-2026-55677  # github.com/labstack/echo/v4
+      - CVE-2026-118260  # github.com/labstack/echo/v4
+      - CVE-2026-118261  # github.com/labstack/echo/v4
+      - CVE-2026-118264  # github.com/labstack/echo/v4
+      - CVE-2026-118650  # github.com/labstack/echo/v4
       - CVE-2026-56854  # golang.org/x/crypto
+      - CVE-2026-39821  # golang.org/x/net
       - CVE-2026-46600  # golang.org/x/net
-      - CVE-2026-78669  # golang.org/x/net, stdlib
+      - CVE-2026-78661  # golang.org/x/net
+      - CVE-2026-78669  # golang.org/x/net
+      - CVE-2026-56851  # golang.org/x/text
       - CVE-2026-56852  # golang.org/x/text
       - CVE-2026-84304  # google.golang.org/grpc
       - CVE-2026-84445  # google.golang.org/grpc
+      - GHSA-hrxh-6v49-42gf  # google.golang.org/grpc
+  - source: canonical/temporal-rocks
+    commit: f37c891c701442c79e9acd26a07ab9eee93eea65
+    directory: temporal-server/1.23.1
+    release:
+      1.23-24.04:
+        end-of-life: '2027-02-23T00:00:00Z'
+        risks:
+          - edge
+    ignored-vulnerabilities:
+      # Upstream CVEs in bundled Go dependencies; generally fixed by updating to newer upstream tags.
+      - CVE-2026-41602  # github.com/apache/thrift
+      - CVE-2026-43871  # github.com/apache/thrift
+      - CVE-2026-34986  # github.com/go-jose/go-jose/v4
+      - CVE-2026-116587  # github.com/go-jose/go-jose/v4
+      - CVE-2025-30204  # github.com/golang-jwt/jwt v3 + v4
+      - CVE-2026-40890  # github.com/gomarkdown/markdown
+      - CVE-2026-102941  # github.com/gomarkdown/markdown
+      - CVE-2026-33815  # github.com/jackc/pgx/v5
+      - CVE-2026-33816  # github.com/jackc/pgx/v5
+      - CVE-2026-63209  # github.com/klauspost/compress
+      - CVE-2026-55677  # github.com/labstack/echo/v4
+      - CVE-2026-118260  # github.com/labstack/echo/v4
+      - CVE-2026-118261  # github.com/labstack/echo/v4
+      - CVE-2026-118264  # github.com/labstack/echo/v4
+      - CVE-2026-118650  # github.com/labstack/echo/v4
+      - CVE-2026-24051  # go.opentelemetry.io/otel/sdk
+      - CVE-2026-39883  # go.opentelemetry.io/otel/sdk
+      - CVE-2024-45337  # golang.org/x/crypto
+      - CVE-2025-22869  # golang.org/x/crypto
+      - CVE-2025-47913  # golang.org/x/crypto
+      - CVE-2026-39828  # golang.org/x/crypto
+      - CVE-2026-39829  # golang.org/x/crypto
+      - CVE-2026-39830  # golang.org/x/crypto
+      - CVE-2026-39831  # golang.org/x/crypto
+      - CVE-2026-39832  # golang.org/x/crypto
+      - CVE-2026-39835  # golang.org/x/crypto
+      - CVE-2026-42508  # golang.org/x/crypto
+      - CVE-2026-46597  # golang.org/x/crypto
+      - CVE-2026-56854  # golang.org/x/crypto
+      - CVE-2024-45338  # golang.org/x/net
+      - CVE-2026-25681  # golang.org/x/net
+      - CVE-2026-27136  # golang.org/x/net
+      - CVE-2026-46600  # golang.org/x/net
+      - CVE-2026-78661  # golang.org/x/net
+      - CVE-2026-33814  # golang.org/x/net, stdlib
+      - CVE-2026-39821  # golang.org/x/net, stdlib
+      - CVE-2026-78669  # golang.org/x/net, stdlib
+      - CVE-2025-22868  # golang.org/x/oauth2
+      - CVE-2026-56851  # golang.org/x/text
+      - CVE-2026-56852  # golang.org/x/text
+      - CVE-2026-33186  # google.golang.org/grpc
+      - CVE-2026-84304  # google.golang.org/grpc
+      - CVE-2026-84445  # google.golang.org/grpc
+      - GHSA-hrxh-6v49-42gf  # google.golang.org/grpc
+      - CVE-2026-25679  # stdlib
+      - CVE-2026-27145  # stdlib
+      - CVE-2026-32280  # stdlib
+      - CVE-2026-32281  # stdlib
+      - CVE-2026-32283  # stdlib
+      - CVE-2026-33811  # stdlib
+      - CVE-2026-33818  # stdlib
+      - CVE-2026-39820  # stdlib
+      - CVE-2026-39822  # stdlib
+      - CVE-2026-39836  # stdlib
+      - CVE-2026-42499  # stdlib
+      - CVE-2026-42504  # stdlib
+      - CVE-2026-56853  # stdlib
+      - CVE-2026-56858  # stdlib
+      - CVE-2026-56859  # stdlib
+      - CVE-2026-56860  # stdlib
+      - CVE-2026-56862  # stdlib
       - CVE-2026-78667  # stdlib
       - CVE-2026-97031  # stdlib
-      - CVE-2026-43871  # github.com/apache/thrift
-      - CVE-2026-55677  # github.com/labstack/echo/v4
-      - GHSA-hrxh-6v49-42gf  # google.golang.org/grpc
+      - CVE-2026-111943  # stdlib
