@@ -7,7 +7,7 @@ upload:
       10.0-26.04:
         end-of-life: '2031-05-29T00:00:00Z'
         risks:
-          - edge
+          - stable
   - source: canonical/dotnet-runtime-rock
     commit: fbe41d4645c3c2fb478d0ece1143a46a8b31bd96
     directory: .
