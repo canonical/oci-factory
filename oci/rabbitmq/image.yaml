@@ -7,7 +7,7 @@ upload:
       4.0-26.04:
         end-of-life: '2031-05-27T00:00:00Z'
         risks:
-          - edge
+          - stable
   - source: canonical/rabbitmq-rock
     commit: f58aea30b3743816e75050a2b18b44f16175c0a7
     directory: rabbitmq/3.12-24.04
