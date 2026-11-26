@@ -7,7 +7,7 @@ upload:
       2.4-26.04:
         end-of-life: "2031-05-29T00:00:00Z"
         risks:
-          - edge
+          - stable
   - source: canonical/apache2-rock
     commit: e5b953c304b096633fca26ddc35a4c3887837df5
     directory: .
