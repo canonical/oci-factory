@@ -276,3 +276,34 @@ def test_source_visibility_lookup_failure_stops_preparation(monkeypatch):
     monkeypatch.setattr(prep_matrix.subprocess, "check_output", failed_lookup)
     with pytest.raises(subprocess.CalledProcessError):
         prep_matrix.get_source_visibility("https://github.com/canonical/internal.git")
+
+
+@pytest.mark.parametrize(
+    "tracks,expected_error",
+    [
+        (["1.0-27.04"], False),
+        (["1.0-26.10"], True),
+        ([], False),
+        (["1.0-27.04", "1.0-26.10"], True),
+        (["1-27.04"], False),
+    ],
+)
+def test_devel_track_must_match_declared_release_tracks(
+    monkeypatch, tracks, expected_error
+):
+    monkeypatch.setattr(infer_image_track, "get_devel_release", lambda arches: "27.04")
+    recipe = {
+        "base": "bare",
+        "build-base": "devel",
+        "version": "1.0",
+        "platforms": {"amd64": None},
+    }
+
+    if expected_error:
+        with pytest.raises(ValueError, match="pin build-base"):
+            infer_image_track.get_base_and_track(recipe, tracks)
+    else:
+        assert infer_image_track.get_base_and_track(recipe, tracks) == (
+            "27.04",
+            "1.0-27.04",
+        )
