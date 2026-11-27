@@ -8,7 +8,7 @@ upload:
       1.37-26.04:
         end-of-life: "2031-05-29T00:00:00Z"
         risks:
-          - edge
+          - stable
   - source: canonical/busybox-rock
     commit: 53f87615c635532f74c04bc035762d2f649ba9d7
     directory: .
