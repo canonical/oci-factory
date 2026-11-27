@@ -411,6 +411,11 @@ jobs:
             | jq -r 'if has("manifests") then .manifests[].platform.architecture else "${{ runner.arch }}" end' \
             | jq -nRcr '[inputs] | join(",")')
 
+          if [[ -z "${arches}" || ",${arches}," == *",null,"* ]]; then
+            log_error "Could not detect architectures of ${STEPS_RENAME_OCI_ARCHIVE_OUTPUTS_NAME}"
+            exit 1
+          fi
+
           log_info "Detected architectures: ${arches}"
           echo "arches=${arches}" >> "$GITHUB_OUTPUT"
         env:

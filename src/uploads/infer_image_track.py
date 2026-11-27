@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import re
 import subprocess
 from functools import cache
 from urllib.request import urlopen
@@ -50,14 +51,17 @@ def get_release_from_codename(codename: str) -> str:
     ].split()[1]
 
 
-def get_base_and_track(rockcraft_yaml) -> tuple[str, str]:
+def get_base_and_track(
+    rockcraft_yaml, declared_tracks: list[str] | None = None
+) -> tuple[str, str]:
     rock_base = (
         rockcraft_yaml["base"]
         if rockcraft_yaml["base"] != "bare"
         else rockcraft_yaml["build-base"]
     )
 
-    if rock_base == "devel":
+    built_on_devel = rock_base == "devel"
+    if built_on_devel:
         builder_arches = frozenset(get_builder_archs(rockcraft_yaml))
         rock_base = get_devel_release(builder_arches)
 
@@ -72,8 +76,28 @@ def get_base_and_track(rockcraft_yaml) -> tuple[str, str]:
         )
 
     version = rockcraft_yaml["version"]
+    track = f"{version}-{base_release:.2f}"
 
-    return f"{base_release:.2f}", f"{version}-{base_release:.2f}"
+    # devel moves on every ubuntu release, so a recipe still on it can silently
+    # build for a different release than the tracks it is published to.
+    if built_on_devel:
+        # track names are free-form, so only ones ending in a base can be stale
+        declared_bases = {
+            t: re.search(r"-(\d{2}\.\d{2})$", str(t)) for t in declared_tracks or []
+        }
+        stale = [
+            t
+            for t, base in declared_bases.items()
+            if base and base.group(1) != f"{base_release:.2f}"
+        ]
+        if stale:
+            raise ValueError(
+                f"build-base devel now resolves to ubuntu {base_release:.2f}, but the "
+                f"image is released to {sorted(stale)}. pin build-base in "
+                "rockcraft.yaml to the intended ubuntu release."
+            )
+
+    return f"{base_release:.2f}", track
 
 
 if __name__ == "__main__":

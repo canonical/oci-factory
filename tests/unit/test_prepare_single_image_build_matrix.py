@@ -276,3 +276,94 @@ def test_source_visibility_lookup_failure_stops_preparation(monkeypatch):
     monkeypatch.setattr(prep_matrix.subprocess, "check_output", failed_lookup)
     with pytest.raises(subprocess.CalledProcessError):
         prep_matrix.get_source_visibility("https://github.com/canonical/internal.git")
+
+
+@pytest.mark.parametrize(
+    "tracks,expected_error",
+    [
+        (["1.0-27.04"], False),
+        (["1.0-26.10"], True),
+        ([], False),
+        (["1.0-27.04", "1.0-26.10"], True),
+        (["1-27.04"], False),
+        (["devel", "2"], False),
+        (["devel", "1.0-26.10"], True),
+    ],
+)
+def test_devel_track_must_match_declared_release_tracks(
+    monkeypatch, tracks, expected_error
+):
+    monkeypatch.setattr(infer_image_track, "get_devel_release", lambda arches: "27.04")
+    recipe = {
+        "base": "bare",
+        "build-base": "devel",
+        "version": "1.0",
+        "platforms": {"amd64": None},
+    }
+
+    if expected_error:
+        with pytest.raises(ValueError, match="pin build-base"):
+            infer_image_track.get_base_and_track(recipe, tracks)
+    else:
+        assert infer_image_track.get_base_and_track(recipe, tracks) == (
+            "27.04",
+            "1.0-27.04",
+        )
+
+
+def test_devel_check_only_applies_when_the_base_is_devel(monkeypatch):
+    def unexpected_lookup(arches):
+        pytest.fail("A recipe with its own base must not resolve devel")
+
+    monkeypatch.setattr(infer_image_track, "get_devel_release", unexpected_lookup)
+    recipe = {
+        "base": "ubuntu@24.04",
+        "build-base": "devel",
+        "version": "1.0",
+        "platforms": {"amd64": None},
+    }
+
+    assert infer_image_track.get_base_and_track(recipe, ["1.0-26.10"]) == (
+        "24.04",
+        "1.0-24.04",
+    )
+
+
+@pytest.mark.parametrize(
+    "stale_track_eol,expected_error",
+    [
+        ("2000-01-01T00:00:00Z", False),
+        ("2100-01-01T00:00:00Z", True),
+    ],
+)
+def test_expired_tracks_are_not_checked_against_devel(
+    monkeypatch, stale_track_eol, expected_error
+):
+    def clone_source(url, destination):
+        (Path(destination) / "rockcraft.yaml").write_text(
+            "name: example\nversion: '1.0'\nbase: bare\nbuild-base: devel\n"
+            "platforms:\n  amd64:\n    build-on: [amd64]\n    build-for: amd64\n"
+        )
+        return SimpleNamespace(git=SimpleNamespace(checkout=lambda commit: None))
+
+    monkeypatch.setattr(infer_image_track, "get_devel_release", lambda arches: "27.04")
+    monkeypatch.setattr(prep_matrix, "get_source_visibility", lambda url: "public")
+    monkeypatch.setattr(prep_matrix.Repo, "clone_from", clone_source)
+    builds = [
+        {
+            "source": "canonical/example",
+            "commit": "0" * 40,
+            "directory": ".",
+            "release": {
+                "1.0-26.10": {"end-of-life": stale_track_eol, "risks": ["edge"]},
+                "1.0-27.04": {"end-of-life": "2100-01-01T00:00:00Z", "risks": ["edge"]},
+            },
+        }
+    ]
+
+    if expected_error:
+        with pytest.raises(ValueError, match="pin build-base"):
+            prep_matrix.inject_metadata(builds, 1, Path("oci/example"))
+    else:
+        injected = prep_matrix.inject_metadata(builds, 1, Path("oci/example"))
+        assert injected[0]["track"] == "1.0-27.04"
