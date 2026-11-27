@@ -42,3 +42,16 @@ upload:
         end-of-life: "2027-07-15T00:00:00Z"
         risks:
           - edge
+
+  - source: canonical/python-rock
+    commit: 14e9646fa7322d3a8cb53c40cad997dd90620f76
+    directory: python/3.11-22.04/
+    pro:
+      services:
+        - esm-apps
+        - esm-infra
+    release:
+      3.11-22.04:
+        end-of-life: "2032-04-21T00:00:00Z"
+        risks:
+          - edge
