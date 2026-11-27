@@ -286,6 +286,8 @@ def test_source_visibility_lookup_failure_stops_preparation(monkeypatch):
         ([], False),
         (["1.0-27.04", "1.0-26.10"], True),
         (["1-27.04"], False),
+        (["devel", "2"], False),
+        (["devel", "1.0-26.10"], True),
     ],
 )
 def test_devel_track_must_match_declared_release_tracks(

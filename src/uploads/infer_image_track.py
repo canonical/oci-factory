@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import re
 import subprocess
 from functools import cache
 from urllib.request import urlopen
@@ -79,8 +80,14 @@ def get_base_and_track(
     # devel moves on every ubuntu release, so a recipe still on it can silently
     # build for a different release than the tracks it is published to.
     if rockcraft_yaml.get("build-base") == "devel":
+        # track names are free-form, so only ones ending in a base can be stale
+        declared_bases = {
+            t: re.search(r"-(\d{2}\.\d{2})$", str(t)) for t in declared_tracks or []
+        }
         stale = [
-            t for t in declared_tracks or [] if t.rsplit("-", 1)[-1] != f"{base_release:.2f}"
+            t
+            for t, base in declared_bases.items()
+            if base and base.group(1) != f"{base_release:.2f}"
         ]
         if stale:
             raise ValueError(
