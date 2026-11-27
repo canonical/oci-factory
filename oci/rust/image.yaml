@@ -8,7 +8,7 @@ upload:
       1.75-24.04:
         end-of-life: "2029-05-31T00:00:00Z"
         risks:
-          - edge
+          - stable
   # 26.04 LTS
   - source: canonical/rust-rock
     commit: 382e3d564f3f4815afba09e4ad2e6393053efe7d
