@@ -1,7 +1,7 @@
 version: 2
 upload:
   - source: canonical/ruby-rock
-    commit: 75336b149dee15adc0bc1fd2be385bf7aa1456b7
+    commit: 12e904de35398fe237af005fea8e7956c4e15659
     directory: .
     release:
       3.2-24.04:
