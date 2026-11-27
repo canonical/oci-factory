@@ -7,7 +7,7 @@ upload:
       3.2-24.04:
         end-of-life: "2029-05-31T00:00:00Z"
         risks:
-          - edge
+          - stable
     ignored-vulnerabilities:
       - CVE-2026-41316  # Needs evaluation. CVSS: 8.1 (High), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2026-41316
       - CVE-2026-42257  # Vulnerable. CVSS: 5.8 (Medium), Ubuntu priority: Medium, Status (24.04 noble). https://ubuntu.com/security/CVE-2026-42257
@@ -30,7 +30,7 @@ upload:
       3.3-26.04:
         end-of-life: "2031-05-29T00:00:00Z"
         risks:
-          - edge
+          - stable
     ignored-vulnerabilities:
       - CVE-2026-41316  # Needs evaluation. CVSS: 8.1 (High), Ubuntu priority: Medium, Status (26.04 resolute). https://ubuntu.com/security/CVE-2026-41316
       - CVE-2026-42257  # Vulnerable. CVSS: 5.8 (Medium), Ubuntu priority: Medium, Status (26.04 resolute). https://ubuntu.com/security/CVE-2026-42257
