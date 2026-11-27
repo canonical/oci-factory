@@ -60,7 +60,8 @@ def get_base_and_track(
         else rockcraft_yaml["build-base"]
     )
 
-    if rock_base == "devel":
+    built_on_devel = rock_base == "devel"
+    if built_on_devel:
         builder_arches = frozenset(get_builder_archs(rockcraft_yaml))
         rock_base = get_devel_release(builder_arches)
 
@@ -79,7 +80,7 @@ def get_base_and_track(
 
     # devel moves on every ubuntu release, so a recipe still on it can silently
     # build for a different release than the tracks it is published to.
-    if rockcraft_yaml.get("build-base") == "devel":
+    if built_on_devel:
         # track names are free-form, so only ones ending in a base can be stale
         declared_bases = {
             t: re.search(r"-(\d{2}\.\d{2})$", str(t)) for t in declared_tracks or []

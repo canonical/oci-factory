@@ -232,9 +232,13 @@ def inject_metadata(builds: list[dict[str, Any]], next_revision: int, oci_path: 
             ) as rockcraft_file:
                 rockcraft_yaml = yaml.load(rockcraft_file, Loader=yaml.BaseLoader)
 
-        base_release, track = get_base_and_track(
-            rockcraft_yaml, list(build.get("release", {}))
-        )
+        # expired tracks are dropped from the build later on, so they cannot be stale
+        live_tracks = [
+            name
+            for name, value in build.get("release", {}).items()
+            if not is_track_eol(value)
+        ]
+        base_release, track = get_base_and_track(rockcraft_yaml, live_tracks)
         build["track"] = track
         build["base"] = f"ubuntu:{base_release}"
 
